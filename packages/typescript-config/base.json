@@ -11,10 +11,20 @@
     "module": "NodeNext",
     "moduleDetection": "force",
     "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "types": ["react", "react-dom"],
     "strict": true,
-    "target": "ES2022"
+    "target": "ES2022",
+    "baseUrl": ".",
+    "paths": {
+      "@workspace/ui": ["packages/ui/src/index.ts"],
+      "@workspace/ui/*": ["packages/ui/src/*"],
+      "@workspace/store": ["packages/store/src/index.ts"],
+      "@workspace/store/*": ["packages/store/src/*"]
+    }
   }
 }

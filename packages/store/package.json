@@ -1,0 +1,19 @@
+{
+  "name": "@workspace/store",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {},
+  "dependencies": {
+    "zustand": "^4.5.2",
+    "zustand-middleware": "^1.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/react": "^19.1.9"
+  },
+  "exports": {
+    "./profileStore": "./src/profileStore.ts",
+    "./*": "./src/*.ts"
+  }
+}
