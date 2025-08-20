@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {},
   "dependencies": {
-    "zustand": "^4.5.2",
-    "zustand-middleware": "^1.2.0"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
