@@ -10,6 +10,7 @@ import {
 
 import { useProfileStore } from "@workspace/store/profileStore";
 import { Button } from "@workspace/ui/components/button";
+import { NextImageAdapter } from "@/adapters/NextImageAdapter";
 
 /** UI expects objects; store keeps string ids */
 type UiCoverage = { id: string; label: string; area?: any };
@@ -60,6 +61,8 @@ export function ProfileDataLayer() {
   return (
     <ProfileForm
       initial={initial}
+      ImageComponent={NextImageAdapter}
+      ImageUrl="/signal_helper.jpg"
       onSubmit={async (values: ProfileFormOutput) => {
         // Normalize the form’s coverage_zones back to the store invariant
         const coverage_ids = toStoreCoverage(values.coverage_zones);

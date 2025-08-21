@@ -11,7 +11,6 @@ import { Input } from "@workspace/ui/components/input";
 import { TagsInput } from "@workspace/ui/components/client/profile/TagsInput";
 import { Switch } from "@workspace/ui/components/switch";
 import { WeeklyAvailabilityEditor } from "@workspace/ui/components/client/profile/WeeklyAvailabilityEditor";
-import { Textarea } from "@workspace/ui/components/textarea";
 import { Button } from "@workspace/ui/components/button";
 import { Save, Trash2 } from "lucide-react";
 import {
@@ -32,6 +31,9 @@ import {
   formSchema, nullToEmptyArray, nullToEmptyBlocks, nullToEmptyString, nullToFalse
 } from "@workspace/ui/types/form-helpers.ts";
 import { DispatchProfileSchema } from "@workspace/ui/types/dispatch-profile.ts";
+import { ImageComponent } from "@workspace/ui/types/image.ts";
+import { useImage } from "@workspace/ui/providers/ImageProvider.tsx";
+import { BasicImage } from "../../BasicImage.tsx";
 
 
 /* ------------------------------------------
@@ -89,6 +91,8 @@ export type ProfileFormProps = {
   onGenerateKey?: () => Promise<{ publicPem: string; privatePem: string }>;
   busy?: boolean;             // optional external busy flag
   disableDelete?: boolean;    // optional guard
+  ImageComponent?: ImageComponent;
+  ImageUrl?: string
 };
 
 export function ProfileForm({
@@ -99,9 +103,13 @@ export function ProfileForm({
   onGenerateKey,
   busy,
   disableDelete,
+  ImageComponent: ImageProp,
+  ImageUrl
 }: ProfileFormProps) {
   const [isDeleting, startDelete] = React.useTransition();
   const [hasViewedSheet, setHasViewedSheet] = React.useState(false);
+  const ImageFromContext = useImage();
+  const Image = ImageProp ?? ImageFromContext ?? BasicImage;
 
   // RHF v8 instance
   const form = useForm({ defaultValues: { ...defaults, ...coerceInitial(initial) } });
@@ -164,8 +172,20 @@ export function ProfileForm({
         </div>
 
         {/* Contact / location */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="grid gap-4">
+        <div className="grid gap-6  m-auto grid-cols-1 md:grid-cols-2">
+          <div className="w-full flex justify-center">
+            {ImageUrl && (
+              <Image
+                src={ImageUrl}
+                alt="Profile avatar"
+                width={200}
+                height={150}
+                className="object-cover"
+                loading="lazy"
+              />
+            )}
+          </div>
+          <div className="grid grid-cols-1 gap-4">
             <FormField
               control={form.control}
               name="display_name"
@@ -184,23 +204,21 @@ export function ProfileForm({
               name="contact_signal"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Signal (phone or @username)</FormLabel>
+                  <FormLabel>Signal (@username)</FormLabel>
                   <FormControl>
                     <Input placeholder="+1 555-123-4567 or @handle" {...field} value={field.value ?? ""} />
                   </FormControl>
                 </FormItem>
               )}
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="state"
               render={({ field }) => (
-                <FormItem>
+                <FormItem >
                   <FormLabel>State</FormLabel>
                   <Select
+
                     value={typeof field.value === "string" ? field.value : ""}
                     onValueChange={(v) => field.onChange(v)}
                   >
@@ -209,7 +227,7 @@ export function ProfileForm({
                         <SelectValue placeholder="Select your state" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="w-full">
                       {US_STATES.map((s) => (
                         <SelectItem key={s.code} value={s.code}>
                           {s.name}
@@ -221,7 +239,6 @@ export function ProfileForm({
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="city"
@@ -263,14 +280,15 @@ export function ProfileForm({
           </div>
         </div>
 
+
         {/* Roles / tags */}
-        <div className="grid gap-6">
+        <div className="grid gap-6 mt-4">
           <FormField
             control={form.control}
             name="field_roles"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Field roles</FormLabel>
+                {/* <FormLabel>Field roles</FormLabel> */}
                 <RoleSelector selected={field.value ?? []} onChange={field.onChange} />
                 <FormMessage />
               </FormItem>
@@ -287,7 +305,7 @@ export function ProfileForm({
               <TagsInput
                 value={field.value ?? []}
                 onChange={field.onChange}
-                description="Optional tags for how you identify or participate. e.g. 'medic', 'undocumented', 'queer', 'translator'. Max 10."
+                description="Optional tags for how you identify or participate. e.g. 'medic', 'out-of-state transport', 'queer', 'translator'. Max 10."
               />
               <FormMessage />
             </FormItem>

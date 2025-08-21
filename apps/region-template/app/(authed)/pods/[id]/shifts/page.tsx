@@ -8,16 +8,7 @@ import { useParams } from "next/navigation";
 import PodShiftsList from "@workspace/ui/components/client/shifts/PodShiftsList";
 import { ShiftIntentionSection } from "@workspace/ui/components/client/shifts/ShiftIntentionSection";
 import { toast } from "sonner";
-
-
-function combineLocalDateTime(dateStr: string, timeStr: string) {
-  // Treats values as local time and returns an ISO string
-  // If either is missing, return empty so validation can catch it.
-  if (!dateStr || !timeStr) return "";
-  // `new Date("YYYY-MM-DDTHH:mm")` is parsed in local TZ
-  const d = new Date(`${dateStr}T${timeStr}`);
-  return isNaN(d.getTime()) ? "" : d.toISOString();
-}
+import { combineLocalDateTime } from "@workspace/ui/lib/utils";
 
 export default function PodShiftsPage() {
   const { id } = useParams<{ id: string }>();

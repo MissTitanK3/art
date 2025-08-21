@@ -1,6 +1,6 @@
 // apps/region-template/app/my-profile/page.tsx
 import Link from "next/link";
-import { ProfileDataLayer } from "@/components/dataLayer/ProfileDataLayer";
+import { ProfileDataLayer } from "@/components/dataLayer/profile/ProfileDataLayer";
 
 export default async function ProfilePage() {
   return (
@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
       <Link
         href="/my-profile/map"
-        className="inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
+        className="inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-muted my-3"
       >
         Select Zones of Operation
       </Link>

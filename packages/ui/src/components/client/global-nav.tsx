@@ -32,6 +32,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Separator } from "@workspace/ui/components/separator";
 import { Menu, ChevronRight } from "lucide-react";
 import { GlobalNavConfig, NavItem, NavRole } from "@workspace/ui/types/nav.js";
+import ThemeToggle from "./ThemeToggle.tsx";
 
 export type LinkLikeProps = {
   href?: string;
@@ -101,6 +102,7 @@ export function GlobalNavCore({
             {config.brand.logoSrc ?? null}
             <span className="font-semibold hidden md:block">{config.brand.name}</span>
           </LinkComponent>
+          <ThemeToggle />
         </div>
 
         {/* Desktop primary */}
@@ -114,9 +116,8 @@ export function GlobalNavCore({
             onNavigate={handleAnyNavigate}
           />
         </div>
-
         {/* Right */}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto items-center gap-2 hidden lg:block">
           <DesktopSecondary
             key={desktopMenuReset /* remount to close */}
             items={config.secondary || []}

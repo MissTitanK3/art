@@ -1,6 +1,4 @@
-'use client';
-
-import { CountySelectDataLayer } from "@/components/dataLayer/CountySelectDataLayer";
+import { CountySelectDataLayer } from "@/components/dataLayer/profile/CountySelectDataLayer";
 
 export default function ProfileMapPage() {
   return (
