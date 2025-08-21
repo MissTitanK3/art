@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GeoJSON, useMapEvents } from 'react-leaflet';
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 import L from 'leaflet';
@@ -14,11 +14,10 @@ export interface CountyProps {
   CENSUSAREA: number;
 }
 
-/** Keep this type local to avoid importing from LeafletMapImpl (circular/incorrect). */
 export type SelectedCounty = {
   GEO_ID: string;
   NAME: string;
-  STATE: string;   // 2-digit FIPS string, e.g. "01"
+  STATE: string;   // 2-digit FIPS
   ZONE: number[];  // grid cells selected inside the county
 };
 
@@ -28,12 +27,15 @@ interface FeatureLayer extends L.Polygon {
 
 type Props = {
   selected: SelectedCounty[];
-  onToggleCounty: (county: SelectedCounty, bounds: L.LatLngBounds) => void; // keep it 2-arg for simplicity
+  onToggleCounty: (county: SelectedCounty, bounds: L.LatLngBounds) => void;
 };
 
-const CountyLayer = forwardRef<L.GeoJSON, Props>(({ selected, onToggleCounty }, ref) => {
+function CountyLayer({ selected, onToggleCounty }: Props) {
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState<FeatureCollection<Polygon | MultiPolygon, CountyProps> | null>(null);
+
+  // NEW: internal ref to the GeoJSON layer
+  const geoRef = useRef<L.GeoJSON | null>(null);
 
   const map = useMapEvents({
     zoomend: () => setVisible(map.getZoom() >= 7),
@@ -48,80 +50,66 @@ const CountyLayer = forwardRef<L.GeoJSON, Props>(({ selected, onToggleCounty }, 
     }
   }, [map, data]);
 
-  // reflect "selected" styles when props change
-  useEffect(() => {
-    const inst = (ref as React.RefObject<L.GeoJSON>)?.current;
-    if (!inst) return;
+  // helper to restyle one polygon based on current `selected`
+  const restylePolygon = (polygon: FeatureLayer) => {
+    const props = polygon.feature?.properties;
+    if (!props) return;
+    const match = selected.find((c) => c.GEO_ID === props.GEO_ID);
+    const isPartial = !!match && match.ZONE.length > 0;
 
-    inst.eachLayer((layer) => {
-      const polygon = layer as FeatureLayer;
-      const props = polygon.feature?.properties;
-      if (!props) return;
-
-      const match = selected.find((c) => c.GEO_ID === props.GEO_ID);
-      const isPartial = !!match && match.ZONE.length > 0;
-
-      polygon.setStyle({
-        fillColor: match ? (isPartial ? 'transparent' : 'green') : 'blue',
-        fillOpacity: match ? (isPartial ? 0 : 0.4) : 0.1,
-        color: 'blue',
-        weight: 1,
-      });
+    polygon.setStyle({
+      fillColor: match ? (isPartial ? 'transparent' : 'green') : 'blue',
+      fillOpacity: match ? (isPartial ? 0 : 0.4) : 0.1,
+      color: 'blue',
+      weight: 1,
     });
-  }, [selected, ref]);
+  };
+
+  // UPDATE STYLES whenever `selected` changes
+  useEffect(() => {
+    const inst = geoRef.current;
+    if (!inst) return;
+    inst.eachLayer((layer) => restylePolygon(layer as FeatureLayer));
+  }, [selected]);
 
   if (!visible || !data) return null;
 
-  const onEachFeature = (feature: Feature<Polygon | MultiPolygon, CountyProps>, layer: L.Layer) => {
-    const county: SelectedCounty = {
-      GEO_ID: feature.properties!.GEO_ID,
-      NAME: feature.properties!.NAME,
-      STATE: feature.properties!.STATE,
-      ZONE: [],
-    };
-
+  const onEachFeature = (
+    feature: Feature<Polygon | MultiPolygon, CountyProps>,
+    layer: L.Layer
+  ) => {
     const polygon = layer as FeatureLayer;
+    const { GEO_ID, NAME, STATE } = feature.properties!;
+    const county: SelectedCounty = { GEO_ID, NAME, STATE, ZONE: [] };
     const bounds = polygon.getBounds();
-
-    const updateStyle = () => {
-      const match = selected.find((c) => c.GEO_ID === county.GEO_ID);
-      const isPartial = !!match && match.ZONE.length > 0;
-
-      polygon.setStyle({
-        fillColor: match ? (isPartial ? 'transparent' : 'green') : 'blue',
-        fillOpacity: match ? (isPartial ? 0 : 0.4) : 0.1,
-        color: 'blue',
-        weight: 1,
-      });
-    };
 
     polygon.on({
       click: () => {
-        onToggleCounty(county, bounds);
-        updateStyle();
+        onToggleCounty(county, bounds); // parent updates `selected`
+        // optional immediate visual feedback (will be corrected by effect on next render)
+        restylePolygon(polygon);
       },
-      mouseover: () =>
-        polygon.setStyle({
-          fillColor: 'blue',
-          fillOpacity: 0.3,
-          color: 'blue',
-          weight: 1,
-        }),
-      mouseout: updateStyle,
+      mouseover: () => {
+        polygon.setStyle({ fillColor: 'blue', fillOpacity: 0.3, color: 'blue', weight: 1 });
+      },
+      mouseout: () => {
+        // revert to style based on latest `selected`
+        restylePolygon(polygon);
+      },
     });
 
-    updateStyle();
+    // initial style
+    restylePolygon(polygon);
   };
 
   return (
     <GeoJSON
-      ref={ref}
+      ref={(node) => { geoRef.current = (node as unknown as L.GeoJSON) ?? null; }}
       data={data}
       style={() => ({ color: 'blue', weight: 1, fillOpacity: 0.1 })}
       onEachFeature={onEachFeature}
     />
   );
-});
+}
 
-CountyLayer.displayName = 'CountyLayer';
 export default CountyLayer;

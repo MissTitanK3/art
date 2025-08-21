@@ -34,7 +34,6 @@ export default function Page() {
           <div className="justify-center flex flex-col m-auto">
 
             <span>
-
               This instance is running in
             </span>
             <div className="flex w-full justify-evenly">

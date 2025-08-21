@@ -42,6 +42,8 @@ export const WeeklyAvailabilitySchema = z
   })
   .default({ blocks: {} });
 
+export const SIGNAL_HANDLE_RE = /^@?(?=.{3,32}$)[a-z0-9._]*\d{2,}$/i;
+
 export const DispatchProfileSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid().nullable().optional(),
@@ -51,7 +53,20 @@ export const DispatchProfileSchema = z.object({
   verified_by: z.enum(VerifiedBy).default('self'),
   affiliation: z.string().nullable().optional(),
   availability: z.boolean().nullable().optional(),
-  contact_signal: z.string().nullable().optional(),
+  contact_signal: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || SIGNAL_HANDLE_RE.test(v),
+      'Enter a Signal username like @name12 (3–32 chars; letters, numbers, _; must end with 2+ digits).',
+    )
+    // normalize to lowercase and ensure a single leading "@"
+    .transform((v) => {
+      if (!v) return v;
+      const u = v.replace(/^@/, '').toLowerCase();
+      return '@' + u;
+    }),
   contact_sms: z.string().nullable().optional(),
   coordination_zone: z.string().nullable().optional(),
   inserted_at: z.string().optional(), // timestamptz as ISO

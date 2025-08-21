@@ -5,8 +5,14 @@ import L from 'leaflet';
 import { useMemo, useRef, useCallback, useEffect, useState } from 'react';
 import type { FeatureCollection } from 'geojson';
 import CountyLayer, { SelectedCounty } from './CountyLayer.tsx';
-import { computeBounds, fitBoundsOnce, toggleCounty } from './utils.ts';
+import { fitBoundsOnce, toggleCounty } from './utils.ts';
 import GridOverlay from './GridOverlay.tsx';
+
+export function computeBounds(geojson?: FeatureCollection): L.LatLngBounds | null {
+  if (!geojson) return null;
+  const bounds = L.geoJSON(geojson).getBounds();
+  return bounds.isValid() ? bounds : null;
+}
 
 export type CountySelectMapProps = {
   geojson?: FeatureCollection;
@@ -37,7 +43,7 @@ export default function CountySelectMap({
   selected,
   onChange,
   onMapReady,
-  editor
+  editor,
 }: CountySelectMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const { center, zoom, initialBounds } = useMemo(() => {
@@ -48,10 +54,10 @@ export default function CountySelectMap({
   const [currentZoom, setCurrentZoom] = useState<number>(zoom);
 
   const handleToggleCounty = useCallback(
-    (county: SelectedCounty, countyBounds: L.LatLngBounds) => {
-      const next = toggleCounty(selected, county);   // <— add/remove only this one
+    (county: SelectedCounty, bounds: L.LatLngBounds) => {
+      const next = toggleCounty(selected, county);
       onChange(next);
-      fitBoundsOnce(mapRef.current, countyBounds, [24, 24]);
+      fitBoundsOnce(mapRef.current, bounds, [24, 24]);
     },
     [selected, onChange]
   );
@@ -72,7 +78,6 @@ export default function CountySelectMap({
         style={{ height: 500, width: '100%' }}
         zoomControl
         minZoom={2}
-        preferCanvas
         worldCopyJump
         whenReady={() => {
           if (initialBounds) fitBoundsOnce(mapRef.current, initialBounds, [12, 12]);
@@ -88,8 +93,6 @@ export default function CountySelectMap({
           attribution="&copy; OpenStreetMap"
         />
         <CountyLayer selected={selected} onToggleCounty={handleToggleCounty} />
-
-        {/* Only render the editor overlay when explicitly requested */}
         {editor?.county && (
           <GridOverlay
             gridSize={editor.gridSize ?? 10}
@@ -109,7 +112,6 @@ export default function CountySelectMap({
             onUpdateZones={() => { }}
           />
         ))}
-
       </MapContainer>
     </>
   );

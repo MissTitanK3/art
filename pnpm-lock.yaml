@@ -57,6 +57,9 @@ importers:
       '@types/leaflet':
         specifier: ^1.9.20
         version: 1.9.20
+      '@types/node':
+        specifier: ^20.19.9
+        version: 20.19.9
       '@types/react':
         specifier: ^19.1.9
         version: 19.1.9

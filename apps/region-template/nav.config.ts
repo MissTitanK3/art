@@ -20,13 +20,20 @@ export const navConfig: GlobalNavConfigInput = {
       href: '/',
     },
     {
+      label: 'Create',
+      icon: 'new',
+      children: [
+        { label: 'Rapid Response Request', href: '/team-req', roles: elevatedRoles },
+        { label: 'Community Aid Request', href: '/team-req', roles: elevatedRoles },
+      ],
+    },
+    {
       label: 'Dispatch',
       icon: 'radio',
       children: [
         { label: 'Dispatch Map', href: '/dispatches', roles: elevatedRoles },
-        { label: 'Team Request', href: '/team-req', roles: elevatedRoles },
-        { label: 'Watch', href: '/watch', roles: completeOnboarding },
-        { label: 'Schedules', href: '/schedules', roles: localAdmins },
+        { label: 'Community Watch', href: '/watch', roles: completeOnboarding },
+        { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
       ],
     },
     {
@@ -38,31 +45,30 @@ export const navConfig: GlobalNavConfigInput = {
       ],
     },
     {
-      label: 'Quick Reference',
+      label: 'Knowledge',
       icon: 'book',
       children: [
+        { label: 'Academy', href: '/academy' },
         { label: 'Intents', href: '/intents' },
         { label: 'Roles', href: '/roles' },
         { label: 'Impact', href: '/impact' },
       ],
     },
-    { label: 'Academy', href: '/academy', icon: 'graduation-cap' },
-    {
-      label: 'Signal Onboarding Group',
-      href: 'https://signal.group/#CjQKICDTHoywf-qxIszjCcAepvtYJWWzLuEgC0w7Akoun5btEhDAWr_VlbyhSIQqIeTmdQSM',
-      icon: 'link',
-    },
-    { label: 'Admin', href: '/admin', icon: 'shield', roles: regionAdmins },
   ],
   secondary: [
-    { label: 'My Profile', href: '/my-profile' },
     {
       label: 'Settings',
       icon: 'settings',
       children: [
+        { label: 'My Profile', href: '/my-profile' },
+        {
+          label: 'Signal Onboarding Group',
+          href: 'https://signal.group/#CjQKICDTHoywf-qxIszjCcAepvtYJWWzLuEgC0w7Akoun5btEhDAWr_VlbyhSIQqIeTmdQSM',
+        },
         { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
         { label: 'Settings', href: '/settings' },
         { label: 'Credential Card', href: '/credentials' },
+        { label: 'Admin', href: '/admin', roles: regionAdmins },
       ],
     },
   ],

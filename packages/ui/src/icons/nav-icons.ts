@@ -12,6 +12,7 @@ export const navIconMap = {
   book: L.Book,
   link: L.Link2,
   home: L.HomeIcon,
+  new: L.PlusCircle,
   // add more as needed
 } as const;
 

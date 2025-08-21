@@ -30,7 +30,7 @@ import { US_STATES } from "@workspace/ui/lib/constants/states";
 import {
   formSchema, nullToEmptyArray, nullToEmptyBlocks, nullToEmptyString, nullToFalse
 } from "@workspace/ui/types/form-helpers.ts";
-import { DispatchProfileSchema } from "@workspace/ui/types/dispatch-profile.ts";
+import { DispatchProfileSchema, SIGNAL_HANDLE_RE } from "@workspace/ui/types/dispatch-profile.ts";
 import { ImageComponent } from "@workspace/ui/types/image.ts";
 import { useImage } from "@workspace/ui/providers/ImageProvider.tsx";
 import { BasicImage } from "../../BasicImage.tsx";
@@ -100,7 +100,6 @@ export function ProfileForm({
   onSubmit,
   onDelete,
   onDirtyChange,
-  onGenerateKey,
   busy,
   disableDelete,
   ImageComponent: ImageProp,
@@ -206,8 +205,26 @@ export function ProfileForm({
                 <FormItem>
                   <FormLabel>Signal (@username)</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 555-123-4567 or @handle" {...field} value={field.value ?? ""} />
+                    <Input
+                      placeholder="@handle.12"
+                      {...field}
+                      value={field.value ?? ""}
+                      onBlur={(e) => {
+                        field.onBlur();
+                        // lightweight normalize on blur using the same schema piece
+                        const v = e.currentTarget.value;
+                        const ok = SIGNAL_HANDLE_RE.test(v);
+                        if (ok) field.onChange("@" + v.replace(/^@/, "").toLowerCase());
+                      }}
+                      inputMode="text"
+                      autoComplete="username"
+                      spellCheck={false}
+                      // optional: native constraint to help users before submit
+                      pattern={SIGNAL_HANDLE_RE.source}
+                      title="3–32 chars; letters, numbers, _; must end with 2+ digits following a period"
+                    />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

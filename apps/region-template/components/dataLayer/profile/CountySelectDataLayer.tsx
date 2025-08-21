@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic';
 import { Button } from '@workspace/ui/components/button';
 import { useProfileStore } from '@workspace/store/profileStore';
 import type { CountySelectMapProps } from '@workspace/ui/components/maps/CountySelectMap';
+import { CountyProps } from '@workspace/ui/components/maps/CountyLayer';
+import { GEO_TO_FIPS } from '@workspace/ui/components/maps/utils';
 
 export interface SelectedCounty {
   GEO_ID: string;
@@ -30,15 +32,21 @@ export function CountySelectDataLayer() {
   const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(null);
   const [isSaving, startSaving] = React.useTransition();
 
-  // hydrate from store (unchanged from your version)
+
+  // --- NEW: protect against hydration clobbering user clicks
+  const didHydrateRef = React.useRef(false);
+  const didUserInteractRef = React.useRef(false);
+
+  // hydrate from store (unchanged logic, but guarded + merged)
   React.useEffect(() => {
     let alive = true;
+
     (async () => {
       try {
         const res = await fetch('/us-counties.json', { cache: 'force-cache' });
         const data = await res.json() as {
           type: 'FeatureCollection';
-          features: Array<{ properties: { GEO_ID: string; STATE: string; COUNTY: string; NAME: string } }>;
+          features: Array<{ properties: CountyProps }>;
         };
 
         const byFips = new Map<string, SelectedCounty>();
@@ -54,36 +62,91 @@ export function CountySelectDataLayer() {
           const c = byFips.get(fips);
           if (c) hydrated.push(c);
         }
-        setSelectedCounties(hydrated);
+
+        // Only apply once, and never overwrite if user already interacted
+        if (!didHydrateRef.current) {
+          setSelectedCounties(prev => {
+            const seen = new Set(prev.map(c => c.GEO_ID));
+            const merged = [...prev];
+            for (const fips of profile?.operating_counties ?? []) {
+              const c = byFips.get(fips);
+              if (c && !seen.has(c.GEO_ID)) merged.push(c);
+            }
+            return merged;
+          });
+          didHydrateRef.current = true;
+        }
+
       } catch {
-        setSelectedCounties([]);
+        if (!alive) return;
+        // don't clobber existing selection on error either
+        if (!didHydrateRef.current) {
+          didHydrateRef.current = true;
+        }
       }
     })();
+
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.operating_counties?.join('|')]);
 
-  // map -> parent (controlled)
-  const handleMapChange = React.useCallback((list: SelectedCounty[]) => {
-    setSelectedCounties(list);                      // list can hold many
-    setActiveCounty(prev =>
-      prev && !list.some(c => c.GEO_ID === prev.GEO_ID) ? null : prev
-    );
-  }, []);
+  // --- helper: reconcile prev selection with possibly-delta "next"
+  const reconcileSelection = React.useCallback(
+    (prev: SelectedCounty[], next: SelectedCounty[]) => {
+      if (next.length === 0) {
+        // explicit clear from the map
+        return [];
+      }
+
+      if (next.length === 1) {
+        // always treat single as a toggle delta
+        const item = next[0];
+        if (!item) return prev;
+        const idx = prev.findIndex((c) => c.GEO_ID === item.GEO_ID);
+        return idx >= 0 ? prev.filter((c) => c.GEO_ID !== item.GEO_ID) : [...prev, item];
+      }
+
+      // length >= 2 => authoritative list from the map
+      // (de-dupe defensively)
+      const seen = new Set<string>();
+      const authoritative = next.filter((c) => {
+        if (seen.has(c.GEO_ID)) return false;
+        seen.add(c.GEO_ID);
+        return true;
+      });
+      return authoritative;
+    },
+    []
+  );
+
+
+  // map -> parent (controlled, but resilient to delta emissions)
+  const handleMapChange = React.useCallback((next: SelectedCounty[]) => {
+    didUserInteractRef.current = true;
+    setSelectedCounties((prev) => {
+      const merged = reconcileSelection(prev, next);
+      setActiveCounty((prevActive) =>
+        prevActive && !merged.some((c) => c.GEO_ID === prevActive.GEO_ID) ? null : prevActive
+      );
+      return merged;
+    });
+  }, [reconcileSelection]);
 
   // list actions
   const toggleEditCounty = React.useCallback((county: SelectedCounty) => {
+    didUserInteractRef.current = true;
     setActiveCounty(prev => (prev?.GEO_ID === county.GEO_ID ? null : county));
   }, []);
 
   const handleUpdateZones = React.useCallback((geoId: string, zones: number[]) => {
-    // update zones immutably
+    didUserInteractRef.current = true;
     setSelectedCounties(prev =>
       prev.map(c => (c.GEO_ID === geoId ? { ...c, ZONE: zones } : c))
     );
   }, []);
 
   const handleRemoveCounty = React.useCallback((geoId: string) => {
+    didUserInteractRef.current = true;
     setSelectedCounties(prev => prev.filter(c => c.GEO_ID !== geoId));
     setActiveCounty(prev => (prev?.GEO_ID === geoId ? null : prev));
   }, []);
@@ -104,52 +167,46 @@ export function CountySelectDataLayer() {
             {/* Coverage details */}
             {Array.isArray(county.ZONE) && county.ZONE.length > 0 && (
               <div className="text-xs text-blue-600">
-                Partial coverage: {county.ZONE.length} zone
-                {county.ZONE.length > 1 ? "s" : ""}
+                Partial coverage: {county.ZONE.length} zone{county.ZONE.length > 1 ? "s" : ""}
               </div>
             )}
             <div className="flex items-center gap-3 mt-3">
-              <Button
-                onClick={() => toggleEditCounty(county)}
-              >
-                {activeCounty?.GEO_ID === county.GEO_ID
-                  ? "Done Editing"
-                  : "Edit Zones"}
+              <Button onClick={() => toggleEditCounty(county)}>
+                {activeCounty?.GEO_ID === county.GEO_ID ? "Done Editing" : "Edit Zones"}
               </Button>
               <Button
-                onClick={() =>
-                  setSelectedCounties((prev) =>
-                    prev.filter((c) => c.GEO_ID !== county.GEO_ID)
-                  )
-                }
-                variant='destructive'
+                onClick={() => handleRemoveCounty(county.GEO_ID)}
+                variant="destructive"
               >
                 Remove
               </Button>
             </div>
           </div>
-
         </div>
-
       )),
-    [selectedCounties, activeCounty, toggleEditCounty, handleRemoveCounty],
+    [selectedCounties, activeCounty, toggleEditCounty, handleRemoveCounty]
   );
 
-  // save button (unchanged)
-  const handleDone = React.useCallback((e?: React.MouseEvent) => {
+  const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
     e?.preventDefault();
-    startSaving(() => {
-      const toFips = (geoId: string) => {
-        const m = /^0500000US(\d{2})(\d{3})$/.exec(geoId);
-        return m ? `${m[1]}${m[2]}` : null;
-      };
-      const fipsList = selectedCounties
-        .map(c => toFips(c.GEO_ID))
-        .filter((v): v is string => !!v);
-      setOperating(fipsList);
-      router.push('/my-profile');
-    });
+    didUserInteractRef.current = true;
+
+    const fipsList = selectedCounties
+      .map(c => GEO_TO_FIPS(c.GEO_ID))
+      .filter((v): v is string => !!v)
+      .sort();
+
+    // Flush to store
+    setOperating(fipsList);
+
+    // 🔑 wait for persist
+    await new Promise(r => setTimeout(r, 50));
+
+    router.push('/my-profile');
   }, [router, selectedCounties, setOperating]);
+
+
+
 
   if (!profile) {
     return (
@@ -179,19 +236,17 @@ export function CountySelectDataLayer() {
         </div>
       </div>
 
-      {/* Map: controlled list + optional editor */}
       <CountySelectMap
         selected={selectedCounties}
         onChange={handleMapChange}
         editor={activeCounty ? {
           county: activeCounty,
-          gridSize: 20,         // tweak as you like
+          gridSize: 20,
           clipEdges: true,
           onUpdateZones: handleUpdateZones,
         } : undefined}
       />
 
-      {/* List under the map */}
       <div className="space-y-3">
         {selectedCounties.length === 0 ? (
           <p className="text-sm text-muted-foreground">
