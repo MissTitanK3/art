@@ -1,34 +1,35 @@
 'use client'
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@workspace/ui/components/sheet";
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@workspace/ui/components/card'
+import { Button } from '@workspace/ui/components/button'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from '@workspace/ui/components/sheet'
+import { ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 
-import { useState } from "react";
-import { EditShiftForm } from "./EditShiftForm.tsx";
-import { Shift } from "./shifts.ts";
-import { Separator } from "../../separator.tsx";
+import { EditShiftForm } from './EditShiftForm.tsx'
+import { Shift } from '@workspace/store/types/pod.ts'
+import { Separator } from '../../separator.tsx'
+import { fmtRange } from '@workspace/store/utils/form-helpers'
+import { usePodsStore } from "@workspace/store/podStore";
 
-function fmtRange(startISO: string, endISO: string) {
-  const s = new Date(startISO);
-  const e = new Date(endISO);
-  // keep it compact; tweak to taste
-  return `${s.toLocaleString()} → ${e.toLocaleString()}`;
-}
-
-export default function PodShiftsList({
-  podShifts,
-  updateShift,
-  removeShift,
-}: {
-  podShifts: Shift[];
-  updateShift: (id: string, data: Partial<Shift>) => void;
-  removeShift: (id: string) => void;
-}) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const editing = podShifts.find((s) => s.id === editingId) ?? null;
-  const now = Date.now();
+export default function PodShiftsList({ podShifts }: { podShifts: Shift[] }) {
+  const { updateShift, removeShift } = usePodsStore() // ⬅️ pull from store
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const editing = podShifts.find((s) => s.id === editingId) ?? null
+  const now = Date.now()
 
   const filtered = podShifts.filter((s) => new Date(s.end).getTime() >= now)
 
@@ -41,26 +42,23 @@ export default function PodShiftsList({
       <div className="grid gap-3">
         {filtered
           .sort((a, b) => {
-            const aStart = new Date(a.start).getTime();
-            const bStart = new Date(b.start).getTime();
-            const aEnd = new Date(a.end).getTime();
-            const bEnd = new Date(b.end).getTime();
+            const aStart = new Date(a.start).getTime()
+            const bStart = new Date(b.start).getTime()
+            const aEnd = new Date(a.end).getTime()
+            const bEnd = new Date(b.end).getTime()
 
-            const aActive = aStart <= now && now <= aEnd;
-            const bActive = bStart <= now && now <= bEnd;
+            const aActive = aStart <= now && now <= aEnd
+            const bActive = bStart <= now && now <= bEnd
 
-            // Active shifts come first
-            if (aActive && !bActive) return -1;
-            if (bActive && !aActive) return 1;
-
-            // Then sort by soonest start
-            return aStart - bStart;
+            if (aActive && !bActive) return -1
+            if (bActive && !aActive) return 1
+            return aStart - bStart
           })
           .map((s) => (
             <Card key={s.id} className="rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-base font-semibold">
-                  {s.label || "Unnamed shift"}
+                  {s.label || 'Unnamed shift'}
                 </CardTitle>
               </CardHeader>
               <Separator />
@@ -68,7 +66,7 @@ export default function PodShiftsList({
               <CardContent className="text-sm">
                 <div className="text-muted-foreground">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span>📍 {s.location || "—"}</span>
+                    <span>📍 {s.location || '—'}</span>
                     <span>•</span>
                     <span>👥 {s.headcount} needed</span>
                   </div>
@@ -115,9 +113,12 @@ export default function PodShiftsList({
           ))}
       </div>
 
-      {/* Single controlled Sheet for editing */}
+      {/* Editing Sheet */}
       <Sheet open={!!editing} onOpenChange={(o) => !o && setEditingId(null)}>
-        <SheetContent side="right" className="w-full sm:w-[520px] max-w-none p-0 flex flex-col">
+        <SheetContent
+          side="right"
+          className="w-full sm:w-[520px] max-w-none p-0 flex flex-col"
+        >
           <div className="border-b px-4 py-3">
             <SheetHeader>
               <SheetTitle>Edit Shift</SheetTitle>
@@ -130,8 +131,8 @@ export default function PodShiftsList({
                 key={editing.id}
                 initial={editing}
                 onSave={(vals) => {
-                  updateShift(editing.id, vals);
-                  setEditingId(null);
+                  updateShift(editing.id, vals)
+                  setEditingId(null)
                 }}
               />
             )}
@@ -148,5 +149,5 @@ export default function PodShiftsList({
         </SheetContent>
       </Sheet>
     </>
-  );
+  )
 }

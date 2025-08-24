@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AccessRoles, VerifiedBy } from '../lib/constants/roles.ts';
+import { AccessRoles, VerifiedBy } from './roles.ts';
 
 /** DB-enforced enums */
 
@@ -79,3 +79,10 @@ export const DispatchProfileSchema = z.object({
 });
 
 export type DispatchProfile = z.infer<typeof DispatchProfileSchema>;
+
+// packages/types/profile.ts
+export interface ProfileAdapter {
+  loadProfile(userId: string): Promise<any | null>;
+  saveProfile(profile: any): Promise<void>;
+  deleteProfile(userId: string): Promise<void>;
+}

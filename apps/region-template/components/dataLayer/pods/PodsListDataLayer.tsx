@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import PodCard from "@workspace/ui/components/server/pods/PodCard";
-import { usePodStore } from "@workspace/store/podStore";
+import { usePodsStore } from "@workspace/store/podStore";
 
 export default function PodsListDataLayer() {
-  const pods = usePodStore((s) => s.pods);
+  const pods = usePodsStore((s) => s.pods);
 
   return (
     <section>

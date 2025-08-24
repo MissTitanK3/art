@@ -1,8 +1,7 @@
-// packages/ui/src/components/maps/utils.ts
 'use client';
 
 import { useEffect } from 'react';
-import { useMap } from 'react-leaflet';
+import { useMap, useMapEvents } from 'react-leaflet';
 import type {
   GeoJsonObject,
   Feature,
@@ -17,7 +16,8 @@ import type {
   MultiPolygon,
   Position,
 } from 'geojson';
-import type { SelectedCounty } from './CountyLayer.tsx';
+import type { SelectedCounty } from '@workspace/store/types/maps.ts';
+import * as L from 'leaflet';
 
 /** ---------- Pure helpers (no Leaflet import) ---------- **/
 
@@ -106,8 +106,9 @@ function boundsOfGeometry(geom: Geometry, acc: BoundsAcc) {
 }
 
 /** Compute bounds from any GeoJSON object (pure) */
-export function computeBounds(geojson?: GeoJsonObject): BoundsTuple | null {
+export function computeBounds(geojson?: GeoJsonObject): L.LatLngBounds | null {
   if (!geojson) return null;
+
   const acc = accInit();
 
   if ((geojson as FeatureCollection).type === 'FeatureCollection') {
@@ -121,7 +122,14 @@ export function computeBounds(geojson?: GeoJsonObject): BoundsTuple | null {
     boundsOfGeometry(geojson as Geometry, acc);
   }
 
-  return accToTuple(acc);
+  const tuple = accToTuple(acc);
+  if (!tuple) return null;
+
+  const [south, west, north, east] = tuple;
+  return L.latLngBounds([
+    [south, west],
+    [north, east],
+  ] as L.LatLngBoundsLiteral);
 }
 
 /** Fit bounds once (accepts our tuple or a Leaflet LatLngBounds-like object) */
@@ -217,3 +225,20 @@ export const GEO_TO_FIPS = (geoId: string) => {
   const m = /^0500000US(\d{2})(\d{3})$/.exec(geoId);
   return m ? `${m[1]}${m[2]}` : null;
 };
+
+// export function computeBounds(geojson?: FeatureCollection): L.LatLngBounds | null {
+//   if (!geojson) return null;
+//   const bounds = L.geoJSON(geojson).getBounds();
+//   return bounds.isValid() ? bounds : null;
+// }
+
+export function ZoomWatcher({ onZoom }: { onZoom: (z: number) => void }) {
+  const map = useMapEvents({
+    zoomend: () => onZoom(map.getZoom()),
+  });
+  // set once on mount, so UI is correct even before the first zoom
+  useEffect(() => {
+    onZoom(map.getZoom());
+  }, [map, onZoom]);
+  return null;
+}

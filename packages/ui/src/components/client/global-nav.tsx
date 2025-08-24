@@ -31,43 +31,18 @@ import {
 import { Badge } from "@workspace/ui/components/badge";
 import { Separator } from "@workspace/ui/components/separator";
 import { Menu, ChevronRight } from "lucide-react";
-import { GlobalNavConfig, NavItem, NavRole } from "@workspace/ui/types/nav.js";
 import ThemeToggle from "./ThemeToggle.tsx";
-
-export type LinkLikeProps = {
-  href?: string;
-  className?: string;
-  children?: React.ReactNode;
-  target?: string;
-  rel?: string;
-  onClick?: React.MouseEventHandler;
-};
-export type LinkLike = React.ComponentType<LinkLikeProps>;
-
-/* ---------- Helpers ---------- */
-function isActive(href: string | undefined, pathname: string) {
-  if (!href) return false;
-  try {
-    const u = new URL(href, "http://local");
-    return pathname === u.pathname || pathname.startsWith(u.pathname + "/");
-  } catch {
-    return pathname === href || pathname.startsWith(href + "/");
-  }
-}
-function canSee(item: NavItem, role?: NavRole) {
-  if (!item.roles?.length) return true;
-  if (!role) return false;
-  return item.roles.includes(role);
-}
+import { LinkLike } from '@workspace/store/types/global.ts'
+import { canSee, GlobalNavConfig, isActive, NavItem, NavRole } from '@workspace/store/utils/nav'
 
 /* ---------- Public API ---------- */
-export type GlobalNavCoreProps = {
+export interface GlobalNavCoreProps {
   config: GlobalNavConfig;
   role?: NavRole;
-  pathname: string; // injected by framework adapter
-  LinkComponent: LinkLike; // injected by framework adapter (e.g. next/link)
+  pathname: string;             // injected by framework adapter
+  LinkComponent: LinkLike;      // injected by framework adapter (e.g. next/link)
   rightSlot?: React.ReactNode;
-};
+}
 
 export function GlobalNavCore({
   config,

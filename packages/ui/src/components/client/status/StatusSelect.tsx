@@ -1,13 +1,12 @@
 // components/status/StatusSelect.tsx
 "use client";
 
-import * as React from "react";
-import { STATUS_BY_VALUE, STATUS_OPTIONS, StatusValue } from "./options.ts";
+import { STATUS_BY_VALUE, STATUS_OPTIONS, StatusValue } from "@workspace/store/types/status.ts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../select.tsx";
-import { cn } from "@workspace/ui/lib/utils.ts";
+import { cn } from "../../../lib/utils.ts";
+import { Dot } from "../../server/Dot.tsx";
 
-
-export type StatusSelectProps = {
+export interface StatusSelectProps {
   id?: string;
   value?: StatusValue;
   defaultValue?: StatusValue;
@@ -16,7 +15,7 @@ export type StatusSelectProps = {
   className?: string;
   error?: boolean;         // toggles ring
   disabled?: boolean;
-};
+}
 
 export function StatusSelect({
   id,
@@ -46,8 +45,10 @@ export function StatusSelect({
         {/* If nothing selected, SelectValue shows placeholder; else we custom-render */}
         {current ? (
           <span className="inline-flex items-center gap-2">
-            <span className={cn("h-2.5 w-2.5 rounded-full", current.dotClass)} />
-            {current.label}
+            <span className="inline-flex items-center gap-2">
+              <Dot color={current.dotClass} />
+              {current.label}
+            </span>
           </span>
         ) : (
           <SelectValue placeholder={placeholder} />
@@ -58,8 +59,10 @@ export function StatusSelect({
         {STATUS_OPTIONS.map((opt) => (
           <SelectItem key={opt.value} value={opt.value}>
             <span className="inline-flex items-center gap-2">
-              <span className={cn("h-2.5 w-2.5 rounded-full", opt.dotClass)} />
-              {opt.label}
+              <span className="inline-flex items-center gap-2">
+                <Dot color={opt.dotClass} />
+                {opt.label}
+              </span>
             </span>
           </SelectItem>
         ))}

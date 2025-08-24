@@ -5,7 +5,12 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { SubmitHandler } from "react-hook-form";
 import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { TagsInput } from "@workspace/ui/components/client/profile/TagsInput";
@@ -14,26 +19,46 @@ import { WeeklyAvailabilityEditor } from "@workspace/ui/components/client/profil
 import { Button } from "@workspace/ui/components/button";
 import { Save, Trash2 } from "lucide-react";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from "@workspace/ui/components/alert-dialog";
 import RoleSelector from "@workspace/ui/components/client/roles/RoleSelector";
 import { RiskSheet } from "@workspace/ui/components/client/profile/RiskSheet";
 import { DumbField } from "@workspace/ui/components/server/DumbField";
+
 import {
-  AccessRoleDescriptions, FIELD_ROLE_OPTIONS, roleLabel, VerifiedByDescriptions, verifierLabel
-} from "@workspace/ui/lib/constants/roles";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@workspace/ui/components/select";
 import { US_STATES } from "@workspace/ui/lib/constants/states";
-import {
-  formSchema, nullToEmptyArray, nullToEmptyBlocks, nullToEmptyString, nullToFalse
-} from "@workspace/ui/types/form-helpers.ts";
-import { DispatchProfileSchema, SIGNAL_HANDLE_RE } from "@workspace/ui/types/dispatch-profile.ts";
-import { ImageComponent } from "@workspace/ui/types/image.ts";
-import { useImage } from "@workspace/ui/providers/ImageProvider.tsx";
+
 import { BasicImage } from "../../BasicImage.tsx";
+import { DispatchProfileSchema, SIGNAL_HANDLE_RE } from '@workspace/store/types/profile.ts'
+import {
+  formSchema,
+  nullToEmptyArray,
+  nullToEmptyBlocks,
+  nullToEmptyString,
+  nullToFalse
+} from '@workspace/store/utils/form-helpers'
+import { ImageComponent } from '@workspace/store/utils/image'
+import {
+  AccessRoleDescriptions,
+  FIELD_ROLE_OPTIONS, FieldRole, roleLabel,
+  VerifiedByDescriptions,
+  verifierLabel
+} from "@workspace/store/types/roles.ts";
+import { useImage } from "../../../providers/ImageProvider.tsx";
 
 
 /* ------------------------------------------
@@ -69,7 +94,7 @@ const {
     contact_sms: nullToEmptyString(),
     coordination_zone: nullToEmptyString(),
     city: nullToEmptyString(),
-    field_roles: nullToEmptyArray(z.enum(FIELD_ROLE_OPTIONS)),
+    field_roles: z.array(z.enum(FIELD_ROLE_OPTIONS)).default([]),
     state: z.string().optional().default(""),
     weekly_availability: nullToEmptyBlocks(),
     availability: nullToFalse(),
@@ -83,17 +108,20 @@ export type ProfileFormOutput = z.output<typeof FormSchema>;
 
 type DeleteResult = { ok: boolean; err?: string };
 
-export type ProfileFormProps = {
+export interface ProfileFormProps {
   initial: Partial<ProfileFormInput> & { id?: string };
-  onSubmit: (values: ProfileFormOutput) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
+  onSubmit: (
+    values: ProfileFormOutput
+  ) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
   onDelete: () => Promise<DeleteResult> | DeleteResult;
   onDirtyChange?: (dirty: boolean) => void;
   onGenerateKey?: () => Promise<{ publicPem: string; privatePem: string }>;
-  busy?: boolean;             // optional external busy flag
-  disableDelete?: boolean;    // optional guard
+  busy?: boolean;
+  disableDelete?: boolean;
   ImageComponent?: ImageComponent;
-  ImageUrl?: string
-};
+  ImageUrl?: string;
+}
+
 
 export function ProfileForm({
   initial,
@@ -305,8 +333,7 @@ export function ProfileForm({
             name="field_roles"
             render={({ field }) => (
               <FormItem>
-                {/* <FormLabel>Field roles</FormLabel> */}
-                <RoleSelector selected={field.value ?? []} onChange={field.onChange} />
+                <RoleSelector selected={field.value ?? [] as FieldRole[]} onChange={field.onChange} />
                 <FormMessage />
               </FormItem>
             )}

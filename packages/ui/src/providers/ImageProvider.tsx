@@ -1,8 +1,8 @@
 // packages/ui/src/providers/ImageProvider.tsx
 "use client";
 import * as React from "react";
-import { ImageComponent } from "../types/image.ts";
 import { BasicImage } from "../components/BasicImage.tsx";
+import { ImageComponent } from "@workspace/store/utils/image";
 
 const ImageContext = React.createContext<ImageComponent>(BasicImage);
 export const useImage = () => React.useContext(ImageContext);

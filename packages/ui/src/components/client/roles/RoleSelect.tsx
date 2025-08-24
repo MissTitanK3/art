@@ -1,13 +1,13 @@
 // components/role/RoleSelect.tsx
 "use client";
 
-import * as React from "react";
-import { ROLE_BY_VALUE, ROLE_OPTIONS, RoleValue } from "./options.ts";
+import { ROLE_BY_VALUE, ROLE_OPTIONS, RoleValue } from "@workspace/store/types/roles.ts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../select.tsx";
-import { cn } from "@workspace/ui/lib/utils.ts";
+import { cn } from "../../../lib/utils.ts";
+import { Dot } from "../../server/Dot.tsx";
 
 
-export type RoleSelectProps = {
+export interface RoleSelectProps {
   id?: string;
   value?: RoleValue;
   defaultValue?: RoleValue;
@@ -17,7 +17,7 @@ export type RoleSelectProps = {
   error?: boolean;
   disabled?: boolean;
   showDescriptions?: boolean; // optional helper text in menu
-};
+}
 
 export function RoleSelect({
   id,
@@ -46,8 +46,10 @@ export function RoleSelect({
       >
         {current ? (
           <span className="inline-flex items-center gap-2">
-            <span className={cn("h-2.5 w-2.5 rounded-full", current.dotClass)} />
-            {current.label}
+            <span className="inline-flex items-center gap-2">
+              <Dot color={current.dotClass} />
+              {current.label}
+            </span>
           </span>
         ) : (
           <SelectValue placeholder={placeholder} />
@@ -58,9 +60,11 @@ export function RoleSelect({
         {ROLE_OPTIONS.map((opt) => (
           <SelectItem key={opt.value} value={opt.value}>
             <span className="inline-flex items-center gap-2">
-              <span className={cn("h-2.5 w-2.5 rounded-full", opt.dotClass)} />
               <span className="flex flex-col">
-                <span>{opt.label}</span>
+                <span className="inline-flex items-center gap-2">
+                  <Dot color={opt.dotClass} />
+                  {opt.label}
+                </span>
                 {showDescriptions && opt.description && (
                   <span className="text-xs text-muted-foreground">{opt.description}</span>
                 )}

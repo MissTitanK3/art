@@ -1,11 +1,19 @@
 // apps/region-template/nav.config.ts
+// import {
+//   completeOnboarding,
+//   elevatedRoles,
+//   localAdmins,
+//   regionAdmins,
+//   type GlobalNavConfigInput,
+// } from '@workspace/ui/types/nav';
+
 import {
   completeOnboarding,
   elevatedRoles,
+  GlobalNavConfigInput,
   localAdmins,
   regionAdmins,
-  type GlobalNavConfigInput,
-} from '@workspace/ui/types/nav';
+} from '@workspace/store/utils/nav';
 
 export const navConfig: GlobalNavConfigInput = {
   brand: {

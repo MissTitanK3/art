@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import NextImage from "next/image";
-import { ImageComponent } from "@workspace/ui/types/image";
+import { ImageComponent } from "@workspace/store/utils/image";
 
 export const NextImageAdapter: ImageComponent = ({
   src,

@@ -4,22 +4,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GeoJSON, useMapEvents } from 'react-leaflet';
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 import L from 'leaflet';
+import { CountyProps, SelectedCounty } from '@workspace/store/types/maps.ts'
 
-export interface CountyProps {
-  GEO_ID: string;
-  STATE: string;
-  COUNTY: string;
-  NAME: string;
-  LSAD: string;
-  CENSUSAREA: number;
-}
 
-export type SelectedCounty = {
-  GEO_ID: string;
-  NAME: string;
-  STATE: string;   // 2-digit FIPS
-  ZONE: number[];  // grid cells selected inside the county
-};
 
 interface FeatureLayer extends L.Polygon {
   feature?: Feature<Polygon | MultiPolygon, CountyProps>;

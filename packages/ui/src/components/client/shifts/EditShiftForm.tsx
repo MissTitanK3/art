@@ -3,14 +3,8 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { Shift, ShiftFormInput, ShiftFormOutput, shiftSchema } from "./shifts.ts";
-
-
-function toLocalInputValue(iso: string) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toISOString().slice(0, 16);
-}
+import { Shift, ShiftFormInput, ShiftFormOutput, shiftSchema } from "@workspace/store/types/pod.ts";
+import { toLocalInputValue } from "@workspace/store/utils/form-helpers";
 
 export function EditShiftForm({
   initial,

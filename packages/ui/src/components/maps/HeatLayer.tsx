@@ -4,7 +4,7 @@ import 'leaflet.heat' // IMPORTANT: side-effect import registers L.heatLayer
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { useEffect } from 'react'
-import { PublicReport } from './LeafletMapImpl.tsx'
+import { PublicReport } from '@workspace/store/types/maps.ts'
 
 function weightByRecency(tISO: string, now = Date.now()) {
   // 0..1 weight, fading over 24h (tweak as desired)

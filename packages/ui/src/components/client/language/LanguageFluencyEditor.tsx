@@ -1,8 +1,8 @@
 // components/LanguageFluencyEditor.tsx
 "use client";
 
+import { NormalizedLanguage } from "@workspace/store/types/language.ts";
 import * as React from "react";
-import { NormalizedLanguage } from "./LanguagePicker.tsx";
 
 type Props = {
   value: NormalizedLanguage[];

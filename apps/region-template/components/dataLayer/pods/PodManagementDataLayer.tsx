@@ -22,13 +22,15 @@ import {
 } from "@workspace/ui/components/select";
 import { ExternalLink, ArrowLeft, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { Channel, usePodStore } from "@workspace/store/podStore";
+import { usePodsStore } from "@workspace/store/podStore";
+import { Channel } from "@workspace/store/types/pod.ts";
 
+// Schema uses new channels model
 const schema = z.object({
   name: z.string().min(2).max(60),
   area: z.string().min(2),
   slug: z.string().min(6).regex(/^pod-[a-z0-9-]+$/),
-  channel: z.enum(["Signal", "Matrix", "LoRa"]),
+  channelType: z.enum(["Signal", "Matrix", "LoRa"]),
   channelLink: z
     .string()
     .url("Must be a valid URL")
@@ -37,23 +39,25 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-const channels: Channel[] = ["Signal", "Matrix", "LoRa"];
+const channelTypes: Channel["type"][] = ["Signal", "Matrix", "LoRa"];
 
 export default function PodManagementDataLayer() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id ?? "");
 
-  const { pods, addPod, updatePod, removePod } = usePodStore();
+  const { pods, addPod, updatePod, removePod } = usePodsStore();
 
   const existing = pods.find((p) => p.slug === id) ?? {
     id: crypto.randomUUID(),
     slug: id.startsWith("pod-") ? id : `pod-${id}`,
     name: "",
     area: "",
-    channel: "Signal" as Channel,
-    channelLink: "",
+    channels: [{ type: "Signal" as Channel["type"], link: "" }],
+    team: [],
   };
+
+  const primaryChannel = existing.channels[0];
 
   const {
     register,
@@ -67,8 +71,8 @@ export default function PodManagementDataLayer() {
       name: existing.name,
       area: existing.area,
       slug: existing.slug,
-      channel: existing.channel,
-      channelLink: existing.channelLink ?? "",
+      channelType: primaryChannel?.type ?? "Signal",
+      channelLink: primaryChannel?.link ?? "",
     },
     mode: "onChange",
   });
@@ -84,10 +88,21 @@ export default function PodManagementDataLayer() {
   }, [slug, setValue]);
 
   const onSubmit = (data: FormValues) => {
+    const updatedChannels: Channel[] = [
+      {
+        type: data.channelType,
+        link: data.channelLink,
+      },
+    ];
+
+    const patch = { ...data, channels: updatedChannels };
+    delete (patch as any).channelType;
+    delete (patch as any).channelLink;
+
     if (pods.find((p) => p.id === existing.id)) {
-      updatePod(existing.id, data);
+      updatePod(existing.id, patch);
     } else {
-      addPod({ ...existing, ...data });
+      addPod({ ...existing, ...patch });
     }
     router.push("/pods");
   };
@@ -112,16 +127,22 @@ export default function PodManagementDataLayer() {
       </div>
 
       <p className="mt-1 text-sm text-muted-foreground">
-        Edit pod details and recruiting link. Slug is public and must start with <span className="font-mono">pod-</span>.
+        Edit pod details and recruiting link. Slug is public and must start with{" "}
+        <span className="font-mono">pod-</span>.
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-4 grid gap-6 pb-5 md:pb-0">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="mt-4 grid gap-6 pb-5 md:pb-0"
+      >
         <Card className="grid gap-4 p-3 sm:p-4">
           {/* Name */}
           <div className="grid gap-1">
             <Label htmlFor="pod-name">Pod Name</Label>
             <Input id="pod-name" {...register("name")} />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name.message}</p>
+            )}
           </div>
 
           {/* Area */}
@@ -134,7 +155,9 @@ export default function PodManagementDataLayer() {
               aria-invalid={!!errors.area}
               className={cn("w-full", errors.area && "ring-1 ring-destructive")}
             />
-            {errors.area && <p className="text-xs text-destructive">{errors.area.message}</p>}
+            {errors.area && (
+              <p className="text-xs text-destructive">{errors.area.message}</p>
+            )}
           </div>
 
           {/* Slug */}
@@ -145,19 +168,26 @@ export default function PodManagementDataLayer() {
               placeholder="pod-downtown"
               {...register("slug")}
               aria-invalid={!!errors.slug}
-              className={cn("w-full font-mono", errors.slug && "ring-1 ring-destructive")}
+              className={cn(
+                "w-full font-mono",
+                errors.slug && "ring-1 ring-destructive"
+              )}
             />
-            <p className="text-xs text-muted-foreground">Used in URLs and cards. Lowercase, numbers, and hyphens only.</p>
-            {errors.slug && <p className="text-xs text-destructive">{errors.slug.message}</p>}
+            <p className="text-xs text-muted-foreground">
+              Used in URLs and cards. Lowercase, numbers, and hyphens only.
+            </p>
+            {errors.slug && (
+              <p className="text-xs text-destructive">{errors.slug.message}</p>
+            )}
           </div>
 
           {/* Channel */}
           <div className="grid gap-1">
             <Label htmlFor="pod-channel">Primary Channel</Label>
             <Select
-              value={watch("channel")}
+              value={watch("channelType")}
               onValueChange={(v) =>
-                setValue("channel", v as Channel, {
+                setValue("channelType", v as FormValues["channelType"], {
                   shouldValidate: true,
                   shouldDirty: true,
                 })
@@ -165,19 +195,26 @@ export default function PodManagementDataLayer() {
             >
               <SelectTrigger
                 id="pod-channel"
-                className={cn("w-[220px]", errors.channel && "ring-1 ring-destructive")}
+                className={cn(
+                  "w-[220px]",
+                  errors.channelType && "ring-1 ring-destructive"
+                )}
               >
                 <SelectValue placeholder="Select a channel…" />
               </SelectTrigger>
               <SelectContent>
-                {channels.map((c) => (
+                {channelTypes.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.channel && <p className="text-xs text-destructive">{errors.channel.message}</p>}
+            {errors.channelType && (
+              <p className="text-xs text-destructive">
+                {errors.channelType.message}
+              </p>
+            )}
           </div>
 
           {/* Channel Link */}
@@ -188,10 +225,15 @@ export default function PodManagementDataLayer() {
               placeholder="https://signal.group/#… or https://matrix.to/#/…"
               {...register("channelLink")}
               aria-invalid={!!errors.channelLink}
-              className={cn("w-full", errors.channelLink && "ring-1 ring-destructive")}
+              className={cn(
+                "w-full",
+                errors.channelLink && "ring-1 ring-destructive"
+              )}
             />
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="text-xs">Public</Badge>
+              <Badge variant="secondary" className="text-xs">
+                Public
+              </Badge>
               {channelLink ? (
                 <a
                   className="inline-flex items-center text-sm underline underline-offset-4"
@@ -206,13 +248,22 @@ export default function PodManagementDataLayer() {
                 <span className="text-xs text-muted-foreground">No link set</span>
               )}
             </div>
-            {errors.channelLink && <p className="text-xs text-destructive">{errors.channelLink.message}</p>}
+            {errors.channelLink && (
+              <p className="text-xs text-destructive">
+                {errors.channelLink.message}
+              </p>
+            )}
           </div>
         </Card>
 
         {/* Desktop toolbar */}
         <div className="hidden items-center gap-2 md:flex">
-          <Button type="button" variant="destructive" onClick={archive} title="Archive or deactivate this pod (no‑op)">
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={archive}
+            title="Archive or deactivate this pod (no-op)"
+          >
             <Trash2 className="mr-2 h-4 w-4" />
             Archive
           </Button>
@@ -231,13 +282,17 @@ export default function PodManagementDataLayer() {
         <Link href={`/pods/${slug}/roster`}>
           <Card className="p-4">
             <h2 className="font-semibold">Roster</h2>
-            <p className="text-sm text-muted-foreground">View/manage local roster (region‑siloed).</p>
+            <p className="text-sm text-muted-foreground">
+              View/manage local roster (region-siloed).
+            </p>
           </Card>
         </Link>
         <Link href={`/pods/${slug}/shifts`}>
           <Card className="p-4">
             <h2 className="font-semibold">Shifts</h2>
-            <p className="text-sm text-muted-foreground">Configure pod shifts and availability. (Placeholder)</p>
+            <p className="text-sm text-muted-foreground">
+              Configure pod shifts and availability. (Placeholder)
+            </p>
           </Card>
         </Link>
       </div>
@@ -255,7 +310,6 @@ export default function PodManagementDataLayer() {
           </Button>
         </div>
       </div>
-
     </section>
   );
 }

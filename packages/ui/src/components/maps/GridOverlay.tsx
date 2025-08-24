@@ -5,7 +5,7 @@ import { useMap, Polygon as LeafletPolygon } from 'react-leaflet';
 import L from 'leaflet';
 import * as turf from '@turf/turf';
 import type { BBox, Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
-import type { SelectedCounty } from './LeafletMapImpl.tsx';
+import type { SelectedCounty } from '@workspace/store/types/maps.ts';
 
 interface GridOverlayProps {
   gridSize: number; // higher = smaller hexes

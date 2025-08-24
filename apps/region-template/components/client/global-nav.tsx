@@ -3,9 +3,11 @@
 
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-import type { GlobalNavConfigInput, GlobalNavConfig, NavItemInput, NavItem, NavRole } from "@workspace/ui/types/nav";
-import { navIconMap } from "@workspace/ui/icons/nav-icons";
-import { GlobalNavCore, LinkLikeProps } from "@workspace/ui/components/client/global-nav";
+
+import { GlobalNavCore } from "@workspace/ui/components/client/global-nav";
+import { LinkLikeProps } from "@workspace/store/types/global.ts";
+import { GlobalNavConfig, GlobalNavConfigInput, NavItem, NavItemInput, NavRole } from "@workspace/store/utils/nav";
+import { navIconMap } from "@workspace/ui/components/icons/nav-icons";
 
 function LinkAdapter(props: LinkLikeProps) {
   const { href = "#", children, className, target, rel, onClick } = props;

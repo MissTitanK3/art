@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 import { Input } from "../../input.tsx";
 import { Button } from "../../button.tsx";
 import { Separator } from "../../separator.tsx";

@@ -1,4 +1,10 @@
-// types/trust.ts
+// packages/types/trust.ts
+export interface TrustAdapter {
+  listEntries(): Promise<any[]>;
+  addEntry(entry: any): Promise<void>;
+  removeEntry(id: string): Promise<void>;
+}
+
 export type TrustStatus = 'active' | 'inactive';
 export type TrustRole = 'regional_admin' | 'pod_leader' | 'trainer';
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCircle, Circle, ChevronDown, ChevronUp } from 'lucide-react';
-import { FIELD_ROLE_DETAILS, FIELD_ROLE_LABELS, FIELD_ROLE_OPTIONS, FieldRole } from './roles.ts';
+import { FIELD_ROLE_DETAILS, FIELD_ROLE_LABELS, FIELD_ROLE_OPTIONS, FieldRole } from '@workspace/store/types/roles.ts';
 
 export default function RoleSelector({
   selected = [],

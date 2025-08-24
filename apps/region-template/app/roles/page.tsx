@@ -1,5 +1,5 @@
+import { FIELD_ROLE_DETAILS, FIELD_ROLE_LABELS } from "@workspace/store/types/roles.ts";
 import { Card, CardContent } from "@workspace/ui/components/card";
-import { FIELD_ROLE_DETAILS, FIELD_ROLE_LABELS } from "@workspace/ui/components/client/roles/roles";
 
 const riskOrder = {
   high: 0,

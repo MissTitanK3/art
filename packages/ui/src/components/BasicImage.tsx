@@ -1,6 +1,6 @@
 "use client";
+import { ImageProps } from "@workspace/store/utils/image";
 import * as React from "react";
-import { ImageProps } from "../types/image.ts";
 
 export const BasicImage: React.FC<ImageProps> = ({
   src,

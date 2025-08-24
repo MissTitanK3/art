@@ -6,7 +6,7 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "@/components/client/global-nav";
-import type { NavRole } from "@workspace/ui/types/nav";
+import { NavRole } from "@workspace/store/utils/nav";
 
 // ---------- Metadata ----------
 export const metadata: Metadata = {

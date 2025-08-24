@@ -2,6 +2,8 @@
 
 import { z, ZodObject, ZodTypeAny, ZodEffects, ZodFirstPartyTypeKind } from 'zod';
 import { useForm, UseFormProps, UseFormReturn } from 'react-hook-form';
+import { NavItem, NavRole } from './nav.ts';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 /**
  * Example usage:
@@ -56,12 +58,14 @@ export const nullToFalse = () =>
     .transform((v) => v ?? false);
 
 /** Normalize nullable arrays into [] */
+// export const nullToEmptyArray = <T extends z.ZodTypeAny>(schema: T) =>
+//   z
+//     .array(schema as unknown as T)
+//     .nullable()
+//     .optional()
+//     .transform((v) => v ?? []);
 export const nullToEmptyArray = <T extends z.ZodTypeAny>(schema: T) =>
-  z
-    .array(schema as unknown as T)
-    .nullable()
-    .optional()
-    .transform((v) => v ?? []);
+  z.preprocess((val) => (val == null ? [] : val), z.array(schema));
 
 /** Normalize nullable objects into { blocks: {} } (example for weekly availability) */
 export const nullToEmptyBlocks = () =>
@@ -144,24 +148,60 @@ function extractFieldConfigs<T extends ZodObject<any>>(schema: T): FormFieldConf
  * - RHF-safe useForm() instance with correct types
  * - Field metadata for dynamic UI renderers
  */
+// export function formSchema<T extends ZodObject<any>>(schema: T) {
+//   const defaults = getDefaults(schema);
+//   const config = extractFieldConfigs(schema);
+
+//   return {
+//     schema,
+//     defaults,
+//     fields: config,
+//     input: null! as z.input<typeof schema>,
+//     output: null! as z.output<typeof schema>,
+//     useForm: (
+//       options?: UseFormProps<z.input<typeof schema>, any, z.output<typeof schema>>,
+//     ): UseFormReturn<z.input<typeof schema>, any, z.output<typeof schema>> => {
+//       return useForm<z.input<typeof schema>, any, z.output<typeof schema>>({
+//         mode: 'onChange',
+//         defaultValues: defaults,
+//         ...options,
+//       });
+//     },
+//   };
+// }
 export function formSchema<T extends ZodObject<any>>(schema: T) {
   const defaults = getDefaults(schema);
   const config = extractFieldConfigs(schema);
+
+  type Input = z.input<typeof schema>;
+  type Output = z.output<typeof schema>;
 
   return {
     schema,
     defaults,
     fields: config,
-    input: null! as z.input<typeof schema>,
-    output: null! as z.output<typeof schema>,
-    useForm: (
-      options?: UseFormProps<z.input<typeof schema>, any, z.output<typeof schema>>,
-    ): UseFormReturn<z.input<typeof schema>, any, z.output<typeof schema>> => {
-      return useForm<z.input<typeof schema>, any, z.output<typeof schema>>({
+    input: null! as Input,
+    output: null! as Output,
+    useForm: (options?: Omit<UseFormProps<Input, any, Output>, 'resolver'>): UseFormReturn<Input, any, Output> => {
+      return useForm<Input, any, Output>({
         mode: 'onChange',
+        resolver: zodResolver(schema), // 👈 force typing through schema
         defaultValues: defaults,
         ...options,
       });
     },
   };
+}
+
+export function toLocalInputValue(iso: string) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toISOString().slice(0, 16);
+}
+
+export function fmtRange(startISO: string, endISO: string) {
+  const s = new Date(startISO);
+  const e = new Date(endISO);
+  // keep it compact; tweak to taste
+  return `${s.toLocaleString()} → ${e.toLocaleString()}`;
 }

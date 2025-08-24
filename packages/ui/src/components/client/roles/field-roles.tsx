@@ -9,7 +9,7 @@ import {
   FIELD_ROLE_OPTIONS,
   FIELD_ROLE_TIERS,
   type FieldRole,
-} from "@workspace/ui/components/client/roles/roles.ts";
+} from "@workspace/store/types/roles.ts";
 import { cn } from "@workspace/ui/lib/utils";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -103,14 +103,14 @@ export function FieldRolesDisplay({
 
 /* ---------- Editor (no Command) ---------- */
 
-export type FieldRolesEditorProps = {
+export interface FieldRolesEditorProps {
   value: FieldRole[];
   onChange: (roles: FieldRole[]) => void;
   placeholder?: string;
   disabled?: boolean;
   maxSelections?: number;
   className?: string;
-};
+}
 
 export function FieldRolesEditor({
   value,
@@ -370,7 +370,6 @@ export function FieldRolesEditor({
 }
 
 /* ---------- RHF wrapper ---------- */
-
 export function RHFFieldRoles<TFieldValues extends FieldValues>({
   name,
   control,
@@ -400,3 +399,4 @@ export function RHFFieldRoles<TFieldValues extends FieldValues>({
     />
   );
 }
+

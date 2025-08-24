@@ -8,8 +8,8 @@ import dynamic from 'next/dynamic';
 import { Button } from '@workspace/ui/components/button';
 import { useProfileStore } from '@workspace/store/profileStore';
 import type { CountySelectMapProps } from '@workspace/ui/components/maps/CountySelectMap';
-import { CountyProps } from '@workspace/ui/components/maps/CountyLayer';
-import { GEO_TO_FIPS } from '@workspace/ui/components/maps/utils';
+import { CountyProps } from '@workspace/store/types/maps.ts';
+import { GEO_TO_FIPS } from '@workspace/store/utils/map';
 
 export interface SelectedCounty {
   GEO_ID: string;
@@ -26,7 +26,7 @@ const CountySelectMap = dynamic<CountySelectMapProps>(
 export function CountySelectDataLayer() {
   const router = useRouter();
   const profile = useProfileStore(s => s.profile);
-  const setOperating = useProfileStore(s => s.setOperatingCounties);
+  // const setOperating = useProfileStore(s => s.setOperatingCounties);
 
   const [selectedCounties, setSelectedCounties] = React.useState<SelectedCounty[]>([]);
   const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(null);
@@ -187,23 +187,23 @@ export function CountySelectDataLayer() {
     [selectedCounties, activeCounty, toggleEditCounty, handleRemoveCounty]
   );
 
-  const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    didUserInteractRef.current = true;
+  // const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
+  //   e?.preventDefault();
+  //   didUserInteractRef.current = true;
 
-    const fipsList = selectedCounties
-      .map(c => GEO_TO_FIPS(c.GEO_ID))
-      .filter((v): v is string => !!v)
-      .sort();
+  //   const fipsList = selectedCounties
+  //     .map(c => GEO_TO_FIPS(c.GEO_ID))
+  //     .filter((v): v is string => !!v)
+  //     .sort();
 
-    // Flush to store
-    setOperating(fipsList);
+  //   // Flush to store
+  //   setOperating(fipsList);
 
-    // 🔑 wait for persist
-    await new Promise(r => setTimeout(r, 50));
+  //   // 🔑 wait for persist
+  //   await new Promise(r => setTimeout(r, 50));
 
-    router.push('/my-profile');
-  }, [router, selectedCounties, setOperating]);
+  //   router.push('/my-profile');
+  // }, [router, selectedCounties, setOperating]);
 
 
 
@@ -230,9 +230,9 @@ export function CountySelectDataLayer() {
           </p>
         </div>
         <div className="w-full md:w-32">
-          <Button onClick={handleDone} disabled={isSaving} aria-busy={isSaving} className="w-full">
+          {/* <Button onClick={handleDone} disabled={isSaving} aria-busy={isSaving} className="w-full">
             {isSaving ? 'Saving…' : 'Done'}
-          </Button>
+          </Button> */}
         </div>
       </div>
 

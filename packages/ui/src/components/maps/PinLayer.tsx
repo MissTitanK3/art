@@ -3,7 +3,7 @@
 import { Marker, Popup } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
-import { PublicReport } from './LeafletMapImpl.tsx'
+import { PublicReport } from '@workspace/store/types/maps.ts'
 
 const pinIcon = new L.Icon({
   iconUrl: '/map/pin.svg',      // TODO: add to public/

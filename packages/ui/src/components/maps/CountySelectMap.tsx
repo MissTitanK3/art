@@ -4,17 +4,12 @@ import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useMemo, useRef, useCallback, useEffect, useState } from 'react';
 import type { FeatureCollection } from 'geojson';
-import CountyLayer, { SelectedCounty } from './CountyLayer.tsx';
-import { fitBoundsOnce, toggleCounty } from './utils.ts';
+import CountyLayer from './CountyLayer.tsx';
+import { computeBounds, fitBoundsOnce, toggleCounty, ZoomWatcher } from '@workspace/store/utils/map';
 import GridOverlay from './GridOverlay.tsx';
+import { SelectedCounty } from '@workspace/store/types/maps.ts';
 
-export function computeBounds(geojson?: FeatureCollection): L.LatLngBounds | null {
-  if (!geojson) return null;
-  const bounds = L.geoJSON(geojson).getBounds();
-  return bounds.isValid() ? bounds : null;
-}
-
-export type CountySelectMapProps = {
+export interface CountySelectMapProps {
   geojson?: FeatureCollection;
   selected: SelectedCounty[];
   onChange(next: SelectedCounty[]): void;
@@ -27,17 +22,6 @@ export type CountySelectMapProps = {
   };
 };
 
-function ZoomWatcher({ onZoom }: { onZoom: (z: number) => void }) {
-  const map = useMapEvents({
-    zoomend: () => onZoom(map.getZoom()),
-  });
-  // set once on mount, so UI is correct even before the first zoom
-  useEffect(() => {
-    onZoom(map.getZoom());
-  }, [map, onZoom]);
-  return null;
-}
-
 export default function CountySelectMap({
   geojson,
   selected,
@@ -46,11 +30,13 @@ export default function CountySelectMap({
   editor,
 }: CountySelectMapProps) {
   const mapRef = useRef<L.Map | null>(null);
+
   const { center, zoom, initialBounds } = useMemo(() => {
     const b = computeBounds(geojson);
     if (b) return { center: b.getCenter() as L.LatLngExpression, zoom: 6, initialBounds: b };
     return { center: [37.8, -96] as L.LatLngExpression, zoom: 4, initialBounds: null as L.LatLngBounds | null };
   }, [geojson]);
+
   const [currentZoom, setCurrentZoom] = useState<number>(zoom);
 
   const handleToggleCounty = useCallback(

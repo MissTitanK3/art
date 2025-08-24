@@ -13,6 +13,9 @@
   },
   "exports": {
     "./profileStore": "./src/profileStore.ts",
-    "./*": "./src/*.ts"
+    "./podStore": "./src/podStore.ts",
+    "./trustStore": "./src/trustStore.ts",
+    "./*": "./src/*.ts",
+    "./types/*": "./src/types/*"
   }
 }

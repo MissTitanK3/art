@@ -4,21 +4,12 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { Card } from "../../card.tsx";
-import { cn } from "@workspace/ui/lib/utils.ts";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../collapsible.tsx";
 import { Label } from "../../label.tsx";
 import { Input } from "../../input.tsx";
 import { Button } from "../../button.tsx";
-
-export type BaseShiftIntentionFields = {
-  label: string;
-  startDate: string; // YYYY-MM-DD
-  startTime: string; // HH:mm
-  endDate: string;   // YYYY-MM-DD
-  endTime: string;   // HH:mm
-  location: string;
-  headcount: number;
-};
+import { cn } from "../../../lib/utils.ts";
+import { BaseShiftIntentionFields } from "@workspace/store/types/pod.ts";
 
 // Make the component generic so parent state can have extra fields like tz, dispatchLink, etc.
 type Props<T extends BaseShiftIntentionFields> = {
