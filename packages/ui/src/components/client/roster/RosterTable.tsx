@@ -6,13 +6,15 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Edit3 } from "lucide-react";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
+import { RemoveMemberButton } from "../buttons/RemoveMemberButton.tsx";
 
 type RosterTableProps = {
   rows: RosterEntry[];
   onEdit?: (id: string) => void;
+  podId: string;
 };
 
-export function RosterTable({ rows, onEdit }: RosterTableProps) {
+export function RosterTable({ rows, onEdit, podId }: RosterTableProps) {
   return (
     <Card className="mt-4 p-0 overflow-hidden">
       {/* Table header (desktop only) */}
@@ -30,7 +32,7 @@ export function RosterTable({ rows, onEdit }: RosterTableProps) {
           className="grid md:grid-cols-12 gap-2 px-4 py-3 border-b last:border-b-0"
         >
           {/* Handle + mobile summary */}
-          <div className="md:col-span-4">
+          <div className="md:col-span-4 ">
             <div className="font-medium">{r.handle}</div>
             <div className="mt-1 flex items-center gap-2 md:hidden">
               <Badge variant="secondary">{r.role}</Badge>
@@ -77,7 +79,8 @@ export function RosterTable({ rows, onEdit }: RosterTableProps) {
           </div>
 
           {/* Actions */}
-          <div className="md:col-span-1 text-right">
+          <div className="w-full grid grid-cols-2 gap-2 md:grid-cols-1">
+            <RemoveMemberButton podId={podId} member={r} />
             {onEdit && (
               <Button
                 onClick={() => onEdit(r.id)}

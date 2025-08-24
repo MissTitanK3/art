@@ -1,6 +1,7 @@
 import { CertificationLevel } from '@workspace/store/types/pod.ts';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { DateTime } from 'luxon';
 
 export const CERTIFICATION_LEVELS: CertificationLevel[] = [
   'incomplete',
@@ -53,4 +54,30 @@ export function combineLocalDateTime(dateStr: string, timeStr: string) {
   // `new Date("YYYY-MM-DDTHH:mm")` is parsed in local TZ
   const d = new Date(`${dateStr}T${timeStr}`);
   return isNaN(d.getTime()) ? '' : d.toISOString();
+}
+
+/**
+ * Format an ISO start/end into a human-readable range in a given timezone.
+ *
+ * Example:
+ *   formatDateRange(
+ *     "2025-08-24T19:40:00.000Z",
+ *     "2025-08-25T01:40:00.000Z",
+ *     "America/Los_Angeles"
+ *   )
+ * → "Aug 24, 2025 12:40 PM → 6:40 PM (America/Los_Angeles)"
+ */
+export function formatDateRange(startIso: string, endIso: string, tz: string): string {
+  const start = DateTime.fromISO(startIso, { zone: 'utc' }).setZone(tz);
+  const end = DateTime.fromISO(endIso, { zone: 'utc' }).setZone(tz);
+
+  const sameDay = start.hasSame(end, 'day');
+
+  if (sameDay) {
+    // e.g. "Aug 24, 2025 12:40 PM → 6:40 PM (America/Los_Angeles)"
+    return `${start.toFormat('MMM d, yyyy h:mm a')} → ${end.toFormat('h:mm a')} (${tz})`;
+  } else {
+    // e.g. "Aug 24, 2025 11:40 PM → Aug 25, 2025 5:40 AM (America/Los_Angeles)"
+    return `${start.toFormat('MMM d, yyyy h:mm a')} → ${end.toFormat('MMM d, yyyy h:mm a')} (${tz})`;
+  }
 }

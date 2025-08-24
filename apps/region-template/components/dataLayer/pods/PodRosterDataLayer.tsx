@@ -15,6 +15,7 @@ import { usePodsStore } from "@workspace/store/podStore";
 import { RosterTable } from "@workspace/ui/components/client/roster/RosterTable";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
 import { EditRosterEntryForm } from '@workspace/ui/components/client/roster/RosterEntryEditor'
+import { AddMemberButton } from "@workspace/ui/components/client/buttons/AddMemberButton"
 
 export default function PodRosterDataLayer() {
   const { id } = useParams<{ id: string }>();
@@ -37,11 +38,15 @@ export default function PodRosterDataLayer() {
 
   return (
     <section className="mx-auto w-full max-w-4xl">
-      <p className="mt-1 text-sm text-muted-foreground">
-        Manage members for <span className="font-mono">{podId}</span>.
-      </p>
+      <div className="flex justify-between flex-col md:flex-row">
 
-      <RosterTable rows={rows} onEdit={(id) => setSelectedId(id)} />
+        <p className="mt-1 text-sm text-muted-foreground">
+          Manage members for <span className="font-mono">{podId}</span>.
+        </p>
+        <AddMemberButton id={id} />
+      </div>
+
+      <RosterTable rows={rows} onEdit={(id) => setSelectedId(id)} podId={pod?.id || ''} />
 
       {/* Side panel editor */}
       <Sheet open={!!editing} onOpenChange={(o) => !o && setSelectedId(null)}>

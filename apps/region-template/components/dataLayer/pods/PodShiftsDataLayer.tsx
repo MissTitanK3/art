@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
 
 import { usePodsStore } from "@workspace/store/podStore";
-import { combineLocalDateTime } from "@workspace/ui/lib/utils";
+import { combineLocalDateTime, formatDateRange } from "@workspace/ui/lib/utils";
 import { Shift } from "@workspace/store/types/pod.ts";
 import { ShiftIntentionSection } from "@workspace/ui/components/client/shifts/ShiftIntentionSection";
 
@@ -117,13 +117,13 @@ export default function PodShiftsDataLayer() {
           <p className="text-sm text-muted-foreground">No shifts added yet.</p>
         ) : (
           podShifts.map((shift: Shift) => (
-            <>
+            <div key={`${shift.id}-shift-list`}>
               <Card key={shift.id} className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{shift.label || "Untitled shift"}</p>
                     <p className="text-xs text-muted-foreground">
-                      {shift.start} → {shift.end} ({shift.tz})
+                      {formatDateRange(shift.start, shift.end, shift.tz)}
                     </p>
                   </div>
                   <Button
@@ -135,7 +135,7 @@ export default function PodShiftsDataLayer() {
                   </Button>
                 </div>
               </Card>
-            </>
+            </div>
           ))
         )}
       </div>

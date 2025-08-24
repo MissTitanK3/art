@@ -12,6 +12,9 @@ import { NormalizedLanguage } from './types/language.ts';
 type PodState = {
   pods: Pod[];
   shifts: Shift[];
+
+  activeProfiles: Profile[];
+
   addPod: (pod: Pod) => void;
   updatePod: (id: string, patch: Partial<Pod>) => void;
   removePod: (id: string) => void;
@@ -25,7 +28,7 @@ type PodState = {
 // -----------------------------------------------------------------------------
 // Profile & Roster helpers
 // -----------------------------------------------------------------------------
-const makeProfile = (id: string, display: string, role: FieldRole[], affiliation?: string): Profile => ({
+export const makeProfile = (id: string, display: string, role: FieldRole[], affiliation?: string): Profile => ({
   id,
   user_id: `user-${id}`,
   display_name: display,
@@ -43,7 +46,7 @@ const makeProfile = (id: string, display: string, role: FieldRole[], affiliation
   operating_counties: ['06001'],
 });
 
-const makeRosterEntry = (
+export const makeRosterEntry = (
   id: string,
   profile: Profile,
   role: 'lead' | 'member' | 'trainee',
@@ -77,6 +80,7 @@ const p2 = makeProfile('p2', 'Brian Lee', ['translator'], 'Mutual Aid Collective
 const p3 = makeProfile('p3', 'Carla Reyes', ['legal'], 'Partner Org');
 const p4 = makeProfile('p4', 'Diego Martinez', ['tech_support']);
 const p5 = makeProfile('p5', 'Ella Chen', ['safety_marshall']);
+export const activeProfiles = [p1, p2, p3, p4, p5];
 
 // -----------------------------------------------------------------------------
 // Roster Entries (with certs + lastShiftAt)
@@ -196,6 +200,7 @@ export const seedPods: Pod[] = [
 export const usePodsStore = create<PodState>((set) => ({
   pods: seedPods,
   shifts: [],
+  activeProfiles,
 
   addPod: (pod) => set((s) => ({ pods: [...s.pods, pod] })),
   updatePod: (id, patch) =>
@@ -211,7 +216,6 @@ export const usePodsStore = create<PodState>((set) => ({
     })),
   removeShift: (id) => set((s) => ({ shifts: s.shifts.filter((sh) => sh.id !== id) })),
 
-  // ✅ new: freeform cert addition
   addCertification: (podId, rosterId, cert) =>
     set((s) => ({
       pods: s.pods.map((pod) =>

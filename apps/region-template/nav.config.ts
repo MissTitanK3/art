@@ -1,12 +1,3 @@
-// apps/region-template/nav.config.ts
-// import {
-//   completeOnboarding,
-//   elevatedRoles,
-//   localAdmins,
-//   regionAdmins,
-//   type GlobalNavConfigInput,
-// } from '@workspace/ui/types/nav';
-
 import {
   completeOnboarding,
   elevatedRoles,
@@ -33,6 +24,7 @@ export const navConfig: GlobalNavConfigInput = {
       children: [
         { label: 'Rapid Response Request', href: '/team-req', roles: elevatedRoles },
         { label: 'Community Aid Request', href: '/team-req', roles: elevatedRoles },
+        { label: 'Technical Aid Request', href: '/team-req', roles: elevatedRoles },
       ],
     },
     {
