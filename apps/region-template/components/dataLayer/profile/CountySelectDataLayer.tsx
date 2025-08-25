@@ -26,7 +26,7 @@ const CountySelectMap = dynamic<CountySelectMapProps>(
 export function CountySelectDataLayer() {
   const router = useRouter();
   const profile = useProfileStore(s => s.profile);
-  // const setOperating = useProfileStore(s => s.setOperatingCounties);
+  const setOperating = useProfileStore(s => s.setOperatingCounties);
 
   const [selectedCounties, setSelectedCounties] = React.useState<SelectedCounty[]>([]);
   const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(null);
@@ -187,23 +187,23 @@ export function CountySelectDataLayer() {
     [selectedCounties, activeCounty, toggleEditCounty, handleRemoveCounty]
   );
 
-  // const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
-  //   e?.preventDefault();
-  //   didUserInteractRef.current = true;
+  const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    didUserInteractRef.current = true;
 
-  //   const fipsList = selectedCounties
-  //     .map(c => GEO_TO_FIPS(c.GEO_ID))
-  //     .filter((v): v is string => !!v)
-  //     .sort();
+    const fipsList = selectedCounties
+      .map(c => GEO_TO_FIPS(c.GEO_ID))
+      .filter((v): v is string => !!v)
+      .sort();
 
-  //   // Flush to store
-  //   setOperating(fipsList);
+    // Flush to store
+    setOperating(fipsList);
 
-  //   // 🔑 wait for persist
-  //   await new Promise(r => setTimeout(r, 50));
+    // 🔑 wait for persist
+    await new Promise(r => setTimeout(r, 50));
 
-  //   router.push('/my-profile');
-  // }, [router, selectedCounties, setOperating]);
+    router.push('/my-profile');
+  }, [router, selectedCounties, setOperating]);
 
 
 
@@ -221,7 +221,7 @@ export function CountySelectDataLayer() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 z-0">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Pick your operating counties</h1>
@@ -230,22 +230,23 @@ export function CountySelectDataLayer() {
           </p>
         </div>
         <div className="w-full md:w-32">
-          {/* <Button onClick={handleDone} disabled={isSaving} aria-busy={isSaving} className="w-full">
+          <Button onClick={handleDone} disabled={isSaving} aria-busy={isSaving} className="w-full">
             {isSaving ? 'Saving…' : 'Done'}
-          </Button> */}
+          </Button>
         </div>
       </div>
-
-      <CountySelectMap
-        selected={selectedCounties}
-        onChange={handleMapChange}
-        editor={activeCounty ? {
-          county: activeCounty,
-          gridSize: 20,
-          clipEdges: true,
-          onUpdateZones: handleUpdateZones,
-        } : undefined}
-      />
+      {typeof window !== 'undefined' && (
+        <CountySelectMap
+          selected={selectedCounties}
+          onChange={handleMapChange}
+          editor={activeCounty ? {
+            county: activeCounty,
+            gridSize: 20,
+            clipEdges: true,
+            onUpdateZones: handleUpdateZones,
+          } : undefined}
+        />
+      )}
 
       <div className="space-y-3">
         {selectedCounties.length === 0 ? (

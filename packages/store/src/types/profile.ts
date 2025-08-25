@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AccessRoles, VerifiedBy } from './roles.ts';
+import { AccessRoles, FIELD_ROLE_OPTIONS, VerifiedBy } from './roles.ts';
 
 /** DB-enforced enums */
 
@@ -42,14 +42,14 @@ export const WeeklyAvailabilitySchema = z
   })
   .default({ blocks: {} });
 
-export const SIGNAL_HANDLE_RE = /^@?(?=.{3,32}$)[a-z0-9._]*\d{2,}$/i;
+export const SIGNAL_HANDLE_RE = /^@?.*\.\d{2,}$/;
 
 export const DispatchProfileSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid().nullable().optional(),
   display_name: z.string().default(''),
   access_role: z.enum(AccessRoles).default('team_member'),
-  field_roles: z.array(z.string()).nullable().optional(),
+  field_roles: z.array(z.enum(FIELD_ROLE_OPTIONS)).default([]),
   verified_by: z.enum(VerifiedBy).default('self'),
   affiliation: z.string().nullable().optional(),
   availability: z.boolean().nullable().optional(),
@@ -59,7 +59,7 @@ export const DispatchProfileSchema = z.object({
     .optional()
     .refine(
       (v) => !v || SIGNAL_HANDLE_RE.test(v),
-      'Enter a Signal username like @name12 (3–32 chars; letters, numbers, _; must end with 2+ digits).',
+      'Enter a Signal username like @name.12 and must end with 2+ digits).',
     )
     // normalize to lowercase and ensure a single leading "@"
     .transform((v) => {
@@ -67,7 +67,6 @@ export const DispatchProfileSchema = z.object({
       const u = v.replace(/^@/, '').toLowerCase();
       return '@' + u;
     }),
-  contact_sms: z.string().nullable().optional(),
   coordination_zone: z.string().nullable().optional(),
   inserted_at: z.string().optional(), // timestamptz as ISO
   coverage_zones: CoverageZonesSchema.nullable().optional(),
@@ -76,9 +75,12 @@ export const DispatchProfileSchema = z.object({
   self_risk_acknowledged: z.boolean().default(false),
   city: z.string().nullable().optional(),
   operating_counties: z.array(z.string().regex(/^\d{5}$/)).max(50),
+  self_status_flags: z.array(z.string().min(1)).optional().default([]),
 });
 
 export type DispatchProfile = z.infer<typeof DispatchProfileSchema>;
+export type ProfileFormInput = z.input<typeof DispatchProfileSchema>;
+export type ProfileFormOutput = z.output<typeof DispatchProfileSchema>;
 
 // packages/types/profile.ts
 export interface ProfileAdapter {
@@ -86,3 +88,25 @@ export interface ProfileAdapter {
   saveProfile(profile: any): Promise<void>;
   deleteProfile(userId: string): Promise<void>;
 }
+
+export type DeleteResult = { ok: boolean; err?: string };
+
+export type WeeklyAvailability = {
+  blocks?: Record<string, Block[]>;
+};
+
+export type Block = {
+  start: string;
+  end: string;
+};
+
+// const ProfileSchema = DispatchProfileSchema.extend({
+//   id: z.string().uuid().optional(),
+//   display_name: z.string().min(1, "Display name is required"),
+//   affiliation: z.string().nullable().optional(),
+//   contact_signal: z.string().nullable().optional(),
+//   contact_sms: z.string().nullable().optional(),
+//   coordination_zone: z.string().nullable().optional(),
+//   city: z.string().nullable().optional(),
+//   self_status_flags: z.array(z.string().min(1)).optional().default([]),
+// });

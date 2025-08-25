@@ -125,3 +125,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.leaflet-container {
+  z-index: 0 !important; /* or any value lower than your nav */
+}

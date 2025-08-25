@@ -1,17 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { z } from "zod";
 import { toast } from "sonner";
-import { SubmitHandler } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@workspace/ui/components/form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "@workspace/ui/components/input";
 import { TagsInput } from "@workspace/ui/components/client/profile/TagsInput";
 import { Switch } from "@workspace/ui/components/switch";
@@ -43,76 +34,24 @@ import {
 import { US_STATES } from "@workspace/ui/lib/constants/states";
 
 import { BasicImage } from "../../BasicImage.tsx";
-import { DispatchProfileSchema, SIGNAL_HANDLE_RE } from '@workspace/store/types/profile.ts'
-import {
-  formSchema,
-  nullToEmptyArray,
-  nullToEmptyBlocks,
-  nullToEmptyString,
-  nullToFalse
-} from '@workspace/store/utils/form-helpers'
+import { DeleteResult, DispatchProfileSchema, ProfileFormInput, ProfileFormOutput, SIGNAL_HANDLE_RE } from '@workspace/store/types/profile.ts'
+
 import { ImageComponent } from '@workspace/store/utils/image'
 import {
   AccessRoleDescriptions,
-  FIELD_ROLE_OPTIONS, FieldRole, roleLabel,
+  FieldRole,
+  roleLabel,
   VerifiedByDescriptions,
   verifierLabel
 } from "@workspace/store/types/roles.ts";
 import { useImage } from "../../../providers/ImageProvider.tsx";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@workspace/ui/components/label";
 
-
-/* ------------------------------------------
-   Schema & RHF harness (UI-only)
-------------------------------------------- */
-
-const {
-  schema: FormSchema,
-  defaults,
-  useForm,
-} = formSchema(
-  DispatchProfileSchema.pick({
-    id: true,
-    display_name: true,
-    access_role: true,
-    field_roles: true,
-    verified_by: true,
-    affiliation: true,
-    availability: true,
-    contact_signal: true,
-    contact_sms: true,
-    coordination_zone: true,
-    coverage_zones: true,
-    state: true,
-    weekly_availability: true,
-    self_risk_acknowledged: true,
-    city: true,
-  }).extend({
-    id: z.string().uuid().optional(),
-    display_name: z.string().min(1, "Display name is required"),
-    affiliation: nullToEmptyString(),
-    contact_signal: nullToEmptyString(),
-    contact_sms: nullToEmptyString(),
-    coordination_zone: nullToEmptyString(),
-    city: nullToEmptyString(),
-    field_roles: z.array(z.enum(FIELD_ROLE_OPTIONS)).default([]),
-    state: z.string().optional().default(""),
-    weekly_availability: nullToEmptyBlocks(),
-    availability: nullToFalse(),
-    self_risk_acknowledged: nullToFalse(),
-    self_status_flags: z.array(z.string().min(1)).optional().default([]),
-  })
-);
-
-export type ProfileFormInput = z.input<typeof FormSchema>;
-export type ProfileFormOutput = z.output<typeof FormSchema>;
-
-type DeleteResult = { ok: boolean; err?: string };
 
 export interface ProfileFormProps {
   initial: Partial<ProfileFormInput> & { id?: string };
-  onSubmit: (
-    values: ProfileFormOutput
-  ) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
+  onSubmit: (values: ProfileFormOutput) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
   onDelete: () => Promise<DeleteResult> | DeleteResult;
   onDirtyChange?: (dirty: boolean) => void;
   onGenerateKey?: () => Promise<{ publicPem: string; privatePem: string }>;
@@ -139,325 +78,323 @@ export function ProfileForm({
   const Image = ImageProp ?? ImageFromContext ?? BasicImage;
 
   // RHF v8 instance
-  const form = useForm({ defaultValues: { ...defaults, ...coerceInitial(initial) } });
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ProfileFormInput, any, ProfileFormOutput>({
+    resolver: zodResolver(DispatchProfileSchema),
+    defaultValues: {
+      ...initial,
+      access_role: initial.access_role ?? "team_member",
+      verified_by: initial.verified_by ?? "self",
+      field_roles: initial.field_roles ?? [],
+      coverage_zones: initial.coverage_zones ?? [],
+      affiliation: initial.affiliation ?? "",
+      contact_signal: initial.contact_signal ?? "",
+      coordination_zone: initial.coordination_zone ?? "",
+      city: initial.city ?? "",
+      availability: initial.availability ?? false,
+      self_risk_acknowledged: initial.self_risk_acknowledged ?? false,
+      weekly_availability: initial.weekly_availability ?? { blocks: {} },
+    },
+    mode: "onChange",
+  });
 
-  // Bubble dirty-state upwards if requested
-  React.useEffect(() => {
-    if (!onDirtyChange) return;
-    const sub = form.watch(() => onDirtyChange(!!form.formState.isDirty));
-    return () => sub.unsubscribe?.();
-  }, [form, onDirtyChange]);
+  const submit: SubmitHandler<ProfileFormOutput> = async (values) => {
+    try {
+      const res = await onSubmit(values);
+      console.log(res);
 
-  const handleSubmit: SubmitHandler<ProfileFormOutput> = async (values) => {
-    const res = await onSubmit({
-      ...values,
-      // normalize coverage_zones if you use an array of objects elsewhere
-      coverage_zones: Array.isArray(values.coverage_zones)
-        ? values.coverage_zones
-        : [],
-    });
-    if (res.ok) {
-      toast.success("Profile saved");
-      form.reset(values, { keepValues: true });
-    } else {
-      toast.error(res.err || "Failed to save profile");
+      if (res.ok) {
+        toast.success("Profile saved");
+        // form.reset(values, { keepValues: true });
+      } else {
+        toast.error(res.err || "Failed to save profile");
+      }
+    } catch (err) {
+      console.error("Submit error", err);
+      toast.error("Unexpected error saving profile");
     }
   };
 
+
   return (
-    <Form {...form}>
-      <form className="space-y-8" onSubmit={form.handleSubmit(handleSubmit)}>
-        {/* Identity / status */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <DumbField
-            label="Access Role"
-            value={roleLabel(initial.access_role || "team_member")}
-            tooltip={AccessRoleDescriptions[initial.access_role || "team_member"]}
-          />
-          <DumbField
-            label="Verified By"
-            value={verifierLabel(initial.verified_by || "self")}
-            tooltip={VerifiedByDescriptions[initial.verified_by || "self"]}
-          />
-          <FormField
-            control={form.control}
-            name="availability"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Available for dispatch?</FormLabel>
-                <FormControl>
-                  <div className="flex items-center gap-3">
-                    <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                    <span className="text-sm text-muted-foreground">
-                      Toggle to indicate you’re actively available
-                    </span>
-                  </div>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Contact / location */}
-        <div className="grid gap-6  m-auto grid-cols-1 md:grid-cols-2">
-          <div className="w-full flex justify-center">
-            {ImageUrl && (
-              <Image
-                src={ImageUrl}
-                alt="Profile avatar"
-                width={200}
-                height={150}
-                className="object-cover"
-                loading="lazy"
-              />
-            )}
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <FormField
-              control={form.control}
-              name="display_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Display name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your handle or name" {...field} value={field.value ?? ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="contact_signal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Signal (@username)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="@handle.12"
-                      {...field}
-                      value={field.value ?? ""}
-                      onBlur={(e) => {
-                        field.onBlur();
-                        // lightweight normalize on blur using the same schema piece
-                        const v = e.currentTarget.value;
-                        const ok = SIGNAL_HANDLE_RE.test(v);
-                        if (ok) field.onChange("@" + v.replace(/^@/, "").toLowerCase());
-                      }}
-                      inputMode="text"
-                      autoComplete="username"
-                      spellCheck={false}
-                      // optional: native constraint to help users before submit
-                      pattern={SIGNAL_HANDLE_RE.source}
-                      title="3–32 chars; letters, numbers, _; must end with 2+ digits following a period"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem >
-                  <FormLabel>State</FormLabel>
-                  <Select
-
-                    value={typeof field.value === "string" ? field.value : ""}
-                    onValueChange={(v) => field.onChange(v)}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your state" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="w-full">
-                      {US_STATES.map((s) => (
-                        <SelectItem key={s.code} value={s.code}>
-                          {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Seattle" {...field} value={field.value ?? ""} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="coordination_zone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Coordination zone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. PNW-Region-1" {...field} value={field.value ?? ""} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="affiliation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Affiliation (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Partner org or pod" {...field} value={field.value ?? ""} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-
-        {/* Roles / tags */}
-        <div className="grid gap-6 mt-4">
-          <FormField
-            control={form.control}
-            name="field_roles"
-            render={({ field }) => (
-              <FormItem>
-                <RoleSelector selected={field.value ?? [] as FieldRole[]} onChange={field.onChange} />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="self_status_flags"
+    // <Form {...form}>
+    <form id="edit-profile-entry-form" className="space-y-8" onSubmit={handleSubmit(submit, (errors) => {
+      console.log("validation errors", errors);
+    })}>
+      {/* Identity / status */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <DumbField
+          label="Access Role"
+          value={roleLabel(initial.access_role || "team_member")}
+          tooltip={AccessRoleDescriptions[initial.access_role || "team_member"]}
+        />
+        <DumbField
+          label="Verified By"
+          value={verifierLabel(initial.verified_by || "self")}
+          tooltip={VerifiedByDescriptions[initial.verified_by || "self"]}
+        />
+        <Controller
+          name="availability"
+          control={control}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Self Status Flags</FormLabel>
-              <TagsInput
-                value={field.value ?? []}
-                onChange={field.onChange}
-                description="Optional tags for how you identify or participate. e.g. 'medic', 'out-of-state transport', 'queer', 'translator'. Max 10."
-              />
-              <FormMessage />
-            </FormItem>
+            <div className="gap-2 flex flex-col">
+              <Label>Available for dispatch?</Label>
+              <div>
+
+                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                <span className="text-sm text-muted-foreground ml-2">
+                  Toggle to indicate you’re actively available
+                </span>
+              </div>
+            </div>
           )}
         />
+      </div>
 
-        {/* Risk acknowledgment */}
-        <div className="grid gap-6">
-          <FormField
-            control={form.control}
-            name="self_risk_acknowledged"
+      {/* Contact / location */}
+      <div className="grid gap-6  m-auto grid-cols-1 md:grid-cols-2">
+        <div className="w-full flex justify-center">
+          {ImageUrl && (
+            <Image
+              src={ImageUrl}
+              alt="Profile avatar"
+              width={200}
+              height={150}
+              style={{
+                height: 'auto',
+                width: 'auto'
+              }}
+              className="object-cover"
+              loading="lazy"
+            />
+          )}
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <Controller
+            name="display_name"
+            control={control}
             render={({ field }) => (
-              <FormItem className="flex flex-col gap-3">
-                <FormLabel>Risk Acknowledgment</FormLabel>
-                <div className="flex flex-col items-center justify-between gap-3">
-                  <FormControl>
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={!!field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={!hasViewedSheet}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        I understand the risks of field work and will follow safety protocols
-                      </span>
-                    </div>
-                  </FormControl>
-                  <RiskSheet onViewed={() => setHasViewedSheet(true)} />
-                </div>
-                {!hasViewedSheet && (
-                  <p className="text-xs text-muted-foreground">
-                    Please review the risks before acknowledging.
-                  </p>
-                )}
-              </FormItem>
+              <>
+                <Label>Display name</Label>
+                <Input placeholder="Your handle or name" {...field} value={field.value ?? ""} />
+              </>
+            )}
+          />
+          <Controller
+            name="contact_signal"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Label>Signal (@username)</Label>
+                <Input
+                  placeholder="@handle.12"
+                  {...field}
+                  value={field.value ?? ""}
+                  onBlur={(e) => {
+                    field.onBlur();
+                    // lightweight normalize on blur using the same schema piece
+                    const v = e.currentTarget.value;
+                    const ok = SIGNAL_HANDLE_RE.test(v);
+                    if (ok) field.onChange("@" + v.replace(/^@/, "").toLowerCase());
+                  }}
+                  inputMode="text"
+                  autoComplete="username"
+                  spellCheck={false}
+                  // optional: native constraint to help users before submit
+                  pattern={SIGNAL_HANDLE_RE.source}
+                  title="3–32 chars; letters, numbers, _; must end with 2+ digits following a period"
+                />
+              </>
+            )}
+          />
+          <Controller
+            name="state"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Label>State</Label>
+                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((s) => (
+                      <SelectItem key={s.code} value={s.code}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+          />
+
+          <Controller
+            name="city"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Label>City (optional)</Label>
+                <Input placeholder="e.g. Washington D.C" {...field} value={field.value ?? ""} />
+              </>
+            )}
+          />
+
+          <Controller
+            name="coordination_zone"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Label>Coordination zone</Label>
+                <Input placeholder="e.g. PNW-Region-1" {...field} value={field.value ?? ""} />
+              </>
+            )}
+          />
+          <Controller
+            name="affiliation"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Label>Affiliation (optional)</Label>
+                <Input placeholder="Partner org or pod" {...field} value={field.value ?? ""} />
+              </>
             )}
           />
         </div>
+      </div>
 
-        {/* Weekly availability */}
-        <FormField
-          control={form.control}
-          name="weekly_availability"
+
+      {/* Roles / tags */}
+      <div className="grid gap-6 mt-4">
+        <Controller
+          name="field_roles"
+          control={control}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Weekly Unavailability</FormLabel>
-              <span className="text-sm text-muted-foreground">
-                Use this for when you <strong>know</strong> that you will <strong>not</strong> be available throughout the week.
-              </span>
-              <WeeklyAvailabilityEditor value={field.value ?? { blocks: {} }} onChange={field.onChange} />
-            </FormItem>
+            <>
+              <RoleSelector selected={field.value ?? [] as FieldRole[]} onChange={field.onChange} />
+            </>
           )}
         />
+      </div>
 
-        {/* Spacer for sticky bar */}
-        <div className="h-[76px] md:hidden" aria-hidden />
+      <Controller
+        name="self_status_flags"
+        control={control}
+        render={({ field }) => (
+          <>
+            <Label>Self Status Flags</Label>
+            <TagsInput
+              value={field.value ?? []}
+              onChange={field.onChange}
+              description="Optional tags for how you identify or participate. e.g. 'medic', 'out-of-state transport', 'queer', 'translator'. Max 10."
+            />
+          </>
+        )}
+      />
 
-        {/* Sticky action bar */}
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-4xl gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button className="flex-1" type="button" variant="destructive" disabled={disableDelete || busy}>
-                  <Trash2 className="h-4 w-4" />
-                  Purge
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete your profile & account?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This permanently deletes your account and profile in this region. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isDeleting || busy}>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    disabled={isDeleting || busy}
-                    onClick={() =>
-                      startDelete(async () => {
-                        const res = await onDelete();
-                        if (res.ok) {
-                          toast.success("Account deleted");
-                          // caller handles navigation/redirect after success
-                        } else {
-                          toast.error(res.err || "Failed to delete account");
-                        }
-                      })
-                    }
-                  >
-                    {isDeleting ? "Deleting…" : "Delete account"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+      {/* Risk acknowledgment */}
+      <div className="grid gap-6">
+        <Controller
+          name="self_risk_acknowledged"
+          control={control}
+          render={({ field }) => (
+            <div className="flex flex-col gap-3">
+              <Label>Self Risk Acknowledgment</Label>
+              <div className="flex flex-wrap gap-3">
+                <span className="text-sm">
+                  I understand the risks of field work and will follow safety protocols
+                </span>
+                <Switch
+                  checked={!!field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={!hasViewedSheet}
+                />
+              </div>
+              <RiskSheet onViewed={() => setHasViewedSheet(true)} />
+              {!hasViewedSheet && (
+                <p className="text-xs text-muted-foreground">
+                  Please review the risks before acknowledging.
+                </p>
+              )}
+            </div>
+          )}
+        />
+      </div>
 
-            <Button
-              className="flex-1"
-              type="submit"
-              disabled={busy || !form.formState.isDirty || form.formState.isSubmitting}
-            >
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-          </div>
+      {/* Weekly availability */}
+      <Controller
+        name="weekly_availability"
+        control={control}
+        render={({ field }) => (
+          <>
+            <Label>Weekly Unavailability</Label>
+            <span className="text-sm text-muted-foreground">
+              Use this for when you <strong>know</strong> that you will <strong>not</strong> be available throughout the week.
+            </span>
+            <WeeklyAvailabilityEditor value={field.value ?? { blocks: {} }} onChange={field.onChange} />
+          </>
+        )}
+      />
+
+      {/* Spacer for sticky bar */}
+      <div className="h-[76px] md:hidden" aria-hidden />
+
+      {/* Sticky action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-4xl gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="flex-1" type="button" variant="destructive" disabled={disableDelete || busy}>
+                <Trash2 className="h-4 w-4" />
+                Purge
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your profile & account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes your account and profile in this region. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting || busy}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={isDeleting || busy}
+                  onClick={() =>
+                    startDelete(async () => {
+                      const res = await onDelete();
+                      if (res.ok) {
+                        toast.success("Account deleted");
+                        // caller handles navigation/redirect after success
+                      } else {
+                        toast.error(res.err || "Failed to delete account");
+                      }
+                    })
+                  }
+                >
+                  {isDeleting ? "Deleting…" : "Delete account"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <Button
+            className="flex-1"
+            type="submit"
+          >
+            <Save className="h-4 w-4" />
+            Save
+          </Button>
         </div>
-      </form>
-    </Form>
+      </div>
+    </form>
+    // </Form>
   );
 }
 
