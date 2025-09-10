@@ -7,6 +7,36 @@ import { RosterEntry } from './types/pod.ts';
 // -----------------------------------------------------------------------------
 // Types (aligned with schema)
 // -----------------------------------------------------------------------------
+
+export interface DispatchAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url: string; // blob:// URL for temporary display
+}
+
+export interface DispatchUpdate {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+  attachments?: DispatchAttachment[];
+}
+
+export interface LogisticsItem {
+  id: string;
+  category: 'transport' | 'supply' | 'comms' | 'rally_point' | 'other';
+  description: string;
+  quantity?: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'pending' | 'in_progress' | 'delivered' | 'cancelled';
+  responsibleParty?: { type: 'user'; userId: string } | { type: 'anon'; name: string };
+  warehouse?: { name?: string; location?: string; contact?: string };
+  accountabilityNotes?: string;
+  updatedAt: string;
+}
+
 export type DispatchStatus =
   | 'preplanning'
   | 'unconfirmed'
@@ -42,6 +72,8 @@ export interface DispatchSubmission {
   intended_actions_custom?: string;
   signal_link?: string;
   training?: boolean;
+  updates?: DispatchUpdate[];
+  logistics: LogisticsItem[];
 }
 
 // -----------------------------------------------------------------------------
@@ -55,6 +87,7 @@ export function makeDispatchSubmission(overrides: Partial<DispatchSubmission> = 
     visibility_radius_km: 10,
     status: 'unconfirmed',
     training: false,
+    logistics: [],
     ...overrides,
   };
 }
@@ -95,6 +128,7 @@ export const seedDispatches: DispatchSubmission[] = [
       'Coordinate check-ins and mutual aid relay',
     ],
     signal_link: 'https://signal.group/#public_example_dispatch',
+    logistics: [],
   },
   {
     id: '22222222-2222-2222-2222-222222222222',
@@ -112,6 +146,7 @@ export const seedDispatches: DispatchSubmission[] = [
     intended_action_notes: 'Legal team to observe police interactions.',
     intended_actions: ['Witnessing / observation only'],
     signal_link: 'https://signal.group/#legal_support_example',
+    logistics: [],
   },
 ];
 
@@ -123,6 +158,9 @@ type DispatchState = {
   addSubmission: (d: DispatchSubmission) => void;
   updateSubmission: (id: string, patch: Partial<DispatchSubmission>) => void;
   removeSubmission: (id: string) => void;
+  addUpdate: (dispatchId: string, update: Omit<DispatchUpdate, 'id' | 'createdAt'>) => void;
+  editUpdate: (dispatchId: string, updateId: string, text: string) => void;
+  removeUpdate: (dispatchId: string, updateId: string) => void;
 };
 
 export const useDispatchStore = create<DispatchState>((set) => ({
@@ -138,5 +176,47 @@ export const useDispatchStore = create<DispatchState>((set) => ({
   removeSubmission: (id) =>
     set((s) => ({
       submissions: s.submissions.filter((sub) => sub.id !== id),
+    })),
+  addUpdate: (dispatchId, update) =>
+    set((s) => ({
+      submissions: s.submissions.map((sub) =>
+        sub.id === dispatchId
+          ? {
+              ...sub,
+              updates: [
+                ...(sub.updates ?? []),
+                {
+                  id: crypto.randomUUID(),
+                  createdAt: new Date().toISOString(),
+                  attachments: update.attachments ?? [],
+                  ...update,
+                },
+              ],
+            }
+          : sub,
+      ),
+    })),
+  editUpdate: (dispatchId, updateId, text) =>
+    set((s) => ({
+      submissions: s.submissions.map((sub) =>
+        sub.id === dispatchId
+          ? {
+              ...sub,
+              updates: sub.updates?.map((u) => (u.id === updateId ? { ...u, text } : u)),
+            }
+          : sub,
+      ),
+    })),
+
+  removeUpdate: (dispatchId, updateId) =>
+    set((s) => ({
+      submissions: s.submissions.map((sub) =>
+        sub.id === dispatchId
+          ? {
+              ...sub,
+              updates: sub.updates?.filter((u) => u.id !== updateId),
+            }
+          : sub,
+      ),
     })),
 }));

@@ -109,3 +109,17 @@ export function humanize(input: string): string {
       .replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1))
   );
 }
+
+export const priorityColors: Record<string, string> = {
+  low: 'bg-green-100 text-green-800 border-green-300',
+  medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  high: 'bg-orange-100 text-orange-800 border-orange-300',
+  critical: 'bg-red-100 text-red-800 border-red-300',
+};
+
+export const statusColors: Record<string, string> = {
+  pending: 'bg-gray-100 text-gray-700 border-gray-300',
+  in_progress: 'bg-blue-100 text-blue-800 border-blue-300',
+  delivered: 'bg-green-100 text-green-800 border-green-300',
+  cancelled: 'bg-red-100 text-red-800 border-red-300',
+};

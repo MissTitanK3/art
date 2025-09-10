@@ -13,6 +13,8 @@ import DispatchSignalLinkUpdater from "@workspace/ui/components/client/external-
 import DispatchNotesUpdater from "@workspace/ui/components/client/notes/DispatchNotesUpdater";
 import DispatchLocationUpdater from "@workspace/ui/components/client/location/DispatchLocationUpdater";
 import DispatchRolesManager from "@workspace/ui/components/client/roles/DispatchRolesManager";
+import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpdates";
+import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
@@ -158,30 +160,23 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
 
         {/* Updates */}
         <TabsContent value="updates" className="flex-1">
-          <Card>
+          <Card className="flex flex-col h-full">
             <CardHeader>
               <CardTitle>Updates</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="flex-1 flex flex-col space-y-4 text-sm">
               <p className="text-muted-foreground">
                 Running notes, incident log, and updates.
               </p>
+              <DispatchUpdates dispatchId={submission.id} />
             </CardContent>
           </Card>
         </TabsContent>
 
+
         {/* Logistics */}
         <TabsContent value="logistics" className="flex-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Ground Logistics</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p className="text-muted-foreground">
-                Transport, supplies, rally points, and comms.
-              </p>
-            </CardContent>
-          </Card>
+          <LogisticsPanel dispatchId={submission.id} />
         </TabsContent>
       </Tabs>
     </div>
