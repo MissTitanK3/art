@@ -123,3 +123,21 @@ export const statusColors: Record<string, string> = {
   delivered: 'bg-green-100 text-green-800 border-green-300',
   cancelled: 'bg-red-100 text-red-800 border-red-300',
 };
+
+export function chunkMessage(message: string, maxChars = 200): string[] {
+  const words = message.split(' ');
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    if ((current + ' ' + word).length > maxChars) {
+      chunks.push(current.trim());
+      current = word;
+    } else {
+      current += ' ' + word;
+    }
+  }
+  if (current) chunks.push(current.trim());
+
+  return chunks;
+}

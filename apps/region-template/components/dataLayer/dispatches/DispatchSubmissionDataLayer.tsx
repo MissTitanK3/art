@@ -15,6 +15,7 @@ import DispatchLocationUpdater from "@workspace/ui/components/client/location/Di
 import DispatchRolesManager from "@workspace/ui/components/client/roles/DispatchRolesManager";
 import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpdates";
 import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
+import PublicEngagementPanel from "@workspace/ui/components/client/engagement/PublicEngagementPanel";
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
@@ -146,16 +147,8 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
 
         {/* Public Engagement */}
         <TabsContent value="public_engagement" className="flex-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Public Engagement</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p className="text-muted-foreground">
-                Manage public communications and outreach efforts.
-              </p>
-            </CardContent>
-          </Card>
+
+          <PublicEngagementPanel dispatchId={submission.id} />
         </TabsContent>
 
         {/* Updates */}
