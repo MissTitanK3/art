@@ -1,0 +1,9 @@
+{
+  "name": "ART Region Template",
+  "short_name": "ART Region Dispatch",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": []
+}

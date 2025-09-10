@@ -13,7 +13,7 @@ type PodState = {
   pods: Pod[];
   shifts: Shift[];
 
-  activeProfiles: Profile[];
+  activeRoster: RosterEntry[];
 
   addPod: (pod: Pod) => void;
   updatePod: (id: string, patch: Partial<Pod>) => void;
@@ -73,18 +73,14 @@ export const makeRosterEntry = (
 });
 
 // -----------------------------------------------------------------------------
-// Dummy Profiles
+// Dummy Roster
 // -----------------------------------------------------------------------------
 const p1 = makeProfile('p1', 'Alice Johnson', ['medic'], 'Community Org');
 const p2 = makeProfile('p2', 'Brian Lee', ['translator'], 'Mutual Aid Collective');
 const p3 = makeProfile('p3', 'Carla Reyes', ['legal'], 'Partner Org');
 const p4 = makeProfile('p4', 'Diego Martinez', ['tech_support']);
 const p5 = makeProfile('p5', 'Ella Chen', ['safety_marshall']);
-export const activeProfiles = [p1, p2, p3, p4, p5];
 
-// -----------------------------------------------------------------------------
-// Roster Entries (with certs + lastShiftAt)
-// -----------------------------------------------------------------------------
 const r1 = makeRosterEntry(
   'r1',
   p1,
@@ -163,12 +159,7 @@ export const seedPods: Pod[] = [
     slug: 'pod-downtown',
     name: 'Downtown',
     area: 'Core & East Bay',
-    channels: [
-      {
-        type: 'Signal',
-        link: 'https://signal.group/#CjQKICdowntown_public_recruiting_placeholder',
-      },
-    ],
+    channels: [{ type: 'Signal', link: 'https://signal.group/#CjQKICdowntown_public_recruiting_placeholder' }],
     team: [r1, r2],
   },
   {
@@ -176,12 +167,7 @@ export const seedPods: Pod[] = [
     slug: 'pod-westside',
     name: 'Westside',
     area: 'West District',
-    channels: [
-      {
-        type: 'Matrix',
-        link: 'https://matrix.to/#/#westside-public:example.org',
-      },
-    ],
+    channels: [{ type: 'Matrix', link: 'https://matrix.to/#/#westside-public:example.org' }],
     team: [r3, r4],
   },
   {
@@ -200,7 +186,7 @@ export const seedPods: Pod[] = [
 export const usePodsStore = create<PodState>((set) => ({
   pods: seedPods,
   shifts: [],
-  activeProfiles,
+  activeRoster: [r1, r2, r3, r4, r5], // ✅ now RosterEntry[]
 
   addPod: (pod) => set((s) => ({ pods: [...s.pods, pod] })),
   updatePod: (id, patch) =>
@@ -223,12 +209,7 @@ export const usePodsStore = create<PodState>((set) => ({
           ? {
               ...pod,
               team: pod.team.map((entry) =>
-                entry.id === rosterId
-                  ? {
-                      ...entry,
-                      certs: [...entry.certs, cert],
-                    }
-                  : entry,
+                entry.id === rosterId ? { ...entry, certs: [...entry.certs, cert] } : entry,
               ),
             }
           : pod,

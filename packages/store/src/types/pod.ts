@@ -25,11 +25,14 @@ export type Pod = {
   team: RosterEntry[]; // tie roster entries directly
 };
 
+export type PodMemberStatus = 'active' | 'inactive' | 'suspended';
+export type PodRole = 'lead' | 'member' | 'trainee';
+
 export type RosterEntry = {
   id: string;
   volunteer: Profile;
-  role: 'lead' | 'member' | 'trainee';
-  status: 'active' | 'inactive' | 'suspended';
+  role: PodRole;
+  status: PodMemberStatus;
   langs: NormalizedLanguage[];
   fieldRoles: FieldRole[];
   skills: string[];
@@ -38,6 +41,7 @@ export type RosterEntry = {
   handle: string;
   joinedAt: string;
   lastShiftAt?: string;
+  signal_handle?: string;
 };
 
 export type DispatchEvent = {
@@ -163,6 +167,7 @@ export const rosterEntrySchema = z.object({
   skills: z.string().optional(), // keep skills simple for now
   certs: z.array(certificationSchema).optional(),
   notes: z.string().max(200).optional(),
+  signal_handle: z.string().max(150).optional(),
 });
 
 export type RosterEntryFormInput = z.input<typeof rosterEntrySchema>;

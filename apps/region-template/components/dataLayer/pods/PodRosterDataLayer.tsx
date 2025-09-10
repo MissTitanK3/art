@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/sheet";
 import { usePodsStore } from "@workspace/store/podStore";
 import { RosterTable } from "@workspace/ui/components/client/roster/RosterTable";
+import { RosterCardList } from "@workspace/ui/components/client/roster/RosterCardList";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
 import { EditRosterEntryForm } from '@workspace/ui/components/client/roster/RosterEntryEditor'
 import { AddMemberButton } from "@workspace/ui/components/client/buttons/AddMemberButton"
@@ -46,7 +47,7 @@ export default function PodRosterDataLayer() {
         <AddMemberButton id={id} />
       </div>
 
-      <RosterTable rows={rows} onEdit={(id) => setSelectedId(id)} podId={pod?.id || ''} />
+      <RosterCardList rows={rows} onEdit={(id) => setSelectedId(id)} podId={pod?.id || ''} />
 
       {/* Side panel editor */}
       <Sheet open={!!editing} onOpenChange={(o) => !o && setSelectedId(null)}>

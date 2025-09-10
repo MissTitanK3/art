@@ -46,6 +46,7 @@ export function EditRosterEntryForm({
       skills: initial.skills?.join(", ") ?? "",
       certs: initial.certs ?? [],
       notes: initial.notes ?? "",
+      signal_handle: initial.signal_handle || "",
     },
   });
 
@@ -60,6 +61,7 @@ export function EditRosterEntryForm({
       skills: vals.skills ? vals.skills.split(",").map((s) => s.trim()) : [],
       certs: vals.certs ?? [],
       notes: vals.notes?.trim(),
+      signal_handle: vals.signal_handle?.trim() || undefined,
     };
     onSave(transformed);
   };
@@ -101,6 +103,24 @@ export function EditRosterEntryForm({
           )}
         />
         {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
+      </div>
+      <div className="grid gap-1">
+        <Label>Signal Handle</Label>
+        <label htmlFor="signal_handle" className="text-xs text-muted-foreground">
+          Must include the .00 suffix, e.g. @handle.12
+        </label>
+        <Controller
+          name="signal_handle"
+          control={control}
+          render={({ field }) => (
+            <Input
+              id="signal_handle"
+              placeholder="@handle"
+              {...register("signal_handle")}
+            />
+          )}
+        />
+        {errors.signal_handle && <p className="text-xs text-destructive">{errors.signal_handle.message}</p>}
       </div>
 
       {/* Languages */}

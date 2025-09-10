@@ -89,3 +89,23 @@ export function fakeUUID(): string {
     return v.toString(16);
   });
 }
+
+/**
+ * Convert identifiers (snake_case, kebab-case, lowercase) into
+ * human-readable, capitalized strings.
+ */
+export function humanize(input: string): string {
+  if (!input) return '';
+
+  return (
+    input
+      // replace underscores and dashes with spaces
+      .replace(/[_-]+/g, ' ')
+      // collapse multiple spaces
+      .replace(/\s+/g, ' ')
+      // trim
+      .trim()
+      // capitalize each word
+      .replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1))
+  );
+}

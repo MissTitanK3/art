@@ -107,8 +107,6 @@ export function ProfileForm({
   const submit: SubmitHandler<ProfileFormOutput> = async (values) => {
     try {
       const res = await onSubmit(values);
-      console.log(res);
-
       if (res.ok) {
         toast.success("Profile saved");
         // form.reset(values, { keepValues: true });

@@ -25,11 +25,10 @@ import {
   usePodsStore,
 } from "@workspace/store/podStore";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
-import { Profile } from "@workspace/store/profileStore";
 
 export function AddMemberButton({ id }: { id: string }) {
   const podId = decodeURIComponent(id ?? "");
-  const { pods, updatePod, activeProfiles } = usePodsStore();
+  const { pods, updatePod, activeRoster } = usePodsStore(); // ✅ now RosterEntry[]
   const pod = pods.find((p) => p.slug === podId);
 
   const [open, setOpen] = React.useState(false);
@@ -37,7 +36,7 @@ export function AddMemberButton({ id }: { id: string }) {
 
   // form state
   const [guestName, setGuestName] = React.useState("");
-  const [selectedProfileId, setSelectedProfileId] = React.useState<string | null>(
+  const [selectedRosterId, setSelectedRosterId] = React.useState<string | null>(
     null
   );
   const [role, setRole] = React.useState<"lead" | "member" | "trainee">("member");
@@ -47,37 +46,43 @@ export function AddMemberButton({ id }: { id: string }) {
   const handleAdd = () => {
     const newId = `r-${Date.now()}`;
 
-    let profile: Profile;
+    let entry: RosterEntry;
     if (mode === "guest") {
-      profile = makeProfile(
+      // build guest profile + roster entry
+      const profile = makeProfile(
         `guest-${newId}`,
         guestName || "Guest Volunteer",
         [],
         "Unregistered"
       );
+      entry = makeRosterEntry(
+        newId,
+        profile,
+        role,
+        "active",
+        [],
+        [],
+        []
+      );
     } else {
-      const found = activeProfiles.find((p) => p.id === selectedProfileId);
+      const found = activeRoster.find((r) => r.id === selectedRosterId);
       if (!found) {
-        alert("Please select a registered user");
+        alert("Please select a registered roster entry");
         return;
       }
-      profile = found;
+      // clone roster entry with new role/status for this pod
+      entry = {
+        ...found,
+        id: newId,
+        role,
+        status: "active",
+      };
     }
-
-    const entry: RosterEntry = makeRosterEntry(
-      newId,
-      profile,
-      role,
-      "active",
-      [],
-      [],
-      []
-    );
 
     updatePod(pod.id, { team: [...pod.team, entry] });
     setOpen(false);
     setGuestName("");
-    setSelectedProfileId(null);
+    setSelectedRosterId(null);
   };
 
   return (
@@ -117,16 +122,16 @@ export function AddMemberButton({ id }: { id: string }) {
             <>
               <Label>User Lookup</Label>
               <Select
-                value={selectedProfileId ?? ""}
-                onValueChange={(v) => setSelectedProfileId(v)}
+                value={selectedRosterId ?? ""}
+                onValueChange={(v) => setSelectedRosterId(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a user" />
+                  <SelectValue placeholder="Select a roster member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {activeProfiles.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.display_name}
+                  {activeRoster.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.volunteer.display_name} ({r.role})
                     </SelectItem>
                   ))}
                 </SelectContent>

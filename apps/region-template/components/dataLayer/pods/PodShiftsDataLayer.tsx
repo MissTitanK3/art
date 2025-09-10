@@ -122,7 +122,7 @@ export default function PodShiftsDataLayer() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{shift.label || "Untitled shift"}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                       {formatDateRange(shift.start, shift.end, shift.tz)}
                     </p>
                   </div>
