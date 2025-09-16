@@ -1,10 +1,12 @@
 "use client";
 
+import DispatchShiftDataLayer from "@/components/dataLayer/dispatches/DisptachShiftsDataLayer";
+
 export default function SchedulesPage() {
 
   return (
     <div suppressHydrationWarning>
-      <h1 className="text-lg font-semibold">Shifts</h1>
+      <DispatchShiftDataLayer />
     </div>
   );
 }

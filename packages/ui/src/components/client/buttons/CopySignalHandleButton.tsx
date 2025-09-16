@@ -14,10 +14,8 @@ export default function CopySignalHandleButton({ handle }: { handle?: string }) 
 
   return (
     <Button
-      size="icon"
-      variant="ghost"
+      variant="secondary"
       onClick={copyHandle}
-      title="Copy Signal handle"
     >
       <Copy className="w-4 h-4" /> Signal Handle
     </Button>

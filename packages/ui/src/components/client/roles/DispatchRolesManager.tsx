@@ -29,6 +29,8 @@ import CopySignalHandleButton from "../buttons/CopySignalHandleButton.tsx";
 import { RosterEntry, PodRole, PodMemberStatus } from "@workspace/store/types/pod.ts";
 import { FIELD_ROLE_OPTIONS } from "@workspace/store/types/roles.ts";
 import { Input } from "@workspace/ui/components/input";
+import ManageRoleDrawer from "./ManageRoleDrawer.tsx";
+import RolesEditorDrawer from "./RolesEditorDrawer.tsx";
 
 // Build lookup of roster entries for easy access
 const allRoster = seedPods.flatMap((pod) => pod.team);
@@ -127,7 +129,7 @@ export default function DispatchRolesManager({ id }: { id: string }) {
                 <hr className="my-4" />
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 justify-between w-full">
-                    <Badge variant="secondary" className="text-xs capitalize">
+                    <Badge variant="secondary" className="text-xs">
                       {humanize(role)}
                     </Badge>
                     <span className="text-muted-foreground">
@@ -141,46 +143,58 @@ export default function DispatchRolesManager({ id }: { id: string }) {
                 {assigned.length > 0 ? (
                   <ul className="space-y-2">
                     {assigned.map((v) => {
-                      const rosterEntry = allRoster.find((r) => r.id === v.id); // ✅ match by RosterEntry.id
+                      const rosterEntry = allRoster.find((r) => r.id === v.id);
 
                       return (
-                        <li key={v.id} className="flex items-center gap-2 text-muted-foreground">
-                          <div className="flex items-center gap-2 flex-col sm:flex-row w-full justify-between">
-                            <div className="flex items-center gap-2 w-full justify-between my-1">
-                              <div className="flex flex-col items-center gap-2">
-                                <Badge variant="outline" className="text-[10px] capitalize">
-                                  {rosterEntry?.role ??
-                                    (v.id?.startsWith("manual-") ? "manual" : "unknown")}
-                                </Badge>
+                        <li
+                          key={v.id}
+                          className="text-muted-foreground"
+                        >
+                          <div
+                            className="
+      flex flex-col items-center gap-4 w-full
+      md:flex-row md:justify-between md:items-center md:gap-6
+    "
+                          >
+                            {/* Left side: volunteer info */}
+                            <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
+                              <Badge variant="outline" className="text-[10px] capitalize">
+                                {rosterEntry?.role ??
+                                  (v.id?.startsWith("manual-") ? "manual" : "unknown")}
+                              </Badge>
 
-                                <span className="font-medium text-foreground">
-                                  {rosterEntry?.volunteer.display_name ??
-                                    v.volunteer?.display_name ??
-                                    "Unknown Volunteer"}
-                                </span>
-                              </div>
-                              <VolunteerStatusBadge status={v.status as DispatchPersonnelStatus} />
+                              <span className="font-medium text-foreground text-center md:text-left">
+                                {rosterEntry?.volunteer.display_name ??
+                                  v.volunteer?.display_name ??
+                                  "Unknown Volunteer"}
+                              </span>
+
+                              {rosterEntry?.volunteer.contact_signal && (
+                                <CopySignalHandleButton
+                                  handle={rosterEntry.volunteer.contact_signal}
+                                />
+                              )}
                             </div>
-                            <div className="flex items-center gap-2">
+
+                            {/* Right side: status */}
+                            <div className="flex flex-col items-center gap-2 md:flex-row md:gap-3">
+                              <VolunteerStatusBadge status={v.status as DispatchPersonnelStatus} />
                               <VolunteerStatusUpdater
                                 current={v.status as DispatchPersonnelStatus}
                                 onChange={(newStatus) => {
                                   useDispatchStore.getState().updateSubmission(submission.id, {
-                                    assigned_volunteers: submission.assigned_volunteers?.map(
-                                      (av) =>
-                                        av.id === v.id
-                                          ? { ...av, status: newStatus as PodMemberStatus }
-                                          : av
+                                    assigned_volunteers: submission.assigned_volunteers?.map((av) =>
+                                      av.id === v.id
+                                        ? { ...av, status: newStatus as PodMemberStatus }
+                                        : av
                                     ),
                                   });
                                 }}
                               />
                             </div>
-                            {rosterEntry?.volunteer.contact_signal && (
-                              <CopySignalHandleButton handle={rosterEntry.volunteer.contact_signal} />
-                            )}
                           </div>
                         </li>
+
                       );
                     })}
 
@@ -215,6 +229,7 @@ export default function DispatchRolesManager({ id }: { id: string }) {
 
                     onClose={() => setOpenRole(null)}
                     onSave={handleSaveAssignments}
+                    allRoster={allRoster}
                   />
 
                 )}
@@ -234,226 +249,5 @@ export default function DispatchRolesManager({ id }: { id: string }) {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function ManageRoleDrawer({
-  role,
-  submissionId,
-  assigned,
-  manualAssigned = [],
-  onClose,
-  onSave,
-}: {
-  role: string;
-  submissionId: string;
-  assigned: string[];
-  manualAssigned?: { volunteer_id: string; name?: string }[];
-  onClose: () => void;
-  onSave: (
-    role: string,
-    selected: string[],
-    manualVolunteers: { id: string; name: string }[]
-  ) => void;
-}) {
-  const [selected, setSelected] = useState<string[]>(assigned);
-  const [manualName, setManualName] = useState("");
-  const [manualVolunteers, setManualVolunteers] = useState<
-    { id: string; name: string }[]
-  >(
-    manualAssigned.map((m) => ({
-      id: m.volunteer_id,
-      name: m.name ?? m.volunteer_id,
-    }))
-  );
-
-  const toggle = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
-    );
-  };
-
-  const addManualVolunteer = () => {
-    if (!manualName.trim()) return;
-    const id = `manual-${Date.now()}`;
-    const newVolunteer = { id, name: manualName.trim() };
-    setManualVolunteers((prev) => [...prev, newVolunteer]);
-    setSelected((prev) => [...prev, id]);
-    setManualName("");
-  };
-
-  return (
-    <Drawer open onOpenChange={onClose}>
-      <DrawerContent className="p-4">
-        <DrawerHeader>
-          <DrawerTitle>Manage Role: {role}</DrawerTitle>
-          <DrawerDescription>
-            Assign or unassign volunteers for this role.
-          </DrawerDescription>
-        </DrawerHeader>
-
-        <div className="max-h-[50vh] overflow-y-auto mt-4 space-y-2">
-          {/* Existing roster */}
-          {allRoster.map((r) => (
-            <label
-              key={r.volunteer.id}
-              className="flex items-center gap-2 text-sm cursor-pointer"
-            >
-              <Checkbox
-                checked={selected.includes(r.id)}
-                onCheckedChange={() => toggle(r.id)}
-              />
-
-              <span className="font-medium">{r.volunteer.display_name}</span>
-              <Badge variant="outline" className="text-[10px] capitalize">
-                {r.role}
-              </Badge>
-            </label>
-          ))}
-
-          {/* Manual volunteers */}
-          {manualVolunteers.map((m) => (
-            <label
-              key={m.id}
-              className="flex items-center gap-2 text-sm cursor-pointer"
-            >
-              <Checkbox
-                checked={selected.includes(m.id)}
-                onCheckedChange={() => toggle(m.id)}
-              />
-              <span className="font-medium">{m.name}</span>
-              <Badge variant="outline" className="text-[10px] capitalize">
-                manual
-              </Badge>
-            </label>
-          ))}
-        </div>
-
-        {/* Manual entry field */}
-        <div className="flex gap-2 mt-4">
-          <input
-            type="text"
-            value={manualName}
-            onChange={(e) => setManualName(e.target.value)}
-            placeholder="Add volunteer name"
-            className="flex-1 rounded-md border px-2 py-1 text-sm"
-          />
-          <Button size="sm" onClick={addManualVolunteer}>
-            Add
-          </Button>
-        </div>
-
-        <DrawerFooter>
-          <Button onClick={() => onSave(role, selected, manualVolunteers)}>
-            Save
-          </Button>
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  );
-}
-
-
-function RolesEditorDrawer({
-  current,
-  onClose,
-  onSave,
-}: {
-  current: Record<string, number>;
-  onClose: () => void;
-  onSave: (roles: Record<string, number>) => void;
-}) {
-  const [rolesState, setRolesState] = useState<Record<string, number>>(current);
-  const [query, setQuery] = useState("");
-
-  const toggleRole = (role: string) => {
-    setRolesState((prev) => {
-      const copy = { ...prev };
-      if (copy[role]) {
-        delete copy[role];
-      } else {
-        copy[role] = 1; // default count
-      }
-      return copy;
-    });
-  };
-
-  const updateCount = (role: string, value: number) => {
-    setRolesState((prev) => ({ ...prev, [role]: value }));
-  };
-
-  // 🔍 Filtered roles list
-  const filteredRoles = FIELD_ROLE_OPTIONS.filter((role) =>
-    role.toLowerCase().includes(query.toLowerCase())
-  );
-
-  return (
-    <Drawer open onOpenChange={onClose}>
-      <DrawerContent className="p-4" inert>
-        <DrawerHeader>
-          <DrawerTitle>Edit Roles Needed</DrawerTitle>
-          <DrawerDescription>
-            Add or remove required roles and set how many volunteers are needed
-            for each.
-          </DrawerDescription>
-        </DrawerHeader>
-
-        {/* Search bar */}
-        <div className="mb-3">
-          <Input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search roles..."
-            className="w-full"
-            autoFocus
-          />
-        </div>
-
-        <div className="max-h-[50vh] overflow-y-auto mt-2 space-y-2">
-          {filteredRoles.length > 0 ? (
-            filteredRoles.map((role) => (
-              <div
-                key={role}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={rolesState[role] !== undefined}
-                    onCheckedChange={() => toggleRole(role)}
-                  />
-                  <span className="capitalize">{humanize(role)}</span>
-                </label>
-                {rolesState[role] !== undefined && (
-                  <Input
-                    type="number"
-                    min={1}
-                    value={rolesState[role]}
-                    onChange={(e) =>
-                      updateCount(role, Number(e.target.value))
-                    }
-                    className="w-16 text-center"
-                  />
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              No roles match your search.
-            </p>
-          )}
-        </div>
-
-        <DrawerFooter>
-          <Button onClick={() => onSave(rolesState)}>Save</Button>
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
   );
 }

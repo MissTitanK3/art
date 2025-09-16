@@ -21,6 +21,7 @@ import { Button } from "@workspace/ui/components/button";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
 import { Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type Props = {
   id: string;
@@ -53,7 +54,13 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
         </div>
         <div className="flex items-center gap-2 flex-col sm:flex-row">
           <DispatchStatusUpdater id={submission.id} />
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline"
+            onClick={() => {
+              const url = new URL(window.location.href);
+              navigator.clipboard.writeText(url.toString());
+              toast.success("Dispatch link copied to clipboard ✅");
+            }}
+          >
             Share <Share2 className="w-4 h-4 ml-1" />
           </Button>
         </div>
