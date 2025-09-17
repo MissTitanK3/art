@@ -23,7 +23,6 @@ import { toast } from "sonner";
 import { useDispatchRosterStore } from "@workspace/store/dispatchRosterStore";
 import { usePodsStore } from "@workspace/store/podStore";
 import { DateTimePicker } from "@workspace/ui/components/DateTimePicker";
-import { ScrollArea } from "@workspace/ui/components/scroll-area";
 
 type Props = {
   open: boolean;

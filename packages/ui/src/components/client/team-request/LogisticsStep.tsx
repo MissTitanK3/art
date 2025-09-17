@@ -5,7 +5,6 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
-import { Textarea } from "@workspace/ui/components/textarea";
 import { Badge } from "@workspace/ui/components/badge";
 import { LogisticsItem, DispatchAttachment } from "@workspace/store/types/dispatch.ts";
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { Check, Paperclip, Pencil, Trash2, X } from "lucide-react"; // icon for attachments
+import { Check, Paperclip, Pencil, Trash2, X } from "lucide-react";
 
 export default function DispatchUpdates({ dispatchId }: { dispatchId: string }) {
   const [text, setText] = useState("");

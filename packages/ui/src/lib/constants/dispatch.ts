@@ -1,4 +1,4 @@
-import { DispatchStatus } from '@workspace/store/dispatchStore';
+import { DispatchStatus } from '@workspace/store/types/dispatch.ts';
 
 export const STATUS_META: Record<DispatchStatus, { label: string; color: string }> = {
   preplanning: { label: 'Preplanning', color: '!bg-slate-500' },

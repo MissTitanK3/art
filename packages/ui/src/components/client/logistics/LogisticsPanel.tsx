@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@workspace/ui/components/select";
 import { Badge } from "@workspace/ui/components/badge";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
 import AddLogisticsDrawer from "./AddLogisticsDrawer.tsx";

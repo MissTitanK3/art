@@ -8,15 +8,6 @@ import {
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerFooter,
-} from "@workspace/ui/components/drawer";
-import { Checkbox } from "@workspace/ui/components/checkbox";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
 import { seedPods } from "@workspace/store/podStore";
 import { useState } from "react";
@@ -27,8 +18,6 @@ import { DispatchPersonnelStatus } from "@workspace/ui/lib/constants/dispatch";
 import { VolunteerStatusUpdater } from "../status/VolunteerStatusUpdater.tsx";
 import CopySignalHandleButton from "../buttons/CopySignalHandleButton.tsx";
 import { RosterEntry, PodRole, PodMemberStatus } from "@workspace/store/types/pod.ts";
-import { FIELD_ROLE_OPTIONS } from "@workspace/store/types/roles.ts";
-import { Input } from "@workspace/ui/components/input";
 import ManageRoleDrawer from "./ManageRoleDrawer.tsx";
 import RolesEditorDrawer from "./RolesEditorDrawer.tsx";
 
