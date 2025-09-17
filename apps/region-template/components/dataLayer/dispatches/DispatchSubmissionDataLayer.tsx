@@ -124,24 +124,18 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
                 </p>
               </div>
 
-              {submission.intended_action_preset && (
-                <div>
-                  <p className="font-medium">Intended Action</p>
-                  <DispatchIntendedActionsUpdater id={submission.id} />
-                </div>
-              )}
+              <div>
+                <p className="font-medium">Intended Action</p>
+                <DispatchIntendedActionsUpdater id={submission.id} />
+              </div>
 
-              {submission.intended_action_notes && (
-                <div>
-                  <DispatchNotesUpdater id={submission.id} />
-                </div>
-              )}
+              <div>
+                <DispatchNotesUpdater id={submission.id} />
+              </div>
 
-              {submission.signal_link && (
-                <div>
-                  <DispatchSignalLinkUpdater id={submission.id} />
-                </div>
-              )}
+              <div>
+                <DispatchSignalLinkUpdater id={submission.id} />
+              </div>
             </CardContent>
           </Card>
 

@@ -11,6 +11,8 @@ import {
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
+import { DispatchTypeBadge } from "@workspace/ui/components/client/DispatchTypeBadge";
+import { humanize } from "@workspace/ui/lib/utils";
 
 export default function DispatchListDataLayer() {
   const submissions = useDispatchStore((s) => s.submissions);
@@ -36,10 +38,12 @@ export default function DispatchListDataLayer() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>{submission.location_label ?? "Unknown Location"}</span>
-                  <Badge>{submission.status}</Badge>
+                  <Badge>{humanize(submission.status)}</Badge>
                 </CardTitle>
                 {submission.state && (
                   <CardDescription className="text-xs">
+                    {submission.type && <DispatchTypeBadge type={submission.type} />}
+                    {submission.type && " • "}
                     {submission.state}
                   </CardDescription>
                 )}

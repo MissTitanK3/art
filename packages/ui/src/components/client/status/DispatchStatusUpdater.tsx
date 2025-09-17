@@ -13,9 +13,10 @@ import { Badge } from "@workspace/ui/components/badge";
 import { useDispatchStore } from "@workspace/store/dispatchStore";
 import { useState } from "react";
 import { cn } from "@workspace/ui/lib/utils";
-import type { DispatchStatus } from "@workspace/store/dispatchStore";
 import { STATUS_META } from "@workspace/ui/lib/constants/dispatch";
 import { toast } from "sonner";
+import { Input } from "@workspace/ui/components/input";
+import { DispatchStatus } from "@workspace/store/types/dispatch.ts";
 
 export default function DispatchStatusUpdater({ id }: { id: string }) {
   const submission = useDispatchStore((s) =>
@@ -27,7 +28,10 @@ export default function DispatchStatusUpdater({ id }: { id: string }) {
 
   if (!submission) return null;
 
-  const currentMeta = STATUS_META[submission.status];
+  const currentMeta = STATUS_META[submission.status] || {
+    label: submission.status,
+    color: "bg-gray-500",
+  };
 
   return (
     <>
@@ -55,6 +59,17 @@ export default function DispatchStatusUpdater({ id }: { id: string }) {
               Choose a new status for this dispatch.
             </DrawerDescription>
           </DrawerHeader>
+
+          <div>
+            <Input
+              value={submission.location_label || ""}
+              className="mb-4"
+              onChange={(e) =>
+                updateSubmission(id, { location_label: e.target.value })
+              }
+              placeholder="Mission District, SF"
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-2 mt-4">
             {(Object.entries(STATUS_META) as [DispatchStatus, { label: string; color: string }][]).map(

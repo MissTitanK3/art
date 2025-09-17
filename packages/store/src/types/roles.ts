@@ -147,6 +147,7 @@ export const FIELD_ROLE_LABELS: Record<FieldRole, string> = {
 };
 
 export type EventType =
+  | 'scout_check'
   | 'routine_check'
   | 'community_event'
   | 'protest_low'
@@ -169,6 +170,14 @@ type TeamConfigPreset = {
 };
 
 export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
+  scout_check: {
+    roles: {
+      media_observer: 1,
+      dispatch_aide: 1,
+      defensive: 2,
+    },
+    actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement activity'],
+  },
   routine_check: {
     roles: {
       legal: 1,

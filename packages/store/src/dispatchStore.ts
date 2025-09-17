@@ -3,54 +3,40 @@
 
 import { create } from 'zustand';
 import { RosterEntry } from './types/pod.ts';
+import { DispatchStatus, DispatchType, DispatchUpdate, LogisticsItem } from './types/dispatch.ts';
 
 // -----------------------------------------------------------------------------
 // Types (aligned with schema)
 // -----------------------------------------------------------------------------
 
-export interface DispatchAttachment {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  url: string; // blob:// URL for temporary display
-}
+export const DISPATCH_TYPE_VARIANTS: Record<
+  DispatchType,
+  'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'
+> = {
+  rapid_response: 'destructive', // red
+  planned_event: 'info', // blue
+  training: 'warning', // yellow
+  community_aid: 'success', // green
+  technical_aid: 'secondary', // purple/neutral
+  other: 'outline', // gray/fallback
+};
 
-export interface DispatchUpdate {
-  id: string;
-  author: string;
-  text: string;
-  createdAt: string;
-  attachments?: DispatchAttachment[];
-}
+export const DISPATCH_TYPE_LABELS: Record<DispatchType, string> = {
+  rapid_response: 'Rapid Response',
+  planned_event: 'Planned Event',
+  training: 'Training',
+  community_aid: 'Community Aid',
+  technical_aid: 'Technical Aid',
+  other: 'Other',
+};
 
-export interface LogisticsItem {
-  id: string;
-  category: 'transport' | 'supply' | 'comms' | 'rally_point' | 'other';
-  description: string;
-  quantity?: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'pending' | 'in_progress' | 'delivered' | 'cancelled';
-  responsibleParty?: { type: 'user'; userId: string } | { type: 'anon'; name: string };
-  warehouse?: { name?: string; location?: string; contact?: string };
-  accountabilityNotes?: string;
-  updatedAt: string;
+export function getDispatchTypeStyle(type: DispatchType) {
+  return DISPATCH_TYPE_VARIANTS[type] ?? DISPATCH_TYPE_VARIANTS.other;
 }
-
-export type DispatchStatus =
-  | 'preplanning'
-  | 'unconfirmed'
-  | 'confirmed'
-  | 'mobilizing'
-  | 'in_progress'
-  | 'debriefing'
-  | 'completed'
-  | 'cancelled'
-  | 'expired'
-  | 'archived';
 
 export interface DispatchSubmission {
   id: string;
+  type?: DispatchType;
   location?: { lat: number; lng: number; [key: string]: any };
   timestamp: string;
   required_roles?: string[];
@@ -99,6 +85,7 @@ export const seedDispatches: DispatchSubmission[] = [
   {
     id: '11111111-1111-1111-1111-111111111111',
     timestamp: new Date().toISOString(),
+    type: 'community_aid',
     source: 'dispatch',
     status: 'unconfirmed',
     visibility_radius_km: 10,
@@ -133,6 +120,7 @@ export const seedDispatches: DispatchSubmission[] = [
   {
     id: '22222222-2222-2222-2222-222222222222',
     timestamp: new Date().toISOString(),
+    type: 'rapid_response',
     source: 'manual',
     status: 'mobilizing',
     visibility_radius_km: 10,
