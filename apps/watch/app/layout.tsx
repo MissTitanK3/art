@@ -1,36 +1,32 @@
-import { Geist, Geist_Mono } from "next/font/google"
+// app/layout.tsx
+import { LanguageProvider } from '@/lib/il8n/provider';
+import './globals.css';
+import type { Metadata } from 'next';
+import BottomNav from '@/components/BottomNav';
+import { WizardProvider } from '@/components/wizard/WizardContext';
+import { MapTileProvider } from '@/lib/MapTileContext';
 
-import "@workspace/ui/globals.css"
-import { Providers } from "@/components/providers"
-import { Toaster } from "@workspace/ui/components/sonner"
+export const metadata: Metadata = {
+  title: 'ICE Tea Watch',
+  description: 'Report and track ICE and law enforcement presence anonymously.',
+};
 
-const fontSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased px-3`}
-      >
-        <Providers>
-          <div className="px-3 pt-2">
-            {children}
-            <Toaster />
-          </div>
-        </Providers>
+    <html lang="en">
+      <body className="bg-zinc-900 text-white">
+        <WizardProvider>
+          <LanguageProvider>
+            <MapTileProvider>
+              {/* MAIN PAGE CONTENT */}
+              <div className="max-w-4xl mx-auto p-4 min-h-screen pb-24">{children}</div>
+
+              {/* FIXED BOTTOM NAVBAR - keep outside main */}
+              <BottomNav />
+            </MapTileProvider>
+          </LanguageProvider>
+        </WizardProvider>
       </body>
     </html>
-  )
+  );
 }
