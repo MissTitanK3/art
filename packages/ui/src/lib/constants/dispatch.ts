@@ -17,7 +17,7 @@ export const ACTION_PRESETS = [
   '',
   'Witnessing / observation only',
   'Assist individuals with legal navigation',
-  'Document and report ICE/law enforcement activity',
+  'Document and report ICE/law enforcement presence',
   'Provide trauma-informed de-escalation',
   'Support community visibility and morale',
   'Coordinate direct intervention or obstruction',
@@ -37,7 +37,7 @@ export const ACTION_PRESETS = [
 export const ACTION_PRESETS_GROUPED: Record<string, string[]> = {
   '📋 Observation & Documentation': [
     'Witnessing / observation only',
-    'Document and report ICE/law enforcement activity',
+    'Document and report ICE/law enforcement presence',
     'Media or livestream monitoring and amplification',
     'Rights observation and legal witnessing',
   ],
@@ -76,7 +76,7 @@ export const ACTION_PRESETS_GROUPED: Record<string, string[]> = {
   '🛡️ Community Defense Center': [
     'Rapid-response patrol or presence at high-risk areas (e.g., hotels, day laborer sites)',
     'Deploys trained observers, defensive presence, legal support, and community liaisons',
-    'Aims to interrupt, document, and deter ICE operations or hostile activity',
+    'Aims to interrupt, document, and deter ICE operations or hostile presence',
   ],
   '🧭 Custom Planning': ['Custom action plan (see notes below)'],
 };

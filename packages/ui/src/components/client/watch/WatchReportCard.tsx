@@ -88,7 +88,7 @@ export default function WatchReportCard({
   return (
     <div className="rounded-2xl border p-4 space-y-2">
       <div className="font-semibold">
-        {report.agency_type?.join(", ") || report.agency_other || "Unknown activity"}
+        {report.agency_type?.join(", ") || report.agency_other || "Unknown presence"}
       </div>
 
       <div className="text-sm text-muted-foreground">

@@ -176,7 +176,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
       defensive: 2,
     },
-    actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement activity'],
+    actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement presence'],
   },
   routine_check: {
     roles: {
@@ -187,7 +187,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
     },
     actions: [
       'Witnessing / observation only',
-      'Document and report ICE/law enforcement activity',
+      'Document and report ICE/law enforcement presence',
       'Rights observation and legal witnessing',
     ],
   },
@@ -224,7 +224,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
     actions: [
       'Provide trauma-informed de-escalation',
       'Rights observation and legal witnessing',
-      'Document and report ICE/law enforcement activity',
+      'Document and report ICE/law enforcement presence',
     ],
   },
   protest_high: {
@@ -266,7 +266,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
     },
     actions: [
       'Coordinate direct intervention or obstruction',
-      'Document and report ICE/law enforcement activity',
+      'Document and report ICE/law enforcement presence',
       'Maintain Signal/radio/tech comms relay',
       'Assist disabled individuals with access or evacuation',
     ],
@@ -343,7 +343,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
     actions: [
       'Provide cultural or spiritual grounding',
       'Assist individuals with legal navigation',
-      'Document and report ICE/law enforcement activity',
+      'Document and report ICE/law enforcement presence',
       'Childcare or eldercare support on site',
     ],
   },
@@ -394,7 +394,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
     },
     actions: [
-      'Document and report ICE/law enforcement activity',
+      'Document and report ICE/law enforcement presence',
       'Rights observation and legal witnessing',
       'Track arrests or detentions for legal follow-up',
     ],
@@ -416,7 +416,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       vehicle_support: 1,
     },
     actions: [
-      'Document and report ICE/law enforcement activity',
+      'Document and report ICE/law enforcement presence',
       'Rights observation and legal witnessing',
       'Coordinate direct intervention or obstruction',
       'Support community visibility and morale',
@@ -441,7 +441,7 @@ export const ACTION_PRESETS = [
   '',
   'Witnessing / observation only',
   'Assist individuals with legal navigation',
-  'Document and report ICE/law enforcement activity',
+  'Document and report ICE/law enforcement presence',
   'Provide trauma-informed de-escalation',
   'Support community visibility and morale',
   'Coordinate direct intervention or obstruction',
@@ -461,7 +461,7 @@ export const ACTION_PRESETS = [
 export const ACTION_PRESETS_GROUPED = {
   '📋 Observation & Documentation': [
     'Witnessing / observation only',
-    'Document and report ICE/law enforcement activity',
+    'Document and report ICE/law enforcement presence',
     'Media or livestream monitoring and amplification',
     'Rights observation and legal witnessing',
   ],
@@ -500,7 +500,7 @@ export const ACTION_PRESETS_GROUPED = {
   '🛡️ Community Defense Center': [
     'Rapid-response patrol or presence at high-risk areas (e.g., hotels, day laborer sites)',
     'Deploys trained observers, defensive presence, legal support, and community liaisons',
-    'Aims to interrupt, document, and deter ICE operations or hostile activity',
+    'Aims to interrupt, document, and deter ICE operations or hostile presence',
   ],
 
   '🧭 Custom Planning': ['Custom action plan (see notes below)'],
@@ -841,7 +841,7 @@ export const FIELD_ROLE_DETAILS: FieldRoleDetail[] = [
   },
   {
     role: 'security_witness',
-    description: 'Observes courthouse security activity and documents violations or misconduct.',
+    description: 'Observes courthouse security presence and documents violations or misconduct.',
     requiredSkills: [
       'Strong observational detail',
       'Comfort documenting power imbalance',

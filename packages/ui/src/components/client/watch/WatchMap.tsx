@@ -57,7 +57,7 @@ export default function WatchMap({
                 <Popup maxWidth={200}>
                   <div className="space-y-2">
                     <div className="font-semibold text-sm">
-                      {r.agency_type?.join(", ") || r.agency_other || "Unknown activity"}
+                      {r.agency_type?.join(", ") || r.agency_other || "Unknown presence"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(r.timestamp).toLocaleString()}
