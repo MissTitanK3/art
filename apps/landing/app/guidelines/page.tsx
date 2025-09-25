@@ -15,7 +15,7 @@ export const CommunityGuidelinesPage = () => (
     <section>
       <h2 className="text-xl font-semibold mb-2">1. Purpose</h2>
       <p className="text-muted-foreground">
-        Always Ready Tools ("ART") exists to support decentralized, volunteer-driven coordination for
+        Always Ready Tools (&quot;ART&quot;) exists to support decentralized, volunteer-driven coordination for
         mutual aid, community defense, and emergency response. These guidelines define the expected
         standards of behavior for all participants.
       </p>
