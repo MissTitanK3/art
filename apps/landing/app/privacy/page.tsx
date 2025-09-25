@@ -15,7 +15,7 @@ export const PrivacyPage = () => (
     <section>
       <h2 className="text-xl font-semibold mb-2">1. Introduction</h2>
       <p className="text-muted-foreground">
-        Always Ready Tools ("ART") is committed to protecting your privacy. This policy explains how we handle
+        Always Ready Tools (&quot;ART&quot;) is committed to protecting your privacy. This policy explains how we handle
         information across regional instances, the Academy, the Watch platform, and the Admin portal.
       </p>
     </section>

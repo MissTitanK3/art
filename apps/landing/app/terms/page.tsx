@@ -19,7 +19,7 @@ export const TermsPage = () => (
     <section>
       <h2 className="text-xl font-semibold mb-2">1. Acceptance of Terms</h2>
       <p className="text-muted-foreground">
-        By accessing or using Always Ready Tools (“ART”), you agree to be bound by these Terms & Conditions.
+        By accessing or using Always Ready Tools (&quot;ART&quot;), you agree to be bound by these Terms & Conditions.
         If you do not agree, you may not use the services. ART reserves the right to update these Terms at any time,
         and continued use constitutes acceptance of the changes.
       </p>
