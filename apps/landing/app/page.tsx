@@ -38,7 +38,7 @@ const ToolCard: FC<ToolCardProps> = ({ title, emoji, description, href, cta, sec
   );
 };
 
-const LandingPage: FC = () => {
+export default function LandingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       {/* Hero */}
@@ -126,4 +126,3 @@ const LandingPage: FC = () => {
   );
 };
 
-export default LandingPage;
