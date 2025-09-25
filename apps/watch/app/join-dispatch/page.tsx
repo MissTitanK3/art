@@ -16,6 +16,7 @@ export default function JoinDispatchPage() {
         <Link
           href="https://dispatch.peoplesrebellion.org/"
           target="_blank"
+          rel="noopener noreferrer"
           className="inline-block mt-4 px-6 py-3 bg-blue-700 text-white font-bold rounded hover:bg-blue-800 transition">
           🔗 {t('joinDispatchContactButton')}
         </Link>

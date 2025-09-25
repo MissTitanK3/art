@@ -107,7 +107,7 @@ export default function TransparencyPage() {
         <p>{t('transparencyInspectDesktop')}</p>
         <p className="mt-2">
           {t('transparencyInspectMobile')}{' '}
-          <a href="https://httptoolkit.tech/" className="underline text-blue-600" target="_blank">
+          <a href="https://httptoolkit.tech/" className="underline text-blue-600" target="_blank" rel="noopener noreferrer">
             HTTP Toolkit
           </a>
           .

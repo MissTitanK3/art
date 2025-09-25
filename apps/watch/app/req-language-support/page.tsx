@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TRANSLATIONS } from '@/lib/il8n/translations';
 import { useTranslations } from '@/lib/il8n/useTranslations';
 import LinkButton from '@/components/ui/FrostedLink';
 import { FrostedButton } from '@/components/ui/FrostedButton';
+import { TRANSLATIONS } from '@/lib/il8n/translations';
 
 function CopyTemplateButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);

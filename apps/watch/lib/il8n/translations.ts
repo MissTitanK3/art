@@ -270,8 +270,11 @@ export const roleKeys: TranslationKey[] = [
   'joinDispatchRole.translator',
   'joinDispatchRole.tech',
 ];
-
-export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = {
+export const TRANSLATIONS: {
+  en: Record<TranslationKey, string>;
+  es: Record<TranslationKey, string>;
+  [lang: string]: Record<TranslationKey, string>;
+} = {
   en: {
     goToAcademy: 'Go To Academy',
     goToDispatch: 'Go To Dispatch',

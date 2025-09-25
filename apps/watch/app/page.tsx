@@ -21,21 +21,23 @@ export default function Home() {
       </div>
       <LanguageSwitcher />
       <div className="flex justify-center gap-4 mt-8 flex-col">
-        <LinkButton label={t('supportProject')} variant="primary" target="_blank" />
-        <LinkButton label={t('requestLanguageSupport')} variant="primary" href="/req-language-support" />
-        <LinkButton label={t('transparencyTitle')} variant="primary" href="/transparency" />
-        <LinkButton label={t('joinDispatch')} variant="primary" href="/join-dispatch" />
-        <LinkButton label={t('immigrantResourcesTitle')} variant="primary" href="/resources" />
+        <LinkButton label={t('supportProject')} variant="primary" target="_blank" rel="noopener noreferrer" />
+        <LinkButton label={t('requestLanguageSupport')} variant="primary" href="/req-language-support" rel="noopener noreferrer" />
+        <LinkButton label={t('transparencyTitle')} variant="primary" href="/transparency" rel="noopener noreferrer" />
+        <LinkButton label={t('joinDispatch')} variant="primary" href="/join-dispatch" rel="noopener noreferrer" />
+        <LinkButton label={t('immigrantResourcesTitle')} variant="primary" href="/resources" rel="noopener noreferrer" />
         <LinkButton
           label={t('goToAcademy')}
           variant="primary"
           target="_blank"
+          rel='noopener noreferrer'
           href="https://academy.peoplesrebellion.org"
         />
         <LinkButton
           label={t('goToDispatch')}
           variant="primary"
           target="_blank"
+          rel='noopener noreferrer'
           href="https://dispatch.peoplesrebellion.org"
         />
 

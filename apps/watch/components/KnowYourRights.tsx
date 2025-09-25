@@ -71,6 +71,7 @@ export default function KnowYourRights() {
           label="https://immigrantjustice.org/know-your-rights/ice-encounter"
           href="https://immigrantjustice.org/know-your-rights/ice-encounter"
           target="_blank"
+          rel="noopener noreferrer"
           variant="secondary"
         />
       </div>
