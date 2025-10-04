@@ -21,10 +21,10 @@ Its purpose is to keep regions operational, secure, and autonomous — while all
 
 | Subdomain              | Purpose                                | Data Scope                       | Access |
 |------------------------|----------------------------------------|----------------------------------|--------|
-| watch.[domain].org     | Public reporting & heatmap             | Non-PII reports (geo + time)     | Public |
-| academy.[domain].org   | Training portal + certifications       | Course content + user progress   | Public + Auth |
-| admin.[domain].org     | National-level coordination            | Minimal region metadata only     | National admins & trainers |
-| [region].[domain].org  | Regional dispatch ops, onboarding, shifts | Regional DB only (volunteers, shifts, trust, alerts) | Regional admins, pod leaders, vetted volunteers |
+| watch.alwaysreadytools.org     | Public reporting & heatmap             | Non-PII reports (geo + time)     | Public |
+| academy.alwaysreadytools.org   | Training portal + certifications       | Course content + user progress   | Public + Auth |
+| admin.alwaysreadytools.org     | National-level coordination            | Minimal region metadata only     | National admins & trainers |
+| [region].alwaysreadytools.org  | Regional dispatch ops, onboarding, shifts | Regional DB only (volunteers, shifts, trust, alerts) | Regional admins, pod leaders, vetted volunteers |
 
 ---
 
@@ -32,7 +32,7 @@ Its purpose is to keep regions operational, secure, and autonomous — while all
 
 ### 1. Admin Dispatch (admin-dispatch)  
 National-level visibility and trainer collaboration.  
-Deployed at **admin.[domain].org**
+Deployed at **admin.alwaysreadytools.org**
 
 - Region Map & Directory (active/inactive/needs admin/support overdue)  
 - Support Requests Inbox (skills + urgency, never PII)  
@@ -46,7 +46,7 @@ _No volunteer rosters, contact info, or incident logs are ever stored here._
 
 ### 2. Regional Dispatch Template (regional-dispatch-template)  
 Per-region operations.  
-Forked/instantiated for **[region].[domain].org**
+Forked/instantiated for **[region].alwaysreadytools.org**
 
 - Regional Admin Console (pods, roster, shifts, trust list, alerts)  
 - Volunteer Onboarding (account creation + Academy cert gate)  
@@ -83,7 +83,7 @@ watch.domain.org → Regional DB ←→ region.domain.org → (metadata only) �
 ## Onboarding a New Region
 
 1. **Infrastructure Setup**  
-   - Provision isolated DB, apply baseline schema, deploy [region].[domain].org.  
+   - Provision isolated DB, apply baseline schema, deploy [region].alwaysreadytools.org.  
    - Securely issue regional admin credentials.  
 
 2. **Regional Admin Onboarding**  
