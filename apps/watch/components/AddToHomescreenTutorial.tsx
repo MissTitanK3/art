@@ -18,14 +18,8 @@ export default function AddToHomescreenTutorial() {
           <ul>
             <li className="flex flex-col">
               <span>Watch</span>
-              <Link href="https://icetea.peoplesrebellion.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                icetea.peoplesrebellion.org
-              </Link>
-            </li>
-            <li className="flex flex-col">
-              <span>Dispatch</span>
-              <Link href="https://dispatch.peoplesrebellion.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                dispatch.peoplesrebellion.org
+              <Link href="https://watch.alwaysreadytools.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                https://watch.alwaysreadytools.org
               </Link>
             </li>
           </ul>
@@ -44,14 +38,10 @@ export default function AddToHomescreenTutorial() {
         <ol>
           <li>Open the site in Safari:</li>
           <ul>
-            <li>
-              <Link href="https://icetea.peoplesrebellion.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                Watch — icetea.peoplesrebellion.org
-              </Link>
-            </li>
-            <li>
-              <Link href="https://dispatch.peoplesrebellion.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                Dispatch — dispatch.peoplesrebellion.org
+            <li className="flex flex-col">
+              <span>Watch</span>
+              <Link href="https://watch.alwaysreadytools.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                https://watch.alwaysreadytools.org
               </Link>
             </li>
           </ul>
@@ -77,3 +67,4 @@ export default function AddToHomescreenTutorial() {
     </div>
   );
 }
+
