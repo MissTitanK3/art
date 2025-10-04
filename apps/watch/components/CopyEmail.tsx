@@ -3,7 +3,7 @@ import { useTranslations } from '@/lib/il8n/useTranslations';
 import { useState } from 'react';
 import { FrostedButton } from './ui/FrostedButton';
 
-export default function CopyEmail({ email = 'icetea@peoplesrebellion.org' }: { email?: string }) {
+export default function CopyEmail({ email = 'info@alwaysreadytools.org' }: { email?: string }) {
   const { t } = useTranslations();
   const [copied, setCopied] = useState(false);
 
@@ -26,3 +26,4 @@ export default function CopyEmail({ email = 'icetea@peoplesrebellion.org' }: { e
     </div>
   );
 }
+
