@@ -111,9 +111,8 @@ export default function HeatmapClient() {
 
       {/* Sidepanel */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-80 bg-white/10 backdrop-blur-md border-l border-white/20 shadow-xl transition-transform duration-300 ${
-          filtersOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}>
+        className={`fixed top-0 right-0 z-50 h-full w-80 bg-white/10 backdrop-blur-md border-l border-white/20 shadow-xl transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}>
         <div className="p-4 space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-white">{t('filterAgencies')}</h2>
@@ -157,7 +156,6 @@ export default function HeatmapClient() {
       <div className="flex gap-1 w-full justify-evenly">
         <FrostedButton onClick={() => setFiltersOpen(true)}>{t('filterAgencies')}</FrostedButton>
       </div>
-      <TileLayerDropdown />
       {loading || !center ? (
         <LoadingSpinner text="Loading reports…" />
       ) : (

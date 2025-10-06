@@ -1,10 +1,10 @@
 // app/layout.tsx
 import { LanguageProvider } from '@/lib/il8n/provider';
-import './globals.css';
 import type { Metadata } from 'next';
 import BottomNav from '@/components/BottomNav';
 import { WizardProvider } from '@/components/wizard/WizardContext';
 import { MapTileProvider } from '@/lib/MapTileContext';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'ICE Tea Watch',

@@ -5,9 +5,9 @@ import Link from 'next/link';
 export default function AddToHomescreenTutorial() {
   return (
     <div className="prose prose-invert max-w-2xl mx-auto p-4 space-y-8">
-      <h1>📱 Add ICE Tea to Your Homescreen</h1>
+      <h1>📱 Add ART to Your Homescreen</h1>
       <p>
-        You can install <strong>ICE Tea Watch</strong> or <strong>ICE Tea Dispatch</strong> directly onto your phone
+        You can install <strong>ART Watch</strong> directly onto your phone
         like an app! It’s faster, easier to access, and more private.
       </p>
 
