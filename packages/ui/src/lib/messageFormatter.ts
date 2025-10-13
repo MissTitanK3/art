@@ -1,5 +1,5 @@
 import { humanize } from '@workspace/ui/lib/utils';
-import type { DispatchSubmission } from '@workspace/store/dispatchStore';
+import type { DispatchSubmission } from '@workspace/store/types/global.ts';
 import { FIELD_ROLE_LABELS } from '@workspace/store/types/roles.ts';
 
 // --- urgency emoji ---

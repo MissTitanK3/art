@@ -3,51 +3,52 @@
 import {
   Drawer,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
   DrawerDescription,
   DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
 } from "@workspace/ui/components/drawer";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Badge } from "@workspace/ui/components/badge";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ACTION_PRESETS_GROUPED } from "@workspace/ui/lib/constants/dispatch";
 import { toast } from "sonner";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
-export default function DispatchIntendedActionsUpdater({ id }: { id: string }) {
-  const submission = useDispatchStore((s) =>
-    s.submissions.find((sub) => sub.id === id)
-  );
-  const updateSubmission = useDispatchStore((s) => s.updateSubmission);
+type DispatchIntendedActionsUpdaterProps = {
+  submission: DispatchSubmission;
+  onUpdate: (patch: Partial<DispatchSubmission>) => void;
+};
 
+export default function DispatchIntendedActionsUpdater({
+  submission,
+  onUpdate,
+}: DispatchIntendedActionsUpdaterProps) {
   const [open, setOpen] = useState<"manual" | "preset" | null>(null);
-  const [selected, setSelected] = useState<string[]>(
-    submission?.intended_actions ?? []
-  );
+  const [selected, setSelected] = useState<string[]>(submission.intended_actions ?? []);
 
-  if (!submission) return null;
+  useEffect(() => {
+    setSelected(submission.intended_actions ?? []);
+  }, [submission.intended_actions]);
 
-  // Toggle all actions in a group
   const toggleGroup = (groupActions: string[]) => {
     const hasAll = groupActions.every((a) => selected.includes(a));
     setSelected((prev) =>
       hasAll
-        ? prev.filter((a) => !groupActions.includes(a)) // remove whole group
-        : [...prev, ...groupActions.filter((a) => !prev.includes(a))] // add missing
+        ? prev.filter((a) => !groupActions.includes(a))
+        : [...prev, ...groupActions.filter((a) => !prev.includes(a))]
     );
   };
 
   const saveActions = () => {
-    updateSubmission(id, { intended_actions: selected });
+    onUpdate({ intended_actions: selected });
     toast.success("Intended actions updated");
     setOpen(null);
   };
 
   return (
     <>
-      {/* Inline selected actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         {submission.intended_actions?.length ? (
           <div className="flex flex-wrap gap-2">
@@ -77,9 +78,8 @@ export default function DispatchIntendedActionsUpdater({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Manual select drawer (individual actions) */}
       <Drawer open={open === "manual"} onOpenChange={() => setOpen(null)}>
-        <DrawerContent className="p-4">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
           <DrawerHeader>
             <DrawerTitle>Edit Intended Actions</DrawerTitle>
             <DrawerDescription>
@@ -117,9 +117,8 @@ export default function DispatchIntendedActionsUpdater({ id }: { id: string }) {
         </DrawerContent>
       </Drawer>
 
-      {/* Preset select drawer (whole groups) */}
       <Drawer open={open === "preset"} onOpenChange={() => setOpen(null)}>
-        <DrawerContent className="p-4">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
           <DrawerHeader>
             <DrawerTitle>Apply Preset</DrawerTitle>
             <DrawerDescription>

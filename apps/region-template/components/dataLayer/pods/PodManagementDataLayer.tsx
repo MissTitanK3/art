@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { usePodsStore } from "@workspace/store/podStore";
+import { usePodStore } from "@/providers/PodStoreProvider";
 import { Channel, Pod } from "@workspace/store/types/pod.ts";
 import {
   PodManagementLayout,
@@ -59,7 +59,10 @@ export default function PodManagementDataLayer() {
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id ?? "");
 
-  const { pods, addPod, updatePod, removePod } = usePodsStore();
+  const pods = usePodStore((state) => state.pods);
+  const addPod = usePodStore((state) => state.addPod);
+  const updatePod = usePodStore((state) => state.updatePod);
+  const removePod = usePodStore((state) => state.removePod);
   const storePod = pods.find((p) => p.slug === id);
 
   const fallbackPod = React.useMemo<Pod>(

@@ -91,7 +91,7 @@ export default function RootLayout({
               closeButton
               position="top-right"
             />} />
-          <div className="px-3 pt-3 space-y-4 max-w-5xl mx-auto">{children}</div>
+          <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
         </Providers>
       </body>
     </html>

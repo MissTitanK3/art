@@ -56,7 +56,7 @@ export default function ManageRoleDrawer({
 
   return (
     <Drawer open onOpenChange={onClose}>
-      <DrawerContent className="p-4">
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DrawerHeader>
           <DrawerTitle>Manage Role: {role}</DrawerTitle>
           <DrawerDescription>

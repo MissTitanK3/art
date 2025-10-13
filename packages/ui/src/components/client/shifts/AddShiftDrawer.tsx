@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -20,25 +20,65 @@ import {
 import { Label } from "@workspace/ui/components/label";
 import { toast } from "sonner";
 
-import { useDispatchRosterStore } from "@workspace/store/dispatchRosterStore";
-import { usePodsStore } from "@workspace/store/podStore";
+import type { DispatchShift } from "@workspace/store/useDispatchStore";
+import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
 import { DateTimePicker } from "@workspace/ui/components/DateTimePicker";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  pods: Pod[];
+  roster: RosterEntry[];
+  onSubmit: (shift: Omit<DispatchShift, "id">) => void;
 };
 
-export default function AddShiftDrawer({ open, onOpenChange }: Props) {
-  const addShift = useDispatchRosterStore((s) => s.addShift);
-  const pods = usePodsStore((s) => s.pods);
-
+export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSubmit }: Props) {
   const [podId, setPodId] = useState<string | undefined>(undefined);
   const [volunteerId, setVolunteerId] = useState("");
+  const [volunteerName, setVolunteerName] = useState("");
+  const [volunteerMode, setVolunteerMode] = useState<"none" | "roster" | "custom">("none");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
-  const [timezone, setTimezone] = useState("America/Los_Angeles");
   const [notes, setNotes] = useState("");
+
+  const availableVolunteers = useMemo(() => {
+    if (!podId) {
+      return roster;
+    }
+
+    const selectedPod = pods.find((pod) => pod.id === podId);
+    if (!selectedPod || selectedPod.team.length === 0) {
+      return roster;
+    }
+
+    const podMemberIds = new Set(selectedPod.team.map((member) => member.id));
+    const filtered = roster.filter((member) => podMemberIds.has(member.id));
+
+    return filtered.length > 0 ? filtered : roster;
+  }, [podId, pods, roster]);
+
+  const volunteerSelectValue = useMemo(() => {
+    if (volunteerMode === "custom") {
+      return "__custom__";
+    }
+
+    if (volunteerMode === "roster" && volunteerId) {
+      return availableVolunteers.some((member) => member.id === volunteerId) ? volunteerId : "__none__";
+    }
+
+    return "__none__";
+  }, [availableVolunteers, volunteerId, volunteerMode]);
+
+  useEffect(() => {
+    if (volunteerMode === "roster" && volunteerId) {
+      const stillAvailable = availableVolunteers.some((member) => member.id === volunteerId);
+      if (!stillAvailable) {
+        setVolunteerMode("none");
+        setVolunteerId("");
+        setVolunteerName("");
+      }
+    }
+  }, [availableVolunteers, volunteerId, volunteerMode]);
 
   const handleSubmit = () => {
     if (!podId || !startsAt || !endsAt) {
@@ -46,9 +86,23 @@ export default function AddShiftDrawer({ open, onOpenChange }: Props) {
       return;
     }
 
-    addShift({
+    if (volunteerMode === "custom" && !volunteerName.trim()) {
+      toast.error("Volunteer name is required for custom volunteers.");
+      return;
+    }
+
+    const trimmedVolunteerId = volunteerId.trim();
+    const trimmedVolunteerName = volunteerName.trim();
+
+    onSubmit({
       podId,
-      volunteerId: volunteerId || undefined,
+      volunteerId:
+        volunteerMode === "roster"
+          ? volunteerId
+          : trimmedVolunteerId
+              ? trimmedVolunteerId
+              : undefined,
+      volunteerName: volunteerMode === "custom" ? trimmedVolunteerName : undefined,
       startsAt,
       endsAt,
       notes,
@@ -60,15 +114,16 @@ export default function AddShiftDrawer({ open, onOpenChange }: Props) {
     // reset form
     setPodId(undefined);
     setVolunteerId("");
+    setVolunteerName("");
+    setVolunteerMode("none");
     setStartsAt("");
     setEndsAt("");
-    setTimezone("America/Los_Angeles");
     setNotes("");
   };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-4 ">
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DrawerHeader>
           <DrawerTitle>Add New Shift</DrawerTitle>
         </DrawerHeader>
@@ -91,14 +146,64 @@ export default function AddShiftDrawer({ open, onOpenChange }: Props) {
             </Select>
           </div>
 
-          {/* Volunteer Id */}
+          {/* Volunteer */}
           <div className="space-y-1">
-            <Label>Volunteer ID (optional)</Label>
-            <Input
-              value={volunteerId}
-              onChange={(e) => setVolunteerId(e.target.value)}
-              placeholder="vol-xxx"
-            />
+            <Label>Volunteer (optional)</Label>
+            <Select
+              value={volunteerSelectValue}
+              onValueChange={(value) => {
+                if (value === "__none__") {
+                  setVolunteerMode("none");
+                  setVolunteerId("");
+                  setVolunteerName("");
+                  return;
+                }
+                if (value === "__custom__") {
+                  setVolunteerMode("custom");
+                  setVolunteerId("");
+                  return;
+                }
+                setVolunteerMode("roster");
+                setVolunteerId(value);
+                setVolunteerName("");
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select volunteer or add new" />
+              </SelectTrigger>
+              <SelectContent className="max-h-48 overflow-y-auto">
+                <SelectItem value="__none__">No volunteer assigned</SelectItem>
+                <SelectItem value="__custom__">Unlisted volunteer</SelectItem>
+                {availableVolunteers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.volunteer.display_name} ({member.handle})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {volunteerMode === "custom" ? (
+              <div className="mt-3 space-y-2 rounded-md border border-dashed border-border bg-background/60 p-3">
+                <div className="space-y-1">
+                  <Label htmlFor="custom-volunteer-name">Volunteer name</Label>
+                  <Input
+                    id="custom-volunteer-name"
+                    value={volunteerName}
+                    onChange={(e) => setVolunteerName(e.target.value)}
+                    placeholder="Jane Doe"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="custom-volunteer-id">Volunteer identifier (optional)</Label>
+                  <Input
+                    id="custom-volunteer-id"
+                    value={volunteerId}
+                    onChange={(e) => setVolunteerId(e.target.value)}
+                    placeholder="guest-001"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {/* Start / End */}

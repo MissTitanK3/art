@@ -4,21 +4,21 @@ import { Button } from "@workspace/ui/components/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
 import { Switch } from "@workspace/ui/components/switch";  // <-- add this
 import { Label } from "@workspace/ui/components/label";
-import { useDispatchStore, makeDispatchSubmission } from "@workspace/store/dispatchStore";
+import { makeDispatchSubmission } from "@workspace/store/utils/generator";
 import { toast } from "sonner";
 import { humanize } from "@workspace/ui/lib/utils";
 import { useState } from "react";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 interface ReviewStepProps {
   data: any;
   onBack: () => void;
   onReset: () => void;
   onSubmitted?: () => void;
+  onCreateSubmission: (submission: DispatchSubmission) => void;
 }
 
-export function ReviewStep({ data, onBack, onReset, onSubmitted }: ReviewStepProps) {
-  const addSubmission = useDispatchStore((s) => s.addSubmission);
-
+export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmission }: ReviewStepProps) {
   // local state for toggle
   const [training, setTraining] = useState<boolean>(data.contact?.training ?? false);
 
@@ -32,7 +32,7 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted }: ReviewStepPro
       ...(data.logisticsStep ?? {}),
     });
 
-    addSubmission(draft);
+    onCreateSubmission(draft);
 
     toast.success("Dispatch request submitted", {
       description: "Your team request has been added to the Dispatch Board.",
@@ -52,7 +52,13 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted }: ReviewStepPro
         <div>
           <h4 className="font-semibold">Basic Info</h4>
           <p>{data.basicInfo?.location_label} ({data.basicInfo?.state})</p>
+          <p>Response type: {data.basicInfo?.type ? humanize(data.basicInfo.type) : "Rapid Response"}</p>
           <p>Visibility radius: {data.basicInfo?.visibility_radius_km} km</p>
+          {data.basicInfo?.location && (
+            <p className="text-sm text-muted-foreground">
+              Coordinates: {data.basicInfo.location.lat.toFixed(4)}, {data.basicInfo.location.lng.toFixed(4)}
+            </p>
+          )}
         </div>
 
         {/* Roles Needed */}

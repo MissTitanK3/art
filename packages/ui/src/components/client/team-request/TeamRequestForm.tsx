@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BasicInfoStep } from "./BasicInfoStep.tsx";
 import { EventTypeStep } from "./EventTypeStep.tsx";
 import { ActionsStep } from "./ActionsStep.tsx";
 import { RolesStep } from "./RolesStep.tsx";
 import { ReviewStep } from "./ReviewStep.tsx";
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
+import type { DispatchType } from "@workspace/store/types/dispatch.ts";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 type StepData = {
   basicInfo?: {
     location_label?: string;
     location?: { lat: number; lng: number };
     state?: string;
+    type?: DispatchType;
     visibility_radius_km?: number;
   };
   eventType?: keyof typeof TEAM_CONFIG_PRESETS;
@@ -28,11 +31,22 @@ type StepData = {
   };
 };
 
-export default function TeamRequestForm(
-  { onSubmitted }: { onSubmitted?: () => void }
-) {
+interface TeamRequestFormProps {
+  onSubmitted?: () => void;
+  onCreateSubmission: (submission: DispatchSubmission) => void;
+  initialData?: StepData;
+}
+
+export default function TeamRequestForm({
+  onSubmitted,
+  onCreateSubmission,
+  initialData,
+}: TeamRequestFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<StepData>({});
+  const [formData, setFormData] = useState<StepData>(() => initialData ?? {});
+  const [autoAdvanceEventStep, setAutoAdvanceEventStep] = useState(
+    initialData?.eventType ? true : false,
+  );
 
   const goNext = (data: Partial<StepData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -41,8 +55,15 @@ export default function TeamRequestForm(
 
   const goBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
+  useEffect(() => {
+    if (currentStep === 1 && formData.eventType && autoAdvanceEventStep) {
+      setAutoAdvanceEventStep(false);
+      setCurrentStep(2);
+    }
+  }, [autoAdvanceEventStep, currentStep, formData.eventType]);
+
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto">
       {currentStep === 0 && (
         <BasicInfoStep
           initial={formData.basicInfo}
@@ -95,6 +116,7 @@ export default function TeamRequestForm(
           onSubmitted={() => {
             // App-level redirect or success handling can go here
           }}
+          onCreateSubmission={onCreateSubmission}
         />
       )}
     </div>

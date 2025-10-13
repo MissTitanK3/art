@@ -19,17 +19,16 @@ import {
   SelectContent,
 } from "@workspace/ui/components/select";
 
-import {
-  makeProfile,
-  makeRosterEntry,
-  usePodsStore,
-} from "@workspace/store/podStore";
-import { RosterEntry } from "@workspace/store/types/pod.ts";
+import { makeProfile, makeRosterEntry } from "@workspace/store/utils/generator.ts";
+import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
 
-export function AddMemberButton({ id }: { id: string }) {
-  const podId = decodeURIComponent(id ?? "");
-  const { pods, updatePod, activeRoster } = usePodsStore(); // ✅ now RosterEntry[]
-  const pod = pods.find((p) => p.slug === podId);
+type AddMemberButtonProps = {
+  pod: Pod;
+  activeRoster: RosterEntry[];
+  onAddMember: (entry: RosterEntry) => void;
+};
+
+export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberButtonProps) {
 
   const [open, setOpen] = React.useState(false);
   const [mode, setMode] = React.useState<"registered" | "guest">("registered");
@@ -79,7 +78,7 @@ export function AddMemberButton({ id }: { id: string }) {
       };
     }
 
-    updatePod(pod.id, { team: [...pod.team, entry] });
+    onAddMember(entry);
     setOpen(false);
     setGuestName("");
     setSelectedRosterId(null);
@@ -90,7 +89,7 @@ export function AddMemberButton({ id }: { id: string }) {
       <DialogTrigger asChild>
         <Button>Add Member</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DialogHeader>
           <DialogTitle>Add Member to {pod.name}</DialogTitle>
         </DialogHeader>

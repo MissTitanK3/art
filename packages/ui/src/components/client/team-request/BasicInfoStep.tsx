@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { US_STATES } from "@workspace/ui/lib/constants/states";
 import { humanize } from "@workspace/ui/lib/utils";
 import { DispatchType } from "@workspace/store/types/dispatch.ts";
+import { resolveLocationInfo } from "@workspace/ui/lib/location-resolver";
 
 interface BasicInfoStepProps {
   initial?: {
@@ -16,6 +17,7 @@ interface BasicInfoStepProps {
     type?: DispatchType;
     state?: string;
     visibility_radius_km?: number;
+    location?: { lat: number; lng: number };
   };
   onNext: (data: BasicInfoStepProps["initial"]) => void;
 }
@@ -25,6 +27,58 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
   const [state, setState] = useState(initial?.state ?? "");
   const [type, setType] = useState<DispatchType>(initial?.type ?? "rapid_response");
   const [radius, setRadius] = useState(initial?.visibility_radius_km ?? 10);
+  const [location] = useState(initial?.location);
+  const [resolvedOnce, setResolvedOnce] = useState(false);
+
+  const stateLookup = useMemo(() => {
+    const byName = new Map<string, string>();
+    US_STATES.forEach((s) => {
+      byName.set(s.name.toLowerCase(), s.code);
+    });
+    return byName;
+  }, []);
+
+  useEffect(() => {
+    if (!location) return;
+    if (typeof location.lat !== "number" || typeof location.lng !== "number") return;
+    if (!Number.isFinite(location.lat) || !Number.isFinite(location.lng)) return;
+    if (resolvedOnce) return;
+
+    let active = true;
+    resolveLocationInfo(location.lat, location.lng).then((info) => {
+      if (!active) return;
+
+      const resolvedStateCode =
+        info.stateCode && info.stateCode.length === 2
+          ? info.stateCode.toUpperCase()
+          : info.state
+              ? stateLookup.get(info.state.toLowerCase())
+              : undefined;
+      const stateDisplay = resolvedStateCode ?? info.state ?? "";
+      const resolvedLabel =
+        info.city && stateDisplay
+          ? `${info.city}, ${stateDisplay}`
+          : info.city ?? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+
+      setLocationLabel((prev) => {
+        if (prev && prev.trim().length > 0 && prev !== initial?.location_label) {
+          return prev;
+        }
+        return resolvedLabel;
+      });
+
+      setState((prev) => {
+        if (prev && prev.length > 0) return prev;
+        return resolvedStateCode ?? prev;
+      });
+
+      setResolvedOnce(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [initial?.location_label, location, resolvedOnce, stateLookup]);
 
   return (
     <Card>
@@ -40,6 +94,12 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
             placeholder="Mission District, SF"
           />
         </div>
+
+        {location && (
+          <div className="text-sm text-muted-foreground">
+            Coordinates from pin: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+          </div>
+        )}
 
         <div>
           <Label htmlFor="">
@@ -92,6 +152,7 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
               type,
               state,
               visibility_radius_km: radius,
+              location,
             })
           }
         >

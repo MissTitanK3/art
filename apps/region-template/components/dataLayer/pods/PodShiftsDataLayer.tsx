@@ -5,7 +5,7 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { usePodsStore } from "@workspace/store/podStore";
+import { usePodStore } from "@/providers/PodStoreProvider";
 import { combineLocalDateTime } from "@workspace/ui/lib/utils";
 import { BaseShiftIntentionFields, Shift } from "@workspace/store/types/pod.ts";
 import {
@@ -42,7 +42,10 @@ export default function PodShiftsDataLayer() {
   const params = useParams<{ id: string }>();
   const podSlug = decodeURIComponent(params.id ?? "");
 
-  const { pods, shifts, addShift, removeShift } = usePodsStore();
+  const pods = usePodStore((state) => state.pods);
+  const shifts = usePodStore((state) => state.shifts);
+  const addShift = usePodStore((state) => state.addShift);
+  const removeShift = usePodStore((state) => state.removeShift);
   const pod = pods.find((p) => p.slug === podSlug);
 
   const [remoteShifts, setRemoteShifts] = React.useState<Shift[] | null>(null);

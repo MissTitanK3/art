@@ -10,23 +10,25 @@ import {
 } from "@workspace/ui/components/drawer";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
-export default function DispatchNotesUpdater({ id }: { id: string }) {
-  const submission = useDispatchStore((s) =>
-    s.submissions.find((sub) => sub.id === id)
-  );
-  const updateSubmission = useDispatchStore((s) => s.updateSubmission);
+type DispatchNotesUpdaterProps = {
+  submission: DispatchSubmission;
+  onUpdate: (patch: Partial<DispatchSubmission>) => void;
+};
 
+export default function DispatchNotesUpdater({ submission, onUpdate }: DispatchNotesUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(submission?.intended_action_notes ?? "");
 
-  if (!submission) return null;
+  useEffect(() => {
+    setDraft(submission.intended_action_notes ?? "");
+  }, [submission.intended_action_notes]);
 
   const saveNotes = () => {
-    updateSubmission(id, { intended_action_notes: draft });
+    onUpdate({ intended_action_notes: draft });
     toast.success("Notes updated");
     setOpen(false);
   };
@@ -51,7 +53,7 @@ export default function DispatchNotesUpdater({ id }: { id: string }) {
 
 
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
           <DrawerHeader>
             <DrawerTitle>Edit Notes</DrawerTitle>
             <DrawerDescription>

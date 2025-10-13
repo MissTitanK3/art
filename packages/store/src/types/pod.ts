@@ -1,7 +1,7 @@
 import z from 'zod';
-import { Profile } from '../profileStore.ts';
 import { NormalizedLanguage } from './language.ts';
 import { FieldRole } from './roles.ts';
+import { Profile } from './global.ts';
 
 // packages/types/pod.ts
 export interface PodAdapter {

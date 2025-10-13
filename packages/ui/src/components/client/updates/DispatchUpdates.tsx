@@ -1,28 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Check, Paperclip, Pencil, Trash2, X } from "lucide-react";
+import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 
-export default function DispatchUpdates({ dispatchId }: { dispatchId: string }) {
+type DispatchUpdatesProps = {
+  updates?: DispatchUpdate[];
+  onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
+  onEditUpdate: (updateId: string, text: string) => void;
+  onRemoveUpdate: (updateId: string) => void;
+};
+
+export default function DispatchUpdates({
+  updates,
+  onAddUpdate,
+  onEditUpdate,
+  onRemoveUpdate,
+}: DispatchUpdatesProps) {
   const [text, setText] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const dispatch = useDispatchStore((s) =>
-    s.submissions.find((d) => d.id === dispatchId)
-  );
-  const addUpdate = useDispatchStore((s) => s.addUpdate);
-  const editUpdate = useDispatchStore((s) => s.editUpdate);
-  const removeUpdate = useDispatchStore((s) => s.removeUpdate);
-
-  if (!dispatch) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    addUpdate(dispatchId, { author: "Dispatcher A", text });
+    onAddUpdate({ author: "Dispatcher A", text });
     setText("");
   };
 
@@ -35,26 +39,25 @@ export default function DispatchUpdates({ dispatchId }: { dispatchId: string }) 
       name: f.name,
       type: f.type,
       size: f.size,
-      url: URL.createObjectURL(f), // session-only blob
+      url: URL.createObjectURL(f),
     }));
 
-    // Create a "blank text" update with only attachments
-    addUpdate(dispatchId, { author: "Dispatcher A", text: "", attachments });
-
-    // Reset input so you can re-upload the same file if needed
+    onAddUpdate({ author: "Dispatcher A", text: "", attachments });
     e.target.value = "";
   };
 
   const handleEditSave = (id: string) => {
-    editUpdate(dispatchId, id, editText);
+    onEditUpdate(id, editText);
     setEditingId(null);
     setEditText("");
   };
 
+  const sortedUpdates = [...(updates ?? [])].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         <Textarea
           placeholder="Add update..."
@@ -83,11 +86,8 @@ export default function DispatchUpdates({ dispatchId }: { dispatchId: string }) 
         </div>
       </form>
 
-
-
-      {/* Updates Log */}
       <div className="flex-1 overflow-y-auto space-y-3 text-sm">
-        {(dispatch.updates ?? []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((u) => (
+        {sortedUpdates.map((u) => (
           <div key={u.id} className="border rounded-md p-2">
             <div className="text-xs text-muted-foreground flex justify-between">
               <div className="flex gap-4 flex-col">
@@ -98,7 +98,7 @@ export default function DispatchUpdates({ dispatchId }: { dispatchId: string }) 
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => removeUpdate(dispatchId, u.id)}
+                  onClick={() => onRemoveUpdate(u.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -166,8 +166,6 @@ export default function DispatchUpdates({ dispatchId }: { dispatchId: string }) 
                 ))}
               </div>
             ) : null}
-
-
           </div>
         ))}
       </div>

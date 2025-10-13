@@ -27,7 +27,7 @@ export default function ConfirmDeleteModal({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

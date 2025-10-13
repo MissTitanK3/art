@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/ui/components/tabs";
 import { Button } from "@workspace/ui/components/button";
-import { Textarea } from "@workspace/ui/components/textarea";
 import { toast } from "sonner";
 import { Copy, Download } from "lucide-react";
 import { MultiTierMessages } from "./MultiTierMessages.tsx";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
 import { generateMessages } from "@workspace/ui/lib/messageFormatter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import QRCode from "react-qr-code";
 import { chunkMessage } from "@workspace/ui/lib/utils";
 import * as htmlToImage from "html-to-image";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 async function downloadCardAsPng(node: HTMLElement, filename: string) {
   try {
@@ -116,18 +115,15 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export default function PublicEngagementPanel({ dispatchId }: { dispatchId: string }) {
-  const { submissions } = useDispatchStore();
-  const dispatch = submissions.find((s) => s.id === dispatchId);
+type PublicEngagementPanelProps = {
+  submission: DispatchSubmission;
+};
 
+export default function PublicEngagementPanel({ submission }: PublicEngagementPanelProps) {
   const [urgency, setUrgency] = useState("Within the Week");
   const [selectedTier, setSelectedTier] = useState<keyof ReturnType<typeof generateMessages>>("callout");
 
-  if (!dispatch) {
-    return <p className="text-muted-foreground">No dispatch found.</p>;
-  }
-
-  const msgs = generateMessages(dispatch, urgency);
+  const msgs = useMemo(() => generateMessages(submission, urgency), [submission, urgency]);
 
   return (
     <Tabs defaultValue="messaging" className="flex-1">
@@ -180,9 +176,9 @@ export default function PublicEngagementPanel({ dispatchId }: { dispatchId: stri
               <Button
                 onClick={async () => {
                   const nodes = document.querySelectorAll(".share-card");
-                  nodes.forEach((node, idx) =>
-                    downloadCardAsPng(node as HTMLElement, `${selectedTier}-card-${idx + 1}.png`)
-                  );
+                  nodes.forEach((node, idx) => {
+                    downloadCardAsPng(node as HTMLElement, `${selectedTier}-card-${idx + 1}.png`);
+                  });
                 }}
               >
                 📥 Download All Cards

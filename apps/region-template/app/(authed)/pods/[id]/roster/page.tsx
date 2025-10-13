@@ -7,15 +7,15 @@ import { Separator } from "@workspace/ui/components/separator";
 import { ArrowLeft } from "lucide-react";
 
 import PodRosterDataLayer from "@/components/dataLayer/pods/PodRosterDataLayer";
-import { usePodsStore } from "@workspace/store/podStore";
+import { usePodStore } from "@/providers/PodStoreProvider";
 
 export default function PodRosterPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const podId = decodeURIComponent(id ?? "");
 
-  const { pods } = usePodsStore(); // ⬅️ from pods store
-  const pod = pods.find((p) => p.slug === podId);
+  const pods = usePodStore((state) => state.pods);
+  const pod = pods.find((candidate) => candidate.slug === podId);
 
   return (
     <section className="mx-auto w-full max-w-4xl">

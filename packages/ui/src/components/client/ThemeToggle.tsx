@@ -3,7 +3,23 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun } from 'lucide-react';
+import { Check, Laptop, Moon, MoonStar, Sun, SunDim } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@workspace/ui/components/dropdown-menu';
+import { Button } from '@workspace/ui/components/button';
+import { cn } from '@workspace/ui/lib/utils';
+
+export const THEME_OPTIONS = [
+  { value: 'system', label: 'System', Icon: Laptop },
+  { value: 'light', label: 'Light', Icon: Sun },
+  { value: 'lofi', label: 'Lo-Fi', Icon: SunDim },
+  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: 'dim', label: 'Dim', Icon: MoonStar },
+] as const;
 
 export default function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -12,17 +28,37 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
   useEffect(() => setMounted(true), []);
   if (!mounted) return null; // avoid hydration mismatch
 
-  const isDark = resolvedTheme === 'dark';
+  const normalizedTheme = theme ?? 'system';
+  const iconKey =
+    normalizedTheme === 'system' ? resolvedTheme ?? 'system' : normalizedTheme;
+  const ActiveIcon =
+    THEME_OPTIONS.find((option) => option.value === iconKey)?.Icon ?? Sun;
 
   return (
-    <button
-      type="button"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      aria-label="Toggle theme"
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border hover:bg-muted ${className}`}
-    >
-      <Sun className={`h-4 w-4 transition-all ${isDark ? 'rotate-90 scale-0' : 'rotate-0 scale-100'}`} />
-      <Moon className={`absolute h-4 w-4 transition-all ${isDark ? 'rotate-0 scale-100' : '-rotate-90 scale-0'}`} />
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn('h-9 w-9 rounded-2xl', className)}
+          aria-label="Select theme"
+        >
+          <ActiveIcon className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="z-[9000] w-48">
+        {THEME_OPTIONS.map(({ value, label, Icon }) => (
+          <DropdownMenuItem
+            key={value}
+            onSelect={() => setTheme(value)}
+            className="flex items-center gap-2"
+          >
+            <Icon className="h-4 w-4" />
+            <span className="flex-1">{label}</span>
+            {theme === value ? <Check className="h-4 w-4" /> : null}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

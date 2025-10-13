@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Edit3, Radio } from "lucide-react";
-import { RosterEntry } from "@workspace/store/types/pod.ts";
+import type { RosterEntry } from "@workspace/store/types/pod.ts";
 import { RemoveMemberButton } from "../buttons/RemoveMemberButton.tsx";
 import { humanize } from "@workspace/ui/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
@@ -13,11 +13,12 @@ import { toast } from "sonner";
 
 type Props = {
   rows: RosterEntry[];
-  podId: string;
+  podName: string;
+  onRemoveMember: (memberId: string) => void;
   onEdit?: (id: string) => void;
 };
 
-export function RosterCardList({ rows, podId, onEdit }: Props) {
+export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {rows.map((r) => (
@@ -109,7 +110,7 @@ export function RosterCardList({ rows, podId, onEdit }: Props) {
           </CardContent>
 
           <CardFooter className="flex gap-2 justify-end">
-            <RemoveMemberButton podId={podId} member={r} />
+            <RemoveMemberButton podName={podName} member={r} onRemoveMember={() => onRemoveMember(r.id)} />
             {onEdit && (
               <Button size="sm" variant="outline" onClick={() => onEdit(r.id)}>
                 <Edit3 className="mr-2 h-4 w-4" /> Edit

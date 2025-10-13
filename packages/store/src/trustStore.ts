@@ -1,6 +1,6 @@
 // store/trust.ts (zustand)
 import { create } from 'zustand';
-import { TrustDraft, TrustEntry, TrustPatch } from './trust';
+import { TrustDraft, TrustEntry, TrustPatch } from './types/trust';
 
 function isoNow() {
   return new Date().toISOString();

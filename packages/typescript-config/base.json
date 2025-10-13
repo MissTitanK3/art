@@ -8,9 +8,9 @@
     "incremental": false,
     "isolatedModules": true,
     "lib": ["es2022", "DOM", "DOM.Iterable"],
-    "module": "NodeNext",
+    "module": "ESNext",
     "moduleDetection": "force",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
@@ -19,12 +19,11 @@
     "types": ["react", "react-dom"],
     "strict": true,
     "target": "ES2022",
-    "baseUrl": ".",
     "paths": {
-      "@workspace/ui": ["packages/ui/src/index.ts"],
-      "@workspace/ui/*": ["packages/ui/src/*"],
-      "@workspace/store": ["packages/store/src/index.ts"],
-      "@workspace/store/*": ["packages/store/src/*"]
+      "@workspace/ui": ["../ui/src/index.ts"],
+      "@workspace/ui/*": ["../ui/src/*"],
+      "@workspace/store": ["../store/src/index.ts"],
+      "@workspace/store/*": ["../store/src/*"]
     }
   }
 }

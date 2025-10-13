@@ -1,15 +1,13 @@
-'use client';
-
-import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { useStore } from 'zustand';
+import { createStore, StateCreator, StoreApi } from 'zustand/vanilla';
 import { NormalizedCertification, Pod, RosterEntry, Shift } from './types/pod.ts';
-import { FieldRole } from './types/roles.ts';
-import { Profile } from './profileStore.ts';
-import { NormalizedLanguage } from './types/language.ts';
+import { makeProfile, makeRosterEntry } from './utils/generator.ts';
 
 // -----------------------------------------------------------------------------
 // Store State
 // -----------------------------------------------------------------------------
-type PodState = {
+export type PodStoreState = {
   pods: Pod[];
   shifts: Shift[];
 
@@ -25,52 +23,23 @@ type PodState = {
   addCertification: (podId: string, rosterId: string, cert: NormalizedCertification) => void;
 };
 
+export interface CreatePodStoreOptions {
+  initialPods?: Pod[];
+  initialShifts?: Shift[];
+  initialRoster?: RosterEntry[];
+  persist?: boolean;
+  storageKey?: string;
+}
+
+type PodStoreInitializerInput = {
+  pods: Pod[];
+  shifts: Shift[];
+  activeRoster: RosterEntry[];
+};
+
 // -----------------------------------------------------------------------------
 // Profile & Roster helpers
 // -----------------------------------------------------------------------------
-export const makeProfile = (id: string, display: string, role: FieldRole[], affiliation?: string): Profile => ({
-  id,
-  user_id: `user-${id}`,
-  display_name: display,
-  access_role: 'team_member',
-  field_roles: role,
-  verified_by: 'self',
-  affiliation,
-  availability: true,
-  contact_signal: `${display.toLowerCase().replace(/\s+/g, '_')}@signal`,
-  coordination_zone: 'zone-1',
-  inserted_at: new Date().toISOString(),
-  coverage_zones: ['06001'],
-  state: 'active',
-  self_risk_acknowledged: true,
-  operating_counties: ['06001'],
-});
-
-export const makeRosterEntry = (
-  id: string,
-  profile: Profile,
-  role: 'lead' | 'member' | 'trainee',
-  status: 'active' | 'inactive' | 'suspended',
-  langs: NormalizedLanguage[],
-  skills: string[],
-  fieldRoles: FieldRole[],
-  certs: NormalizedCertification[] = [],
-  lastShiftAt?: string,
-  notes?: string,
-): RosterEntry => ({
-  id,
-  volunteer: profile,
-  role,
-  status,
-  langs,
-  skills,
-  fieldRoles,
-  handle: profile.display_name.toLowerCase().replace(/\s+/g, '-'),
-  joinedAt: new Date().toISOString(),
-  certs,
-  lastShiftAt,
-  notes,
-});
 
 // -----------------------------------------------------------------------------
 // Dummy Roster
@@ -150,6 +119,8 @@ const r5 = makeRosterEntry(
   'Suspended pending security review.',
 );
 
+export const seedRoster: RosterEntry[] = [r1, r2, r3, r4, r5];
+
 // -----------------------------------------------------------------------------
 // Seed Pods
 // -----------------------------------------------------------------------------
@@ -180,39 +151,92 @@ export const seedPods: Pod[] = [
   },
 ];
 
+const createPodStoreInitializer =
+  (initial: PodStoreInitializerInput): StateCreator<PodStoreState> =>
+  (set) => ({
+    pods: [...initial.pods],
+    shifts: [...initial.shifts],
+    activeRoster: [...initial.activeRoster],
+
+    addPod: (pod) => set((s) => ({ pods: [...s.pods, pod] })),
+
+    updatePod: (id, patch) =>
+      set((s) => ({
+        pods: s.pods.map((pod) => (pod.id === id ? { ...pod, ...patch } : pod)),
+      })),
+
+    removePod: (id) => set((s) => ({ pods: s.pods.filter((pod) => pod.id !== id) })),
+
+    addShift: (shift) => set((s) => ({ shifts: [...s.shifts, shift] })),
+
+    updateShift: (id, patch) =>
+      set((s) => ({
+        shifts: s.shifts.map((shift) => (shift.id === id ? { ...shift, ...patch } : shift)),
+      })),
+
+    removeShift: (id) => set((s) => ({ shifts: s.shifts.filter((shift) => shift.id !== id) })),
+
+    addCertification: (podId, rosterId, cert) =>
+      set((s) => ({
+        pods: s.pods.map((pod) =>
+          pod.id === podId
+            ? {
+                ...pod,
+                team: pod.team.map((entry) =>
+                  entry.id === rosterId
+                    ? { ...entry, certs: [...(entry.certs ?? []), cert] }
+                    : entry,
+                ),
+              }
+            : pod,
+        ),
+      })),
+  });
+
+function withPersistence(initializer: StateCreator<PodStoreState>, storageKey: string) {
+  return persist(initializer, {
+    name: storageKey,
+    version: 1,
+    migrate: (persistedState: any) => persistedState as PodStoreState,
+    partialize: (state) =>
+      ({
+        pods: state.pods,
+        shifts: state.shifts,
+        activeRoster: state.activeRoster,
+      }) as unknown as PodStoreState,
+  });
+}
+
+export type PodStore = StoreApi<PodStoreState>;
+
+export function createPodStore(options?: CreatePodStoreOptions): PodStore {
+  const {
+    initialPods = seedPods,
+    initialShifts = [],
+    initialRoster = seedRoster,
+    persist: enablePersist = false,
+    storageKey = 'pod-store',
+  } = options ?? {};
+
+  const initializer = createPodStoreInitializer({
+    pods: initialPods,
+    shifts: initialShifts,
+    activeRoster: initialRoster,
+  });
+
+  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+  return createStore<PodStoreState>(creator as any);
+}
+
+const singletonPodStore = createPodStore();
+export function usePodStore<T>(
+  selector: (state: PodStoreState) => T,
+  equalityFn?: (a: T, b: T) => boolean,
+) {
+  return useStore(singletonPodStore, selector, equalityFn);
+}
+
 // -----------------------------------------------------------------------------
-// Zustand Store
+// Legacy export (temporary) - kept for compatibility while migrating naming
 // -----------------------------------------------------------------------------
-export const usePodsStore = create<PodState>((set) => ({
-  pods: seedPods,
-  shifts: [],
-  activeRoster: [r1, r2, r3, r4, r5], // ✅ now RosterEntry[]
-
-  addPod: (pod) => set((s) => ({ pods: [...s.pods, pod] })),
-  updatePod: (id, patch) =>
-    set((s) => ({
-      pods: s.pods.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-    })),
-  removePod: (id) => set((s) => ({ pods: s.pods.filter((p) => p.id !== id) })),
-
-  addShift: (shift) => set((s) => ({ shifts: [...s.shifts, shift] })),
-  updateShift: (id, patch) =>
-    set((s) => ({
-      shifts: s.shifts.map((sh) => (sh.id === id ? { ...sh, ...patch } : sh)),
-    })),
-  removeShift: (id) => set((s) => ({ shifts: s.shifts.filter((sh) => sh.id !== id) })),
-
-  addCertification: (podId, rosterId, cert) =>
-    set((s) => ({
-      pods: s.pods.map((pod) =>
-        pod.id === podId
-          ? {
-              ...pod,
-              team: pod.team.map((entry) =>
-                entry.id === rosterId ? { ...entry, certs: [...entry.certs, cert] } : entry,
-              ),
-            }
-          : pod,
-      ),
-    })),
-}));
+export const usePodsStore = usePodStore;

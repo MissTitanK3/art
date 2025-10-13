@@ -1,13 +1,11 @@
 {
   "extends": "@workspace/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"],
-      "@workspace/store/*": ["packages/store/src/*"],
-      "@workspace/store": ["packages/store/src/index.ts"]
+      "@workspace/store/*": ["../../packages/store/src/*"],
+      "@workspace/store": ["../../packages/store/src/index.ts"]
     },
     "plugins": [
       {

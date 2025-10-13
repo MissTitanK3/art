@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { usePodsStore } from "@workspace/store/podStore";
-import { RosterEntry } from "@workspace/store/types/pod.ts";
+import { usePodStore } from "@/providers/PodStoreProvider";
+import type { RosterEntry } from "@workspace/store/types/pod.ts";
 import { AddMemberButton } from "@workspace/ui/components/client/buttons/AddMemberButton";
 import {
   PodRosterLayout,
@@ -31,11 +31,20 @@ async function persistRosterEntryToDatabase(
   await Promise.resolve();
 }
 
+async function deleteRosterEntryFromDatabase(podId: string, rosterId: string): Promise<void> {
+  // TODO: replace with real deletion once persistence is added.
+  // Example:
+  // await client.from("pod_roster").delete().eq("pod_id", podId).eq("id", rosterId);
+  await Promise.resolve();
+}
+
 export default function PodRosterDataLayer() {
   const { id } = useParams<{ id: string }>();
   const podId = decodeURIComponent(id ?? "");
 
-  const { pods, updatePod } = usePodsStore();
+  const pods = usePodStore((state) => state.pods);
+  const updatePod = usePodStore((state) => state.updatePod);
+  const activeRoster = usePodStore((state) => state.activeRoster);
   const pod = pods.find((p) => p.slug === podId);
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -96,16 +105,48 @@ export default function PodRosterDataLayer() {
     setSelectedId(null); // close sheet after save
   };
 
-  const addMemberAction = pod ? <AddMemberButton id={id} /> : null;
+  const handleAddMember = async (entry: RosterEntry) => {
+    if (!pod) return;
+
+    try {
+      await persistRosterEntryToDatabase(pod.id, entry);
+    } catch (error) {
+      console.warn("PodRosterDataLayer: failed to add roster entry", error);
+    }
+
+    updatePod(pod.id, { team: [...pod.team, entry] });
+    setRemoteRoster((prev) => (prev ? [...prev, entry] : prev));
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!pod) return;
+
+    try {
+      await deleteRosterEntryFromDatabase(pod.id, memberId);
+    } catch (error) {
+      console.warn("PodRosterDataLayer: failed to remove roster entry", error);
+    }
+
+    updatePod(pod.id, {
+      team: pod.team.filter((r) => r.id !== memberId),
+    });
+    setRemoteRoster((prev) => (prev ? prev.filter((r) => r.id !== memberId) : prev));
+  };
+
+  const addMemberAction = pod ? (
+    <AddMemberButton pod={pod} activeRoster={activeRoster} onAddMember={handleAddMember} />
+  ) : null;
 
   const layoutProps: PodRosterLayoutProps = {
     podSlug: podId,
     podId: pod?.id,
+    podName: pod?.name,
     rows,
     editingEntry: editing,
     onEdit: (entryId) => setSelectedId(entryId),
     onCloseEditor: () => setSelectedId(null),
     onSaveEntry: handleSave,
+    onRemoveMember: handleRemoveMember,
     addMemberAction,
     loadingMessage: loadingRemoteRoster
       ? "Loading roster from database..."

@@ -2,10 +2,11 @@
 "use client";
 
 import * as React from "react";
-import { Profile, useProfileStore } from "@workspace/store/profileStore";
+import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { ProfileLayout } from "@workspace/ui/layout/profile/ProfileLayout";
 import { NextImageAdapter } from "@/adapters/NextImageAdapter";
 import { useRegionAdapters } from "@/lib/providers/RegionProvider";
+import { Profile } from "@workspace/store/types/global.ts";
 
 type UiCoverage = { id: string; label: string; area?: any };
 

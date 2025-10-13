@@ -12,10 +12,11 @@ import { humanize } from "@workspace/ui/lib/utils";
 type RosterTableProps = {
   rows: RosterEntry[];
   onEdit?: (id: string) => void;
-  podId: string;
+  podName: string;
+  onRemoveMember: (memberId: string) => void;
 };
 
-export function RosterTable({ rows, onEdit, podId }: RosterTableProps) {
+export function RosterTable({ rows, onEdit, podName, onRemoveMember }: RosterTableProps) {
   return (
     <Card className="mt-4 p-0 overflow-hidden">
       {/* Table header (desktop only) */}
@@ -112,7 +113,11 @@ export function RosterTable({ rows, onEdit, podId }: RosterTableProps) {
 
           {/* Actions */}
           <div className="w-full grid grid-cols-2 gap-2 md:grid-cols-1">
-            <RemoveMemberButton podId={podId} member={r} />
+            <RemoveMemberButton
+              podName={podName}
+              member={r}
+              onRemoveMember={() => onRemoveMember(r.id)}
+            />
             {onEdit && (
               <Button onClick={() => onEdit(r.id)} size="sm" variant="outline">
                 <Edit3 className="mr-2 h-4 w-4" /> Edit

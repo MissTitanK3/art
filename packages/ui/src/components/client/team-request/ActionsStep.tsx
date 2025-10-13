@@ -38,22 +38,24 @@ export function ActionsStep({ initial, onBack, onNext }: ActionsStepProps) {
         <CardTitle>Step 3: Intended Actions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {Object.entries(ACTION_PRESETS_GROUPED).map(([group, items]) => (
-          <div key={group}>
-            <h4 className="font-semibold mb-2">{group}</h4>
-            <div className="space-y-2 pl-4">
-              {items.map((action) => (
-                <SelectableCard
-                  key={action}
-                  label={action}
-                  selected={actions.includes(action)}
-                  onToggle={() => toggleAction(action)}
-                  color="emerald"
-                />
-              ))}
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Object.entries(ACTION_PRESETS_GROUPED).map(([group, items]) => (
+            <div key={group} className="space-y-2">
+              <h4 className="font-semibold">{group}</h4>
+              <div className="space-y-2">
+                {items.map((action) => (
+                  <SelectableCard
+                    key={action}
+                    label={action}
+                    selected={actions.includes(action)}
+                    onToggle={() => toggleAction(action)}
+                    color="emerald"
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
         <div>
           <label className="block font-semibold mb-1">Notes</label>

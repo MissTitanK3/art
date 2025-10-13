@@ -7,26 +7,40 @@ import { Button } from "@workspace/ui/components/button";
 import { Pencil, Trash } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  DispatchShift,
-  useDispatchRosterStore,
-} from "@workspace/store/dispatchRosterStore";
-import { usePodsStore } from "@workspace/store/podStore";
+import type { DispatchShift } from "@workspace/store/useDispatchStore";
+import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
 import EditShiftDrawer from "./EditShiftDrawer.tsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal.tsx";
 
-export default function ShiftCard({ shift }: { shift: DispatchShift }) {
-  const isShiftActive = useDispatchRosterStore((s) => s.isShiftActive);
-  const removeShift = useDispatchRosterStore((s) => s.removeShift);
-  const roster = usePodsStore((s) => s.activeRoster);
+type ShiftCardProps = {
+  shift: DispatchShift;
+  pods: Pod[];
+  roster: RosterEntry[];
+  onRemoveShift: (shiftId: string) => void;
+  onUpdateShift: (id: string, updates: Partial<DispatchShift>) => void;
+  isShiftActive: (shift: DispatchShift) => boolean;
+};
 
-  const pods = usePodsStore((s) => s.pods);
-
+export default function ShiftCard({
+  shift,
+  pods,
+  roster,
+  onRemoveShift,
+  onUpdateShift,
+  isShiftActive,
+}: ShiftCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const pod = pods.find((p) => p.id === shift.podId);
   const volunteer = roster.find((v) => v.id === shift.volunteerId);
+  const volunteerDisplayName =
+    volunteer?.volunteer?.display_name ??
+    shift.volunteerName ??
+    shift.volunteerId ??
+    "Unknown Volunteer";
+  const volunteerIdentifier =
+    volunteer || !shift.volunteerId ? null : ` (${shift.volunteerId})`;
 
   const statusBadge = useMemo(() => {
     const now = new Date();
@@ -55,10 +69,9 @@ export default function ShiftCard({ shift }: { shift: DispatchShift }) {
   }, [shift, isShiftActive]);
 
   const handleDelete = () => {
-    removeShift(shift.id);
+    onRemoveShift(shift.id);
     toast.success("Shift deleted ✅");
   };
-  console.log({ volunteer });
 
 
   return (
@@ -67,9 +80,15 @@ export default function ShiftCard({ shift }: { shift: DispatchShift }) {
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 w-full">
             <div className="flex items-center w-full justify-between flex-col sm:flex-row">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-col sm:flex-row">
                 {/* Volunteer display name */}
-                {volunteer?.volunteer?.display_name ?? volunteer?.volunteer.display_name ?? "Unknown Volunteer"}
+                <p>(Pod: {pod?.name ?? shift.podId ?? "—"})</p>
+                <hr className="my-1 w-full h-2 bg-muted md:hidden" />
+                <hr className="my-1 w-7 h-2 rotate-90 bg-muted hidden md:block" />
+                <span>
+                  {volunteerDisplayName}
+                  {volunteerIdentifier}
+                </span>
                 {statusBadge}
               </div>
               <div className="flex items-center gap-1">
@@ -93,11 +112,10 @@ export default function ShiftCard({ shift }: { shift: DispatchShift }) {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm">
-          <p>Pod: {pod?.name ?? shift.podId ?? "—"}</p>
+        <CardContent className="text-sm flex justify-evenly">
           <p>
-            ⏱ {new Date(shift.startsAt).toLocaleString()} →{" "}
-            {new Date(shift.endsAt).toLocaleString()}
+            ⏱ {new Date(shift.startsAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })} →{" "}
+            {new Date(shift.endsAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
           </p>
           {shift.notes && <p className="mt-1">📝 {shift.notes}</p>}
         </CardContent>
@@ -108,6 +126,9 @@ export default function ShiftCard({ shift }: { shift: DispatchShift }) {
         open={editOpen}
         onOpenChange={setEditOpen}
         shift={shift}
+        pods={pods}
+        roster={roster}
+        onUpdateShift={onUpdateShift}
       />
 
       {/* Confirm Delete Modal */}

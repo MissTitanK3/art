@@ -38,7 +38,7 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
       <DrawerTrigger asChild>
         <Button size="sm" variant="outline">Edit</Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DrawerHeader>
           <DrawerTitle>Edit Logistics Item</DrawerTitle>
           <DrawerDescription>Update details for this logistics entry.</DrawerDescription>

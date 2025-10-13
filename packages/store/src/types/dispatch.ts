@@ -46,3 +46,28 @@ export type DispatchType =
   | 'community_aid'
   | 'technical_aid'
   | 'other';
+
+export const DISPATCH_TYPE_VARIANTS: Record<
+  DispatchType,
+  'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'
+> = {
+  rapid_response: 'destructive', // red
+  planned_event: 'info', // blue
+  training: 'warning', // yellow
+  community_aid: 'success', // green
+  technical_aid: 'secondary', // purple/neutral
+  other: 'outline', // gray/fallback
+};
+
+export const DISPATCH_TYPE_LABELS: Record<DispatchType, string> = {
+  rapid_response: 'Rapid Response',
+  planned_event: 'Planned Event',
+  training: 'Training',
+  community_aid: 'Community Aid',
+  technical_aid: 'Technical Aid',
+  other: 'Other',
+};
+
+export function getDispatchTypeStyle(type: DispatchType) {
+  return DISPATCH_TYPE_VARIANTS[type] ?? DISPATCH_TYPE_VARIANTS.other;
+}

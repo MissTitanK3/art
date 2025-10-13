@@ -25,18 +25,27 @@ import PublicEngagementPanel from "@workspace/ui/components/client/engagement/Pu
 import { Button } from "@workspace/ui/components/button";
 import { Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import type { DispatchSubmission } from "@workspace/store/dispatchStore";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
   defaultTab?: "overview" | "roles" | "updates" | "logistics" | "public_engagement";
   loadingMessage?: React.ReactNode;
+  onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
+  onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
+  onEditUpdate: (updateId: string, text: string) => void;
+  onRemoveUpdate: (updateId: string) => void;
 };
 
 export function DispatchSubmissionLayout({
   submission,
   defaultTab = "overview",
   loadingMessage,
+  onUpdateSubmission,
+  onAddUpdate,
+  onEditUpdate,
+  onRemoveUpdate,
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
@@ -89,7 +98,7 @@ export function DispatchSubmissionLayout({
   const overviewSections = [
     {
       id: "location",
-      content: <DispatchLocationUpdater id={submission.id} />,
+      content: <DispatchLocationUpdater submission={submission} onUpdate={onUpdateSubmission} />,
     },
     {
       id: "submitted-at",
@@ -103,15 +112,20 @@ export function DispatchSubmissionLayout({
     {
       id: "intended-action",
       label: "Intended Action",
-      content: <DispatchIntendedActionsUpdater id={submission.id} />,
+      content: (
+        <DispatchIntendedActionsUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
     {
       id: "notes",
-      content: <DispatchNotesUpdater id={submission.id} />,
+      content: <DispatchNotesUpdater submission={submission} onUpdate={onUpdateSubmission} />,
     },
     {
       id: "signal-link",
-      content: <DispatchSignalLinkUpdater id={submission.id} />,
+      content: <DispatchSignalLinkUpdater submission={submission} onUpdate={onUpdateSubmission} />,
     },
   ];
 
@@ -129,7 +143,7 @@ export function DispatchSubmissionLayout({
           ) : null}
         </div>
         <div className="mt-3 flex flex-col items-center gap-2 sm:mt-0 sm:flex-row">
-          <DispatchStatusUpdater id={submission.id} />
+          <DispatchStatusUpdater submission={submission} onUpdate={onUpdateSubmission} />
           <Button size="sm" variant="outline" onClick={handleShare}>
             Share <Share2 className="ml-1 h-4 w-4" />
           </Button>
@@ -140,7 +154,7 @@ export function DispatchSubmissionLayout({
         <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>
       ) : null}
 
-      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
+      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col lg:mt-11">
         <TabsList className="mb-3 flex h-full w-full flex-wrap md:flex-nowrap">
           <TabsTrigger value="overview" className="flex-1 basis-1/2">
             Overview
@@ -179,7 +193,7 @@ export function DispatchSubmissionLayout({
         </TabsContent>
 
         <TabsContent value="roles" className="flex-1" suppressHydrationWarning>
-          <DispatchRolesManager id={submission.id} />
+          <DispatchRolesManager submission={submission} onUpdate={onUpdateSubmission} />
         </TabsContent>
 
         <TabsContent value="updates" className="flex-1">
@@ -191,17 +205,22 @@ export function DispatchSubmissionLayout({
               </p>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col space-y-4 text-sm">
-              <DispatchUpdates dispatchId={submission.id} />
+              <DispatchUpdates
+                updates={submission.updates}
+                onAddUpdate={onAddUpdate}
+                onEditUpdate={onEditUpdate}
+                onRemoveUpdate={onRemoveUpdate}
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="logistics" className="flex-1">
-          <LogisticsPanel dispatchId={submission.id} />
+          <LogisticsPanel submission={submission} onUpdate={onUpdateSubmission} />
         </TabsContent>
 
         <TabsContent value="public_engagement" className="flex-1">
-          <PublicEngagementPanel dispatchId={submission.id} />
+          <PublicEngagementPanel submission={submission} />
         </TabsContent>
       </Tabs>
     </div>

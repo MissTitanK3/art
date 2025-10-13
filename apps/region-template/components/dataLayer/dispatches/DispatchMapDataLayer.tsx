@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
-import type { DispatchSubmission } from "@workspace/store/dispatchStore";
+import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchListLayout } from "@workspace/ui/layout/dispatch/DispatchListLayout";
+import { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 async function fetchDispatchesFromDatabase(): Promise<DispatchSubmission[] | null> {
   // TODO: replace with actual persistence (e.g., Supabase, Hasura, REST).
@@ -47,7 +47,12 @@ export default function DispatchListDataLayer() {
     };
   }, []);
 
-  const data = remoteSubmissions ?? submissions;
+  const data = React.useMemo(() => {
+    const source = remoteSubmissions ?? submissions;
+    return [...source].sort((a, b) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }, [remoteSubmissions, submissions]);
 
   return (
     <DispatchListLayout

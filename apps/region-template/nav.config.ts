@@ -10,22 +10,18 @@ export const navConfig: GlobalNavConfigInput = {
   brand: {
     name: 'A.R.T. Region Template',
     href: '/',
-    // logoSrc: "/logo.svg" // optional, string only
+    logoSrc: '/art.png', // optional, string only
   },
   primary: [
     {
-      label: 'Home',
-      icon: 'home',
-      href: '/',
-    },
-    {
       label: 'Create',
       icon: 'new',
-      children: [
-        { label: 'Rapid Response Request', href: '/team-req', roles: elevatedRoles },
-        { label: 'Community Aid Request', href: '/team-req', roles: elevatedRoles },
-        { label: 'Technical Aid Request', href: '/team-req', roles: elevatedRoles },
-      ],
+      href: '/team-req',
+      // children: [
+      //   { label: 'Rapid Response Request', href: '/team-req', roles: elevatedRoles },
+      //   { label: 'Community Aid Request', href: '/team-req', roles: elevatedRoles },
+      //   { label: 'Technical Aid Request', href: '/team-req', roles: elevatedRoles },
+      // ],
     },
     {
       label: 'Dispatch',
@@ -63,7 +59,7 @@ export const navConfig: GlobalNavConfigInput = {
         { label: 'My Profile', href: '/my-profile' },
         {
           label: 'Signal Onboarding Group',
-          href: 'https://signal.group/#CjQKICDTHoywf-qxIszjCcAepvtYJWWzLuEgC0w7Akoun5btEhDAWr_VlbyhSIQqIeTmdQSM',
+          href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
         },
         { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
         { label: 'Settings', href: '/settings' },

@@ -15,11 +15,13 @@ import type { RosterEntry } from "@workspace/store/types/pod.ts";
 export type PodRosterLayoutProps = {
   podSlug: string;
   podId?: string;
+  podName?: string;
   rows: RosterEntry[];
   editingEntry: RosterEntry | null;
   onEdit: (id: string) => void;
   onCloseEditor: () => void;
   onSaveEntry: (entry: RosterEntry) => void;
+  onRemoveMember: (memberId: string) => void;
   addMemberAction?: React.ReactNode;
   loadingMessage?: React.ReactNode;
   notFoundMessage?: React.ReactNode;
@@ -29,11 +31,13 @@ export type PodRosterLayoutProps = {
 export function PodRosterLayout({
   podSlug,
   podId,
+  podName,
   rows,
   editingEntry,
   onEdit,
   onCloseEditor,
   onSaveEntry,
+  onRemoveMember,
   addMemberAction,
   loadingMessage,
   notFoundMessage,
@@ -44,7 +48,12 @@ export function PodRosterLayout({
   }
 
   const rosterList = rows.length > 0 ? (
-    <RosterCardList rows={rows} onEdit={onEdit} podId={podId ?? ""} />
+    <RosterCardList
+      rows={rows}
+      onEdit={onEdit}
+      podName={podName ?? podSlug}
+      onRemoveMember={onRemoveMember}
+    />
   ) : (
     emptyState ?? (
       <p className="mt-6 text-sm text-muted-foreground">

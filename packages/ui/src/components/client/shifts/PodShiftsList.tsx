@@ -23,10 +23,18 @@ import { EditShiftForm } from './EditShiftForm.tsx'
 import { Shift } from '@workspace/store/types/pod.ts'
 import { Separator } from '../../separator.tsx'
 import { fmtRange } from '@workspace/store/utils/form-helpers'
-import { usePodsStore } from "@workspace/store/podStore";
 
-export default function PodShiftsList({ podShifts }: { podShifts: Shift[] }) {
-  const { updateShift, removeShift } = usePodsStore() // ⬅️ pull from store
+type PodShiftsListProps = {
+  podShifts: Shift[];
+  onRemoveShift: (shiftId: string) => void;
+  onUpdateShift: (shiftId: string, patch: Partial<Shift>) => void;
+};
+
+export default function PodShiftsList({
+  podShifts,
+  onRemoveShift,
+  onUpdateShift,
+}: PodShiftsListProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const editing = podShifts.find((s) => s.id === editingId) ?? null
   const now = Date.now()
@@ -94,16 +102,16 @@ export default function PodShiftsList({ podShifts }: { podShifts: Shift[] }) {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => removeShift(s.id)}
+                    onClick={() => onRemoveShift(s.id)}
                   >
                     <Trash2 className="mr-2 h-4 w-6" />
                     Remove
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingId(s.id)}
-                  >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingId(s.id)}
+                >
                     <Pencil className="mr-2 h-4 w-6" />
                     Edit
                   </Button>
@@ -131,7 +139,7 @@ export default function PodShiftsList({ podShifts }: { podShifts: Shift[] }) {
                 key={editing.id}
                 initial={editing}
                 onSave={(vals) => {
-                  updateShift(editing.id, vals)
+                  onUpdateShift(editing.id, vals)
                   setEditingId(null)
                 }}
               />

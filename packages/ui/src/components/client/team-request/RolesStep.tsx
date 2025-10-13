@@ -54,7 +54,7 @@ export function RolesStep({ initial, onBack, onNext, suggestedRoles }: RolesStep
       <CardHeader>
         <CardTitle>Step 4: Roles Needed</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {FIELD_ROLE_DETAILS.map((r) => {
           const isSuggested = suggestedRoles?.includes(r.role);
           return (

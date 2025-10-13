@@ -25,7 +25,7 @@ function AddLogisticsDrawer({ newItem, setNewItem, addItem }: any) {
       <DrawerTrigger asChild>
         <Button className="w-full">+ Add Logistics Item</Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DrawerHeader>
           <DrawerTitle>Add Logistics Item</DrawerTitle>
           <DrawerDescription>

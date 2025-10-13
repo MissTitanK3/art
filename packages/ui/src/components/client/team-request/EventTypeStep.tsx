@@ -14,7 +14,7 @@ export function EventTypeStep({ onBack, onNext }: EventTypeStepProps) {
       <CardHeader>
         <CardTitle>Step 2: Select Event Type</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2">
+      <CardContent className="grid gap-2 grid-cols-1 md:grid-cols-3">
         {Object.keys(TEAM_CONFIG_PRESETS).map((type) => (
           <Button
             key={type}

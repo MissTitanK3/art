@@ -1,5 +1,5 @@
-import { DISPATCH_TYPE_LABELS, DISPATCH_TYPE_VARIANTS } from "@workspace/store/dispatchStore";
-import { DispatchType } from "@workspace/store/types/dispatch.ts";
+
+import { DISPATCH_TYPE_LABELS, DISPATCH_TYPE_VARIANTS, DispatchType } from "@workspace/store/types/dispatch.ts";
 import { Badge } from "@workspace/ui/components/badge";
 
 

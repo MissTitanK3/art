@@ -2,8 +2,9 @@
 "use client";
 
 import * as React from "react";
-import { useDispatchStore, type DispatchSubmission } from "@workspace/store/dispatchStore";
+import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
+import { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 type Props = {
   id: string;
@@ -21,7 +22,10 @@ async function fetchDispatchSubmissionFromDatabase(id: string): Promise<Dispatch
 
 export default function DispatchSubmissionDataLayer({ id }: Props) {
   const storeSubmission = useDispatchStore((s) => s.submissions.find((sub) => sub.id === id));
-  const [remoteSubmission, setRemoteSubmission] = React.useState<DispatchSubmission | null>(null);
+  const updateSubmission = useDispatchStore((s) => s.updateSubmission);
+  const addUpdate = useDispatchStore((s) => s.addUpdate);
+  const editUpdate = useDispatchStore((s) => s.editUpdate);
+  const removeUpdate = useDispatchStore((s) => s.removeUpdate);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -36,7 +40,7 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
       try {
         const result = await fetchDispatchSubmissionFromDatabase(id);
         if (!cancelled && result) {
-          setRemoteSubmission(result);
+          updateSubmission(result.id, result);
         }
       } catch (error) {
         if (!cancelled) {
@@ -53,9 +57,9 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, updateSubmission]);
 
-  const submission = remoteSubmission ?? storeSubmission;
+  const submission = storeSubmission;
 
   if (!submission) {
     return (
@@ -69,6 +73,10 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
     <DispatchSubmissionLayout
       submission={submission}
       loadingMessage={loading ? "Loading latest dispatch details..." : undefined}
+      onUpdateSubmission={(patch) => updateSubmission(submission.id, patch)}
+      onAddUpdate={(update) => addUpdate(submission.id, update)}
+      onEditUpdate={(updateId, text) => editUpdate(submission.id, updateId, text)}
+      onRemoveUpdate={(updateId) => removeUpdate(submission.id, updateId)}
     />
   );
 }

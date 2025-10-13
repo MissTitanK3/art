@@ -17,10 +17,10 @@ import {
   SelectContent,
   SelectItem,
 } from "@workspace/ui/components/select";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FIPS_TO_POSTAL } from "@workspace/ui/lib/constants/states";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 
 
@@ -28,12 +28,12 @@ const POSTAL_TO_FIPS = Object.fromEntries(
   Object.entries(FIPS_TO_POSTAL).map(([fips, postal]) => [postal, fips])
 );
 
-export default function DispatchLocationUpdater({ id }: { id: string }) {
-  const submission = useDispatchStore((s) =>
-    s.submissions.find((sub) => sub.id === id)
-  );
-  const updateSubmission = useDispatchStore((s) => s.updateSubmission);
+type DispatchLocationUpdaterProps = {
+  submission: DispatchSubmission;
+  onUpdate: (patch: Partial<DispatchSubmission>) => void;
+};
 
+export default function DispatchLocationUpdater({ submission, onUpdate }: DispatchLocationUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState(submission?.location_label ?? "");
   // store as FIPS internally, show as postal
@@ -43,11 +43,18 @@ export default function DispatchLocationUpdater({ id }: { id: string }) {
       : ""
   );
 
-  if (!submission) return null;
+  useEffect(() => {
+    setLabel(submission.location_label ?? "");
+    setStateFips(
+      submission.state && POSTAL_TO_FIPS[submission.state]
+        ? POSTAL_TO_FIPS[submission.state]
+        : ""
+    );
+  }, [submission.location_label, submission.state]);
 
   const saveLocation = () => {
     const postal = stateFips ? FIPS_TO_POSTAL[stateFips] : undefined;
-    updateSubmission(id, {
+    onUpdate({
       location_label: label.trim() || undefined,
       state: postal, // still save as 2-letter postal code in the store for now
     });
@@ -70,7 +77,7 @@ export default function DispatchLocationUpdater({ id }: { id: string }) {
 
 
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
           <DrawerHeader>
             <DrawerTitle>Edit Location</DrawerTitle>
             <DrawerDescription>

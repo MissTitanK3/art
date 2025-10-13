@@ -4,11 +4,7 @@
 import * as React from "react";
 import { Separator } from "@workspace/ui/components/separator";
 import { useParams, useRouter } from "next/navigation";
-import PodShiftsList from "@workspace/ui/components/client/shifts/PodShiftsList";
-import { ShiftIntentionSection } from "@workspace/ui/components/client/shifts/ShiftIntentionSection";
-import { toast } from "sonner";
-import { combineLocalDateTime } from "@workspace/ui/lib/utils";
-import { usePodsStore } from "@workspace/store/podStore";
+import { usePodStore } from "@/providers/PodStoreProvider";
 import { Button } from "@workspace/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import PodShiftsDataLayer from "@/components/dataLayer/pods/PodShiftsDataLayer";
@@ -18,8 +14,8 @@ export default function PodShiftsPage() {
   const podId = decodeURIComponent(id ?? "");
   const router = useRouter();
 
-  const { pods } = usePodsStore(); // ⬅️ from pods store
-  const pod = pods.find((p) => p.slug === podId);
+  const pods = usePodStore((state) => state.pods);
+  const pod = pods.find((candidate) => candidate.slug === podId);
 
 
   return (

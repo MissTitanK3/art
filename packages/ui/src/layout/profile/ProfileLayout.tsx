@@ -3,7 +3,8 @@
 import React from "react";
 import { toast } from "sonner";
 import { ProfileForm, type ProfileFormProps } from "@workspace/ui/components/client/profile/ProfileForm";
-import type { Profile } from "@workspace/store/profileStore";
+import { Profile } from "@workspace/store/types/global.ts";
+
 
 export type ProfileLayoutProps = {
   profile: Profile;

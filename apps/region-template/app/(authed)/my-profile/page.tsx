@@ -3,15 +3,15 @@
 // apps/region-template/app/(authed)/my-profile/page.tsx
 import Link from "next/link";
 import { ProfileDataLayer } from "@/components/dataLayer/profile/ProfileDataLayer";
-import { useProfileStore } from "@workspace/store/profileStore";
+import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { Button } from "@workspace/ui/components/button";
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const profile = useProfileStore((s) => s.profile);
   const restoreDemo = useProfileStore((s) => s.restoreDemo);
 
   return (
-    <div className="max-w-4xl mx-auto p-0 md:p-8">
+    <div className="max-w-5xl mx-auto p-0 md:p-8">
       <h1 className="text-2xl font-bold mb-2">My Profile</h1>
 
       <Link
@@ -38,4 +38,8 @@ export default function ProfilePage() {
       )}
     </div>
   );
+}
+
+export default function ProfilePage() {
+  return <ProfilePageContent />;
 }

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
-import { usePodsStore } from "@workspace/store/podStore";
+import { usePodStore } from "@/providers/PodStoreProvider";
 import { channels, slugify, Pod } from "@workspace/store/types/pod.ts";
 import {
   PodCreatorLayout,
@@ -35,7 +35,7 @@ async function createPodInDatabase(pod: Pod): Promise<void> {
 }
 
 export default function PodCreatorDataLayer() {
-  const addPod = usePodsStore((s) => s.addPod);
+  const addPod = usePodStore((state) => state.addPod);
   const router = useRouter();
 
   const {

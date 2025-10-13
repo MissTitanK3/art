@@ -32,7 +32,7 @@ export function VolunteerStatusUpdater({
       </Button>
 
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
           <DrawerHeader>
             <DrawerTitle>Update Volunteer Status</DrawerTitle>
           </DrawerHeader>

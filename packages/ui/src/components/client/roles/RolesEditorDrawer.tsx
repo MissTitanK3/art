@@ -43,7 +43,7 @@ export default function RolesEditorDrawer({
 
   return (
     <Drawer open onOpenChange={onClose}>
-      <DrawerContent className="p-4">
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DrawerHeader>
           <DrawerTitle>Edit Roles Needed</DrawerTitle>
           <DrawerDescription>

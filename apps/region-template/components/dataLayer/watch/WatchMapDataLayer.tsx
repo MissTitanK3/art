@@ -14,11 +14,23 @@ const WatchMap = dynamic(
   { ssr: false }
 );
 
+type MapFocus = {
+  lat: number;
+  lng: number;
+  zoom?: number;
+  token: number;
+  reportId?: WizardReport["id"];
+};
+
+const FOCUS_ZOOM = 11;
+
 export default function WatchMapDataLayer() {
   const [reports, setReports] = useState<WizardReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"map" | "list">("map");
+  const [mapFocus, setMapFocus] = useState<MapFocus | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,12 +49,66 @@ export default function WatchMapDataLayer() {
     loadReports();
   }, []);
 
+  const normalizeCoord = (value: unknown) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+    return undefined;
+  };
+
+  const handleCreateDispatch = (report: WizardReport) => {
+    const params = new URLSearchParams();
+    params.set("source", "watch-map");
+    params.set("reportId", String(report.id));
+
+    const location = (report.location as any) ?? {};
+    const lat = normalizeCoord(location?.lat);
+    const lng = normalizeCoord(location?.lng);
+
+    if (lat !== undefined && lng !== undefined) {
+      params.set("lat", lat.toString());
+      params.set("lng", lng.toString());
+    }
+
+    const agencyLabel = report.agency_type?.join(", ") || report.agency_other;
+    if (agencyLabel) {
+      params.set("label", agencyLabel);
+      params.set("agency", agencyLabel);
+    }
+
+    router.push(`/team-req?${params.toString()}`);
+  };
+
+  const handleViewOnMap = (report: WizardReport) => {
+    setActiveTab("map");
+
+    const location = (report.location as any) ?? {};
+    const lat = normalizeCoord(location?.lat);
+    const lng = normalizeCoord(location?.lng);
+
+    if (lat === undefined || lng === undefined) return;
+
+    setMapFocus({
+      lat,
+      lng,
+      zoom: FOCUS_ZOOM,
+      token: Date.now(),
+      reportId: report.id,
+    });
+  };
+
   if (loading) return <div className="text-muted-foreground">Loading reports…</div>;
   if (error) return <div className="text-destructive">{error}</div>;
 
   return (
     <section>
-      <Tabs defaultValue="map" className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as "map" | "list")}
+        className="w-full"
+      >
         <TabsList className="w-full">
           <TabsTrigger value="map">Map</TabsTrigger>
           <TabsTrigger value="list">List</TabsTrigger>
@@ -50,11 +116,13 @@ export default function WatchMapDataLayer() {
 
         <TabsContent value="map" className="mt-4">
           {mounted && reports.length > 0 ? (
-            <WatchMap reports={reports} center={[38.79, -106.53]} zoom={3} onCreateDispatch={
-              (report) => {
-                router.push(`/team-req?prefill=${report.id}&source=report&lat=${(report.location as any)?.lat}&lng=${(report.location as any)?.lng}&agency_type=${report.agency_type?.join(",")}&agency_other=${report.agency_other}`);
-              }
-            } />
+            <WatchMap
+              reports={reports}
+              center={[38.79, -106.53]}
+              zoom={3}
+              onCreateDispatch={handleCreateDispatch}
+              focusPoint={mapFocus}
+            />
           ) : (
             <div className="text-muted-foreground">No reports yet.</div>
           )}
@@ -62,7 +130,7 @@ export default function WatchMapDataLayer() {
 
         <TabsContent value="list" className="mt-4 space-y-3">
           {reports.map((r) => (
-            <WatchReportCard key={r.id} report={r} />
+            <WatchReportCard key={r.id} report={r} onViewOnMap={handleViewOnMap} />
           ))}
         </TabsContent>
       </Tabs>

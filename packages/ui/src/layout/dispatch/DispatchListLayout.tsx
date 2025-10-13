@@ -10,7 +10,7 @@ import {
 import { Badge } from "@workspace/ui/components/badge";
 import { DispatchTypeBadge } from "@workspace/ui/components/client/DispatchTypeBadge";
 import { humanize } from "@workspace/ui/lib/utils";
-import type { DispatchSubmission } from "@workspace/store/dispatchStore";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 type LinkWrapperProps = {
   href: string;
@@ -68,7 +68,7 @@ export function DispatchListLayout({
 
             <CardContent className="space-y-3 text-sm">
               {submission.required_roles_by_type &&
-              Object.keys(submission.required_roles_by_type).length > 0 ? (
+                Object.keys(submission.required_roles_by_type).length > 0 ? (
                 <div>
                   <p className="mb-1 text-xs font-medium uppercase">Roles Needed</p>
                   <div className="flex flex-wrap gap-1">

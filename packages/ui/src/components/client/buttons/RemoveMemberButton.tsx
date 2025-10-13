@@ -10,26 +10,19 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@workspace/ui/components/dialog";
-import { usePodsStore } from "@workspace/store/podStore";
-import { RosterEntry } from "@workspace/store/types/pod.ts";
+import type { RosterEntry } from "@workspace/store/types/pod.ts";
 
-export function RemoveMemberButton({
-  podId,
-  member,
-}: {
-  podId: string;
+type RemoveMemberButtonProps = {
+  podName: string;
   member: RosterEntry;
-}) {
-  const { pods, updatePod } = usePodsStore();
-  const pod = pods.find((p) => p.id === podId);
+  onRemoveMember: () => void;
+};
+
+export function RemoveMemberButton({ podName, member, onRemoveMember }: RemoveMemberButtonProps) {
   const [open, setOpen] = React.useState(false);
 
-  if (!pod) return null;
-
   const handleRemove = () => {
-    updatePod(pod.id, {
-      team: pod.team.filter((r) => r.id !== member.id),
-    });
+    onRemoveMember();
     setOpen(false);
   };
 
@@ -40,7 +33,7 @@ export function RemoveMemberButton({
           Remove
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <DialogHeader>
           <DialogTitle>Remove Member</DialogTitle>
           <DialogDescription>
@@ -48,7 +41,7 @@ export function RemoveMemberButton({
             <span className="font-semibold">
               {member.volunteer.display_name}
             </span>{" "}
-            from <span className="font-mono">{pod.name}</span>? This action
+            from <span className="font-mono">{podName}</span>? This action
             cannot be undone.
           </DialogDescription>
         </DialogHeader>

@@ -1,43 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
-import { useDispatchStore } from "@workspace/store/dispatchStore";
 import AddLogisticsDrawer from "./AddLogisticsDrawer.tsx";
 import EditLogisticsDrawer from "./EditLogisticsDrawer.tsx";
 import { humanize, priorityColors, statusColors } from "@workspace/ui/lib/utils";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import type { LogisticsItem } from "@workspace/store/types/dispatch";
 
-export default function LogisticsPanel({ dispatchId }: { dispatchId: string }) {
-  const { submissions, updateSubmission } = useDispatchStore();
-  const submission = submissions.find((s) => s.id === dispatchId);
+type LogisticsPanelProps = {
+  submission: DispatchSubmission;
+  onUpdate: (patch: Partial<DispatchSubmission>) => void;
+};
 
-  const [newItem, setNewItem] = useState({
-    category: "supply",
-    description: "",
-    quantity: "",
-    priority: "medium",
-    status: "pending",
-    responsible: "",
-    warehouseName: "",
-    warehouseLocation: "",
-    warehouseContact: "",
-    accountabilityNotes: "",
-  });
+type DraftLogistics = {
+  category: string;
+  description: string;
+  quantity: string;
+  priority: string;
+  status: string;
+  responsible: string;
+  warehouseName: string;
+  warehouseLocation: string;
+  warehouseContact: string;
+  accountabilityNotes: string;
+};
+
+const EMPTY_DRAFT: DraftLogistics = {
+  category: "supply",
+  description: "",
+  quantity: "",
+  priority: "medium",
+  status: "pending",
+  responsible: "",
+  warehouseName: "",
+  warehouseLocation: "",
+  warehouseContact: "",
+  accountabilityNotes: "",
+};
+
+export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelProps) {
+  const [newItem, setNewItem] = useState<DraftLogistics>(EMPTY_DRAFT);
+
+  useEffect(() => {
+    setNewItem(EMPTY_DRAFT);
+  }, [submission.id]);
+
+  const logistics = submission.logistics ?? [];
 
   const addItem = () => {
-    if (!submission) return;
-    const item = {
+    const item: LogisticsItem = {
       id: crypto.randomUUID(),
-      category: newItem.category as any,
+      category: newItem.category as LogisticsItem["category"],
       description: newItem.description,
       quantity: newItem.quantity,
-      priority: newItem.priority as any,
-      status: newItem.status as any,
+      priority: newItem.priority as LogisticsItem["priority"],
+      status: newItem.status as LogisticsItem["status"],
       responsibleParty: newItem.responsible
-        ? { type: "anon" as const, name: newItem.responsible }
-        : { type: "anon" as const, name: "Unassigned" },
+        ? { type: "anon", name: newItem.responsible }
+        : { type: "anon", name: "Unassigned" },
       warehouse: {
         name: newItem.warehouseName,
         location: newItem.warehouseLocation,
@@ -46,36 +69,22 @@ export default function LogisticsPanel({ dispatchId }: { dispatchId: string }) {
       accountabilityNotes: newItem.accountabilityNotes,
       updatedAt: new Date().toISOString(),
     };
-    updateSubmission(dispatchId, {
-      logistics: [...(submission.logistics ?? []), item],
-    });
-    setNewItem({
-      category: "supply",
-      description: "",
-      quantity: "",
-      priority: "medium",
-      status: "pending",
-      responsible: "",
-      warehouseName: "",
-      warehouseLocation: "",
-      warehouseContact: "",
-      accountabilityNotes: "",
-    });
+
+    onUpdate({ logistics: [...logistics, item] });
+    setNewItem(EMPTY_DRAFT);
   };
 
   const deleteItem = (id: string) => {
-    if (!submission) return;
-    updateSubmission(dispatchId, {
-      logistics: submission.logistics.filter((l) => l.id !== id),
+    onUpdate({ logistics: logistics.filter((l) => l.id !== id) });
+  };
+
+  const saveItem = (updated: LogisticsItem) => {
+    onUpdate({
+      logistics: logistics.map((l) => (l.id === updated.id ? updated : l)),
     });
   };
 
-  const saveItem = (updated: any) => {
-    if (!submission) return;
-    updateSubmission(dispatchId, {
-      logistics: submission.logistics.map((l) => (l.id === updated.id ? updated : l)),
-    });
-  };
+  const sortedLogistics = [...logistics].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   return (
     <Card>
@@ -87,13 +96,11 @@ export default function LogisticsPanel({ dispatchId }: { dispatchId: string }) {
           Track transport, supply chains, rally points, comms, warehouses, and accountability.
         </p>
 
-        {/* Add new logistics item */}
         <AddLogisticsDrawer newItem={newItem} setNewItem={setNewItem} addItem={addItem} />
 
-        {/* Existing logistics list */}
-        {submission?.logistics?.length ? (
+        {sortedLogistics.length ? (
           <ul className="space-y-2">
-            {submission.logistics.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map((item) => (
+            {sortedLogistics.map((item) => (
               <li key={item.id} className="text-sm">
                 <div className="flex flex-col w-full justify-between">
                   <hr className="my-2 border-t border-muted-foreground" />
