@@ -31,14 +31,14 @@ export default function Home() {
           variant="primary"
           target="_blank"
           rel='noopener noreferrer'
-          href="https://academy.peoplesrebellion.org"
+          href="https://academy.alwaysreadytools.org"
         />
         <LinkButton
           label={t('goToDispatch')}
           variant="primary"
           target="_blank"
           rel='noopener noreferrer'
-          href="https://dispatch.peoplesrebellion.org"
+          href="https://demo.alwaysreadytools.org"
         />
 
         <div className="flex flex-col text-center py-20 justify-center m-auto">

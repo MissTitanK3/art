@@ -1,0 +1,135 @@
+---
+title: Digital Resilience & Contingency Comms
+slug: digital-resilience-contingency-comms
+description: Learn how to keep communication flowing even when networks fail, using mesh, LoRa, radios, and offline tools to maintain team coordination.
+type: qualified
+version: 1.1
+readingTime: 18
+---
+
+# 📡 Digital Resilience & Contingency Comms
+<TrackBadge variant="tech-comms" />
+<TrackBadge variant="direct-action" />
+
+<Callout type="critical">
+**Assume networks *will* fail.** Your contingency plan should be as rehearsed as your primary comms.
+</Callout>
+
+Dispatch and field teams often rely on **Signal, phones, and live updates**.  
+During large actions, state suppression, or disasters, these can fail.  
+This course teaches **fallback systems — mesh, LoRa, radios, and offline protocols — to keep pods connected and safe.**
+
+---
+
+## Enhanced Comms Framework
+
+### 1. Mesh Networking (Local Survival)
+
+Recommended tools:
+
+    - Bridgefy (Android/iOS, Bluetooth mesh)  
+    - Briar (Android, offline P2P via WiFi or Bluetooth)  
+    - Serval Mesh (legacy but stable for basic text)  
+
+Deployment tips:
+
+    - Use **roles, not names** as usernames (e.g., "Medic1", "Dispatch3").  
+    - Pre-load devices with offline maps (Organic Maps).  
+    - Test all chats with airplane mode ON to confirm offline functionality.
+
+---
+
+### 2. LoRa (Long-Range Text Relays)
+
+Starter kit:
+
+    - ~$250 for Meshtastic + T-Beam (1km urban, up to 10km rural).  
+    - Always enable **AES-128 encryption**, even for benign messages.  
+
+Message format (keep short):
+
+    [PRIORITY] [LOCATION] [ACTION]  
+    "URGENT – 5th/Broadway – Need extraction"  
+    "INFO – Water at SE park entrance"
+
+---
+
+### 3. Radio Hybrid Protocols
+
+When networks fail completely:
+
+    - Switch to **pre-set VHF/UHF channels** immediately.  
+    - Use numbered codes for common needs:  
+        "Charlie 4" = Medical backup  
+        "Foxtrot 1" = Move to fallback location  
+    - Hold **30-minute check-ins** for accountability.
+
+<Callout type="warning">
+**Never** rely on a single tech operator. Train **at least 3 people per pod** on every comms tool.
+</Callout>
+
+---
+
+## Comms Fallback Drill (Monthly Practice)
+
+Steps for pod drills:
+
+    1. Kill all internet and cellular on devices.  
+    2. Deploy:
+        - 1 LoRa node at rally point  
+        - 2 mesh-enabled phones as relays  
+    3. Transmit:
+        - GPS coordinates of supply cache → confirm receipt  
+        - Simulated emergency request ("Medic to NW corner")  
+
+---
+
+## Comms Hierarchy for Blackouts
+
+    | Duration  | Tools                     | Message Limits                 |
+    |-----------|---------------------------|---------------------------------|
+    | 0–2 hrs   | Mesh apps + hand signals  | Critical updates only          |
+    | 2–6 hrs   | LoRa + encrypted radios   | Scheduled check-ins & updates  |
+    | 6+ hrs    | Runners + dead drops      | Pre-arranged coded locations   |
+
+---
+
+## Essential Gear Checklist
+
+    - 2+ LoRa nodes per 10 people (with extra batteries).  
+    - Faraday bags for backup phones (protection from seizure or EMP).  
+    - Printed, laminated **frequency charts and code sheets**.  
+    - Multi-type charging cables (USB-C, MicroUSB, Lightning).
+
+---
+
+## Security Audit Questions
+
+Radios:
+
+    - Are privacy codes and encryption active?  
+    - Is your FCC license up-to-date if legally required?  
+
+Mesh:
+
+    - Are devices set to non-discoverable post-setup?  
+    - Is chat history cleared after every action?  
+
+OpSec:
+
+    - Are LoRa antennas and devices concealed (in packs or jackets)?  
+    - Are all radio checks **coded**? (Never say "testing 1-2-3".)
+
+---
+
+## Final Checklist (Enhanced)
+
+    - [ ] Conducted 3+ blackout drills with your pod.  
+    - [ ] Established **analog fallbacks** (semaphore, chalk marks, paper maps).  
+    - [ ] Pre-loaded offline guides (KYR, medic, and crisis docs).  
+    - [ ] Can troubleshoot and replace failed LoRa nodes in the field.
+
+<Callout type="success">
+**Remember:** The best backup system is the one your pod has actually **practiced under stress.**
+</Callout>
+

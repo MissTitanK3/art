@@ -32,7 +32,7 @@ type StepData = {
 };
 
 interface TeamRequestFormProps {
-  onSubmitted?: () => void;
+  onSubmitted?: (submission: DispatchSubmission) => void;
   onCreateSubmission: (submission: DispatchSubmission) => void;
   initialData?: StepData;
 }
@@ -113,9 +113,7 @@ export default function TeamRequestForm({
             setFormData({});
             setCurrentStep(0);
           }}
-          onSubmitted={() => {
-            // App-level redirect or success handling can go here
-          }}
+          onSubmitted={onSubmitted}
           onCreateSubmission={onCreateSubmission}
         />
       )}

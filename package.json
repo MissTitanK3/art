@@ -33,6 +33,7 @@
     "@react-leaflet/core": "^3.0.0",
     "@resvg/resvg-js": "^2.6.2",
     "@resvg/resvg-wasm": "^2.6.2",
+    "@tailwindcss/typography": "^0.5.19",
     "@turf/turf": "^7.2.0",
     "html-to-image": "^1.11.13",
     "html2canvas-pro": "^1.5.11",

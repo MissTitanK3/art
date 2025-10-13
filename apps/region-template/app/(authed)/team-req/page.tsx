@@ -2,12 +2,13 @@
 
 import TeamRequestForm from "@workspace/ui/components/client/team-request/TeamRequestForm";
 import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
 
 function TeamRequestContent() {
   const addSubmission = useDispatchStore((s) => s.addSubmission);
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const initialFormData = useMemo(() => {
@@ -68,7 +69,7 @@ function TeamRequestContent() {
       <div className="grid gap-3">
         <TeamRequestForm
           onCreateSubmission={addSubmission}
-          onSubmitted={() => alert("Submitted! (not really, this is a dummy)")}
+          onSubmitted={(submission) => router.push(`/dispatches/submission/${submission.id}`)}
           initialData={initialFormData}
         />
       </div>

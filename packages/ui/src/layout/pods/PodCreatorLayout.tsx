@@ -125,7 +125,7 @@ export function PodCreatorLayout({
         </div>
 
         <div className="grid gap-1">
-          <Label htmlFor="pod-channel-link">Channel Link</Label>
+          <Label htmlFor="pod-channel-link">Join/Vetting Link</Label>
           <Input
             id="pod-channel-link"
             placeholder="https://signal.group/…"

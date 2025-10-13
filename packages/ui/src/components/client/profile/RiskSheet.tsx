@@ -48,7 +48,7 @@ export function RiskSheet({
           Review Risk Expectations
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-3">
+      <SheetContent side="bottom" className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
         <SheetHeader>
           <SheetTitle>Field Risk Awareness</SheetTitle>
           <SheetDescription>
@@ -58,7 +58,7 @@ export function RiskSheet({
 
         <div className="space-y-6 mt-4 text-sm mb-10">
           <div>
-            <h3 className="font-bold text-gray-300">✅ Practical Preparedness</h3>
+            <h3 className="font-bold ">✅ Practical Preparedness</h3>
             <ul className="list-disc pl-8 space-y-2">
               {RISK_QUESTIONS.practical.map((q, idx) => (
                 <li key={idx}>{q}</li>
@@ -67,7 +67,7 @@ export function RiskSheet({
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-300">🔥 Commitment & Consequence</h3>
+            <h3 className="font-bold ">🔥 Commitment & Consequence</h3>
             <ul className="list-disc pl-8 space-y-2">
               {RISK_QUESTIONS.commitment.map((q, idx) => (
                 <li key={idx}>{q}</li>

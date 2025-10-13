@@ -1,0 +1,174 @@
+---
+title: Encryption 101
+slug: encryption-101
+description: Understand how data is protected and how to use end-to-end encryption.
+type: qualified
+readingTime: 12
+version: 2.0
+---
+
+# Encryption 101
+
+End-to-end encryption (E2EE) is a foundational safety layer in ICE Tea tools. This guide breaks it down into practical, real-world terms for anyone—no tech degree required.
+
+<Callout type="info">
+📊 Encryption prevents over 99% of unauthorized mass surveillance attempts when used correctly.
+</Callout>
+
+---
+
+## What Is Encryption?
+
+Encryption scrambles data so that only someone with the correct key can read it.
+
+Think of it like putting a letter in a locked metal box. Even if someone steals the box, they can’t open it without the key.
+
+---
+
+## End-to-End Encryption (E2EE)
+
+**End-to-end** means only the sender and the intended recipient can read the message.
+
+- Not the app
+- Not ICE Tea developers
+- Not the government
+
+| Without Encryption          | With End-to-End Encryption     |
+|----------------------------|-------------------------------|
+| Message is sent openly     | Message is locked before sending |
+| Servers can read it        | Only the recipient can read it   |
+| Vulnerable to interception | Protected by math and keys      |
+
+<Callout type="important">
+⚠️ Encryption protects content, but not **metadata**—who sent it, when, and from where may still be visible.
+</Callout>
+
+---
+
+## How It Works (Simple Flow)
+
+1. You write a report.
+2. A **secret key** is made from your passphrase + salt.
+3. That key encrypts (locks) the report.
+4. The message is stored encrypted in our system.
+5. Only someone with the same passphrase can decrypt it.
+
+---
+
+## Terms to Know
+
+| Term            | Meaning                                                                 |
+|-----------------|-------------------------------------------------------------------------|
+| **Encryption**  | Scrambling readable data into protected code                           |
+| **Decryption**  | Turning protected code back into readable form                         |
+| **Passphrase**  | Your personal code for unlocking a message                             |
+| **Salt**        | Randomness added to protect against reuse or guesswork                 |
+| **Metadata**    | Info about a message (sender, time, IP)—may still be visible           |
+| **Brute-force** | A type of attack that guesses keys thousands of times per second       |
+| **Forward secrecy** | Each encrypted report should have a unique passphrase             |
+
+---
+
+## How ICE Tea Uses Encryption
+
+You can optionally encrypt sensitive dispatches with a **passphrase**. ICE Tea will:
+
+- **Never store the passphrase**
+- Encrypt the message using secure libraries (e.g. AES-256, libsodium)
+- Only allow access to users with the correct passphrase
+
+<Callout type="warning">
+🛑 Lose the passphrase = lose access forever. ICE Tea cannot retrieve it. Write it down *securely* or memorize it.
+</Callout>
+
+---
+
+## Choosing a Strong Passphrase
+
+✅ Best Practices:
+
+- Use 4–6 random words: `crane-mango-cloud-echo`
+- Avoid reused or personal info
+- Use forward secrecy: new phrase per report
+
+❌ Avoid:
+
+- `password123`, `letmein`, `mybirthday`
+- Short or reused login passwords
+- Inside jokes shared with others
+
+---
+
+## Sharing a Passphrase Safely
+
+Only share using **end-to-end encrypted channels** or **in person**:
+
+- ✅ Signal (preferably via voice call)
+- ✅ In person during a trusted handoff
+
+Never share via:
+
+- ❌ Email
+- ❌ SMS
+- ❌ Group chats or shared docs
+
+---
+
+## When Should I Use Encryption?
+
+Use encryption if the report includes:
+
+- Full names or IDs
+- Legal documentation status
+- Location of undocumented people
+- Surveillance threats or child custody issues
+
+Skip encryption if:
+
+- The info is already public
+- It’s time-sensitive and not sensitive
+
+<Callout type="tip">
+Partial encryption is OK — redact sensitive parts, encrypt those, and leave general context unencrypted.
+</Callout>
+
+---
+
+## Try It: Safe Shelter Report
+
+You’re reporting a raid **outside a shelter**.
+
+- 🔒 Encrypt the shelter’s name and exact address.
+- ✅ Leave public street info unencrypted.
+- 📞 Share the passphrase with a dispatcher over Signal.
+
+What if you mess up and email the passphrase by mistake?
+
+- Assume it's compromised.
+- Notify the dispatcher.
+- Submit a fresh report with a new passphrase.
+
+---
+<Callout type="rabbit-hole">
+🔐 Understand How Signal Works
+Learn the math behind end-to-end encryption and perfect forward secrecy.
+→ Read: "Signal Protocol Whitepaper"
+</Callout>
+---
+<Callout type="rabbit-hole">
+🛠️ Build Your Own Encrypted App
+Try implementing a simple chat system using NaCl or libsodium.
+→ Project: "WebCrypto + IndexedDB secure message demo"
+</Callout>
+---
+
+## Summary
+
+- Encryption protects your messages—but only when used properly.
+- Passphrases must be strong, unique, and shared securely.
+- ICE Tea never stores your keys. You’re the only one who can unlock the data.
+
+<Callout type="success">
+You are the keyholder. Protect the people in your reports like they’re in your care—because they are.
+</Callout>
+

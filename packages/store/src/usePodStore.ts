@@ -130,7 +130,12 @@ export const seedPods: Pod[] = [
     slug: 'pod-downtown',
     name: 'Downtown',
     area: 'Core & East Bay',
-    channels: [{ type: 'Signal', link: 'https://signal.group/#CjQKICdowntown_public_recruiting_placeholder' }],
+    channels: [
+      {
+        type: 'Signal',
+        link: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
+      },
+    ],
     team: [r1, r2],
   },
   {
@@ -138,7 +143,12 @@ export const seedPods: Pod[] = [
     slug: 'pod-westside',
     name: 'Westside',
     area: 'West District',
-    channels: [{ type: 'Matrix', link: 'https://matrix.to/#/#westside-public:example.org' }],
+    channels: [
+      {
+        type: 'Matrix',
+        link: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
+      },
+    ],
     team: [r3, r4],
   },
   {
@@ -183,9 +193,7 @@ const createPodStoreInitializer =
             ? {
                 ...pod,
                 team: pod.team.map((entry) =>
-                  entry.id === rosterId
-                    ? { ...entry, certs: [...(entry.certs ?? []), cert] }
-                    : entry,
+                  entry.id === rosterId ? { ...entry, certs: [...(entry.certs ?? []), cert] } : entry,
                 ),
               }
             : pod,
@@ -229,10 +237,7 @@ export function createPodStore(options?: CreatePodStoreOptions): PodStore {
 }
 
 const singletonPodStore = createPodStore();
-export function usePodStore<T>(
-  selector: (state: PodStoreState) => T,
-  equalityFn?: (a: T, b: T) => boolean,
-) {
+export function usePodStore<T>(selector: (state: PodStoreState) => T, equalityFn?: (a: T, b: T) => boolean) {
   return useStore(singletonPodStore, selector, equalityFn);
 }
 

@@ -1,0 +1,151 @@
+---
+title: Intro to Mesh Networks
+slug: mesh-networks-intro
+description: Learn what mesh networks are, why they matter, and how to send your first Meshtastic message.
+type: qualified
+version: 1.1
+readingTime: 18
+---
+
+# 🛜 Intro to Mesh Networks
+<TrackBadge variant="tech-comms" />
+<TrackBadge variant="logistics" />
+
+<Callout type="info">
+This is a **Level 1: New Team Member** course.  
+It introduces you to **mesh networks and Meshtastic**, so you can understand how they work, why they matter, and send your first message.
+</Callout>
+
+---
+
+## Why It Matters
+
+Phones, Wi-Fi, and the internet can **fail, be shut down, or be monitored** during high-risk events.  
+A **mesh network** gives your team a way to **stay connected without relying on cell towers** or outside infrastructure.
+
+Meshtastic is a **low-cost, battery-friendly** tool that uses **LoRa (long-range radio)** to let people communicate securely over distances from 1–15 km (depending on terrain).  
+
+This makes it ideal for:
+- Protests and marches  
+- Mutual aid operations  
+- Natural disaster zones  
+- Rural pods or teams with no cell service  
+
+---
+
+## What You'll Learn
+
+1. **What a Mesh Network Is** – How nodes connect and pass messages directly.  
+2. **How Meshtastic Works** – What devices do, how far they can reach, and how to use them.  
+3. **Joining and Testing a Network** – Pairing, channels, and your first message.  
+4. **How to Stay Secure and Effective** – Avoiding common beginner mistakes.
+
+---
+
+## Quick Action Steps
+
+1. Ask someone in your pod for a **Meshtastic node** (or share one).  
+2. Install the **Meshtastic app** (Android/iOS) on your phone.  
+3. Pair your phone to the node via Bluetooth.  
+4. Join a **test channel** (not a real ops channel).  
+5. Send and receive your first message, and test how far it can reach.  
+6. Practice **keeping your node powered, charged, and safe**.
+
+---
+
+## Mesh Network Basics
+
+A **mesh network** is like a **smart chain of radios**:
+
+- Each device is called a **node**.  
+- A node can send your message to another node, which passes it along until it reaches the right person.  
+- There’s **no central tower or single failure point**.  
+- Messages can travel through **multiple hops**, so your message can reach someone far away even if they aren’t in direct range.
+
+<Mermaid chart={`
+graph TD
+    A[Arrest Reported]:::nodeStyle --> B{Lawyer Already Contacted?}:::nodeStyle
+    B -->|Yes| C[Initiate Attorney Protocol]:::nodeStyle
+    B -->|No| D[Activate Jail Support Team]:::nodeStyle
+    C --> E[Monitor Case Securely]:::nodeStyle
+    D --> F[Track Through Jail System]:::nodeStyle
+    F --> G[Arrange Bail & Post-Release Care]:::nodeStyle
+
+    %% Node styling
+    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
+
+    %% Link colors
+    linkStyle 0,2,4 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+    linkStyle 1,3 stroke:#22c55e,stroke-width:2px,color:#1e293b,font-weight:bold;
+`} />
+
+---
+
+## Meshtastic Basics
+
+Meshtastic is **open-source software** that runs on small LoRa radios.  
+Each node:
+- Sends and receives encrypted messages (text or short data).  
+- Pairs with your phone via Bluetooth to send messages easily.  
+- Can run for hours or days on a single charge (depending on battery size).  
+
+Typical range:
+- **Urban:** 1–3 km with obstacles.  
+- **Rural/line-of-sight:** 5–15 km with high-gain antennas or elevated relays.
+
+---
+
+## Meshtastic Devices (What They Look Like)
+
+The most common starter devices are:
+
+- **LilyGO T-Beam:**  
+  - About the size of a deck of cards.  
+  - Has GPS, strong range (5–10 km urban with good antennas).  
+  - Costs around **$50–$70**.  
+
+- **Heltec V3:**  
+  - Compact, fits in a pocket.  
+  - No GPS, moderate range (2–5 km).  
+  - Costs around **$35–$50**.  
+
+Each comes with:
+- USB-C charging  
+- A small built-in screen (sometimes)  
+- A basic antenna (upgradable later)  
+
+---
+
+## Staying Secure (Even as a Beginner)
+
+Even though Meshtastic supports encryption, **new users often make mistakes** that compromise security. Avoid these:
+
+- **Do not use default channels or keys.**  
+  Anyone nearby can join and read your traffic.  
+- **Never share sensitive details** (names, addresses, plans) even on encrypted channels.  
+- **Label your node with a code name**, not your real name.  
+- **Charge your node daily** and avoid leaving it unattended and powered on unless it’s a planned relay.
+
+<Callout type="warning">
+Even encrypted, all radios can be detected if someone is scanning for signals.  
+Keep transmissions short and your node powered down when not in use.
+</Callout>
+
+---
+
+## Range Tips for Beginners
+
+- Hold your device **upright** (antenna vertical).  
+- For best range, **get elevation** (a hill, a balcony, or a rooftop).  
+- Avoid **dense concrete or metal structures** when testing range.  
+- If your pod uses multiple nodes, **spread them out** so messages can hop.
+
+---
+
+## Drill (Certification)
+
+To complete this course:
+1. Pair to a partner’s Meshtastic node via Bluetooth.  
+2. Send and receive **three test messages** successfully.  
+3. Demonstrate your node running for **at least 1 hour** on battery without dying.  
+4. Show you know how to **turn off broadcasting** when not in use.

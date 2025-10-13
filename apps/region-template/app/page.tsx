@@ -22,7 +22,7 @@ export default function Page() {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold tracking-tight">🌎 Region Template</h1>
         <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-          This is a demonstration version of the A.R.T. platform, designed to show layout, navigation, and component integration.
+          This is a demonstration version of the ART platform, designed to show layout, navigation, and component integration.
         </p>
       </div>
 

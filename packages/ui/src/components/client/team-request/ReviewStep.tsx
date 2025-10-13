@@ -14,7 +14,7 @@ interface ReviewStepProps {
   data: any;
   onBack: () => void;
   onReset: () => void;
-  onSubmitted?: () => void;
+  onSubmitted?: (submission: DispatchSubmission) => void;
   onCreateSubmission: (submission: DispatchSubmission) => void;
 }
 
@@ -39,7 +39,7 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
     });
 
     onReset();
-    onSubmitted?.();
+    onSubmitted?.(draft);
   };
 
   return (

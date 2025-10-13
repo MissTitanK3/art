@@ -1,0 +1,188 @@
+---
+title: Comms Collapse Scenarios & Offline Protocols
+slug: comms-collapse
+description: Learn how to operate when Signal fails, the internet is down, or surveillance increases — using radios, runners, fallback sites, and low-tech systems to keep community defense alive.
+type: qualified
+readingTime: 30
+version: 1.0
+---
+
+# 📡 Comms Collapse Scenarios & Offline Protocols  
+<TrackBadge variant="default" />
+{/* <TrackBadge variant="security" />
+<TrackBadge variant="tech-comms" />
+<TrackBadge variant="direct-action" /> */}
+
+<Callout type="warn">
+🛰️ If Signal goes down, internet gets cut, or your tools are compromised, **what’s your backup?** This course gives you fallback protocols for working securely and effectively when digital infrastructure disappears or becomes unsafe.
+</Callout>
+
+---
+
+## 🧠 Why This Matters
+
+Recent years have shown:
+- Governments can **shut off mobile service** (e.g. Iran, Sudan, India)
+- Protest zones often experience **cell jamming or blackouts**
+- Cops are using IMSI catchers, stingrays, and router spoofing
+- **Surveillance dragnets** can make even “safe” apps dangerous
+
+You need to train for **the day your phone fails**.
+
+---
+
+## 🎯 What You’ll Learn
+
+- How to build fallback systems before a failure happens  
+- How to communicate without phones or internet  
+- How to use radios, runners, and printed tools  
+- When to fall back, hold, or shut down ops  
+- How to practice collapses *without causing panic*
+
+---
+
+## 🚨 Comms Collapse Scenarios
+
+| Scenario | Real Examples | Result |
+|----------|---------------|--------|
+| Signal stops working | DDoS, server takedown | Teams go dark mid-op |
+| Cell network disrupted | Stingray or protest zone jammer | Location data leaks, apps fail |
+| Internet cut off | State shutdown or tower destruction | Dispatch unreachable |
+| Surveillance spike | Stingray, facial rec, keyword targeting | All comms risky to use |
+
+---
+
+## 🔁 The Collapse Playbook
+
+### 🛠️ 1. Build Redundancy (Before Failure)
+
+- Have at least **two ways** to reach any pod (e.g. Signal + paper + radio)
+- Print the most important tools: KYR sheets, pod lists, fallback maps
+- Build fallback meetup sites or “dead drop” points
+- Assign each pod a **comms fallback lead** who knows protocols
+
+---
+
+### 📍 2. Establish Offline Rendezvous Protocols
+
+| Element | What It Does |
+|--------|----------------|
+| Meetup time slots | “If comms are down, meet here at 9am/12pm/4pm” |
+| Fallback sites | Cafes, parks, or known mutual aid spaces |
+| Shifted check-ins | Instead of “message me,” say “check the site at X time” |
+| Paper updates | Sign-in logs, flyers, QR-less updates |
+
+---
+
+### 🧍 3. Use Human Runners
+
+- Bike, walk, or drive updates between pods  
+- Wear no logos, carry no identifying documents  
+- Carry written updates on paper slips or signal cards  
+- Confirm deliveries **verbally** or with a written receipt system  
+- Use shared code phrases (e.g. “Grandma’s soup” = safe site OK)
+
+---
+
+### 📻 4. Use Radios (If Safe)
+
+| Tool | Use Case | Risk |
+|------|----------|------|
+| FRS/GMRS radios | Close-range team comms | Public, unencrypted |
+| Baofeng or VHF | Longer range, customizable | Illegal use can be tracked |
+| LoRa (Meshtastic) | Silent, encrypted, low power | Requires pre-sync and setup |
+
+📌 Always assume **radio is public** unless you control both ends securely.
+
+<Callout type="info">
+LoRa-based tools like Meshtastic can bridge pods with no cell or internet. Great for slow syncs or signal drops.
+</Callout>
+
+---
+
+### 📦 5. Pack an Offline Ops Kit
+
+Every pod lead or coordinator should carry:
+
+- [ ] Printed pod list with aliases and risk levels  
+- [ ] Map with fallback sites and rally zones  
+- [ ] Marker, paper, and dry-erase board  
+- [ ] Flash drive with toolkits (read-only mode)  
+- [ ] Backup power (solar, hand crank, battery bank)  
+- [ ] Scanner radio or Baofeng + charger (if licensed)  
+- [ ] KYR flyers, pod cards, Signal starter zines  
+- [ ] Burner clipboard for logs and drop messages
+
+---
+
+## 🔐 Secure Offline Comms Practices
+
+| Practice | Purpose |
+|----------|----------|
+| Code phrases | Share actionable info without revealing plans |
+| Hand signals | Use standard field comms to alert or direct |
+| Chalk/marker drops | Signal status of zones (e.g. ⚠️ for ICE seen) |
+| Paper-based alerts | “Flash bulletin” graphics for door-to-door info |
+| Shifted language | Say “bike drop” instead of “dispatch log” |
+
+<Callout type="hint">
+Use mundane, repeatable language. Avoid activist slang or insider terms during collapse.
+</Callout>
+
+---
+
+## 🧪 Practice Drill Example
+
+🧠 _Simulate a comms blackout:_
+
+1. Turn off all phones or internet access  
+2. Assign a known issue (e.g. ICE sighting at H-Mart)  
+3. Attempt to alert 3 nearby pods using:  
+   - Printed flyers  
+   - Runners  
+   - Radios  
+4. Log how long it took. Where did confusion happen? What failed?  
+
+✅ **Debrief afterward. Update your pod’s collapse plan.**
+
+---
+
+## 📋 Collapse Protocol Cards (Example)
+
+<Mermaid chart={`
+graph TD
+    A[Signal Fails]:::nodeStyle --> B[Check Drop Site #1 within 1 hour]:::nodeStyle
+    B --> C{Was info found?}:::nodeStyle
+    C -->|Yes| D[Follow update instructions]:::nodeStyle
+    C -->|No| E[Go to Fallback Site: Location B]:::nodeStyle
+    E --> F{Is fallback site active?}:::nodeStyle
+    F -->|Yes| G[Follow chalk ⚠️ or red flyer cue]:::nodeStyle
+    F -->|No| H[Assume HOLD Mode<br/>Cease all ops until regroup]:::nodeStyle
+
+    %% Node styling
+    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
+
+    %% Link styling
+    linkStyle 0,1,3,5 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+    linkStyle 2,4 stroke:#ef4444,stroke-width:2px,color:#1e293b,font-weight:bold;
+`} />
+
+
+You can print these, laminate, and pass to each pod lead.
+
+---
+
+## 🧠 Decision Tree: What If Comms Go Dark?
+
+```text
+📴 Signal down?
+   ⬇
+🛰️ Internet off too?
+   ⬇
+🔦 Switch to radio / runner
+   ⬇
+📍 Check fallback site within 1 hour
+   ⬇
+❌ Nothing there?
+   ⬇
+🛑 HOLD – Cease all ops until regroup

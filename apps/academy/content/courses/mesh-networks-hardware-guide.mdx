@@ -1,0 +1,123 @@
+---
+title: Mesh Network Hardware & Power Guide
+slug: mesh-networks-hardware-guide
+description: Recommended hardware, antennas, power systems, and accessories for Meshtastic pod and multi-pod operations.
+type: appendix
+version: 1.0
+readingTime: 14
+---
+
+# 🔌 Mesh Network Hardware & Power Guide
+<TrackBadge variant="tech-comms" />
+
+<Callout type="info">
+This appendix lists **recommended gear** for running Meshtastic networks from small pods (3–15 nodes) up to **large, multi-day deployments (15–100+ nodes)**.  
+Prices are typical as of 2025 and may vary by supplier.
+</Callout>
+
+---
+
+## Core Meshtastic Devices
+
+These are the radios your network runs on.
+
+| Device                | Role                  | Typical Price | Notes |
+|-----------------------|-----------------------|---------------|-------|
+| **LilyGO T-Beam V1.1** | Standard handheld node | $60–$80       | Built-in GPS, USB-C, long range (5–10 km with good antenna). Recommended for most pod members. |
+| **Heltec V3 LoRa**     | Compact node/relay     | $35–$50       | Small, no GPS, good for scouts or hidden stationary relays. |
+| **RAK WisBlock / ESP32-based Relay** | Fixed coverage relay | $80–$120 | Needs steady power (AC or solar). Perfect for rooftops or semi-permanent installs. |
+
+<Callout type="hint">
+Each pod should have at least **1 relay-capable node** (T-Beam with high-gain antenna or RAK relay) for coverage.
+</Callout>
+
+---
+
+## Antennas & Range Boosters
+
+Stock antennas are weak. Upgrades can **double or triple range**.
+
+| Antenna Type            | Use Case                | Price Range | Range Impact |
+|--------------------------|-------------------------|-------------|--------------|
+| **3–5 dBi whip**         | Handheld upgrades       | $10–$20     | Good balance for urban pods. |
+| **6–9 dBi directional (Yagi or panel)** | Rooftop/relay use         | $20–$50     | Extends rural line-of-sight to 15+ km. |
+| **Mag-mount antennas**   | Vehicle-based relays    | $25–$40     | Improves mobile relay performance. |
+
+Mounting tips:
+- Always keep antennas **vertical and clear of metal obstructions**.  
+- For rooftops, use **tripod mounts or weatherproof housings**.
+
+---
+
+## Battery Packs & Solar
+
+Keeping nodes powered is critical, especially for multi-day ops.
+
+### For Pod Members (Handheld Nodes):
+- **10,000–20,000 mAh USB-C power bank** ($20–$40): Runs a T-Beam for **12–24 hrs**.
+- Carry **2 per active member** during long events.
+
+### For Relays:
+- **20,000–50,000 mAh battery banks** ($50–$120): For stationary relays.  
+- **20–40W solar panels** ($60–$150): Trickle-charge relays during daytime.
+
+<Mermaid chart={`
+graph LR
+    A[Relay Node]:::nodeStyle --> B[Battery Bank 50,000mAh]:::nodeStyle
+    B --> C[20–40W Solar Panel]:::nodeStyle
+    A --> D[Backup Battery Rotation]:::nodeStyle
+
+    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
+`} />
+
+---
+
+## Accessories & Spares
+
+Every pod should budget for:
+- **Weatherproof cases** (IP65 or higher) for relays – $20–$60 each.  
+- **USB-C multi-chargers** (5–10 port) – $25–$60.  
+- **Quick-disconnect mounts** (tripods or magnetic bases) – $20–$40.  
+- **Coded labels and inventory tags** (avoid real names).  
+- **Spare USB-C cables** (braided or reinforced) – $10–$15 each.
+
+---
+
+## Typical Costs Per Pod
+
+### Small Pod (5–8 Nodes):
+- **5× T-Beams @ $70** = $350  
+- **1× Relay Node (RAK) + antenna** = $150  
+- **5× Power Banks (20,000 mAh)** = $150  
+- **Misc accessories** = $100  
+**Total: ~$750–$850**
+
+### Medium Pod (10–15 Nodes):
+- **10× T-Beams @ $70** = $700  
+- **2× Relay Nodes (RAK) + high-gain antennas** = $300  
+- **10× Power Banks (20,000 mAh)** = $300  
+- **Solar kits (for relays)** = $300  
+**Total: ~$1,500–$1,700**
+
+### Large Network (30–50 Nodes):
+- Scale linearly, but add **2–4 backup relays**, **extra batteries**, and **dedicated solar arrays** (~$2,500–$4,000).
+
+---
+
+## Sourcing Tips
+
+- **Official Meshtastic forums and GitHub** list trusted vendors.  
+- Look for **LoRa devices with 915 MHz support** (for US use).  
+- Avoid unknown resellers on large marketplaces unless verified (counterfeits are common).  
+- Buy **extra cables, antennas, and power banks** – these fail most often.
+
+---
+
+## Checklist for Deployment
+
+- [ ] Each node has a **spare battery** and **tested antenna**.  
+- [ ] Relays mounted in **weatherproof containers** with backup batteries.  
+- [ ] Solar panels positioned for **6+ hrs/day sun exposure**.  
+- [ ] All devices labeled with **code names, not real names**.  
+- [ ] At least **1 spare relay and 2 spare power banks** per pod.
+

@@ -8,7 +8,7 @@ import {
 
 export const navConfig: GlobalNavConfigInput = {
   brand: {
-    name: 'A.R.T. Region Template',
+    name: 'ART Region Template',
     href: '/',
     logoSrc: '/art.png', // optional, string only
   },

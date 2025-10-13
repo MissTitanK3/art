@@ -1,0 +1,150 @@
+---
+title: Meshtastic for Large-Scale Actions
+slug: meshtastic-large-scale
+description: Learn to design, scale, and sustain Meshtastic networks for multi-day or multi-pod actions (15–100+ nodes).
+type: qualified
+version: 1.2
+readingTime: 28
+---
+
+# 🌐 Meshtastic for Large-Scale Actions
+<TrackBadge variant="tech-comms" />
+<TrackBadge variant="pod-leadership" />
+
+<Callout type="info">
+This is a **Level 4: Zone Lead (Admin Dispatcher)** course.  
+It teaches you to **design, coordinate, and sustain multi-pod Meshtastic networks** that can run for days, cover multiple neighborhoods, and resist surveillance or shutdown.
+</Callout>
+
+---
+
+## Why It Matters
+
+Once your pod expands past **15 active nodes**, coordination becomes complex:
+- More devices mean **increased network chatter and battery draw**.  
+- Surveillance risks rise, as more nodes can reveal patterns.  
+- Failure of a relay or gateway can disrupt communications for an entire region.
+
+This course shows how to **build networks that scale up to 100+ devices**, stay resilient for days at a time, and remain secure in hostile conditions.
+
+---
+
+## What You'll Learn
+
+1. **Scaling to 100+ Nodes** – Breaking a single network into logical segments with redundancy.  
+2. **Relay & Gateway Infrastructure** – Designing fixed, mobile, and stealth relays, and limiting internet bridges.  
+3. **Power Management for Multi-Day Ops** – Solar arrays, vehicle power, and rotation schedules.  
+4. **Camouflage and Anti-Surveillance Practices** – Hiding, protecting, and rotating equipment.  
+5. **Cross-Pod Coordination** – Linking multiple pods while avoiding single points of failure.
+
+---
+
+## Quick Action Steps
+
+1. Draw a **network map**: pods, relays, channels, gateways, and backup devices.  
+2. Deploy **at least two relays per zone** (one primary, one backup).  
+3. Test a **24-hour operation** with relay rotation and battery swaps.  
+4. Train **two or more backup leads** to run the network if you are compromised.
+
+---
+
+## Scaling Tactics
+
+When scaling past a single pod, **organization is key**:
+
+- **Segment channels by role**:  
+  - Medics, scouts, logistics, and leadership each get separate PSKs.  
+  - Reduces chatter and protects sensitive traffic.  
+
+- **Relay placement**:  
+  - Urban areas: **1–2 km apart** for overlapping coverage.  
+  - Rural/open terrain: **5–8 km apart** with high-gain antennas.  
+
+- **Gateways**:  
+  - Only **one or two leadership nodes** bridge to the internet for remote coordination.  
+  - Disable automatic cloud sync; use **manual pull/push** to reduce metadata leaks.  
+
+- **Anonymous relays**:  
+  - Use weatherproof boxes, fake utility enclosures, or camouflaged mounts.  
+  - Rotate their locations every few days to avoid pattern tracking.
+
+<Mermaid chart={`
+graph TD
+    A[Pod 1 HQ]:::nodeStyle --> B[Relay 1 - Rooftop]:::nodeStyle
+    A --> C[Pod 1 Field Team]:::nodeStyle
+    B --> D[Relay 2 - Vehicle]:::nodeStyle
+    D --> E[Pod 2 HQ]:::nodeStyle
+    E --> F[Pod 2 Field Team]:::nodeStyle
+    B --> G[Leadership Gateway- Internet Optional]:::nodeStyle
+    G --> H[Backup Relay - Rooftop]:::nodeStyle
+
+    %% Styling
+    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
+    linkStyle 0,1,2,3,4,5 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+`} />
+
+---
+
+## Relay & Gateway Infrastructure
+
+For a city-scale deployment:
+- **Primary relays**: Rooftops, water towers, or tall buildings.  
+- **Secondary (mobile) relays**: Parked vehicles or bike trailers with power banks.  
+- **Gateways**: Use **only for leadership**, and always through a **VPN or Tor bridge** to mask metadata.  
+
+Power planning:
+- Equip each relay with **20,000–50,000 mAh battery packs**.  
+- Use **20–40W solar panels** for stationary units in daylight.  
+- Rotate relays and batteries on a **12-hour schedule** during heavy ops.
+
+---
+
+## Power Management (Multi-Day)
+
+Large networks can burn through power fast:
+- Assign a **power officer** per zone to track battery swaps.  
+- Keep a **pool of pre-charged spares** (at least 2 per relay).  
+- Use **vehicle alternators** or small generators to recharge during downtime.  
+
+<Callout type="hint">
+During long ops, relays can double as **phone charging stations** for field teams if batteries allow.
+</Callout>
+
+---
+
+## Camouflage & Anti-Surveillance
+
+- Hide relays in **locked, weatherproof containers** with labels like “Sensor Node” or “Environmental Logger.”  
+- Avoid putting relays in the same spot repeatedly; **rotate locations**.  
+- Use **low-power mode** when traffic is light to reduce RF signature.  
+- If a relay is compromised, **change all PSKs immediately** and redeploy backups.
+
+---
+
+## Cross-Pod Coordination
+
+When multiple pods must connect:
+- Use a **hub-and-spoke model**: pods maintain local networks, connected via a **few trusted relay/gateway nodes**.  
+- **Avoid direct linking of all pods** on one massive channel, which invites chaos and surveillance.  
+- Designate **trusted liaisons** to carry or operate the bridging nodes.  
+- Sync traffic in bursts (scheduled message windows) instead of constant chatter.
+
+---
+
+## Security & Redundancy Practices
+
+- Rotate **all PSKs weekly** during operations.  
+- Keep **offline, encrypted logs** (paper + VeraCrypt) of device assignments.  
+- Maintain at least **one backup relay per zone** in storage, ready to deploy.  
+- Train **three layers of operators**: primary, secondary, and tertiary, so no single person is critical.
+
+---
+
+## Large-Scale Drill (Certification)
+
+1. Deploy a **20-node network** spanning at least two neighborhoods.  
+2. Maintain **continuous coverage for 24 hours**, rotating batteries and relays.  
+3. Simulate a **relay seizure or failure**, and restore the network within 15 minutes using backups.  
+4. Operate **multi-channel encrypted traffic** for at least 3 pod teams without cross-channel interference.  
+5. Submit a **network plan and post-operation report** to your Zone Lead for review.
+
