@@ -2,7 +2,8 @@
   "extends": "@workspace/typescript-config/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "emitDeclarationOnly": true,
+    "ignoreDeprecations": "6.0",
+    "emitDeclarationOnly": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

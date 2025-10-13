@@ -5,23 +5,32 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Button } from '@workspace/ui/components/button';
 import { useProfileStore } from '@workspace/store/profileStore';
 import type { CountySelectMapProps } from '@workspace/ui/components/maps/CountySelectMap';
-import { CountyProps } from '@workspace/store/types/maps.ts';
+import { CountyProps, SelectedCounty } from '@workspace/store/types/maps.ts';
 import { GEO_TO_FIPS } from '@workspace/store/utils/map';
-
-export interface SelectedCounty {
-  GEO_ID: string;
-  NAME: string;
-  STATE: string;   // 2-digit FIPS
-  ZONE: number[];  // selected grid cells
-}
+import { CountySelectLayout } from '@workspace/ui/layout/profile/CountySelectLayout';
 
 const CountySelectMap = dynamic<CountySelectMapProps>(
   () => import('@workspace/ui/components/maps/CountySelectMap'),
   { ssr: false, loading: () => <div className="h-96 w-full" /> }
 );
+
+async function fetchOperatingCountiesFromDatabase(profileId: string): Promise<string[] | null> {
+  // TODO: replace with real database integration.
+  // Example:
+  // const { data } = await client.from("operating_counties").select("counties").eq("profile_id", profileId).single();
+  // return data?.counties ?? null;
+  await Promise.resolve();
+  return null;
+}
+
+async function saveOperatingCountiesToDatabase(profileId: string, fipsList: string[]): Promise<void> {
+  // TODO: replace with real persistence logic.
+  // Example:
+  // await client.from("operating_counties").upsert({ profile_id: profileId, counties: fipsList });
+  await Promise.resolve();
+}
 
 export function CountySelectDataLayer() {
   const router = useRouter();
@@ -30,12 +39,11 @@ export function CountySelectDataLayer() {
 
   const [selectedCounties, setSelectedCounties] = React.useState<SelectedCounty[]>([]);
   const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(null);
-  const [isSaving, startSaving] = React.useTransition();
+  const [isSaving, setIsSaving] = React.useState(false);
 
 
   // --- NEW: protect against hydration clobbering user clicks
   const didHydrateRef = React.useRef(false);
-  const didUserInteractRef = React.useRef(false);
 
   // hydrate from store (unchanged logic, but guarded + merged)
   React.useEffect(() => {
@@ -57,10 +65,11 @@ export function CountySelectDataLayer() {
         }
         if (!alive) return;
 
-        const hydrated: SelectedCounty[] = [];
-        for (const fips of (profile?.operating_counties ?? [])) {
-          const c = byFips.get(fips);
-          if (c) hydrated.push(c);
+        const remoteFips = profile?.id ? await fetchOperatingCountiesFromDatabase(profile.id) : null;
+        const sourceFips = remoteFips ?? profile?.operating_counties ?? [];
+
+        if (remoteFips) {
+          setOperating(sourceFips);
         }
 
         // Only apply once, and never overwrite if user already interacted
@@ -68,7 +77,7 @@ export function CountySelectDataLayer() {
           setSelectedCounties(prev => {
             const seen = new Set(prev.map(c => c.GEO_ID));
             const merged = [...prev];
-            for (const fips of profile?.operating_counties ?? []) {
+            for (const fips of sourceFips) {
               const c = byFips.get(fips);
               if (c && !seen.has(c.GEO_ID)) merged.push(c);
             }
@@ -87,8 +96,7 @@ export function CountySelectDataLayer() {
     })();
 
     return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.operating_counties?.join('|')]);
+  }, [profile?.id, profile?.operating_counties?.join('|'), setOperating]);
 
   // --- helper: reconcile prev selection with possibly-delta "next"
   const reconcileSelection = React.useCallback(
@@ -122,7 +130,6 @@ export function CountySelectDataLayer() {
 
   // map -> parent (controlled, but resilient to delta emissions)
   const handleMapChange = React.useCallback((next: SelectedCounty[]) => {
-    didUserInteractRef.current = true;
     setSelectedCounties((prev) => {
       const merged = reconcileSelection(prev, next);
       setActiveCounty((prevActive) =>
@@ -134,129 +141,87 @@ export function CountySelectDataLayer() {
 
   // list actions
   const toggleEditCounty = React.useCallback((county: SelectedCounty) => {
-    didUserInteractRef.current = true;
     setActiveCounty(prev => (prev?.GEO_ID === county.GEO_ID ? null : county));
   }, []);
 
   const handleUpdateZones = React.useCallback((geoId: string, zones: number[]) => {
-    didUserInteractRef.current = true;
     setSelectedCounties(prev =>
       prev.map(c => (c.GEO_ID === geoId ? { ...c, ZONE: zones } : c))
     );
   }, []);
 
   const handleRemoveCounty = React.useCallback((geoId: string) => {
-    didUserInteractRef.current = true;
     setSelectedCounties(prev => prev.filter(c => c.GEO_ID !== geoId));
     setActiveCounty(prev => (prev?.GEO_ID === geoId ? null : prev));
   }, []);
 
-  const countyList = React.useMemo(
-    () =>
-      selectedCounties.map((county, i) => (
-        <div
-          key={county.GEO_ID}
-          className="border rounded p-3 text-sm space-y-2 mb-10"
-        >
-          {/* Header row */}
-          <div className="flex flex-col md:flex-row items-center justify-evenly md:justify-between h-full w-full">
-            <div className="font-medium">
-              <span className="font-mono text-xs text-muted-foreground">#{i + 1}</span>{" "}
-              {county.NAME} County
-            </div>
-            {/* Coverage details */}
-            {Array.isArray(county.ZONE) && county.ZONE.length > 0 && (
-              <div className="text-xs text-blue-600">
-                Partial coverage: {county.ZONE.length} zone{county.ZONE.length > 1 ? "s" : ""}
-              </div>
-            )}
-            <div className="flex items-center gap-3 mt-3">
-              <Button onClick={() => toggleEditCounty(county)}>
-                {activeCounty?.GEO_ID === county.GEO_ID ? "Done Editing" : "Edit Zones"}
-              </Button>
-              <Button
-                onClick={() => handleRemoveCounty(county.GEO_ID)}
-                variant="destructive"
-              >
-                Remove
-              </Button>
-            </div>
-          </div>
-        </div>
-      )),
-    [selectedCounties, activeCounty, toggleEditCounty, handleRemoveCounty]
-  );
-
   const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
     e?.preventDefault();
-    didUserInteractRef.current = true;
 
     const fipsList = selectedCounties
       .map(c => GEO_TO_FIPS(c.GEO_ID))
       .filter((v): v is string => !!v)
       .sort();
 
-    // Flush to store
-    setOperating(fipsList);
-
-    // 🔑 wait for persist
-    await new Promise(r => setTimeout(r, 50));
-
-    router.push('/my-profile');
-  }, [router, selectedCounties, setOperating]);
+    setIsSaving(true);
+    (async () => {
+      try {
+        setOperating(fipsList);
+        if (profile?.id) {
+          await saveOperatingCountiesToDatabase(profile.id, fipsList);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        router.push('/my-profile');
+      } finally {
+        setIsSaving(false);
+      }
+    })();
+  }, [profile?.id, router, selectedCounties, setOperating]);
 
 
 
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-2xl rounded-lg border p-6">
-        <h2 className="text-lg font-semibold mb-1">No profile found</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Restore your demo profile first, then pick counties.
-        </p>
-        <Link href="/my-profile" className="underline">Back to profile</Link>
-      </div>
+      <CountySelectLayout
+        profileMissing
+        selectedCounties={[]}
+        activeCounty={null}
+        onMapChange={() => {}}
+        onToggleEditCounty={() => {}}
+        onRemoveCounty={() => {}}
+        onUpdateZones={() => {}}
+        onDone={() => {}}
+        isSaving={false}
+        MapComponent={CountySelectMap}
+        noProfileContent={
+          <>
+            <h2 className="mb-1 text-lg font-semibold">No profile found</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Restore your demo profile first, then pick counties.
+            </p>
+            <Link href="/my-profile" className="underline">
+              Back to profile
+            </Link>
+          </>
+        }
+      />
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 z-0">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Pick your operating counties</h1>
-          <p className="text-sm text-muted-foreground">
-            Click counties to toggle. Use “Edit Zones” to mark partial coverage.
-          </p>
-        </div>
-        <div className="w-full md:w-32">
-          <Button onClick={handleDone} disabled={isSaving} aria-busy={isSaving} className="w-full">
-            {isSaving ? 'Saving…' : 'Done'}
-          </Button>
-        </div>
-      </div>
-      {typeof window !== 'undefined' && (
-        <CountySelectMap
-          selected={selectedCounties}
-          onChange={handleMapChange}
-          editor={activeCounty ? {
-            county: activeCounty,
-            gridSize: 20,
-            clipEdges: true,
-            onUpdateZones: handleUpdateZones,
-          } : undefined}
-        />
-      )}
-
-      <div className="space-y-3">
-        {selectedCounties.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No counties selected yet. Zoom in and click on a county to select it.
-          </p>
-        ) : (
-          countyList
-        )}
-      </div>
-    </div>
+    <CountySelectLayout
+      profileMissing={false}
+      selectedCounties={selectedCounties}
+      activeCounty={activeCounty}
+      onMapChange={handleMapChange}
+      onToggleEditCounty={toggleEditCounty}
+      onRemoveCounty={handleRemoveCounty}
+      onUpdateZones={handleUpdateZones}
+      onDone={handleDone}
+      isSaving={isSaving}
+      MapComponent={CountySelectMap}
+      loadingMessage={!didHydrateRef.current ? "Loading counties..." : undefined}
+    />
   );
 }

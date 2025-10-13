@@ -2,21 +2,34 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@workspace/ui/components/sheet";
 import { usePodsStore } from "@workspace/store/podStore";
-import { RosterTable } from "@workspace/ui/components/client/roster/RosterTable";
-import { RosterCardList } from "@workspace/ui/components/client/roster/RosterCardList";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
-import { EditRosterEntryForm } from '@workspace/ui/components/client/roster/RosterEntryEditor'
-import { AddMemberButton } from "@workspace/ui/components/client/buttons/AddMemberButton"
+import { AddMemberButton } from "@workspace/ui/components/client/buttons/AddMemberButton";
+import {
+  PodRosterLayout,
+  PodRosterLayoutProps,
+} from "@workspace/ui/layout/pods/PodRosterLayout";
+
+async function fetchPodRosterFromDatabase(
+  slug: string
+): Promise<RosterEntry[] | null> {
+  // TODO: swap with real database call when persistence is introduced.
+  // Example:
+  // const { data } = await client.from("pod_roster").select("*").eq("pod_slug", slug);
+  // return data?.map(transformRowToRosterEntry) ?? [];
+  await Promise.resolve();
+  return null;
+}
+
+async function persistRosterEntryToDatabase(
+  podId: string,
+  entry: RosterEntry
+): Promise<void> {
+  // TODO: implement proper persistence once a database is available.
+  // Example:
+  // await client.from("pod_roster").upsert(transformRosterEntry(entry, podId));
+  await Promise.resolve();
+}
 
 export default function PodRosterDataLayer() {
   const { id } = useParams<{ id: string }>();
@@ -24,65 +37,87 @@ export default function PodRosterDataLayer() {
 
   const { pods, updatePod } = usePodsStore();
   const pod = pods.find((p) => p.slug === podId);
-  const rows = pod?.team ?? [];
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
+    null
+  );
+  const [loadingRemoteRoster, setLoadingRemoteRoster] =
+    React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadRemoteRoster() {
+      if (!podId) return;
+      setLoadingRemoteRoster(true);
+      try {
+        const result = await fetchPodRosterFromDatabase(podId);
+        if (!cancelled && result) {
+          setRemoteRoster(result);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.warn("PodRosterDataLayer: failed to fetch roster", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingRemoteRoster(false);
+        }
+      }
+    }
+
+    loadRemoteRoster();
+    return () => {
+      cancelled = true;
+    };
+  }, [podId]);
+
+  const rows = remoteRoster ?? pod?.team ?? [];
   const editing = rows.find((r) => r.id === selectedId) ?? null;
 
-  const handleSave = (entry: RosterEntry) => {
+  const handleSave = async (entry: RosterEntry) => {
     if (!pod) return;
+
+    try {
+      await persistRosterEntryToDatabase(pod.id, entry);
+    } catch (error) {
+      console.warn("PodRosterDataLayer: failed to persist roster entry", error);
+    }
+
     updatePod(pod.id, {
       team: pod.team.map((r) => (r.id === entry.id ? entry : r)),
     });
+
+    setRemoteRoster((prev) =>
+      prev ? prev.map((r) => (r.id === entry.id ? entry : r)) : prev
+    );
+
     setSelectedId(null); // close sheet after save
   };
 
-  return (
-    <section className="mx-auto w-full max-w-4xl">
-      <div className="flex justify-between flex-col md:flex-row">
+  const addMemberAction = pod ? <AddMemberButton id={id} /> : null;
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage members for <span className="font-mono">{podId}</span>.
+  const layoutProps: PodRosterLayoutProps = {
+    podSlug: podId,
+    podId: pod?.id,
+    rows,
+    editingEntry: editing,
+    onEdit: (entryId) => setSelectedId(entryId),
+    onCloseEditor: () => setSelectedId(null),
+    onSaveEntry: handleSave,
+    addMemberAction,
+    loadingMessage: loadingRemoteRoster
+      ? "Loading roster from database..."
+      : undefined,
+    notFoundMessage: (
+      <div className="rounded-md border border-dashed p-4">
+        <p className="text-sm text-muted-foreground">
+          Pod not found. Return to the pods directory to select a valid pod.
         </p>
-        <AddMemberButton id={id} />
       </div>
+    ),
+  };
 
-      <RosterCardList rows={rows} onEdit={(id) => setSelectedId(id)} podId={pod?.id || ''} />
-
-      {/* Side panel editor */}
-      <Sheet open={!!editing} onOpenChange={(o) => !o && setSelectedId(null)}>
-        <SheetContent
-          side="right"
-          className="w-full sm:w-[480px] md:w-[640px] lg:w-[720px] max-w-none p-0 flex flex-col"
-        >
-          <div className="border-b px-4 py-3">
-            <SheetHeader>
-              <SheetTitle>Edit Roster Entry</SheetTitle>
-              <SheetDescription>
-                Update role, status, languages and skills.
-              </SheetDescription>
-            </SheetHeader>
-          </div>
-
-          {editing && (
-            <div className="flex-1 overflow-y-auto p-4">
-              <EditRosterEntryForm
-                initial={editing}
-                onSave={handleSave}
-              />
-            </div>
-          )}
-
-          <div className="border-t px-4 py-3 flex items-center justify-end gap-2">
-            <SheetClose asChild>
-              <Button variant="outline">Close</Button>
-            </SheetClose>
-            <Button type="submit" form="edit-roster-entry-form" className="min-w-24">
-              Save
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </section>
-  );
+  return <PodRosterLayout {...layoutProps} />;
 }

@@ -2,23 +2,16 @@
 
 import * as React from "react";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";   // ✅ import router
+import { useRouter } from "next/navigation";
 
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
-import { cn } from "@workspace/ui/lib/utils";
 import { usePodsStore } from "@workspace/store/podStore";
-import { channels, slugify } from '@workspace/store/types/pod.ts'
+import { channels, slugify, Pod } from "@workspace/store/types/pod.ts";
+import {
+  PodCreatorLayout,
+  PodCreatorLayoutErrors,
+} from "@workspace/ui/layout/pods/PodCreatorLayout";
 
 const schema = z.object({
   name: z
@@ -34,6 +27,13 @@ const schema = z.object({
   channelLink: z.string().url("Must be a valid URL").min(5, "Link is required").optional(),
 });
 
+async function createPodInDatabase(pod: Pod): Promise<void> {
+  // TODO: replace with actual persistence (e.g., Supabase/Hasura/etc.).
+  // Example:
+  // await client.from("pods").insert(transformPodForInsert(pod));
+  await Promise.resolve();
+}
+
 export default function PodCreatorDataLayer() {
   const addPod = usePodsStore((s) => s.addPod);
   const router = useRouter();
@@ -41,8 +41,8 @@ export default function PodCreatorDataLayer() {
   const {
     register,
     handleSubmit,
-    control,
     watch,
+    setValue,
     formState: { errors, isSubmitting, isValid, isDirty },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -51,10 +51,11 @@ export default function PodCreatorDataLayer() {
   });
 
   const name = watch("name");
+  const channel = watch("channel");
   const liveSlug = slugify(name);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    const payload = {
+    const payload: Pod = {
       id: crypto.randomUUID(),
       slug: slugify(values.name),
       name: values.name.trim(),
@@ -68,92 +69,51 @@ export default function PodCreatorDataLayer() {
       team: [],
     };
 
+    try {
+      await createPodInDatabase(payload);
+    } catch (error) {
+      console.warn("PodCreatorDataLayer: failed to persist pod", error);
+    }
+
     addPod(payload);
     router.push(`/pods/${payload.slug}`);
   };
 
+  const fieldBindings = React.useMemo(
+    () => ({
+      name: register("name"),
+      area: register("area"),
+      channelLink: register("channelLink"),
+    }),
+    [register]
+  );
+
+  const formErrors: PodCreatorLayoutErrors = {
+    name: errors.name?.message,
+    area: errors.area?.message,
+    channel: errors.channel?.message,
+    channelLink: errors.channelLink?.message,
+  };
+
   return (
-    <section className="max-w-xl">
-      <h1 className="text-2xl font-bold">Create Pod</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-4 grid gap-4">
-        {/* Pod Name */}
-        <div className="grid gap-1">
-          <Label htmlFor="pod-name">Pod Name</Label>
-          <Input
-            id="pod-name"
-            placeholder="e.g., Downtown, Eastside Court Watch"
-            {...register("name")}
-            aria-invalid={!!errors.name}
-          />
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              Slug: <code className="select-all">{liveSlug || "—"}</code>
-            </span>
-            <span>{name.length}/50</span>
-          </div>
-          {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
-        </div>
-
-        {/* Coverage Area */}
-        <div className="grid gap-1">
-          <Label htmlFor="pod-area">Coverage Area</Label>
-          <Input
-            id="pod-area"
-            placeholder="Neighborhood, district, or courthouse"
-            {...register("area")}
-            aria-invalid={!!errors.area}
-          />
-          {errors.area && <p className="text-xs text-destructive">{errors.area.message}</p>}
-        </div>
-
-        {/* Primary Channel */}
-        <div className="grid gap-1">
-          <Label htmlFor="pod-channel">Primary Channel</Label>
-          <Controller
-            name="channel"
-            control={control}
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  id="pod-channel"
-                  className={cn("w-[220px]", errors.channel && "ring-1 ring-destructive")}
-                >
-                  <SelectValue placeholder="Select a channel…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {channels.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.channel && <p className="text-xs text-destructive">{errors.channel.message}</p>}
-        </div>
-
-        {/* Channel Link */}
-        <div className="grid gap-1">
-          <Label htmlFor="pod-channel-link">Channel Link</Label>
-          <Input
-            id="pod-channel-link"
-            placeholder="https://signal.group/…"
-            {...register("channelLink")}
-            aria-invalid={!!errors.channelLink}
-          />
-          {errors.channelLink && (
-            <p className="text-xs text-destructive">{errors.channelLink.message}</p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3 pt-2">
-          <Button type="submit" disabled={!isValid || isSubmitting} className="min-w-24">
-            {isSubmitting ? "Creating…" : "Create Pod"}
-          </Button>
-        </div>
-      </form>
-    </section>
+    <PodCreatorLayout
+      fieldBindings={fieldBindings}
+      channelField={{
+        value: channel,
+        onChange: (value) =>
+          setValue("channel", value as (typeof channels)[number], {
+            shouldValidate: true,
+            shouldDirty: true,
+          }),
+      }}
+      channelOptions={[...channels]}
+      liveSlug={liveSlug}
+      nameLength={name.length}
+      maxNameLength={50}
+      isSubmitting={isSubmitting}
+      submitDisabled={!isDirty || !isValid || isSubmitting}
+      errors={formErrors}
+      onSubmit={handleSubmit(onSubmit)}
+    />
   );
 }

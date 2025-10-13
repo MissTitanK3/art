@@ -1,0 +1,211 @@
+"use client";
+
+import React from "react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import DispatchStatusUpdater from "@workspace/ui/components/client/status/DispatchStatusUpdater";
+import DispatchIntendedActionsUpdater from "@workspace/ui/components/client/actions/DispatchIntendedActionsUpdater";
+import DispatchSignalLinkUpdater from "@workspace/ui/components/client/external-link/DispatchSignalLinkUpdater";
+import DispatchNotesUpdater from "@workspace/ui/components/client/notes/DispatchNotesUpdater";
+import DispatchLocationUpdater from "@workspace/ui/components/client/location/DispatchLocationUpdater";
+import DispatchRolesManager from "@workspace/ui/components/client/roles/DispatchRolesManager";
+import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpdates";
+import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
+import PublicEngagementPanel from "@workspace/ui/components/client/engagement/PublicEngagementPanel";
+import { Button } from "@workspace/ui/components/button";
+import { Copy, Share2 } from "lucide-react";
+import { toast } from "sonner";
+import type { DispatchSubmission } from "@workspace/store/dispatchStore";
+
+export type DispatchSubmissionLayoutProps = {
+  submission: DispatchSubmission;
+  defaultTab?: "overview" | "roles" | "updates" | "logistics" | "public_engagement";
+  loadingMessage?: React.ReactNode;
+};
+
+export function DispatchSubmissionLayout({
+  submission,
+  defaultTab = "overview",
+  loadingMessage,
+}: DispatchSubmissionLayoutProps) {
+  const locationLabel = submission.location_label ?? "Unknown Location";
+  const timestamp = new Date(submission.timestamp).toLocaleString();
+
+  const handleShare = () => {
+    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard) {
+      toast.error("Clipboard access unavailable");
+      return;
+    }
+    const url = new URL(window.location.href);
+    navigator.clipboard
+      .writeText(url.toString())
+      .then(() => {
+        toast.success("Dispatch link copied to clipboard ✅");
+      })
+      .catch(() => {
+        toast.error("Failed to copy link");
+      });
+  };
+
+  const handleCopySummary = () => {
+    const summary = [
+      `📍 Location: ${submission.location_label ?? "Unknown"}${submission.state ? `, ${submission.state}` : ""}`,
+      `📅 Time: ${new Date(submission.timestamp).toLocaleString()}`,
+      `⚡ Status: ${submission.status}`,
+      submission.intended_action_preset
+        ? `🎯 Action: ${submission.intended_action_preset}`
+        : null,
+      submission.intended_action_notes
+        ? `📝 Notes: ${submission.intended_action_notes}`
+        : null,
+      submission.signal_link ? `🔗 Signal: ${submission.signal_link}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      toast.error("Clipboard access unavailable");
+      return;
+    }
+    navigator.clipboard
+      .writeText(summary)
+      .then(() => {
+        toast.success("Summary copied to clipboard");
+      })
+      .catch(() => {
+        toast.error("Failed to copy summary");
+      });
+  };
+
+  const overviewSections = [
+    {
+      id: "location",
+      content: <DispatchLocationUpdater id={submission.id} />,
+    },
+    {
+      id: "submitted-at",
+      label: "Submitted At",
+      content: (
+        <p suppressHydrationWarning>
+          {new Date(submission.timestamp).toLocaleString()}
+        </p>
+      ),
+    },
+    {
+      id: "intended-action",
+      label: "Intended Action",
+      content: <DispatchIntendedActionsUpdater id={submission.id} />,
+    },
+    {
+      id: "notes",
+      content: <DispatchNotesUpdater id={submission.id} />,
+    },
+    {
+      id: "signal-link",
+      content: <DispatchSignalLinkUpdater id={submission.id} />,
+    },
+  ];
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="sticky top-14 z-10 mb-3 flex flex-col items-center justify-between border-b bg-background px-4 py-3 md:flex-row">
+        <div>
+          {locationLabel ? (
+            <h2 className="text-lg font-bold">{locationLabel}</h2>
+          ) : null}
+          {timestamp ? (
+            <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+              {timestamp}
+            </p>
+          ) : null}
+        </div>
+        <div className="mt-3 flex flex-col items-center gap-2 sm:mt-0 sm:flex-row">
+          <DispatchStatusUpdater id={submission.id} />
+          <Button size="sm" variant="outline" onClick={handleShare}>
+            Share <Share2 className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {loadingMessage ? (
+        <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>
+      ) : null}
+
+      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
+        <TabsList className="mb-3 flex h-full w-full flex-wrap md:flex-nowrap">
+          <TabsTrigger value="overview" className="flex-1 basis-1/2">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="roles" className="flex-1 basis-1/2">
+            Roles
+          </TabsTrigger>
+          <TabsTrigger value="updates" className="flex-1 basis-1/2">
+            Updates
+          </TabsTrigger>
+          <TabsTrigger value="logistics" className="flex-1 basis-1/2">
+            Logistics
+          </TabsTrigger>
+          <TabsTrigger value="public_engagement" className="flex-1 basis-1/2">
+            Public Engagement
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="flex-1 overflow-y-auto">
+          <Card>
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle>Overview</CardTitle>
+              <Button size="sm" variant="outline" onClick={handleCopySummary}>
+                <Copy className="mr-1 h-4 w-4" /> Copy
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm" suppressHydrationWarning>
+              {overviewSections.map((section, index) => (
+                <div key={section.id ?? index}>
+                  {section.label ? <p className="font-medium">{section.label}</p> : null}
+                  <div>{section.content}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="roles" className="flex-1" suppressHydrationWarning>
+          <DispatchRolesManager id={submission.id} />
+        </TabsContent>
+
+        <TabsContent value="updates" className="flex-1">
+          <Card className="flex h-full flex-col">
+            <CardHeader>
+              <CardTitle>Updates</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Running notes, incident log, and updates.
+              </p>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col space-y-4 text-sm">
+              <DispatchUpdates dispatchId={submission.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="logistics" className="flex-1">
+          <LogisticsPanel dispatchId={submission.id} />
+        </TabsContent>
+
+        <TabsContent value="public_engagement" className="flex-1">
+          <PublicEngagementPanel dispatchId={submission.id} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default DispatchSubmissionLayout;

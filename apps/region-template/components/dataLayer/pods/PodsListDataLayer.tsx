@@ -1,22 +1,68 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import PodCard from "@workspace/ui/components/server/pods/PodCard";
+import { PodsListLayout } from "@workspace/ui/layout/pods/PodsListLayout";
+import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/PodsListLayout";
 import { usePodsStore } from "@workspace/store/podStore";
+
+async function fetchPodsFromDatabase(): Promise<PodsListLayoutPod[]> {
+  // Placeholder: swap this with your database client once persistence is ready.
+  // Example:
+  // const client = createSupabaseClient();
+  // const { data } = await client.from("pods").select("*");
+  // return transformPods(data);
+  await Promise.resolve();
+  return [];
+}
 
 export default function PodsListDataLayer() {
   const pods = usePodsStore((s) => s.pods);
+  const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(null);
+  const [loadingRemotePods, setLoadingRemotePods] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function hydrateFromDatabase() {
+      setLoadingRemotePods(true);
+      try {
+        const result = await fetchPodsFromDatabase();
+
+        if (mounted && result.length > 0) {
+          setRemotePods(result);
+        }
+      } catch (error) {
+        console.warn("PodsListDataLayer: failed to fetch pods from database", error);
+      } finally {
+        if (mounted) {
+          setLoadingRemotePods(false);
+        }
+      }
+    }
+
+    hydrateFromDatabase();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const podsToDisplay = remotePods && remotePods.length > 0 ? remotePods : pods;
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold">Pods Directory</h1>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-        {pods.map((p) => (
-          <Link key={p.id} href={`/pods/${p.slug}`}>
-            <PodCard pod={p} />
-          </Link>
-        ))}
-      </div>
-    </section>
+    <PodsListLayout
+      pods={podsToDisplay}
+      emptyState={
+        loadingRemotePods ? (
+          <p className="text-sm text-muted-foreground">Loading pods from database...</p>
+        ) : undefined
+      }
+      renderPod={({ pod, DefaultCard }) => (
+        <Link href={`/pods/${pod.slug}`}>
+          {DefaultCard}
+        </Link>
+      )}
+    />
   );
 }

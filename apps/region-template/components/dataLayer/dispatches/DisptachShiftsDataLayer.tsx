@@ -1,89 +1,71 @@
 "use client";
 
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@workspace/ui/components/tabs";
+import * as React from "react";
 import { useDispatchRosterStore } from "@workspace/store/dispatchRosterStore";
-import { Button } from "@workspace/ui/components/button";
-import AddShiftDrawer from "@workspace/ui/components/client/shifts/AddShiftDrawer";
-import ShiftCard from "@workspace/ui/components/client/shifts/ShiftCard";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
+import type { DispatchShift } from "@workspace/store/dispatchRosterStore";
+
+async function fetchDispatchShiftsFromDatabase(): Promise<DispatchShift[] | null> {
+  // TODO: replace with actual persistence layer call when available.
+  // Example:
+  // const { data } = await client.from("dispatch_shifts").select("*");
+  // return data?.map(transformRowToDispatchShift) ?? [];
+  await Promise.resolve();
+  return null;
+}
 
 export default function DispatchShiftsDataLayer() {
   const shifts = useDispatchRosterStore((s) => s.shifts);
-  const activeShifts = useDispatchRosterStore((s) => s.getActiveShifts());
+  const getActiveShifts = useDispatchRosterStore((s) => s.getActiveShifts);
   const getUpcomingShifts = useDispatchRosterStore((s) => s.getUpcomingShifts);
-  const [open, setOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [remoteShifts, setRemoteShifts] = React.useState<DispatchShift[] | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function hydrate() {
+      setLoading(true);
+      try {
+        const result = await fetchDispatchShiftsFromDatabase();
+        if (!cancelled && result) {
+          setRemoteShifts(result);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.warn("DispatchShiftsDataLayer: failed to fetch shifts", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const { isShiftActive } = useDispatchRosterStore.getState();
+  const mergedShifts = remoteShifts ?? shifts;
+  const activeShifts = remoteShifts ? remoteShifts.filter((shift) => isShiftActive(shift)) : getActiveShifts();
+  const upcomingShifts = remoteShifts
+    ? remoteShifts
+        .filter((shift) => new Date(shift.startsAt) > new Date())
+        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+    : getUpcomingShifts(24);
 
   return (
-    <div className="flex flex-col h-full" suppressHydrationWarning>
-      <div className="sticky top-14 z-10 mb-3 bg-background border-b px-4 py-3">
-        <div className="flex items-center justify-between flex-col sm:flex-row gap-2">
-          <div>
-            <h2 className="text-lg font-bold">Dispatch Shifts</h2>
-            <p className="text-xs text-muted-foreground">
-              {shifts.length} total shifts registered
-            </p>
-          </div>
-          <div>
-            <Button size="sm" variant="outline" className="mt-2" onClick={() => setOpen(true)}>
-              <Plus className="mr-2" /> New Shift
-            </Button>
-            <AddShiftDrawer open={open} onOpenChange={setOpen} />
-          </div>
-        </div>
-      </div>
-
-      <Tabs defaultValue="active" className="flex-1 flex flex-col">
-        <TabsList className="flex w-full mb-3">
-          <TabsTrigger value="active" className="flex-1">Active</TabsTrigger>
-          <TabsTrigger value="upcoming" className="flex-1">Upcoming</TabsTrigger>
-          <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-        </TabsList>
-
-        {/* Active */}
-        <TabsContent value="active" className="flex-1 overflow-y-auto">
-          {activeShifts.length === 0 ? (
-            <p className="text-muted-foreground p-4">No active shifts.</p>
-          ) : (
-            <div className="space-y-3 p-4">
-              {activeShifts.map((s) => (
-                <ShiftCard key={s.id} shift={s} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Upcoming */}
-        <TabsContent value="upcoming" className="flex-1 overflow-y-auto">
-          {getUpcomingShifts(24).length === 0 ? (
-            <p className="text-muted-foreground p-4">No upcoming shifts.</p>
-          ) : (
-            <div className="space-y-3 p-4">
-              {getUpcomingShifts(24).map((s) => (
-                <ShiftCard key={s.id} shift={s} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* All */}
-        <TabsContent value="all" className="flex-1 overflow-y-auto">
-          {shifts.length === 0 ? (
-            <p className="text-muted-foreground p-4">No shifts registered.</p>
-          ) : (
-            <div className="space-y-3 p-4">
-              {shifts.map((s) => (
-                <ShiftCard key={s.id} shift={s} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+    <DispatchShiftsLayout
+      shifts={mergedShifts}
+      activeShifts={activeShifts}
+      upcomingShifts={upcomingShifts}
+      addDrawerOpen={drawerOpen}
+      onAddDrawerChange={setDrawerOpen}
+      loadingMessage={loading ? "Loading shifts from database..." : undefined}
+    />
   );
 }

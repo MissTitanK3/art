@@ -2,32 +2,53 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
-import { Separator } from "@workspace/ui/components/separator";
-import { Card } from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
-import { Input } from "@workspace/ui/components/input";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, Plus } from "lucide-react";
 
 import { usePodsStore } from "@workspace/store/podStore";
-import { combineLocalDateTime, formatDateRange } from "@workspace/ui/lib/utils";
-import { Shift } from "@workspace/store/types/pod.ts";
-import { ShiftIntentionSection } from "@workspace/ui/components/client/shifts/ShiftIntentionSection";
+import { combineLocalDateTime } from "@workspace/ui/lib/utils";
+import { BaseShiftIntentionFields, Shift } from "@workspace/store/types/pod.ts";
+import {
+  PodShiftsLayout,
+  PodShiftsLayoutProps,
+} from "@workspace/ui/layout/pods/PodShiftsLayout";
+
+type ShiftFormState = BaseShiftIntentionFields & {
+  id?: string;
+  tz: string;
+  dispatchLink: string;
+};
+
+async function fetchPodShiftsFromDatabase(slug: string): Promise<Shift[] | null> {
+  // TODO: replace with real database lookup once persistence layer is wired up.
+  // Example:
+  // const { data } = await client.from("pod_shifts").select("*").eq("pod_slug", slug);
+  // return data?.map(transformRowToShift) ?? [];
+  await Promise.resolve();
+  return null;
+}
+
+async function persistShiftToDatabase(shift: Shift): Promise<void> {
+  // TODO: replace with real persistence logic (create/update) once database exists.
+  await Promise.resolve();
+}
+
+async function deleteShiftFromDatabase(shiftId: string): Promise<void> {
+  // TODO: replace with actual delete/archive logic.
+  await Promise.resolve();
+}
 
 export default function PodShiftsDataLayer() {
-  const router = useRouter();
   const params = useParams<{ id: string }>();
   const podSlug = decodeURIComponent(params.id ?? "");
 
-  const { pods, shifts, addShift, updateShift, removeShift } = usePodsStore();
+  const { pods, shifts, addShift, removeShift } = usePodsStore();
   const pod = pods.find((p) => p.slug === podSlug);
 
-  const podShifts = shifts.filter((s) => s.podId === pod?.id);
-
-  const [form, setForm] = React.useState({
+  const [remoteShifts, setRemoteShifts] = React.useState<Shift[] | null>(null);
+  const [loadingRemoteShifts, setLoadingRemoteShifts] =
+    React.useState<boolean>(false);
+  const [form, setForm] = React.useState<ShiftFormState>({
     id: pod?.id,
     startDate: "",
     startTime: "",
@@ -40,15 +61,64 @@ export default function PodShiftsDataLayer() {
     dispatchLink: "",
   });
 
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadRemoteShifts() {
+      if (!podSlug) return;
+      setLoadingRemoteShifts(true);
+      try {
+        const result = await fetchPodShiftsFromDatabase(podSlug);
+        if (!cancelled && result) {
+          setRemoteShifts(result);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.warn("PodShiftsDataLayer: failed to fetch shifts", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingRemoteShifts(false);
+        }
+      }
+    }
+
+    loadRemoteShifts();
+    return () => {
+      cancelled = true;
+    };
+  }, [podSlug]);
+
+  React.useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      id: pod?.id,
+    }));
+  }, [pod?.id]);
+
   if (!pod) {
     return (
-      <section className="mx-auto w-full max-w-4xl sm:px-4">
-        <p className="text-sm text-muted-foreground">Pod not found</p>
-      </section>
+      <PodShiftsLayout
+        podSlug={podSlug}
+        podId={undefined}
+        form={form}
+        setForm={setForm}
+        onAddShift={() => {}}
+        shifts={[]}
+        onRemoveShift={() => {}}
+        notFoundMessage={
+          <p className="text-sm text-muted-foreground">Pod not found</p>
+        }
+      />
     );
   }
 
-  function handleAdd() {
+  const podShifts = remoteShifts ?? shifts.filter((s) => s.podId === pod.id);
+
+  async function handleAdd() {
+    if (!pod) {
+      return;
+    }
     if (!form.startDate || !form.startTime || !form.endDate || !form.endTime) {
       toast.error("Incomplete shift details", {
         description: "Set all required fields.",
@@ -68,9 +138,9 @@ export default function PodShiftsDataLayer() {
       return;
     }
 
-    addShift({
+    const newShift: Shift = {
       id: crypto.randomUUID(),
-      podId: pod?.id!,
+      podId: pod.id,
       start,
       end,
       tz: form.tz,
@@ -78,10 +148,19 @@ export default function PodShiftsDataLayer() {
       location: form.location.trim(),
       label: form.label,
       dispatchLink: form.dispatchLink,
-    });
+    };
+
+    try {
+      await persistShiftToDatabase(newShift);
+    } catch (error) {
+      console.warn("PodShiftsDataLayer: failed to persist shift", error);
+    }
+
+    addShift(newShift);
+    setRemoteShifts((prev) => (prev ? [...prev, newShift] : prev));
 
     setForm({
-      id: pod?.id,
+      id: pod.id,
       startDate: "",
       startTime: "",
       endDate: "",
@@ -94,51 +173,37 @@ export default function PodShiftsDataLayer() {
     });
   }
 
-  return (
-    <section className="mx-auto w-full max-w-4xl sm:px-4">
-      <p className="mt-1 text-sm text-muted-foreground">
-        Configure shifts and availability for this pod.
+  const handleRemove = async (shiftId: string) => {
+    if (!pod) {
+      return;
+    }
+    try {
+      await deleteShiftFromDatabase(shiftId);
+    } catch (error) {
+      console.warn("PodShiftsDataLayer: failed to delete shift", error);
+    }
+    removeShift(shiftId);
+    setRemoteShifts((prev) => (prev ? prev.filter((s) => s.id !== shiftId) : prev));
+  };
+
+  const layoutProps: PodShiftsLayoutProps<ShiftFormState> = {
+    podSlug,
+    podId: pod.id,
+    form,
+    setForm,
+    onAddShift: handleAdd,
+    shifts: podShifts,
+    onRemoveShift: handleRemove,
+    addShiftButtonText: "Add Shift",
+    loadingMessage: loadingRemoteShifts
+      ? "Loading shifts from database..."
+      : undefined,
+    emptyState: (
+      <p className="text-sm text-muted-foreground">
+        No shifts added yet. Use the form above to create one.
       </p>
+    ),
+  };
 
-      {/* Add shift form */}
-      <ShiftIntentionSection
-        title="Add Shift"
-        form={form}
-        setForm={setForm}
-        onAdd={handleAdd}
-        addButtonText="Add Shift"
-      />
-
-      <Separator className="my-6" />
-
-      {/* Shifts list */}
-      <div className="grid gap-2">
-        {podShifts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No shifts added yet.</p>
-        ) : (
-          podShifts.map((shift: Shift) => (
-            <div key={`${shift.id}-shift-list`}>
-              <Card key={shift.id} className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{shift.label || "Untitled shift"}</p>
-                    <p className="text-xs text-muted-foreground" suppressHydrationWarning>
-                      {formatDateRange(shift.start, shift.end, shift.tz)}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeShift(shift.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            </div>
-          ))
-        )}
-      </div>
-    </section>
-  );
+  return <PodShiftsLayout {...layoutProps} />;
 }
