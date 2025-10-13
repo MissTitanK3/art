@@ -29,11 +29,10 @@ export function extractToc(markdown: string): NestedTOCHeading[] {
       .replace(/[^\w]+/g, '-')
       .replace(/^[-]+|[-]+$/g, '');
 
-    if (idCounts[id]) {
-      idCounts[id] += 1;
-      id = `${id}-${idCounts[id]}`;
-    } else {
-      idCounts[id] = 1;
+    const count = (idCounts[id] ?? 0) + 1;
+    idCounts[id] = count;
+    if (count > 1) {
+      id = `${id}-${count}`;
     }
 
     if (node.depth === 2) {
