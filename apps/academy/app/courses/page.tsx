@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getAllCourses } from '@/lib/mdx-loader';
 import { COURSE_GROUPS } from '@/lib/course-index';
 import ThemeToggle from '@workspace/ui/components/client/ThemeToggle';
-import { Callout } from '@/components/mdx/callout';
+import { Callout } from '@workspace/ui/components/academy/Callout';
 
 export default async function AcademyHome() {
   const allCourses = await getAllCourses();

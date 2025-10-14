@@ -8,8 +8,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../colla
 import { Label } from "../../label.tsx";
 import { Input } from "../../input.tsx";
 import { Button } from "../../button.tsx";
-import { cn } from "../../../lib/utils.ts";
+import { combineLocalDateTime, cn } from "../../../lib/utils.ts";
 import { BaseShiftIntentionFields } from "@workspace/store/types/pod.ts";
+import { DateTimePicker } from "../../DateTimePicker.tsx";
 
 // Make the component generic so parent state can have extra fields like tz, dispatchLink, etc.
 type Props<T extends BaseShiftIntentionFields> = {
@@ -22,6 +23,25 @@ type Props<T extends BaseShiftIntentionFields> = {
   addButtonText?: string;
 };
 
+function isoToLocalParts(iso?: string) {
+  if (!iso) {
+    return { date: "", time: "" };
+  }
+
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) {
+    return { date: "", time: "" };
+  }
+
+  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60_000);
+  const localIso = local.toISOString();
+
+  return {
+    date: localIso.slice(0, 10),
+    time: localIso.slice(11, 16),
+  };
+}
+
 export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
   title = "Shift intention",
   form,
@@ -32,6 +52,24 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
   addButtonText = "Add Shift",
 }: Props<T>) {
   const [open, setOpen] = React.useState(defaultOpen);
+  const startIso = combineLocalDateTime(form.startDate, form.startTime) || undefined;
+  const endIso = combineLocalDateTime(form.endDate, form.endTime) || undefined;
+
+  const handleStartChange = React.useCallback(
+    (iso: string) => {
+      const { date, time } = isoToLocalParts(iso);
+      setForm((prev) => ({ ...prev, startDate: date, startTime: time }));
+    },
+    [setForm],
+  );
+
+  const handleEndChange = React.useCallback(
+    (iso: string) => {
+      const { date, time } = isoToLocalParts(iso);
+      setForm((prev) => ({ ...prev, endDate: date, endTime: time }));
+    },
+    [setForm],
+  );
 
   return (
     <Card className={cn("my-4 p-5", className)}>
@@ -63,45 +101,15 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
             {/* Mobile‑friendly pickers */}
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-1">
-                <Label htmlFor="start-date">Start date</Label>
-                <Input
-                  id="start-date"
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                />
-              </div>
-              <div className="grid gap-1">
-                <Label htmlFor="start-time">Start time</Label>
-                <Input
-                  id="start-time"
-                  type="time"
-                  inputMode="numeric"
-                  value={form.startTime}
-                  onChange={(e) => setForm((prev) => ({ ...prev, startTime: e.target.value }))}
-                />
+
+                <DateTimePicker label="Starts At" value={startIso} onChange={handleStartChange} />
               </div>
 
               <div className="grid gap-1">
-                <Label htmlFor="end-date">End date</Label>
-                <Input
-                  id="end-date"
-                  type="date"
-                  min={form.startDate || undefined}
-                  value={form.endDate}
-                  onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
-                />
+                <DateTimePicker label="Ends At" value={endIso} onChange={handleEndChange} />
+
               </div>
-              <div className="grid gap-1">
-                <Label htmlFor="end-time">End time</Label>
-                <Input
-                  id="end-time"
-                  type="time"
-                  inputMode="numeric"
-                  value={form.endTime}
-                  onChange={(e) => setForm((prev) => ({ ...prev, endTime: e.target.value }))}
-                />
-              </div>
+
             </div>
 
             <Label htmlFor="location">Location</Label>

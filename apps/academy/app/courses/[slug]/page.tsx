@@ -4,13 +4,13 @@ import { notFound } from 'next/navigation';
 import { estimateReadingTime } from '@/lib/reading-time';
 import { getPrevNextWithMetadata } from '@/lib/course-index';
 import { MDXWrapper, mdxComponents } from '@/components/mdx/MDXWrapper';
-import { Callout } from '@/components/mdx/callout';
-import { Photo } from '@/components/mdx/photo';
-import { TrackBadge } from '@/components/mdx/TrackBadge';
-import { QRCodeImage } from '@/components/mdx/QRCodeImage';
-import { PodCard } from '@/components/mdx/PodCard';
-import { DownloadFile } from '@/components/mdx/DownloadPDF';
-import Mermaid from '@/components/mdx/Mermaid';
+import { Callout } from '@workspace/ui/components/academy/Callout';
+import { Photo } from '@workspace/ui/components/academy/Photo';
+import { TrackBadge } from '@workspace/ui/components/academy/TrackBadge';
+import { QRCodeImage } from '@workspace/ui/components/academy/QRCodeImage';
+import { PodCard } from '@workspace/ui/components/academy/PodCard';
+import { DownloadFile } from '@workspace/ui/components/academy/DownloadFile';
+import { Mermaid } from '@workspace/ui/components/academy/Mermaid';
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   try {

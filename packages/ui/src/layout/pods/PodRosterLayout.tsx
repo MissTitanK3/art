@@ -80,7 +80,7 @@ export function PodRosterLayout({
       <Sheet open={Boolean(editingEntry)} onOpenChange={(next) => !next && onCloseEditor()}>
         <SheetContent
           side="right"
-          className="flex max-w-none flex-col p-0 sm:w-[480px] md:w-[640px] lg:w-[720px]"
+          className="flex max-w-none flex-col p-0 sm:w-[480px] md:w-[640px] lg:w-[720px] bg-accent text-accent-foreground"
         >
           <div className="border-b px-4 py-3">
             <SheetHeader>

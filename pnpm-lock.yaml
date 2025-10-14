@@ -26,6 +26,9 @@ importers:
       '@turf/turf':
         specifier: ^7.2.0
         version: 7.2.0
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       html-to-image:
         specifier: ^1.11.13
         version: 1.11.13
@@ -569,9 +572,15 @@ importers:
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.1.1)
+      mermaid:
+        specifier: ^11.12.0
+        version: 11.12.0
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
       react:
         specifier: ^19.1.1
         version: 19.1.1

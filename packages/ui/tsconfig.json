@@ -3,6 +3,12 @@
   "compilerOptions": {
     "emitDeclarationOnly": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src",
+    "src/shims/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

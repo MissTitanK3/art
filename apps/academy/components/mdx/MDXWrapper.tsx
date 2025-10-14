@@ -1,16 +1,16 @@
 'use client';
 
 import { MDXProvider } from '@mdx-js/react';
-import type { MDXComponents } from 'mdx/types.js'
+import type { MDXComponents } from 'mdx/types.js';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
-import { cn } from '@/lib/utils';
-import { Callout } from './callout';
-import { Photo } from './photo';
-import { QRCodeImage } from './QRCodeImage';
-import { PodCard } from './PodCard';
-import { DownloadFile } from './DownloadPDF';
-import { TrackBadge } from './TrackBadge';
-import Mermaid from './Mermaid';
+import { cn } from '@workspace/ui/lib/utils';
+import { Callout } from '@workspace/ui/components/academy/Callout';
+import { Photo } from '@workspace/ui/components/academy/Photo';
+import { QRCodeImage } from '@workspace/ui/components/academy/QRCodeImage';
+import { PodCard } from '@workspace/ui/components/academy/PodCard';
+import { DownloadFile } from '@workspace/ui/components/academy/DownloadFile';
+import { TrackBadge } from '@workspace/ui/components/academy/TrackBadge';
+import { Mermaid } from '@workspace/ui/components/academy/Mermaid';
 
 const baseComponents: MDXComponents = {
   Callout,

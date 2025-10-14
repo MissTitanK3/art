@@ -7,11 +7,70 @@ import { makeProfile, makeRosterEntry } from './utils/generator.ts';
 // -----------------------------------------------------------------------------
 // Store State
 // -----------------------------------------------------------------------------
+export type AcademyClassStatus = 'draft' | 'needs_instructor' | 'scheduled' | 'completed';
+
+export type EngagementLevel = 'low' | 'medium' | 'high';
+export type UnderstandingLevel = 'needs_support' | 'building' | 'confident';
+
+export type AcademyClassMember = {
+  id: string;
+  name: string;
+  notes?: string;
+  participationCount: number;
+  lastEngagement?: EngagementLevel;
+  lastUnderstanding?: UnderstandingLevel;
+};
+
+export type AcademyClass = {
+  id: string;
+  pathwayId: string;
+  pathwayLabel: string;
+  trackLabel?: string;
+  variant?: string;
+  title: string;
+  description: string;
+  modality: 'in_person' | 'online' | 'hybrid';
+  instructorType: 'dispatcher' | 'mentor' | 'expert';
+  durationHours: number;
+  capacity?: number;
+  startDate?: string;
+  startTime?: string;
+  location?: string;
+  meetingUrl?: string;
+  notes?: string;
+  instructorName?: string;
+  members: AcademyClassMember[];
+  sessions: AcademyClassSession[];
+  sessionsScheduled: number;
+  nextSession?: string;
+  status: AcademyClassStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AcademyClassSessionParticipant = {
+  memberId: string;
+  present: boolean;
+  engagement: EngagementLevel;
+  understanding: UnderstandingLevel;
+  notes?: string;
+};
+
+export type AcademyClassSession = {
+  id: string;
+  label: string;
+  date?: string;
+  durationHours?: number;
+  notes?: string;
+  participants: AcademyClassSessionParticipant[];
+};
+
 export type PodStoreState = {
   pods: Pod[];
   shifts: Shift[];
 
   activeRoster: RosterEntry[];
+  academyClasses: AcademyClass[];
 
   addPod: (pod: Pod) => void;
   updatePod: (id: string, patch: Partial<Pod>) => void;
@@ -21,12 +80,17 @@ export type PodStoreState = {
   updateShift: (id: string, patch: Partial<Shift>) => void;
   removeShift: (id: string) => void;
   addCertification: (podId: string, rosterId: string, cert: NormalizedCertification) => void;
+
+  addAcademyClass: (academyClass: AcademyClass) => void;
+  updateAcademyClass: (id: string, patch: Partial<AcademyClass>) => void;
+  removeAcademyClass: (id: string) => void;
 };
 
 export interface CreatePodStoreOptions {
   initialPods?: Pod[];
   initialShifts?: Shift[];
   initialRoster?: RosterEntry[];
+  initialAcademyClasses?: AcademyClass[];
   persist?: boolean;
   storageKey?: string;
 }
@@ -35,6 +99,7 @@ type PodStoreInitializerInput = {
   pods: Pod[];
   shifts: Shift[];
   activeRoster: RosterEntry[];
+  academyClasses: AcademyClass[];
 };
 
 // -----------------------------------------------------------------------------
@@ -167,6 +232,7 @@ const createPodStoreInitializer =
     pods: [...initial.pods],
     shifts: [...initial.shifts],
     activeRoster: [...initial.activeRoster],
+    academyClasses: [...initial.academyClasses],
 
     addPod: (pod) => set((s) => ({ pods: [...s.pods, pod] })),
 
@@ -199,6 +265,31 @@ const createPodStoreInitializer =
             : pod,
         ),
       })),
+
+    addAcademyClass: (academyClass) =>
+      set((s) => ({
+        academyClasses: [...s.academyClasses, academyClass],
+      })),
+
+    updateAcademyClass: (id, patch) => {
+      const timestamp = new Date().toISOString();
+      return set((s) => ({
+        academyClasses: s.academyClasses.map((entry) =>
+          entry.id === id
+            ? {
+                ...entry,
+                ...patch,
+                updatedAt: patch.updatedAt ?? timestamp,
+              }
+            : entry,
+        ),
+      }));
+    },
+
+    removeAcademyClass: (id) =>
+      set((s) => ({
+        academyClasses: s.academyClasses.filter((entry) => entry.id !== id),
+      })),
   });
 
 function withPersistence(initializer: StateCreator<PodStoreState>, storageKey: string) {
@@ -211,6 +302,7 @@ function withPersistence(initializer: StateCreator<PodStoreState>, storageKey: s
         pods: state.pods,
         shifts: state.shifts,
         activeRoster: state.activeRoster,
+        academyClasses: state.academyClasses,
       }) as unknown as PodStoreState,
   });
 }
@@ -222,6 +314,7 @@ export function createPodStore(options?: CreatePodStoreOptions): PodStore {
     initialPods = seedPods,
     initialShifts = [],
     initialRoster = seedRoster,
+    initialAcademyClasses = [],
     persist: enablePersist = false,
     storageKey = 'pod-store',
   } = options ?? {};
@@ -230,6 +323,7 @@ export function createPodStore(options?: CreatePodStoreOptions): PodStore {
     pods: initialPods,
     shifts: initialShifts,
     activeRoster: initialRoster,
+    academyClasses: initialAcademyClasses,
   });
 
   const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;

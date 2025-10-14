@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { Button } from '@workspace/ui/components/button';
 import ThemeToggle from '@workspace/ui/components/client/ThemeToggle';
 
 export default function Home() {

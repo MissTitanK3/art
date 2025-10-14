@@ -1,8 +1,8 @@
 import { NestedTOCHeading } from '@/lib/mdx.toc';
 import { DocsSidebar } from './DocsSidebar';
 import { DocsTocNav } from './DocsTocNav';
-import { FadeOnScroll } from './FadeOnScroll';
-import { ScrollProgress } from '../ScrollProgress';
+import { FadeOnScroll } from '@workspace/ui/components/client/FadeOnScroll';
+import { ScrollProgress } from '@workspace/ui/components/client/ScrollProgress';
 import Link from 'next/link';
 
 export default async function DocsLayout({

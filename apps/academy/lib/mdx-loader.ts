@@ -6,6 +6,7 @@ import * as runtime from 'react/jsx-runtime';
 import rehypeSlug from 'rehype-slug';
 import { extractToc } from './mdx.toc';
 import remarkGfm from 'remark-gfm';
+import { ACADEMY_COURSES_DIR } from '@workspace/ui/data/academy/paths';
 
 export type CourseFrontmatter = {
   title: string;
@@ -17,7 +18,7 @@ export type CourseFrontmatter = {
 };
 
 export async function getCourseBySlug(slug: string) {
-  const filepath = path.join(process.cwd(), 'content/courses', `${slug}.mdx`);
+  const filepath = path.join(ACADEMY_COURSES_DIR, `${slug}.mdx`);
   const raw = fs.readFileSync(filepath, 'utf8');
   const { content, data: frontmatter } = matter(raw);
 
@@ -41,19 +42,17 @@ export async function getCourseBySlug(slug: string) {
 }
 
 export function getAllCourseSlugs(): string[] {
-  const dir = path.join(process.cwd(), 'content/courses');
-  const files = fs.readdirSync(dir);
+  const files = fs.readdirSync(ACADEMY_COURSES_DIR);
   return files.filter((file) => file.endsWith('.mdx')).map((file) => file.replace(/\.mdx$/, ''));
 }
 
 export function getAllCourses() {
-  const dir = path.join(process.cwd(), 'content/courses');
-  const files = fs.readdirSync(dir);
+  const files = fs.readdirSync(ACADEMY_COURSES_DIR);
 
   return files
     .filter((file) => file.endsWith('.mdx'))
     .map((file) => {
-      const filePath = path.join(dir, file);
+      const filePath = path.join(ACADEMY_COURSES_DIR, file);
       const raw = fs.readFileSync(filePath, 'utf8');
       const { data: frontmatter } = matter(raw);
       return {
