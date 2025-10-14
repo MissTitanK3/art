@@ -3,15 +3,16 @@ import { ClassAssignmentDataLayer } from '@/components/dataLayer/academy/ClassAs
 import { CreatePathwayClassDataLayer } from '@/components/dataLayer/academy/CreatePathwayClassDataLayer';
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
-export default function CreatePathwayClassPage({ params }: PageProps) {
-  const pathway = COURSE_BLUEPRINT.find((group) => group.id === params.id);
+export default async function CreatePathwayClassPage({ params }: PageProps) {
+  const { id } = await params;
+  const pathway = COURSE_BLUEPRINT.find((group) => group.id === id);
 
   if (pathway) {
     return <CreatePathwayClassDataLayer pathway={pathway} />;
   }
 
-  return <ClassAssignmentDataLayer classId={params.id} />;
+  return <ClassAssignmentDataLayer classId={id} />;
 }

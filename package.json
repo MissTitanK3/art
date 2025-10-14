@@ -14,6 +14,7 @@
     "@types/leaflet": "^1.9.20",
     "@types/luxon": "^3.7.1",
     "@types/node": "^20.19.9",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@workspace/eslint-config": "workspace:*",
