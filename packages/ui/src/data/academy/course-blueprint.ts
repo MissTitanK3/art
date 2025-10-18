@@ -7,7 +7,7 @@ export type CourseBlueprintCourse = {
   title: string;
   description: string;
   icon?: string;
-  type: 'qualified' | 'certified';
+  type: 'qualified' | 'certified' | 'overview' | 'appendix';
   version?: number;
   durationHours: number;
   modality: 'in_person' | 'online' | 'hybrid';
@@ -32,7 +32,10 @@ export const QUALIFICATION_VARIANTS: Record<string, TrackVariant> = {
 };
 
 export function slugifyLabel(label: string) {
-  return label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
 }
 
 export const COURSE_GROUPS = ACADEMY_COURSE_GROUPS;
