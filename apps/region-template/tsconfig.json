@@ -3,6 +3,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/pipelines/*": ["./src/pipelines/*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"],
       "@workspace/store/*": ["../../packages/store/src/*"],
       "@workspace/store": ["../../packages/store/src/index.ts"]
