@@ -1,0 +1,95 @@
+'use client'
+
+import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card'
+import { ScrollArea } from '@workspace/ui/components/scroll-area'
+import { TrackBadge, type TrackVariant } from '@workspace/ui/components/academy/TrackBadge'
+import type { AcademyCourseGroup } from '@workspace/store/types/academy.ts'
+
+type QualificationPathwaysSectionProps = {
+  courseGroups: AcademyCourseGroup[]
+  onCreatePathwayClass?: (pathwayId: string) => void
+}
+
+export function QualificationPathwaysSection({ courseGroups, onCreatePathwayClass }: QualificationPathwaysSectionProps) {
+  const handleCreatePathwayClass = onCreatePathwayClass ?? (() => {})
+
+  return (
+    <section className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Qualification Pathways</h2>
+        <Badge variant="outline">Live curriculum</Badge>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {courseGroups.map((group) => (
+          <Card key={group.id} className="flex flex-col border border-border/70 shadow-none">
+            <CardHeader className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-lg font-semibold">{group.label}</CardTitle>
+                    {group.trackLabel ? (
+                      <CardDescription className="text-sm text-muted-foreground">{group.trackLabel}</CardDescription>
+                    ) : null}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="shrink-0"
+                    variant="outline"
+                    onClick={() => handleCreatePathwayClass(group.id)}
+                  >
+                    Create class
+                  </Button>
+                </div>
+                {group.variant ? <TrackBadge variant={group.variant as TrackVariant} /> : null}
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-1 flex-col">
+              <ScrollArea className="h-[240px]">
+                <ul className="space-y-3 pr-3">
+                  {group.courses.map((course) => (
+                    <li key={course.slug}>
+                      <div className="flex items-start gap-3 rounded-lg border border-dashed border-border/60 p-3">
+                        <span className="shrink-0 text-xl">{course.icon ?? '📘'}</span>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium leading-tight">{course.title}</p>
+                            <Badge
+                              variant={
+                                course.status === 'completed'
+                                  ? 'default'
+                                  : course.status === 'in_progress'
+                                    ? 'secondary'
+                                    : 'outline'
+                              }
+                            >
+                              {course.status.replaceAll('_', ' ')}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{course.description}</p>
+                          <div className="flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
+                            <span>{course.type === 'certified' ? 'Certification' : 'Qualification'}</span>
+                            {typeof course.version !== 'undefined' ? (
+                              <>
+                                <span>•</span>
+                                <span>v{Number(course.version).toFixed(1)}</span>
+                              </>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  )
+}
+

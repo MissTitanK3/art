@@ -1,10 +1,10 @@
-import { GENERATED_COURSE_DETAILS } from './course-details.generated'
+import { GENERATED_COURSE_DETAILS } from './course-details.generated';
 
 export type AcademyCourseGroupConfig = {
-  label: string
-  track?: string
-  courses: Array<{ slug: string; icon?: string }>
-}
+  label: string;
+  track?: string;
+  courses: Array<{ slug: string; icon?: string }>;
+};
 
 export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
   {
@@ -24,7 +24,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         icon: '🧱',
       },
       {
-        slug: 'ice-tea-watch',
+        slug: 'art-watch',
         icon: '👀',
       },
       {
@@ -37,7 +37,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         icon: '🔐',
       },
       {
-        slug: 'support-ice-tea-tools',
+        slug: 'support-art',
         icon: '🔐',
       },
     ],
@@ -47,7 +47,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     track: '(For all new pod members and field volunteers)',
     courses: [
       {
-        slug: 'intro-to-ice-tea',
+        slug: 'intro-to-art',
         icon: '🧭',
       },
       {
@@ -474,20 +474,20 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'vehicle-specialist-micro-badge', icon: '🚙' },
     ],
   },
-]
+];
 
 export type AcademyCourseDetail = {
-  title: string
-  description: string
-  icon?: string
-  version?: number
-  durationHours?: number
-  modality?: "in_person" | "online" | "hybrid"
-  instructorType?: "dispatcher" | "mentor" | "expert"
-  type?: "qualified" | "certified"
-  certId?: string
-}
+  title: string;
+  description: string;
+  icon?: string;
+  version?: number;
+  durationHours?: number;
+  modality?: 'in_person' | 'online' | 'hybrid';
+  instructorType?: 'dispatcher' | 'mentor' | 'expert';
+  type?: 'qualified' | 'certified';
+  certId?: string;
+};
 
 export const ACADEMY_COURSE_DETAILS: Record<string, AcademyCourseDetail> = GENERATED_COURSE_DETAILS;
 
-export const CORE_ACADEMY_PATHWAYS = ACADEMY_COURSE_GROUPS.slice(0, 5)
+export const CORE_ACADEMY_PATHWAYS = ACADEMY_COURSE_GROUPS.slice(0, 5);

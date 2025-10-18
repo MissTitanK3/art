@@ -9,7 +9,7 @@ version: 2.0
 
 # Encryption 101
 
-End-to-end encryption (E2EE) is a foundational safety layer in ICE Tea tools. This guide breaks it down into practical, real-world terms for anyone—no tech degree required.
+End-to-end encryption (E2EE) is a foundational safety layer in ART. This guide breaks it down into practical, real-world terms for anyone—no tech degree required.
 
 <Callout type="info">
 📊 Encryption prevents over 99% of unauthorized mass surveillance attempts when used correctly.
@@ -30,7 +30,7 @@ Think of it like putting a letter in a locked metal box. Even if someone steals 
 **End-to-end** means only the sender and the intended recipient can read the message.
 
 - Not the app
-- Not ICE Tea developers
+- Not ART developers
 - Not the government
 
 | Without Encryption          | With End-to-End Encryption     |
@@ -69,16 +69,16 @@ Think of it like putting a letter in a locked metal box. Even if someone steals 
 
 ---
 
-## How ICE Tea Uses Encryption
+## How ART Uses Encryption
 
-You can optionally encrypt sensitive dispatches with a **passphrase**. ICE Tea will:
+You can optionally encrypt sensitive dispatches with a **passphrase**. ART will:
 
 - **Never store the passphrase**
 - Encrypt the message using secure libraries (e.g. AES-256, libsodium)
 - Only allow access to users with the correct passphrase
 
 <Callout type="warning">
-🛑 Lose the passphrase = lose access forever. ICE Tea cannot retrieve it. Write it down *securely* or memorize it.
+🛑 Lose the passphrase = lose access forever. ART cannot retrieve it. Write it down *securely* or memorize it.
 </Callout>
 
 ---
@@ -166,7 +166,7 @@ Try implementing a simple chat system using NaCl or libsodium.
 
 - Encryption protects your messages—but only when used properly.
 - Passphrases must be strong, unique, and shared securely.
-- ICE Tea never stores your keys. You’re the only one who can unlock the data.
+- ART never stores your keys. You’re the only one who can unlock the data.
 
 <Callout type="success">
 You are the keyholder. Protect the people in your reports like they’re in your care—because they are.

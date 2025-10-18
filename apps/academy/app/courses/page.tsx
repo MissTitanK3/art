@@ -10,7 +10,7 @@ export default async function AcademyHome() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="flex justify-between w-full items-center">
-        <h1 className="text-3xl font-bold mb-6">🎓 ICE Tea Academy</h1>
+        <h1 className="text-3xl font-bold mb-6">🎓 ART Academy</h1>
         <div className="flex gap-3">
           <ThemeToggle />
           <Link
@@ -27,7 +27,7 @@ export default async function AcademyHome() {
         <Callout type="info">
           🚧 <strong>Dispatch Tools Deployment Notice</strong>
           <br />
-          The materials in the ICE Tea Academy are currently undergoing final vetting to ensure accuracy, integrity, and
+          The materials in the ART Academy are currently undergoing final vetting to ensure accuracy, integrity, and
           alignment with our values. While the <strong>Qualification process is live and valid</strong>, the deployment
           of Certifications will occur <strong>only after this review is complete</strong>. We are committed to building
           on <strong>truth, not misinformation or speculation</strong>. Thanks for learning and growing with us.
@@ -40,7 +40,7 @@ export default async function AcademyHome() {
             at:
           </p>
           <p className="my-2">
-            <strong>academy@peoplesrebellion.org</strong>
+            <strong>academy@alwaysreadytools.org</strong>
           </p>
           <p>We are not perfect — so we will address anything we publish with integrity and care.</p>
         </Callout>

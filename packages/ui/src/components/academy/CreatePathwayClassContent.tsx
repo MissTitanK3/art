@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { format } from 'date-fns';
 
 import { TrackBadge } from '@workspace/ui/components/academy/TrackBadge';
 import { Button } from '@workspace/ui/components/button';
@@ -25,7 +24,6 @@ import { Textarea } from '@workspace/ui/components/textarea';
 
 import type { AcademyClass } from '@workspace/store/usePodStore';
 import type { CourseBlueprint } from '@workspace/ui/data/academy/course-blueprint';
-import { DateTimePicker } from '@workspace/ui/components/DateTimePicker';
 
 type CreatePathwayClassContentProps = {
   pathway: CourseBlueprint;
@@ -41,13 +39,6 @@ function generateClassId() {
   return `cls_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function combineDateTimeToIso(date?: string, time?: string) {
-  if (!date || !time) return undefined;
-  const candidate = new Date(`${date}T${time}:00`);
-  if (Number.isNaN(candidate.getTime())) return undefined;
-  return candidate.toISOString();
-}
-
 export function CreatePathwayClassContent({
   pathway,
   onCreateClass,
@@ -56,6 +47,17 @@ export function CreatePathwayClassContent({
 }: CreatePathwayClassContentProps) {
   const defaultCourse = pathway.courses[0];
   const [submitting, setSubmitting] = React.useState(false);
+
+  const totalTrackHours = React.useMemo(() => {
+    const total = pathway.courses.reduce((sum, course) => sum + (course.durationHours ?? 0), 0);
+    if (total > 0) {
+      return Number.parseFloat(total.toFixed(1));
+    }
+    if (defaultCourse?.durationHours) {
+      return defaultCourse.durationHours;
+    }
+    return 1;
+  }, [defaultCourse?.durationHours, pathway.courses]);
 
   const [title, setTitle] = React.useState<string>(() =>
     defaultCourse ? `${pathway.label} · Cohort` : `${pathway.label} Class`,
@@ -67,44 +69,14 @@ export function CreatePathwayClassContent({
   const [instructorType, setInstructorType] = React.useState<'dispatcher' | 'mentor' | 'expert'>(
     defaultCourse?.instructorType ?? 'dispatcher',
   );
-  const [durationHours, setDurationHours] = React.useState<string>(
-    defaultCourse ? String(defaultCourse.durationHours ?? 1) : '1',
-  );
-  const [startDate, setStartDate] = React.useState<string>('');
-  const [startTime, setStartTime] = React.useState<string>('');
-  const [location, setLocation] = React.useState<string>('');
-  const [meetingUrl, setMeetingUrl] = React.useState<string>('');
   const [notes, setNotes] = React.useState<string>('');
-  const dateTimeValue = React.useMemo(
-    () => combineDateTimeToIso(startDate, startTime),
-    [startDate, startTime],
-  );
-
-  const handleDateTimeChange = React.useCallback(
-    (isoString: string) => {
-      if (!isoString) {
-        setStartDate('');
-        setStartTime('');
-        return;
-      }
-
-      const next = new Date(isoString);
-      if (Number.isNaN(next.getTime())) return;
-
-      setStartDate(format(next, 'yyyy-MM-dd'));
-      setStartTime(format(next, 'HH:mm'));
-    },
-    [setStartDate, setStartTime],
-  );
 
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
       const classId = generateClassId();
-      const parsedDuration = Number.parseFloat(durationHours) || 1;
       const parsedCapacity = Number.parseInt(capacity, 10) || 0;
-      const nextSession = combineDateTimeToIso(startDate, startTime);
       const description =
         pathway.trackLabel ?? `Live cohort moving through the ${pathway.label} pathway together.`;
 
@@ -118,18 +90,14 @@ export function CreatePathwayClassContent({
         description,
         modality,
         instructorType,
-        durationHours: parsedDuration,
+        durationHours: totalTrackHours,
         capacity: parsedCapacity > 0 ? parsedCapacity : undefined,
-        startDate: startDate || undefined,
-        startTime: startTime || undefined,
-        location: location || undefined,
-        meetingUrl: meetingUrl || undefined,
         notes: notes || undefined,
         instructorName: undefined,
         members: [],
         sessions: [],
-        sessionsScheduled: nextSession ? 1 : 0,
-        nextSession,
+        sessionsScheduled: 0,
+        nextSession: undefined,
         status: 'needs_instructor',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -144,10 +112,7 @@ export function CreatePathwayClassContent({
     },
     [
       capacity,
-      durationHours,
       instructorType,
-      location,
-      meetingUrl,
       modality,
       notes,
       onCreateClass,
@@ -155,9 +120,8 @@ export function CreatePathwayClassContent({
       pathway.label,
       pathway.trackLabel,
       pathway.variant,
-      startDate,
-      startTime,
       title,
+      totalTrackHours,
     ],
   );
 
@@ -187,8 +151,12 @@ export function CreatePathwayClassContent({
         <CardHeader>
           <CardTitle>Class details</CardTitle>
           <CardDescription>
-            Set up a live cohort so mentors, instructors, and learners can move through this track together.
+            Set up a cohort for ongoing sessions. You can add meeting dates, locations, and links later from
+            the cohort workspace.
           </CardDescription>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pathway.courses.length} modules · approximately {totalTrackHours} hours of guided practice.
+          </p>
         </CardHeader>
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -201,37 +169,15 @@ export function CreatePathwayClassContent({
             />
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <DateTimePicker label="Date" value={dateTimeValue} onChange={handleDateTimeChange} />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="space-y-2 space-x-2">
-
-
-                    <Label htmlFor="class-capacity">Capacity</Label>
-                    <Input
-                      id="class-capacity"
-                      type="number"
-                      min={1}
-                      value={capacity}
-                      onChange={(event) => setCapacity(event.target.value)}
-                      placeholder="18"
-                    />
-                  </div>
-                  <div className="space-y-2 space-x-2">
-
-                    <Label htmlFor="class-duration">Duration (hours)</Label>
-                    <Input
-                      id="class-duration"
-                      type="number"
-                      min={0.5}
-                      step={0.5}
-                      value={durationHours}
-                      onChange={(event) => setDurationHours(event.target.value)}
-                    />
-                  </div>
-                </div>
+                <Label htmlFor="class-capacity">Target cohort size</Label>
+                <Input
+                  id="class-capacity"
+                  type="number"
+                  min={1}
+                  value={capacity}
+                  onChange={(event) => setCapacity(event.target.value)}
+                  placeholder="18"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Modality</Label>
@@ -246,8 +192,6 @@ export function CreatePathwayClassContent({
                   </SelectContent>
                 </Select>
               </div>
-
-
               <div className="space-y-2">
                 <Label>Instructor focus</Label>
                 <Select
@@ -264,28 +208,6 @@ export function CreatePathwayClassContent({
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="sm:col-span-2 space-y-2">
-                <Label htmlFor="class-location">Location or meeting link</Label>
-                <Input
-                  id="class-location"
-                  value={location}
-                  onChange={(event) => setLocation(event.target.value)}
-                  placeholder="Community Safety Hub — Oakland"
-                />
-              </div>
-
-              <div className="sm:col-span-2 space-y-2">
-                <Label htmlFor="class-meeting-url">Video meeting URL (optional)</Label>
-                <Input
-                  id="class-meeting-url"
-                  type="url"
-                  value={meetingUrl}
-                  onChange={(event) => setMeetingUrl(event.target.value)}
-                  placeholder="https://meet.alwaysready.tools/dispatch-drill"
-                />
-              </div>
-
               <div className="sm:col-span-2 space-y-2">
                 <Label htmlFor="class-notes">Notes for mentors & coordinators</Label>
                 <Textarea
@@ -295,6 +217,10 @@ export function CreatePathwayClassContent({
                   rows={4}
                   placeholder="Outline preparation needs, resource links, and who will coordinate updates."
                 />
+                <p className="text-xs text-muted-foreground">
+                  Use the cohort workspace to schedule individual sessions, assign instructors, and share location
+                  details when ready.
+                </p>
               </div>
             </div>
 
@@ -303,7 +229,7 @@ export function CreatePathwayClassContent({
                 Cancel
               </Button>
               <Button type="submit" disabled={submitting} aria-busy={submitting}>
-                {submitting ? 'Saving…' : 'Save class details'}
+                {submitting ? 'Saving…' : 'Save cohort'}
               </Button>
             </div>
           </form>

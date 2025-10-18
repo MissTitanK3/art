@@ -13,6 +13,10 @@ export const navIconMap = {
   link: L.Link2,
   home: L.HomeIcon,
   new: L.PlusCircle,
+  box: L.Box,
+  'file-search': L.FileSearch,
+  users: L.Users,
+  wharehouse: L.PackageCheck,
   // add more as needed
 } as const;
 

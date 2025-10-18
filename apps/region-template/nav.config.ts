@@ -50,6 +50,16 @@ export const navConfig: GlobalNavConfigInput = {
         { label: 'Impact', href: '/impact' },
       ],
     },
+    {
+      label: 'Wharehousing',
+      icon: 'wharehouse',
+      href: '/wharehousing',
+    },
+    {
+      label: 'Missing Persons',
+      icon: 'file-search',
+      href: '/missing-persons',
+    },
   ],
   secondary: [
     {
@@ -61,10 +71,10 @@ export const navConfig: GlobalNavConfigInput = {
           label: 'Signal Onboarding Group',
           href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
         },
-        { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
-        { label: 'Settings', href: '/settings' },
-        { label: 'Credential Card', href: '/credentials' },
-        { label: 'Admin', href: '/admin', roles: regionAdmins },
+        // { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
+        // { label: 'Settings', href: '/settings' },
+        // { label: 'Credential Card', href: '/credentials' },
+        // { label: 'Admin', href: '/admin', roles: regionAdmins },
       ],
     },
   ],

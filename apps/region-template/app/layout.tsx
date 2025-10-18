@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   },
   description:
     "Regional dispatch operations template: pods, shifts, onboarding, and trust list—siloed per-region with metadata-only uplinks.",
-  applicationName: "ICE Tea Dispatch — Region",
+  applicationName: "ART Dispatch — Region",
   keywords: [
     "dispatch",
     "regional",

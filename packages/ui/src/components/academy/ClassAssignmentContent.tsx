@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { Check, X } from 'lucide-react';
 
 import { Badge } from '@workspace/ui/components/badge';
 import { Button } from '@workspace/ui/components/button';
@@ -33,6 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@workspace/ui/components/alert-dialog';
+import { cn } from '@workspace/ui/lib/utils';
 
 import type { AcademyClass, AcademyClassMember, AcademyClassSession } from '@workspace/store/usePodStore';
 
@@ -129,6 +131,11 @@ export function ClassAssignmentContent({
   const [memberName, setMemberName] = React.useState<string>('');
   const [memberNotes, setMemberNotes] = React.useState<string>('');
   const [members, setMembers] = React.useState<AcademyClassMember[]>([]);
+  const [editingMember, setEditingMember] = React.useState<{
+    id: string;
+    name: string;
+    notes: string;
+  } | null>(null);
   const [sessions, setSessions] = React.useState<AcademyClassSession[]>([]);
   const [newSession, setNewSession] = React.useState<SessionDraft>(() => makeEmptySessionDraft());
   const [saving, setSaving] = React.useState(false);
@@ -155,6 +162,7 @@ export function ClassAssignmentContent({
     setInstructorName(academyClass.instructorName ?? '');
     setMembers(academyClass.members ?? []);
     setSessions(academyClass.sessions ?? []);
+    setEditingMember(null);
   }, [academyClass]);
 
   const handleInstructorSelect = React.useCallback(
@@ -194,7 +202,35 @@ export function ClassAssignmentContent({
 
   const handleRemoveMember = React.useCallback((id: string) => {
     setMembers((prev) => prev.filter((member) => member.id !== id));
+    setEditingMember((prev) => (prev?.id === id ? null : prev));
   }, []);
+
+  const beginEditMember = React.useCallback((member: AcademyClassMember) => {
+    setEditingMember({
+      id: member.id,
+      name: member.name,
+      notes: member.notes ?? '',
+    });
+  }, []);
+
+  const updateEditingMember = React.useCallback((patch: Partial<{ name: string; notes: string }>) => {
+    setEditingMember((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
+
+  const cancelEditingMember = React.useCallback(() => setEditingMember(null), []);
+
+  const saveEditingMember = React.useCallback(() => {
+    if (!editingMember) return;
+    const nextName = editingMember.name.trim();
+    const nextNotes = editingMember.notes.trim();
+    if (!nextName) return;
+
+    handleUpdateMember(editingMember.id, {
+      name: nextName,
+      notes: nextNotes ? nextNotes : undefined,
+    });
+    setEditingMember(null);
+  }, [editingMember, handleUpdateMember]);
 
   const handleUpdateSession = React.useCallback((id: string, patch: Partial<AcademyClassSession>) => {
     setSessions((prev) => prev.map((session) => (session.id === id ? { ...session, ...patch } : session)));
@@ -436,53 +472,85 @@ export function ClassAssignmentContent({
 
           {members.length > 0 ? (
             <ul className="space-y-3">
-              {members.map((member) => (
-                <li key={member.id} className="space-y-3 rounded-lg border border-border/60 p-3">
-                  <div className="grid gap-3 sm:grid-cols-[2fr,2fr,auto] sm:items-end">
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor={`roster-${member.id}-name`}
-                        className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                      >
-                        Name
-                      </Label>
-                      <Input
-                        id={`roster-${member.id}-name`}
-                        value={member.name}
-                        onChange={(event) =>
-                          handleUpdateMember(member.id, { name: event.target.value })
-                        }
-                      />
+              {members.map((member) => {
+                const isEditing = editingMember?.id === member.id;
+                const displayNotes = member.notes?.trim() ? member.notes : 'No notes yet.';
+                const canSave = isEditing ? Boolean(editingMember?.name.trim()) : false;
+
+                return (
+                  <li key={member.id} className="space-y-3 rounded-lg border border-border/60 p-3">
+                    <div className="grid gap-3 sm:grid-cols-[2fr,2fr,auto] sm:items-start">
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor={`roster-${member.id}-name`}
+                          className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                        >
+                          Name
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            id={`roster-${member.id}-name`}
+                            value={editingMember?.name ?? ''}
+                            onChange={(event) => updateEditingMember({ name: event.target.value })}
+                            placeholder="Member name"
+                          />
+                        ) : (
+                          <div className="rounded-md border border-dashed border-border/60 px-3 py-2 text-sm font-medium">
+                            {member.name}
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor={`roster-${member.id}-notes`}
+                          className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                        >
+                          Notes
+                        </Label>
+                        {isEditing ? (
+                          <Textarea
+                            id={`roster-${member.id}-notes`}
+                            value={editingMember?.notes ?? ''}
+                            onChange={(event) => updateEditingMember({ notes: event.target.value })}
+                            rows={2}
+                            placeholder="Role, timezone, accessibility needs..."
+                          />
+                        ) : (
+                          <div className="rounded-md border border-dashed border-border/60 px-3 py-2 text-sm text-muted-foreground">
+                            {displayNotes}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-stretch justify-end gap-2 sm:items-end">
+                        {isEditing ? (
+                          <>
+                            <Button type="button" variant="ghost" size="sm" onClick={cancelEditingMember}>
+                              Cancel
+                            </Button>
+                            <Button type="button" size="sm" onClick={saveEditingMember} disabled={!canSave}>
+                              Save
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button type="button" variant="outline" size="sm" onClick={() => beginEditMember(member)}>
+                              Edit
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveMember(member.id)}
+                            >
+                              Remove
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor={`roster-${member.id}-notes`}
-                        className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                      >
-                        Notes
-                      </Label>
-                      <Textarea
-                        id={`roster-${member.id}-notes`}
-                        value={member.notes ?? ''}
-                        onChange={(event) =>
-                          handleUpdateMember(member.id, { notes: event.target.value || undefined })
-                        }
-                        rows={2}
-                      />
-                    </div>
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveMember(member.id)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -688,35 +756,57 @@ export function ClassAssignmentContent({
                         >
                           <p className="text-sm font-medium">{member.name}</p>
                           <div className="flex flex-wrap gap-3 text-xs">
-                            <div className="flex items-center gap-1">
-
-                              <label className="flex items-center gap-1">
-                                Present
-                              </label>
-                              <input
-                                type="checkbox"
-                                checked={existing.present}
-                                onChange={(e) => {
-                                  const updated = sessions.map((s) =>
-                                    s.id === session.id
-                                      ? {
-                                        ...s,
-                                        participants: s.participants
-                                          .filter((p) => p.memberId !== member.id)
-                                          .concat({
-                                            ...existing,
-                                            present: e.target.checked,
-                                          }),
-                                      }
-                                      : s,
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Attendance
+                              </span>
+                              <div className="inline-flex items-center gap-1 rounded-full border border-input bg-muted/40 p-1">
+                                {[
+                                  { label: 'Attended', value: true, icon: Check },
+                                  { label: 'Missed', value: false, icon: X },
+                                ].map(({ label, value, icon: Icon }) => {
+                                  const isActive = existing.present === value;
+                                  return (
+                                    <button
+                                      key={label}
+                                      type="button"
+                                      aria-label={`${label} for ${member.name}`}
+                                      aria-pressed={isActive}
+                                      className={cn(
+                                        'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60',
+                                        isActive
+                                          ? 'bg-primary text-primary-foreground shadow-sm'
+                                          : 'text-muted-foreground hover:bg-background/80',
+                                      )}
+                                      onClick={() => {
+                                        if (isActive) return;
+                                        const updated = sessions.map((s) =>
+                                          s.id === session.id
+                                            ? {
+                                              ...s,
+                                              participants: s.participants
+                                                .filter((p) => p.memberId !== member.id)
+                                                .concat({
+                                                  ...existing,
+                                                  present: value,
+                                                }),
+                                            }
+                                            : s,
+                                        );
+                                        setSessions(updated);
+                                      }}
+                                    >
+                                      <Icon className="h-3.5 w-3.5" />
+                                      {label}
+                                    </button>
                                   );
-                                  setSessions(updated);
-                                }}
-                              />
+                                })}
+                              </div>
                             </div>
-
-                            <div className="flex items-center gap-1">
-                              <span className="text-muted-foreground">Engagement:</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Engagement
+                              </span>
                               <Select
                                 value={existing.engagement}
                                 onValueChange={(value) => {
@@ -736,8 +826,8 @@ export function ClassAssignmentContent({
                                   setSessions(updated);
                                 }}
                               >
-                                <SelectTrigger size="sm" className="w-[120px] text-xs">
-                                  <SelectValue />
+                                <SelectTrigger size="sm" className="w-[140px] justify-between text-xs">
+                                  <SelectValue placeholder="Select level" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="low">Low</SelectItem>
@@ -747,8 +837,10 @@ export function ClassAssignmentContent({
                               </Select>
                             </div>
 
-                            <div className="flex items-center gap-1">
-                              <span className="text-muted-foreground">Understanding:</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Understanding
+                              </span>
                               <Select
                                 value={existing.understanding}
                                 onValueChange={(value) => {
@@ -771,8 +863,8 @@ export function ClassAssignmentContent({
                                   setSessions(updated);
                                 }}
                               >
-                                <SelectTrigger size="sm" className="w-[160px] text-xs">
-                                  <SelectValue />
+                                <SelectTrigger size="sm" className="w-[160px] justify-between text-xs">
+                                  <SelectValue placeholder="Select level" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="needs_support">Needs Support</SelectItem>

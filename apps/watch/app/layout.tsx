@@ -7,8 +7,8 @@ import { MapTileProvider } from '@/lib/MapTileContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ICE Tea Watch',
-  description: 'Report and track ICE and law enforcement presence anonymously.',
+  title: 'ART Watch',
+  description: 'Report and track ART and law enforcement presence anonymously.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

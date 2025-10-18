@@ -39,7 +39,7 @@ export default function CommunityGuidelinesPage() {
           <li>Sharing of personal data without consent.</li>
           <li>Attempts to infiltrate, surveil, or otherwise compromise community trust.</li>
           <li>Spreading disinformation or content designed to undermine safety.</li>
-          <li>Using ART tools for unlawful or violent purposes.</li>
+          <li>Using ART for unlawful or violent purposes.</li>
         </ul>
       </section>
 

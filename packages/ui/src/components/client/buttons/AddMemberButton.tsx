@@ -89,7 +89,7 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
       <DialogTrigger asChild>
         <Button>Add Member</Button>
       </DialogTrigger>
-      <DialogContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
+      <DialogContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
         <DialogHeader>
           <DialogTitle>Add Member to {pod.name}</DialogTitle>
         </DialogHeader>

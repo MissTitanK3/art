@@ -100,8 +100,8 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
         volunteerMode === "roster"
           ? volunteerId
           : trimmedVolunteerId
-              ? trimmedVolunteerId
-              : undefined,
+            ? trimmedVolunteerId
+            : undefined,
       volunteerName: volunteerMode === "custom" ? trimmedVolunteerName : undefined,
       startsAt,
       endsAt,
@@ -123,7 +123,7 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
         <DrawerHeader>
           <DrawerTitle>Add New Shift</DrawerTitle>
         </DrawerHeader>

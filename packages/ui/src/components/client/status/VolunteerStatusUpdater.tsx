@@ -32,7 +32,7 @@ export function VolunteerStatusUpdater({
       </Button>
 
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
           <DrawerHeader>
             <DrawerTitle>Update Volunteer Status</DrawerTitle>
           </DrawerHeader>
@@ -41,11 +41,12 @@ export function VolunteerStatusUpdater({
             {STATUS_FLOW.map((status) => (
               <Button
                 key={status}
+                variant="light"
                 onClick={() => {
                   onChange(status);
                   setOpen(false);
                 }}
-                className={STATUS_COLOR_CLASSES[status]}
+                className={`justify-start ${STATUS_COLOR_CLASSES[status]} !hover:text-black`}
               >
                 {STATUS_INFO[status].label}
               </Button>

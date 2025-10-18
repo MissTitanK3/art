@@ -494,7 +494,7 @@ export const TRANSLATIONS: {
     transparencyTitle: 'Transparency & Data Use',
     transparencyWhyTitle: 'Why Transparency Matters',
     transparencyWhyText:
-      'ICE Tea Watch is a community tool built to protect, not to surveil. We believe in radical transparency — that means you deserve to know what data we collect, why, and how it’s used.',
+      'ART Watch is a community tool built to protect, not to surveil. We believe in radical transparency — that means you deserve to know what data we collect, why, and how it’s used.',
     transparencyCollectTitle: 'What We Collect',
     transparencyCollectList1: 'Agency type — who you saw',
     transparencyCollectList2: 'Optional "Other" agency name',
@@ -575,7 +575,7 @@ export const TRANSLATIONS: {
       'We collect officer movement, direction, and emergency signal use to help contextualize agency behavior and build better patterns for community safety. These are optional, and no identifying info about users is stored.',
     // Join Dispatch
     joinDispatch: 'Join Dispatch',
-    joinDispatchTitle: 'Join the ICE Tea Dispatch Network',
+    joinDispatchTitle: 'Join the ART Dispatch Network',
     joinDispatchIntro:
       'We’re looking for committed community members to serve as dispatchers or respond in the field when law enforcement or ICE presence is reported.',
     joinDispatchNote: 'This work saves lives. It requires discretion, coordination, and courage.',
@@ -818,7 +818,7 @@ export const TRANSLATIONS: {
     transparencyTitle: 'Transparencia y Uso de Datos',
     transparencyWhyTitle: 'Por Qué Importa la Transparencia',
     transparencyWhyText:
-      'ICE Tea Watch es una herramienta comunitaria construida para proteger, no para vigilar. Creemos en la transparencia radical — eso significa que mereces saber qué datos recogemos, por qué, y cómo se usan.',
+      'ART Watch es una herramienta comunitaria construida para proteger, no para vigilar. Creemos en la transparencia radical — eso significa que mereces saber qué datos recogemos, por qué, y cómo se usan.',
     transparencyCollectTitle: 'Qué Recogemos',
     transparencyCollectList1: 'Tipo de agencia — a quién viste',
     transparencyCollectList2: 'Nombre opcional de "Otra" agencia',
@@ -903,7 +903,7 @@ export const TRANSLATIONS: {
     // Join Dispatch
     joinDispatch: 'Únete al Despacho',
 
-    joinDispatchTitle: 'Únete a la Red de Despacho ICE Tea',
+    joinDispatchTitle: 'Únete a la Red de Despacho ART',
     joinDispatchIntro:
       'Buscamos personas comprometidas con la comunidad para actuar como despachadoras o responder en el terreno cuando se reporta presencia policial o de ICE.',
     joinDispatchNote: 'Este trabajo salva vidas. Requiere discreción, coordinación y valentía.',

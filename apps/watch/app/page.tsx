@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="w-full m-auto flex flex-col justify-center text-center items-center">
-        <Image src="/logo.svg" alt="ICE Tea Watch Logo" width={400} height={40} className="mb-10" />
+        <Image src="/logo.svg" alt="ART Watch Logo" width={400} height={40} className="mb-10" />
         <h1 className="text-4xl font-bold">{t('homeTitle')}</h1>
         <p className="text-lg">{t('privacyTagline')}</p>
       </div>

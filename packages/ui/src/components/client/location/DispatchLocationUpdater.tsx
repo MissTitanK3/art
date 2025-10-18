@@ -77,7 +77,7 @@ export default function DispatchLocationUpdater({ submission, onUpdate }: Dispat
 
 
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
           <DrawerHeader>
             <DrawerTitle>Edit Location</DrawerTitle>
             <DrawerDescription>
