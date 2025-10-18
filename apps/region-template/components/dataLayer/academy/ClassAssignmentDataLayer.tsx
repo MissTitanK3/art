@@ -62,7 +62,10 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
       title: course.title,
       durationHours: course.durationHours,
       icon: course.icon,
-      type: course.type,
+      type:
+        course.type === "qualified" || course.type === "certified"
+          ? course.type
+          : undefined,
     }));
   }, [academyClass]);
 

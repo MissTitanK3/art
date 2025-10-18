@@ -378,15 +378,19 @@ export default function AcademyDashboardPage() {
         label: group.label,
         trackLabel: group.trackLabel,
         variant: group.variant,
-        courses: group.courses.map((course) => ({
-          slug: course.slug,
-          title: course.title,
-          description: course.description,
-          icon: course.icon,
-          type: course.type,
-          version: course.version,
-          status: determineCourseStatus('certId' in course ? course.certId : undefined, members),
-        })),
+        courses: group.courses.map((course) => {
+          const normalizedType: 'qualified' | 'certified' =
+            course.type === 'certified' ? 'certified' : 'qualified';
+          return {
+            slug: course.slug,
+            title: course.title,
+            description: course.description,
+            icon: course.icon,
+            type: normalizedType,
+            version: course.version,
+            status: determineCourseStatus('certId' in course ? course.certId : undefined, members),
+          };
+        }),
       })),
     [members],
   );

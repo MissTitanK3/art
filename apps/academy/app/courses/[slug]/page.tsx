@@ -11,6 +11,11 @@ import { QRCodeImage } from '@workspace/ui/components/academy/QRCodeImage';
 import { PodCard } from '@workspace/ui/components/academy/PodCard';
 import { DownloadFile } from '@workspace/ui/components/academy/DownloadFile';
 import { Mermaid } from '@workspace/ui/components/academy/Mermaid';
+import { GENERATED_COURSE_DETAILS } from '@workspace/ui/data/academy/course-details.generated';
+
+export async function generateStaticParams() {
+  return Object.keys(GENERATED_COURSE_DETAILS).map((slug) => ({ slug }));
+}
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   try {
