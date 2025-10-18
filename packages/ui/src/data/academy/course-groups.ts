@@ -484,7 +484,7 @@ export type AcademyCourseDetail = {
   durationHours?: number;
   modality?: 'in_person' | 'online' | 'hybrid';
   instructorType?: 'dispatcher' | 'mentor' | 'expert';
-  type?: 'qualified' | 'certified';
+  type?: 'qualified' | 'certified' | 'overview' | 'appendix';
   certId?: string;
 };
 
