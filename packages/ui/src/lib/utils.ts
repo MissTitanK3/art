@@ -124,6 +124,71 @@ export const statusColors: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-800 border-red-300',
 };
 
+/**
+ * Recursively remove empty or whitespace-only values from nested data structures.
+ * Trims strings, removes empty arrays, and drops object keys whose values become empty.
+ */
+export function deepCompact<T>(value: T): T {
+  const prune = (input: unknown): unknown => {
+    if (input === undefined || input === null) {
+      return undefined;
+    }
+
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    }
+
+    if (Array.isArray(input)) {
+      const next = input
+        .map((entry) => prune(entry))
+        .filter((entry) => {
+          if (entry === undefined || entry === null) {
+            return false;
+          }
+          if (typeof entry === 'string') {
+            return entry.trim().length > 0;
+          }
+          if (Array.isArray(entry)) {
+            return entry.length > 0;
+          }
+          if (typeof entry === 'object') {
+            return Object.keys(entry as Record<string, unknown>).length > 0;
+          }
+          return true;
+        });
+      return next.length > 0 ? next : undefined;
+    }
+
+    if (typeof input === 'object') {
+      const asRecord = input as Record<string, unknown>;
+      const result: Record<string, unknown> = {};
+      Object.entries(asRecord).forEach(([key, val]) => {
+        const next = prune(val);
+        if (next !== undefined) {
+          result[key] = next;
+        }
+      });
+      return Object.keys(result).length > 0 ? result : undefined;
+    }
+
+    return input;
+  };
+
+  const result = prune(value);
+
+  if (result === undefined) {
+    if (Array.isArray(value)) {
+      return [] as unknown as T;
+    }
+    if (typeof value === 'object' && value !== null) {
+      return {} as unknown as T;
+    }
+  }
+
+  return (result ?? value) as T;
+}
+
 export function chunkMessage(message: string, maxChars = 200): string[] {
   const words = message.split(' ');
   const chunks: string[] = [];

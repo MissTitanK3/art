@@ -515,7 +515,7 @@ function MobileNav({
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="z-[1200] w-[300px] border-sidebar-border bg-sidebar p-0 text-sidebar-foreground md:border-none md:bg-transparent md:shadow-none md:text-inherit"
+        className="z-[1200] w-[300px] max-w-96 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
       >
         <SheetHeader className="border-b border-sidebar-border p-4">
           <SheetTitle className="flex items-center gap-2">
