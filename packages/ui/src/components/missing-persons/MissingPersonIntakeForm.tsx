@@ -4,10 +4,12 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "sonner";
 
-import { exportLegalAidReport } from "@/src/pipelines/exportLegalAidReport";
-import type { DetaineeIntake } from "@/src/types/DetaineeIntake";
-import { demoMissingPersons } from "@/data/demoMissingPersons";
+import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
+import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
+
+import { DetaineeIntakeSchema } from "../../lib/detainee-intake-schema";
 import {
   CASE_ID_STORAGE_KEY,
   DEFAULT_CASE_ZONE,
@@ -15,15 +17,11 @@ import {
   generateNextCaseId,
   isCaseIdDuplicate,
   normaliseCaseId,
-} from "@workspace/ui/lib/missing-person-case-id";
-import { deepCompact } from "@workspace/ui/lib/utils";
-import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
-import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
-
-import { toast } from "sonner";
-
-import { Button } from "@workspace/ui/components/button";
-import { Form } from "@workspace/ui/components/form";
+} from "../../lib/missing-person-case-id";
+import { deepCompact } from "../../lib/utils";
+import type { DetaineeIntake } from "../../types/missing-person-intake";
+import { Button } from "../button";
+import { Form } from "../form";
 import {
   CaseMetadataSection,
   ContactsSection,
@@ -32,12 +30,19 @@ import {
   LatestOutputSection,
   LegalSupportSection,
   VerificationSection,
-} from "@workspace/ui/components/client/intake";
-import { DetaineeIntakeSchema } from "@/src/utils/validation/detaineeIntakeSchema";
+} from "../client/intake";
+
+type ExportFormat = "pdf" | "json";
+
+export interface MissingPersonIntakeFormProps {
+  seedRecords?: Iterable<DetaineeIntake>;
+  defaultCaseZone?: string;
+  onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
+}
 
 type DetaineeIntakeFormValues = z.infer<typeof DetaineeIntakeSchema>;
 
-const defaultValues: DetaineeIntakeFormValues = {
+const emptyValues: DetaineeIntakeFormValues = {
   caseId: "",
   detentionDateTime: "",
   detentionLocation: "",
@@ -78,30 +83,37 @@ const defaultValues: DetaineeIntakeFormValues = {
   version: undefined,
 };
 
-export function MissingPersonIntakeForm() {
+export function MissingPersonIntakeForm({
+  seedRecords,
+  defaultCaseZone = DEFAULT_CASE_ZONE,
+  onExportRecord,
+}: MissingPersonIntakeFormProps) {
   const [lastJson, setLastJson] = React.useState<string>("");
-  const [exportingFormat, setExportingFormat] = React.useState<"pdf" | "json" | null>(null);
+  const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
   const [storedCaseIds, setStoredCaseIds] = React.useState<string[]>([]);
   const [storedIdsLoaded, setStoredIdsLoaded] = React.useState(false);
   const [caseIdInitialized, setCaseIdInitialized] = React.useState(false);
   const [persistedCaseId, setPersistedCaseId] = React.useState<string | null>(null);
+
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
   const removeRecordFromStore = useMissingPersonStore((state) => state.removeRecord);
   const hasRecord = useMissingPersonStore((state) => state.hasRecord);
   const storeRecords = useMissingPersonStore((state) => state.records);
+
   const currentYear = React.useMemo(() => new Date().getFullYear(), []);
+
   const caseIdExamplePrimary = React.useMemo(
-    () => `${DEFAULT_CASE_ZONE}-${currentYear}-001`,
-    [currentYear]
+    () => `${defaultCaseZone}-${currentYear}-001`,
+    [defaultCaseZone, currentYear]
   );
   const caseIdExampleSecondary = React.useMemo(
     () => `TX-${currentYear}-017`,
     [currentYear]
   );
 
-  const allDemoCaseIds = React.useMemo(
-    () => collectCaseIds(demoMissingPersons),
-    []
+  const seedCaseIds = React.useMemo(
+    () => collectCaseIds(seedRecords ? Array.from(seedRecords) : []),
+    [seedRecords]
   );
 
   React.useEffect(() => {
@@ -128,7 +140,7 @@ export function MissingPersonIntakeForm() {
 
   const allCaseIds = React.useMemo(() => {
     const map = new Map<string, string>();
-    allDemoCaseIds.forEach((id) => {
+    seedCaseIds.forEach((id) => {
       map.set(normaliseCaseId(id), id);
     });
     storeCaseIds.forEach((id) => {
@@ -138,11 +150,11 @@ export function MissingPersonIntakeForm() {
       map.set(normaliseCaseId(id), id);
     });
     return Array.from(map.values());
-  }, [allDemoCaseIds, storeCaseIds, storedCaseIds]);
+  }, [seedCaseIds, storeCaseIds, storedCaseIds]);
 
   const form = useForm<DetaineeIntakeFormValues>({
     resolver: zodResolver(DetaineeIntakeSchema),
-    defaultValues,
+    defaultValues: emptyValues,
     mode: "onBlur",
   });
 
@@ -157,10 +169,10 @@ export function MissingPersonIntakeForm() {
 
   React.useEffect(() => {
     if (caseIdInitialized || !storedIdsLoaded) return;
-    const generated = generateNextCaseId(DEFAULT_CASE_ZONE, allCaseIds);
+    const generated = generateNextCaseId(defaultCaseZone, allCaseIds);
     form.setValue("caseId", generated, { shouldDirty: false });
     setCaseIdInitialized(true);
-  }, [allCaseIds, caseIdInitialized, storedIdsLoaded, form]);
+  }, [allCaseIds, caseIdInitialized, storedIdsLoaded, form, defaultCaseZone]);
 
   const rememberCaseId = React.useCallback((caseId: string) => {
     const normalised = normaliseCaseId(caseId);
@@ -193,14 +205,13 @@ export function MissingPersonIntakeForm() {
     [addRecordToStore, rememberCaseId]
   );
 
-
   const generateNewCaseId = React.useCallback(() => {
     const currentId = form.getValues("caseId");
-    const candidate = generateNextCaseId(DEFAULT_CASE_ZONE, [...allCaseIds, currentId ?? ""]);
+    const candidate = generateNextCaseId(defaultCaseZone, [...allCaseIds, currentId ?? ""]);
     form.setValue("caseId", candidate, { shouldDirty: true });
     form.clearErrors("caseId");
     setPersistedCaseId(null);
-  }, [allCaseIds, form]);
+  }, [allCaseIds, form, defaultCaseZone]);
 
   const ensureUniqueCaseId = React.useCallback(
     (value: string | undefined): string | null => {
@@ -241,7 +252,12 @@ export function MissingPersonIntakeForm() {
     toast.success("Intake saved locally. Refresh the directory to see the new record.");
   };
 
-  const handleExport = async (format: "pdf" | "json") => {
+  const handleExport = async (format: ExportFormat) => {
+    if (!onExportRecord) {
+      toast.error("Export is not available for this intake.");
+      return;
+    }
+
     try {
       const caseIdError = ensureUniqueCaseId(form.getValues("caseId"));
       if (caseIdError) {
@@ -262,7 +278,7 @@ export function MissingPersonIntakeForm() {
 
       const validated = await DetaineeIntakeSchema.parseAsync(normalized);
       persistRecord(normalized, normalizedCaseId);
-      const result = await exportLegalAidReport(validated, format);
+      const result = await onExportRecord(validated, format);
 
       if (format === "json" && typeof result === "string") {
         await navigator.clipboard?.writeText(result);
@@ -291,10 +307,7 @@ export function MissingPersonIntakeForm() {
 
   return (
     <Form {...form}>
-      <form
-        className="grid gap-6"
-        onSubmit={form.handleSubmit(handleSubmit)}
-      >
+      <form className="grid gap-6" onSubmit={form.handleSubmit(handleSubmit)}>
         <CaseMetadataSection
           control={form.control}
           onSave={() => form.handleSubmit(handleSubmit)()}
@@ -305,49 +318,38 @@ export function MissingPersonIntakeForm() {
           }}
         />
 
-        <ContactsSection
-          control={form.control}
-          onSave={() => form.handleSubmit(handleSubmit)()}
-        />
+        <ContactsSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
 
-        <IdentificationSection
-          control={form.control}
-          onSave={() => form.handleSubmit(handleSubmit)()}
-        />
+        <IdentificationSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
 
-        <DetentionDetailsSection
-          control={form.control}
-          onSave={() => form.handleSubmit(handleSubmit)()}
-        />
+        <DetentionDetailsSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
 
-        <LegalSupportSection
-          control={form.control}
-          onSave={() => form.handleSubmit(handleSubmit)()}
-        />
+        <LegalSupportSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
 
-        <VerificationSection
-          control={form.control}
-          onSave={() => form.handleSubmit(handleSubmit)()}
-        />
+        <VerificationSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit">Submit Intake</Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleExport("pdf")}
-            disabled={exportingFormat === "pdf"}
-          >
-            {exportingFormat === "pdf" ? "Generating PDF..." : "Download PDF"}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => handleExport("json")}
-            disabled={exportingFormat === "json"}
-          >
-            {exportingFormat === "json" ? "Copying JSON..." : "Copy JSON"}
-          </Button>
+          {onExportRecord ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleExport("pdf")}
+                disabled={exportingFormat === "pdf"}
+              >
+                {exportingFormat === "pdf" ? "Generating PDF..." : "Download PDF"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => handleExport("json")}
+                disabled={exportingFormat === "json"}
+              >
+                {exportingFormat === "json" ? "Copying JSON..." : "Copy JSON"}
+              </Button>
+            </>
+          ) : null}
         </div>
 
         <LatestOutputSection json={lastJson} />

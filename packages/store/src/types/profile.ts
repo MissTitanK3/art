@@ -100,6 +100,8 @@ export type Block = {
   end: string;
 };
 
+export type UiCoverage = { id: string; label: string; area?: any };
+
 // const ProfileSchema = DispatchProfileSchema.extend({
 //   id: z.string().uuid().optional(),
 //   display_name: z.string().min(1, "Display name is required"),

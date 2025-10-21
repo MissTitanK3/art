@@ -24,7 +24,11 @@ const schema = z.object({
     .min(3, "Coverage area is required")
     .max(80, "Keep it under 80 characters"),
   channel: z.enum(channels, { required_error: "Select a primary channel" }),
-  channelLink: z.string().url("Must be a valid URL").min(5, "Link is required").optional(),
+  channelLink: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 
 async function createPodInDatabase(pod: Pod): Promise<void> {

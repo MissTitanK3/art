@@ -4,11 +4,11 @@
 import * as React from "react";
 import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { ProfileLayout } from "@workspace/ui/layout/profile/ProfileLayout";
-import { NextImageAdapter } from "@/adapters/NextImageAdapter";
-import { useRegionAdapters } from "@/lib/providers/RegionProvider";
+import { NextImageAdapter } from "@/lib/adapters/NextImageAdapter";
+import { useRegionAdapters } from "@/providers/RegionProvider";
 import { Profile } from "@workspace/store/types/global.ts";
+import { UiCoverage } from "@workspace/store/types/profile";
 
-type UiCoverage = { id: string; label: string; area?: any };
 
 function toUiCoverage(input: string[] | undefined): UiCoverage[] {
   return (input ?? []).map((id) => ({ id, label: id }));

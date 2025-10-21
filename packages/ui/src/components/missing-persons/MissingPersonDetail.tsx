@@ -1,17 +1,15 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Download, FileJson, Pencil, Printer, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { DetaineeIntake } from "@/src/types/DetaineeIntake";
-import { exportLegalAidReport } from "@/src/pipelines/exportLegalAidReport";
+import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
+import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
 
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+import { Badge } from "../badge";
+import { Button } from "../button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@workspace/ui/components/alert-dialog";
+} from "../alert-dialog";
 import {
   CaseMetadataSection,
   ContactsSection,
@@ -31,23 +29,44 @@ import {
   LatestOutputSection,
   LegalSupportSection,
   VerificationSection,
-} from "@workspace/ui/components/client/intake";
-import { Form } from "@workspace/ui/components/form";
-import { deepCompact } from "@workspace/ui/lib/utils";
-import { CASE_ID_STORAGE_KEY, normaliseCaseId } from "@workspace/ui/lib/missing-person-case-id";
-import type {
-  DetaineeIntakeFormValues,
-} from "@workspace/ui/types/missing-person-intake";
-import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
-import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
+} from "../client/intake";
+import { Form } from "../form";
+import { deepCompact } from "../../lib/utils";
+import { CASE_ID_STORAGE_KEY, normaliseCaseId } from "../../lib/missing-person-case-id";
+import type { DetaineeIntake, DetaineeIntakeFormValues } from "../../types/missing-person-intake";
 
-interface MissingPersonDetailProps {
+type ExportFormat = "pdf" | "json";
+
+const DEFAULT_DIRECTORY_HREF = "/missing-persons";
+
+const defaultRenderDirectoryLink = (href: string, label: React.ReactNode) => <a href={href}>{label}</a>;
+
+const navigateToHref = (href: string) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.location.assign(href);
+  } catch (error) {
+    console.warn("MissingPersonDetail: failed to navigate", error);
+  }
+};
+
+export interface MissingPersonDetailProps {
   record: DetaineeIntake;
   slug: string;
+  onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
+  directoryHref?: string;
+  renderDirectoryLink?: (href: string, label: React.ReactNode) => React.ReactNode;
+  onDeleteSuccess?: (details: { caseId: string; record: DetaineeIntake; directoryHref: string }) => void;
 }
 
-export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) {
-  const router = useRouter();
+export function MissingPersonDetail({
+  record,
+  slug,
+  onExportRecord,
+  directoryHref = DEFAULT_DIRECTORY_HREF,
+  renderDirectoryLink = defaultRenderDirectoryLink,
+  onDeleteSuccess,
+}: MissingPersonDetailProps) {
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
   const updateRecordInStore = useMissingPersonStore((state) => state.updateRecord);
   const removeRecordFromStore = useMissingPersonStore((state) => state.removeRecord);
@@ -55,7 +74,7 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
 
   const [currentRecord, setCurrentRecord] = React.useState<DetaineeIntake>(record);
   const [isEditing, setIsEditing] = React.useState(false);
-  const [exporting, setExporting] = React.useState<"pdf" | "json" | null>(null);
+  const [exporting, setExporting] = React.useState<ExportFormat | null>(null);
   const [deleting, setDeleting] = React.useState(false);
 
   const form = useForm<DetaineeIntakeFormValues>({
@@ -128,42 +147,60 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
       removeRecordFromStore(normalizedCaseId);
       removeCaseIdFromStorage(normalizedCaseId);
       toast.success("Intake deleted. Redirecting to directory…");
-      router.push("/missing-persons");
+      if (onDeleteSuccess) {
+        onDeleteSuccess({ caseId: normalizedCaseId, record: currentRecord, directoryHref });
+      } else {
+        navigateToHref(directoryHref);
+      }
     } catch (error) {
       console.error("Failed to delete intake", error);
       toast.error("Failed to delete this intake. Please try again.");
     } finally {
       setDeleting(false);
     }
-  }, [normalizedCaseId, removeCaseIdFromStorage, removeRecordFromStore, router]);
+  }, [
+    normalizedCaseId,
+    removeCaseIdFromStorage,
+    removeRecordFromStore,
+    onDeleteSuccess,
+    currentRecord,
+    directoryHref,
+  ]);
 
-  const handleExport = async (format: "pdf" | "json") => {
-    try {
-      setExporting(format);
-      const result = await exportLegalAidReport(currentRecord, format);
-
-      if (format === "json" && typeof result === "string") {
-        await navigator.clipboard?.writeText(result);
-        toast.success("JSON copied to clipboard");
+  const handleExport = React.useCallback(
+    async (format: ExportFormat) => {
+      if (!onExportRecord) {
+        toast.error("Export is not available for this record.");
         return;
       }
+      try {
+        setExporting(format);
+        const result = await onExportRecord(currentRecord, format);
 
-      if (format === "pdf" && result instanceof Blob) {
-        const url = URL.createObjectURL(result);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = `detainee-report-${currentRecord.caseId || slug}.pdf`;
-        anchor.click();
-        URL.revokeObjectURL(url);
-        toast.success("PDF download started");
+        if (format === "json" && typeof result === "string") {
+          await navigator.clipboard?.writeText(result);
+          toast.success("JSON copied to clipboard");
+          return;
+        }
+
+        if (format === "pdf" && result instanceof Blob) {
+          const url = URL.createObjectURL(result);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = `detainee-report-${currentRecord.caseId || slug}.pdf`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+          toast.success("PDF download started");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to export report. Try again after checking the record.");
+      } finally {
+        setExporting(null);
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to export report. Try again after checking the record.");
-    } finally {
-      setExporting(null);
-    }
-  };
+    },
+    [currentRecord, onExportRecord, slug]
+  );
 
   const handlePrint = React.useCallback(() => {
     try {
@@ -212,7 +249,15 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
       setIsEditing(false);
       toast.success("Intake updated.");
     },
-    [addRecordToStore, currentRecord, form, rememberCaseId, removeCaseIdFromStorage, removeRecordFromStore, updateRecordInStore]
+    [
+      addRecordToStore,
+      currentRecord,
+      form,
+      rememberCaseId,
+      removeCaseIdFromStorage,
+      removeRecordFromStore,
+      updateRecordInStore,
+    ]
   );
 
   const submit = React.useMemo(() => form.handleSubmit(handleSubmit), [form, handleSubmit]);
@@ -262,9 +307,12 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Button variant="ghost" size="sm" asChild className="px-2">
-                <Link href="/missing-persons" className="inline-flex items-center gap-1">
-                  <ArrowLeft className="h-4 w-4" /> Back to directory
-                </Link>
+                {renderDirectoryLink(
+                  directoryHref,
+                  <span className="inline-flex items-center gap-1">
+                    <ArrowLeft className="h-4 w-4" /> Back to directory
+                  </span>
+                )}
               </Button>
               <span>Last updated {formatRelativeDate(currentRecord.lastUpdated ?? currentRecord.createdAt)}</span>
             </div>
@@ -282,24 +330,28 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
           <div className="flex flex-wrap items-center justify-end gap-2">
             {!isEditing ? (
               <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleExport("pdf")}
-                  disabled={exporting === "pdf"}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  {exporting === "pdf" ? "Generating…" : "Download PDF"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => handleExport("json")}
-                  disabled={exporting === "json"}
-                >
-                  <FileJson className="mr-2 h-4 w-4" />
-                  {exporting === "json" ? "Copying…" : "Copy JSON"}
-                </Button>
+                {onExportRecord ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleExport("pdf")}
+                      disabled={exporting === "pdf"}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      {exporting === "pdf" ? "Generating…" : "Download PDF"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => handleExport("json")}
+                      disabled={exporting === "json"}
+                    >
+                      <FileJson className="mr-2 h-4 w-4" />
+                      {exporting === "json" ? "Copying…" : "Copy JSON"}
+                    </Button>
+                  </>
+                ) : null}
                 <Button type="button" variant="ghost" onClick={handlePrint}>
                   <Printer className="mr-2 h-4 w-4" /> Print
                 </Button>
@@ -315,7 +367,7 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
                   <Trash2 className="mr-2 h-4 w-4" /> Delete
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className='bg-accent text-accent-foreground'>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this intake?</AlertDialogTitle>
                   <AlertDialogDescription>
@@ -353,9 +405,7 @@ export function MissingPersonDetail({ record, slug }: MissingPersonDetailProps) 
               <Button type="button" variant="outline" onClick={cancelEditing}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Save Changes
-              </Button>
+              <Button type="submit">Save Changes</Button>
             </div>
           </form>
         </Form>

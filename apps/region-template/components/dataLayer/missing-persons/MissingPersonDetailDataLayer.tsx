@@ -1,10 +1,14 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { MissingPersonDetail } from "@/components/missing-persons/MissingPersonDetail";
-import { demoMissingPersons, getMissingPersonSlug } from "@/data/demoMissingPersons";
-import type { DetaineeIntake } from "@/src/types/DetaineeIntake";
+import { demoMissingPersons } from "@/data/demoMissingPersons";
+import { exportLegalAidReport } from "@/src/pipelines/exportLegalAidReport";
+import { MissingPersonDetail } from "@workspace/ui/components/missing-persons/MissingPersonDetail";
+import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
 
@@ -31,9 +35,24 @@ function findRecordBySlug(
 
 export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   const localRecords = useMissingPersonStore((state) => state.records);
+  const router = useRouter();
   const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[] | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const renderDirectoryLink = React.useCallback(
+    (href: string, label: React.ReactNode) => (
+      <Link href={href} className="inline-flex items-center gap-1">
+        {label}
+      </Link>
+    ),
+    []
+  );
+  const handleDeleteSuccess = React.useCallback(
+    ({ directoryHref }: { caseId: string; record: DetaineeIntake; directoryHref: string }) => {
+      router.push(directoryHref);
+    },
+    [router]
+  );
 
   React.useEffect(() => {
     let active = true;
@@ -92,7 +111,14 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
       {error ? (
         <p className="text-sm text-amber-600">{error}</p>
       ) : null}
-      <MissingPersonDetail record={record} slug={slug} />
+      <MissingPersonDetail
+        record={record}
+        slug={slug}
+        directoryHref="/missing-persons"
+        onExportRecord={exportLegalAidReport}
+        renderDirectoryLink={renderDirectoryLink}
+        onDeleteSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 }

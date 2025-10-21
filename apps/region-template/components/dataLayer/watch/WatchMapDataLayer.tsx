@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchReports } from "@/lib/adapters/fetchReports";
-import { WizardReport } from "@workspace/store/types/watch.ts";
+import { MapFocus, WizardReport } from "@workspace/store/types/watch.ts";
 import dynamic from "next/dynamic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import WatchReportCard from "@workspace/ui/components/client/watch/WatchReportCard";
@@ -13,14 +13,6 @@ const WatchMap = dynamic(
   () => import("@workspace/ui/components/client/watch/WatchMap"),
   { ssr: false }
 );
-
-type MapFocus = {
-  lat: number;
-  lng: number;
-  zoom?: number;
-  token: number;
-  reportId?: WizardReport["id"];
-};
 
 const FOCUS_ZOOM = 11;
 

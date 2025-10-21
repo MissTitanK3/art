@@ -46,6 +46,7 @@ export default function PodRosterDataLayer() {
   const updatePod = usePodStore((state) => state.updatePod);
   const activeRoster = usePodStore((state) => state.activeRoster);
   const pod = pods.find((p) => p.slug === podId);
+  const storePodId = pod?.id;
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
@@ -64,6 +65,9 @@ export default function PodRosterDataLayer() {
         const result = await fetchPodRosterFromDatabase(podId);
         if (!cancelled && result) {
           setRemoteRoster(result);
+          if (storePodId) {
+            updatePod(storePodId, { team: result });
+          }
         }
       } catch (error) {
         if (!cancelled) {
@@ -80,7 +84,7 @@ export default function PodRosterDataLayer() {
     return () => {
       cancelled = true;
     };
-  }, [podId]);
+  }, [podId, storePodId, updatePod]);
 
   const rows = remoteRoster ?? pod?.team ?? [];
   const editing = rows.find((r) => r.id === selectedId) ?? null;

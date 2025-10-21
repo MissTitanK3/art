@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useDispatchStore, dispatchStore } from "@workspace/store/useDispatchStore";
+import { DispatchStoreContext, useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -16,6 +16,11 @@ async function fetchDispatchShiftsFromDatabase(): Promise<DispatchShift[] | null
 }
 
 export default function DispatchShiftsDataLayer() {
+  const dispatchStore = React.useContext(DispatchStoreContext);
+  if (!dispatchStore) {
+    throw new Error("DispatchShiftsDataLayer must be used within DispatchStoreProvider");
+  }
+
   const shifts = useDispatchStore((s) => s.shifts);
   const getActiveShifts = useDispatchStore((s) => s.getActiveShifts);
   const getUpcomingShifts = useDispatchStore((s) => s.getUpcomingShifts);
@@ -74,7 +79,7 @@ export default function DispatchShiftsDataLayer() {
         return added ? [...prev, added] : prev;
       });
     },
-    [addShift],
+    [addShift, dispatchStore],
   );
 
   const handleUpdateShift = React.useCallback(
@@ -87,7 +92,7 @@ export default function DispatchShiftsDataLayer() {
         return prev.map((shift) => (shift.id === id ? updated : shift));
       });
     },
-    [updateShift],
+    [dispatchStore, updateShift],
   );
 
   const handleRemoveShift = React.useCallback(

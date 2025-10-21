@@ -12,3 +12,11 @@ export interface WizardReport {
   submitted_by: string | null;
   test: boolean | null;
 }
+
+export type MapFocus = {
+  lat: number;
+  lng: number;
+  zoom?: number;
+  token: number;
+  reportId?: WizardReport['id'];
+};

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import 'leaflet/dist/leaflet.css'
 import "@workspace/ui/globals.css";
-import { Providers } from "@/components/providers";
+import { AppProviders } from "@/providers/AppProviders";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "@/components/client/global-nav";
@@ -82,7 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
-        <Providers>
+        <AppProviders>
           <GlobalNav
             config={navConfig}
             role={role}
@@ -92,7 +92,7 @@ export default function RootLayout({
               position="top-right"
             />} />
           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
-        </Providers>
+        </AppProviders>
       </body>
     </html>
   );

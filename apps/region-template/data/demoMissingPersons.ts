@@ -1,4 +1,5 @@
-import type { DetaineeIntake } from "@/src/types/DetaineeIntake";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
+import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
 
 const now = new Date();
 const daysAgo = (count: number) => {
@@ -6,28 +7,6 @@ const daysAgo = (count: number) => {
   copy.setDate(copy.getDate() - count);
   return copy.toISOString();
 };
-
-const encodeSlug = (value: string) => encodeURIComponent(value.trim().toLowerCase());
-
-export function getMissingPersonSlug(record: DetaineeIntake): string {
-  if (record.caseId) {
-    return encodeSlug(record.caseId);
-  }
-
-  if (record.fullName) {
-    return encodeSlug(record.fullName.replace(/\s+/g, "-"));
-  }
-
-  if (record.aNumber) {
-    return encodeSlug(record.aNumber);
-  }
-
-  if (record.createdAt) {
-    return encodeSlug(`case-${record.createdAt}`);
-  }
-
-  return encodeSlug(`case-${Math.random().toString(36).slice(2, 8)}`);
-}
 
 export const demoMissingPersons: DetaineeIntake[] = [
   {

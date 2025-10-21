@@ -1,29 +1,28 @@
-"use client";
-
 import * as React from "react";
-import Link from "next/link";
-import { Search, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Search } from "lucide-react";
 
-import type { DetaineeIntake } from "@/src/types/DetaineeIntake";
-import { getMissingPersonSlug } from "@/data/demoMissingPersons";
+import type { DetaineeIntake } from "../../types/missing-person-intake";
+import { getMissingPersonSlug } from "../../lib/missing-persons";
 
-import { Input } from "@workspace/ui/components/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
+import { Badge } from "../badge";
+import { Button } from "../button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../card";
+import { Input } from "../input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../select";
 
 type UrgencyFilter = "all" | "urgent" | "none";
 
-interface MissingPersonsDirectoryProps {
+export interface MissingPersonsDirectoryProps {
   records: DetaineeIntake[];
+  /**
+   * Optionally override how the view-details link is generated for each record.
+   */
+  getRecordHref?: (record: DetaineeIntake) => string;
+  /**
+   * Allows callers to customise the anchor element used for the view-details button.
+   * Defaults to a simple anchor tag to avoid coupling to a routing library.
+   */
+  renderRecordLink?: (href: string, record: DetaineeIntake, label: string) => React.ReactNode;
 }
 
 function formatDate(value?: string): string {
@@ -62,7 +61,17 @@ function formatRelativeDate(value?: string): string {
   return `Updated ${Math.floor(diffDays / 7)} weeks ago`;
 }
 
-export function MissingPersonsDirectory({ records }: MissingPersonsDirectoryProps) {
+const defaultRecordHref = (record: DetaineeIntake) => `/missing-persons/${getMissingPersonSlug(record)}`;
+
+const defaultRenderRecordLink = (href: string, _record: DetaineeIntake, label: string) => (
+  <a href={href}>{label}</a>
+);
+
+export function MissingPersonsDirectory({
+  records,
+  getRecordHref = defaultRecordHref,
+  renderRecordLink = defaultRenderRecordLink,
+}: MissingPersonsDirectoryProps) {
   const [query, setQuery] = React.useState("");
   const [urgencyFilter, setUrgencyFilter] = React.useState<UrgencyFilter>("all");
 
@@ -146,7 +155,7 @@ export function MissingPersonsDirectory({ records }: MissingPersonsDirectoryProp
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredRecords.map((record) => {
             const slug = getMissingPersonSlug(record);
-            const viewHref = `/missing-persons/${slug}`;
+            const viewHref = getRecordHref(record);
             const urgentNeeds = record.urgentNeeds ?? [];
             const displayName = record.fullName?.trim() || "Unidentified individual";
             const lastLocation =
@@ -159,7 +168,6 @@ export function MissingPersonsDirectory({ records }: MissingPersonsDirectoryProp
             const interpreterBadge = record.interpreterNeeded ? (
               <Badge variant="outline">Interpreter needed</Badge>
             ) : null;
-
             return (
               <Card key={record.caseId ?? slug} className="flex h-full flex-col border-border/70">
                 <CardHeader className="pb-4">
@@ -226,7 +234,7 @@ export function MissingPersonsDirectory({ records }: MissingPersonsDirectoryProp
                     {record.lastUpdated ? <div className="text-xs">{formatDate(record.lastUpdated)}</div> : null}
                   </div>
                   <Button asChild size="sm">
-                    <Link href={viewHref}>View details</Link>
+                    {renderRecordLink(viewHref, record, "View details")}
                   </Button>
                 </CardFooter>
               </Card>

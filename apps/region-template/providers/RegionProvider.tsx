@@ -1,7 +1,7 @@
-// apps/region-template/lib/RegionProvider.tsx
+// apps/region-template/providers/RegionProvider.tsx
 "use client";
 import { createContext, useContext } from "react";
-import { demoProfileAdapter } from "../adapters/profile/demoProfileAdapter";
+import { demoProfileAdapter } from "../lib/adapters/profile/demoProfileAdapter";
 
 const RegionContext = createContext({ profileAdapter: demoProfileAdapter });
 

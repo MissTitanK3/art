@@ -2,11 +2,11 @@
 
 import * as React from "react";
 
-import { MissingPersonsDirectory } from "@/components/missing-persons/MissingPersonsDirectory";
 import { demoMissingPersons } from "@/data/demoMissingPersons";
-import type { DetaineeIntake } from "@/src/types/DetaineeIntake";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
+import { MissingPersonsDirectory } from "@workspace/ui/components/missing-persons/MissingPersonsDirectory";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
   // TODO: replace with real data source.

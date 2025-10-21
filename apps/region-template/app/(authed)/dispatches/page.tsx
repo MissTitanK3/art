@@ -1,6 +1,6 @@
 "use client";
 
-import DispatchListDataLayer from "@/components/dataLayer/dispatches/DispatchMapDataLayer";
+import DispatchListDataLayer from "@/components/dataLayer/dispatches/DispatchListDataLayer";
 
 export default function DispatchesPage() {
   return (

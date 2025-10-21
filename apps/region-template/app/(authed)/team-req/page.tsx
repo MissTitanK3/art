@@ -1,7 +1,7 @@
 "use client";
 
 import TeamRequestForm from "@workspace/ui/components/client/team-request/TeamRequestForm";
-import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider";
+import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
@@ -79,10 +79,8 @@ function TeamRequestContent() {
 
 export default function TeamRequestPage() {
   return (
-    <DispatchStoreProvider>
-      <Suspense fallback={<p className="px-4 text-sm text-muted-foreground">Loading team request…</p>}>
-        <TeamRequestContent />
-      </Suspense>
-    </DispatchStoreProvider>
+    <Suspense fallback={<p className="px-4 text-sm text-muted-foreground">Loading team request…</p>}>
+      <TeamRequestContent />
+    </Suspense>
   );
 }

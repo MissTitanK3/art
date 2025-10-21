@@ -80,3 +80,5 @@ export const DetaineeIntakeSchema = z.object({
   createdBy: z.string().optional(),
   version: z.number().optional(),
 });
+
+export type DetaineeIntakeSchemaType = typeof DetaineeIntakeSchema;

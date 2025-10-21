@@ -1,5 +1,4 @@
-import { MissingPersonIntakeForm } from "@/components/missing-persons/IntakeForm";
-import { Button } from "@workspace/ui/components/button";
+import { MissingPersonIntakeDataLayer } from "@/components/dataLayer/missing-persons/MissingPersonIntakeDataLayer";
 import Link from "next/link";
 
 export default function MissingPersonsIntakePage() {
@@ -14,7 +13,7 @@ export default function MissingPersonsIntakePage() {
           Capture all available details about a detention so legal aid partners can mobilize quickly.
         </p>
       </div>
-      <MissingPersonIntakeForm />
+      <MissingPersonIntakeDataLayer />
     </div>
   );
 }
