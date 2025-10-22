@@ -25,6 +25,7 @@ function toStoreCoverage(input: unknown): string[] {
 }
 
 async function fetchProfileFromDatabase(profileId: string): Promise<Profile | null> {
+  console.log("Fetching profile from database for profileId:", profileId);
   // TODO: replace with real database integration.
   // Example:
   // const { data } = await client.from("profiles").select("*").eq("id", profileId).single();
@@ -34,6 +35,7 @@ async function fetchProfileFromDatabase(profileId: string): Promise<Profile | nu
 }
 
 async function saveProfileToDatabase(profile: Profile): Promise<void> {
+  console.log("Saving profile to database for profileId:", profile.id, profile);
   // TODO: replace with real persistence call (insert/update).
   // Example:
   // await client.from("profiles").upsert(transformProfile(profile));
@@ -41,6 +43,7 @@ async function saveProfileToDatabase(profile: Profile): Promise<void> {
 }
 
 async function deleteProfileFromDatabase(profileId: string): Promise<void> {
+  console.log("Deleting profile from database for profileId:", profileId);
   // TODO: replace with actual delete/archive operation.
   // Example:
   // await client.from("profiles").delete().eq("id", profileId);

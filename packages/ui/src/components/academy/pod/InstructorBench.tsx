@@ -128,7 +128,7 @@ export function InstructorBench({
       let needsReview = 0
       let awaiting = 0
       for (const instructor of instructors) {
-        if (instructor.registrationStatus === 'guest') {
+        if (instructor.registrationStatus === 'unregistered') {
           guests += 1
         } else {
           registered += 1
@@ -323,7 +323,7 @@ export function InstructorBench({
 
   const registrationOptions: Array<{ value: AcademyInstructorDraft['registrationStatus']; label: string }> = [
     { value: 'registered', label: instructorRegistrationLabels.registered },
-    { value: 'guest', label: instructorRegistrationLabels.guest },
+    { value: 'unregistered', label: instructorRegistrationLabels.unregistered },
   ]
 
   function handleSubmitNewInstructor(event: React.FormEvent<HTMLFormElement>) {
@@ -451,7 +451,7 @@ export function InstructorBench({
             const previewCerts = instructor.certifications.slice(0, 3)
             const registrationStatus = instructor.registrationStatus ?? 'registered'
             const registrationLabel = instructorRegistrationLabels[registrationStatus]
-            const isGuestInstructor = registrationStatus === 'guest'
+            const isGuestInstructor = registrationStatus === 'unregistered'
             const vettingStatus: AcademyInstructorVettingStatus = instructor.vettingStatus ?? 'awaiting_verification'
             const vettingLabel = instructorVettingLabels[vettingStatus]
             const vettingClass = instructorVettingClasses[vettingStatus]

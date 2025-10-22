@@ -30,6 +30,7 @@ type FormValues = z.infer<typeof schema>;
 const channelTypes: Channel["type"][] = ["Signal", "Matrix", "LoRa"];
 
 async function fetchPodFromDatabase(slug: string): Promise<Pod | null> {
+  console.log("Fetching pod from database for slug:", slug);
   // TODO: replace with real database integration (e.g., Supabase, Hasura, direct SQL).
   // Example:
   // const client = createSupabaseClient();
@@ -41,6 +42,7 @@ async function fetchPodFromDatabase(slug: string): Promise<Pod | null> {
 }
 
 async function persistPodToDatabase(pod: Pod): Promise<void> {
+  console.log("Persisting pod to database:", pod);
   // TODO: replace with real persistence (insert/update) once database is available.
   // Example:
   // await client.from("pods").upsert(transformPodForInsert(pod));
@@ -48,6 +50,7 @@ async function persistPodToDatabase(pod: Pod): Promise<void> {
 }
 
 async function archivePodInDatabase(podId: string): Promise<void> {
+  console.log("Archiving pod in database with id:", podId);
   // TODO: replace with real archive/delete implementation.
   // Example:
   // await client.from("pods").delete().eq("id", podId);

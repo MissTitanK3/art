@@ -20,6 +20,7 @@ type ShiftFormState = BaseShiftIntentionFields & {
 };
 
 async function fetchPodShiftsFromDatabase(slug: string): Promise<Shift[] | null> {
+  console.log("Fetching pod shifts from database for slug:", slug);
   // TODO: replace with real database lookup once persistence layer is wired up.
   // Example:
   // const { data } = await client.from("pod_shifts").select("*").eq("pod_slug", slug);
@@ -29,11 +30,13 @@ async function fetchPodShiftsFromDatabase(slug: string): Promise<Shift[] | null>
 }
 
 async function persistShiftToDatabase(shift: Shift): Promise<void> {
+  console.log("Persisting shift to database:", shift);
   // TODO: replace with real persistence logic (create/update) once database exists.
   await Promise.resolve();
 }
 
 async function deleteShiftFromDatabase(shiftId: string): Promise<void> {
+  console.log("Deleting shift from database with id:", shiftId);
   // TODO: replace with actual delete/archive logic.
   await Promise.resolve();
 }
@@ -106,9 +109,9 @@ export default function PodShiftsDataLayer() {
         podId={undefined}
         form={form}
         setForm={setForm}
-        onAddShift={() => {}}
+        onAddShift={() => { }}
         shifts={[]}
-        onRemoveShift={() => {}}
+        onRemoveShift={() => { }}
         notFoundMessage={
           <p className="text-sm text-muted-foreground">Pod not found</p>
         }

@@ -88,8 +88,8 @@ export function PodAcademyDashboardLayout({
   const handleDeleteTrainingSession = onDeleteTrainingSession ?? (() => { })
   const benchStat = React.useMemo(() => {
     const total = instructors.length
-    const registered = instructors.filter((instructor) => instructor.registrationStatus !== 'guest').length
-    const guest = total - registered
+    const registered = instructors.filter((instructor) => instructor.registrationStatus !== 'unregistered').length
+    const unregistered = total - registered
     let cleared = 0
     let needsReview = 0
     let awaiting = 0
@@ -114,8 +114,8 @@ export function PodAcademyDashboardLayout({
     if (registered > 0) {
       helperSegments.push(`${registered} registered`)
     }
-    if (guest > 0) {
-      helperSegments.push(`${guest} guest SME${guest === 1 ? '' : 's'}`)
+    if (unregistered > 0) {
+      helperSegments.push(`${unregistered} unregistered SME${unregistered === 1 ? '' : 's'}`)
     }
     if (cleared > 0) {
       helperSegments.push(`${cleared} cleared`)

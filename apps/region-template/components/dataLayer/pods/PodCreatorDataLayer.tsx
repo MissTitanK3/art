@@ -32,6 +32,7 @@ const schema = z.object({
 });
 
 async function createPodInDatabase(pod: Pod): Promise<void> {
+  console.log("Creating pod in database:", pod);
   // TODO: replace with actual persistence (e.g., Supabase/Hasura/etc.).
   // Example:
   // await client.from("pods").insert(transformPodForInsert(pod));

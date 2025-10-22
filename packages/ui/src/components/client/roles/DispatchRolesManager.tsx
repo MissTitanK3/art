@@ -35,7 +35,14 @@ export default function DispatchRolesManager({
   const [openRole, setOpenRole] = useState<string | null>(null);
   const [openRolesEditor, setOpenRolesEditor] = useState(false);
 
-  const assignedVolunteers = submission.assigned_volunteers ?? [];
+  type AssignedVolunteer = Partial<RosterEntry> & {
+    volunteer?: {
+      display_name?: string;
+      contact_signal?: string;
+    };
+  };
+
+  const assignedVolunteers = (submission.assigned_volunteers ?? []) as AssignedVolunteer[];
 
   const handleSaveAssignments = (
     role: string,

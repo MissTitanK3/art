@@ -1,6 +1,7 @@
 // apps/region-template/lib/adapters/supabaseProfileAdapter.ts
 
-import { ProfileAdapter } from '@workspace/store/types/profile.ts';
+// import { ProfileAdapter } from '@workspace/store/types/profile.ts';
+console.log('SupabaseProfileAdapter module loaded');
 
 // const supabase = createClient(
 //   process.env.NEXT_PUBLIC_SUPABASE_URL!,

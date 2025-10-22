@@ -13,6 +13,7 @@ import {
 async function fetchPodRosterFromDatabase(
   slug: string
 ): Promise<RosterEntry[] | null> {
+  console.log("Fetching pod roster from database for slug:", slug);
   // TODO: swap with real database call when persistence is introduced.
   // Example:
   // const { data } = await client.from("pod_roster").select("*").eq("pod_slug", slug);
@@ -25,6 +26,7 @@ async function persistRosterEntryToDatabase(
   podId: string,
   entry: RosterEntry
 ): Promise<void> {
+  console.log("Persisting roster entry to database for podId:", podId, entry);
   // TODO: implement proper persistence once a database is available.
   // Example:
   // await client.from("pod_roster").upsert(transformRosterEntry(entry, podId));
@@ -32,6 +34,7 @@ async function persistRosterEntryToDatabase(
 }
 
 async function deleteRosterEntryFromDatabase(podId: string, rosterId: string): Promise<void> {
+  console.log("Deleting roster entry from database for podId:", podId, "rosterId:", rosterId);
   // TODO: replace with real deletion once persistence is added.
   // Example:
   // await client.from("pod_roster").delete().eq("pod_id", podId).eq("id", rosterId);

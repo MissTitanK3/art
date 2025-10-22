@@ -1,8 +1,7 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 export function DemoControls() {
-  const [pending, start] = useTransition();
   const [scenario, setScenario] = useState<"default" | "busy">("default");
 
   return (

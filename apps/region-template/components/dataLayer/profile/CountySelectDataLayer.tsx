@@ -17,6 +17,7 @@ const CountySelectMap = dynamic<CountySelectMapProps>(
 );
 
 async function fetchOperatingCountiesFromDatabase(profileId: string): Promise<string[] | null> {
+  console.log("Fetching operating counties from database for profileId:", profileId);
   // TODO: replace with real database integration.
   // Example:
   // const { data } = await client.from("operating_counties").select("counties").eq("profile_id", profileId).single();
@@ -26,6 +27,7 @@ async function fetchOperatingCountiesFromDatabase(profileId: string): Promise<st
 }
 
 async function saveOperatingCountiesToDatabase(profileId: string, fipsList: string[]): Promise<void> {
+  console.log("Saving operating counties to database for profileId:", profileId, "fipsList:", fipsList);
   // TODO: replace with real persistence logic.
   // Example:
   // await client.from("operating_counties").upsert({ profile_id: profileId, counties: fipsList });
@@ -187,11 +189,11 @@ export function CountySelectDataLayer() {
         profileMissing
         selectedCounties={[]}
         activeCounty={null}
-        onMapChange={() => {}}
-        onToggleEditCounty={() => {}}
-        onRemoveCounty={() => {}}
-        onUpdateZones={() => {}}
-        onDone={() => {}}
+        onMapChange={() => { }}
+        onToggleEditCounty={() => { }}
+        onRemoveCounty={() => { }}
+        onUpdateZones={() => { }}
+        onDone={() => { }}
         isSaving={false}
         MapComponent={CountySelectMap}
         noProfileContent={

@@ -12,6 +12,8 @@ type Props = {
 };
 
 async function fetchDispatchSubmissionFromDatabase(id: string): Promise<DispatchSubmission | null> {
+  console.log("Fetching dispatch submission from database for id:", id);
+
   // TODO: replace with actual persistence layer.
   // Example:
   // const { data } = await client.from("dispatch_submissions").select("*").eq("id", id).single();
