@@ -39,7 +39,7 @@ export function RemoveMemberButton({ podName, member, onRemoveMember }: RemoveMe
           <DialogDescription>
             Are you sure you want to remove{" "}
             <span className="font-semibold">
-              {member.volunteer.display_name}
+              {member.profile.display_name}
             </span>{" "}
             from <span className="font-mono">{podName}</span>? This action
             cannot be undone.

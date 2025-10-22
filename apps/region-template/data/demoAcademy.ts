@@ -104,9 +104,10 @@ export function convertPodsToMemberProgress(pods: Pod[]): AcademyMemberProgress[
     for (const member of pod.team) {
       const completedLessons = member.certs.filter((cert) => cert.level === 'completed' || cert.level === 'mentor').length;
       const pendingLessons = Math.max(0, 3 - completedLessons);
+      const profile = member.profile;
       results.push({
         id: member.id,
-        name: member.volunteer.display_name,
+        name: profile.display_name,
         podName: pod.name,
         role: member.role,
         status: member.status,
@@ -139,7 +140,7 @@ export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[]
         member.status === 'active' ? 'available' : member.status === 'inactive' ? 'limited' : 'unavailable';
 
       const focusSource =
-        member.fieldRoles?.[0] ?? member.skills?.[0] ?? member.volunteer.affiliation ?? 'Operational Support';
+        member.profile.field_roles?.[0] ?? member.skills?.[0] ?? member.profile.affiliation ?? 'Operational Support';
       const focus = humanizeLabel(typeof focusSource === 'string' ? focusSource : String(focusSource));
       const hasExpiredCert = member.certs.some((cert) => cert.level === 'expired');
       const hasCompletedCert = member.certs.some((cert) => cert.level === 'completed' || cert.level === 'mentor');
@@ -149,15 +150,16 @@ export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[]
           ? 'cleared'
           : 'awaiting_verification';
 
+      const profile = member.profile;
       instructors.push({
         id: member.id,
-        name: member.volunteer.display_name,
+        name: profile.display_name,
         type,
         availability,
         focus,
-        timezone: member.volunteer.coordination_zone ?? undefined,
+        timezone: profile.coordination_zone ?? undefined,
         certifications: member.certs ?? [],
-        registrationStatus: 'registered',
+        registrationStatus: profile.user_id ? 'registered' : 'unregistered',
         vettingStatus,
       });
 

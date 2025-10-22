@@ -1,7 +1,6 @@
 import z from 'zod';
 import { NormalizedLanguage } from './language.ts';
-import { FieldRole } from './roles.ts';
-import { Profile } from './global.ts';
+import { DispatchProfile } from './profile.ts';
 
 // packages/types/pod.ts
 export interface PodAdapter {
@@ -30,11 +29,10 @@ export type PodRole = 'lead' | 'member' | 'trainee';
 
 export type RosterEntry = {
   id: string;
-  volunteer: Profile;
+  profile: DispatchProfile;
   role: PodRole;
   status: PodMemberStatus;
   langs: NormalizedLanguage[];
-  fieldRoles: FieldRole[];
   skills: string[];
   certs: NormalizedCertification[];
   notes?: string;

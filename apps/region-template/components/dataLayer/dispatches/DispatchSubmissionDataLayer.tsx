@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
+import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 
@@ -26,6 +27,7 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
   const addUpdate = useDispatchStore((s) => s.addUpdate);
   const editUpdate = useDispatchStore((s) => s.editUpdate);
   const removeUpdate = useDispatchStore((s) => s.removeUpdate);
+  const roster = usePodStore((s) => s.activeRoster);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -77,6 +79,7 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
       onAddUpdate={(update) => addUpdate(submission.id, update)}
       onEditUpdate={(updateId, text) => editUpdate(submission.id, updateId, text)}
       onRemoveUpdate={(updateId) => removeUpdate(submission.id, updateId)}
+      roster={roster}
     />
   );
 }

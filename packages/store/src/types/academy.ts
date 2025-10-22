@@ -1,6 +1,6 @@
 import type { NormalizedCertification } from '../types/pod.ts';
 
-export type AcademyInstructorRegistrationStatus = 'registered' | 'guest';
+export type AcademyInstructorRegistrationStatus = 'registered' | 'unregistered' | 'pending';
 
 export type AcademySummaryStat = {
   label: string;

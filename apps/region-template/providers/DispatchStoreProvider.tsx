@@ -10,6 +10,7 @@ import {
 } from '@workspace/store/useDispatchStore';
 import type { DispatchShift } from '@workspace/store/useDispatchStore';
 import { demoDispatches } from '@/data/demoDispatches';
+import { demoDispatchShifts } from '@/data/demoDispatchShifts';
 import { DispatchSubmission } from '@workspace/store/types/global.ts';
 
 type DispatchStoreProviderProps = PropsWithChildren<{
@@ -24,7 +25,7 @@ export const DispatchStoreContext = createContext<StoreApi<DispatchStoreState> |
 export function DispatchStoreProvider({
   children,
   initialSubmissions = demoDispatches,
-  initialShifts,
+  initialShifts = demoDispatchShifts,
   persist = true,
   storageKey = 'dispatch-store',
 }: DispatchStoreProviderProps) {
@@ -52,4 +53,3 @@ export function useDispatchStore<T>(
   }
   return equalityFn ? useStoreWithEqualityFn(store, selector, equalityFn) : useStore(store, selector);
 }
-

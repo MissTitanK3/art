@@ -24,7 +24,7 @@ export function DetailItem({ label, value }: DetailItemProps) {
   return (
     <div className="space-y-1">
       <div className="text-sm font-medium text-foreground">{label}</div>
-      <div className="text-sm text-foreground">{value}</div>
+      <div className="text-sm text-foreground" suppressHydrationWarning>{value}</div>
     </div>
   );
 }

@@ -202,14 +202,6 @@ export function MissingPersonDetail({
     [currentRecord, onExportRecord, slug]
   );
 
-  const handlePrint = React.useCallback(() => {
-    try {
-      window.print?.();
-    } catch (error) {
-      console.warn("Print not supported", error);
-    }
-  }, []);
-
   const handleSubmit = React.useCallback(
     (values: DetaineeIntakeFormValues) => {
       if (!values.caseId?.trim()) {
@@ -352,9 +344,6 @@ export function MissingPersonDetail({
                     </Button>
                   </>
                 ) : null}
-                <Button type="button" variant="ghost" onClick={handlePrint}>
-                  <Printer className="mr-2 h-4 w-4" /> Print
-                </Button>
                 <Button type="button" onClick={startEditing}>
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>

@@ -68,7 +68,7 @@ export default function ManageRoleDrawer({
           {/* Existing roster */}
           {allRoster.map((r) => (
             <label
-              key={r.volunteer.id}
+              key={r.id}
               className="flex items-center gap-2 text-sm cursor-pointer"
             >
               <Checkbox
@@ -76,7 +76,7 @@ export default function ManageRoleDrawer({
                 onCheckedChange={() => toggle(r.id)}
               />
 
-              <span className="font-medium">{r.volunteer.display_name}</span>
+              <span className="font-medium">{r.profile.display_name}</span>
               <Badge variant="outline" className="text-[10px] capitalize">
                 {r.role}
               </Badge>

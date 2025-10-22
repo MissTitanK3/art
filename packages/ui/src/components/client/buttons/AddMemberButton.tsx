@@ -52,7 +52,8 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
         `guest-${newId}`,
         guestName || "Guest Volunteer",
         [],
-        "Unregistered"
+        "Unregistered",
+        { registered: false }
       );
       entry = makeRosterEntry(
         newId,
@@ -130,7 +131,7 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
                 <SelectContent>
                   {activeRoster.map((r) => (
                     <SelectItem key={r.id} value={r.id}>
-                      {r.volunteer.display_name} ({r.role})
+                      {r.profile.display_name} ({r.role})
                     </SelectItem>
                   ))}
                 </SelectContent>

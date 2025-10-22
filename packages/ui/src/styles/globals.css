@@ -212,3 +212,59 @@
 .leaflet-container {
   z-index: 0 !important; /* or any value lower than your nav */
 }
+
+@media print {
+  /* Reset layout constraints */
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    color: black !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Remove sticky/fixed elements that cover content */
+  header,
+  nav,
+  .sticky,
+  .fixed,
+  .toolbar,
+  .alert-dialog,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Print-friendly spacing */
+  .space-y-6,
+  .grid,
+  .flex {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 1in;
+  }
+
+  /* Control page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Keep sections together if possible */
+  section,
+  .card,
+  .print-section {
+    page-break-inside: avoid;
+  }
+
+  /* Make text readable */
+  * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}

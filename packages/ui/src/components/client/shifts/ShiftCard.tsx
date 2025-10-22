@@ -35,7 +35,7 @@ export default function ShiftCard({
   const pod = pods.find((p) => p.id === shift.podId);
   const volunteer = roster.find((v) => v.id === shift.volunteerId);
   const volunteerDisplayName =
-    volunteer?.volunteer?.display_name ??
+    volunteer?.profile?.display_name ??
     shift.volunteerName ??
     shift.volunteerId ??
     "Unknown Volunteer";

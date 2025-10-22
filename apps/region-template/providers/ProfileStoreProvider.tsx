@@ -1,16 +1,18 @@
 'use client';
 
-import { PropsWithChildren, useContext, useRef, createContext } from 'react';
+import { PropsWithChildren, useContext, useEffect, useRef, createContext } from 'react';
 import { useStore } from 'zustand';
 import { useStoreWithEqualityFn } from 'zustand/traditional';
 import type { StoreApi } from 'zustand';
-import { createProfileStore, ProfileStoreState, ProfileStore } from '@workspace/store/useProfileStore';
+import { createProfileStore, ProfileStoreState, ProfileStore, singletonProfileStore } from '@workspace/store/useProfileStore';
 import type { Profile } from '@workspace/store/types/global.ts';
+import { createDemoProfile } from '@/data/demoProfile';
 
 type ProfileStoreProviderProps = PropsWithChildren<{
   initialProfile?: Profile | null;
   persist?: boolean;
   storageKey?: string;
+  demoProfileFactory?: () => Profile;
 }>;
 
 const ProfileStoreContext = createContext<StoreApi<ProfileStoreState> | null>(null);
@@ -20,6 +22,7 @@ export function ProfileStoreProvider({
   initialProfile = null,
   persist = true,
   storageKey = 'profile-store',
+  demoProfileFactory = createDemoProfile,
 }: ProfileStoreProviderProps) {
   const storeRef = useRef<ProfileStore | null>(null);
 
@@ -28,8 +31,24 @@ export function ProfileStoreProvider({
       initialProfile,
       persist,
       storageKey,
+      demoProfileFactory,
     });
   }
+
+  useEffect(() => {
+    const store = storeRef.current;
+    if (!store) return;
+
+    const initial = store.getState().profile;
+    singletonProfileStore.setState({ profile: initial ?? null });
+
+    const unsubscribe = store.subscribe((state) => {
+      singletonProfileStore.setState({ profile: state.profile });
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   return <ProfileStoreContext.Provider value={storeRef.current}>{children}</ProfileStoreContext.Provider>;
 }

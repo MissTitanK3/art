@@ -8,7 +8,6 @@ import {
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { seedPods } from "@workspace/store/usePodStore";
 import { useState } from "react";
 import { toast } from "sonner";
 import { humanize } from "@workspace/ui/lib/utils";
@@ -21,14 +20,18 @@ import ManageRoleDrawer from "./ManageRoleDrawer.tsx";
 import RolesEditorDrawer from "./RolesEditorDrawer.tsx";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
-const allRoster = seedPods.flatMap((pod) => pod.team);
-
 type DispatchRolesManagerProps = {
   submission: DispatchSubmission;
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
+  roster?: RosterEntry[];
 };
 
-export default function DispatchRolesManager({ submission, onUpdate }: DispatchRolesManagerProps) {
+export default function DispatchRolesManager({
+  submission,
+  onUpdate,
+  roster,
+}: DispatchRolesManagerProps) {
+  const allRoster = roster ?? [];
   const [openRole, setOpenRole] = useState<string | null>(null);
   const [openRolesEditor, setOpenRolesEditor] = useState(false);
 
@@ -48,6 +51,7 @@ export default function DispatchRolesManager({ submission, onUpdate }: DispatchR
           return rosterEntry
             ? {
                 id: rosterEntry.id,
+                profile: rosterEntry.profile,
                 role: role as PodRole,
                 status: "active" as PodMemberStatus,
               }
@@ -57,7 +61,7 @@ export default function DispatchRolesManager({ submission, onUpdate }: DispatchR
         .filter((m) => selected.includes(m.id))
         .map((m) => ({
           id: m.id,
-          volunteer: { display_name: m.name } as any,
+          profile: { display_name: m.name } as any,
           role: role as PodRole,
           status: "active" as PodMemberStatus,
         })),
@@ -151,14 +155,15 @@ export default function DispatchRolesManager({ submission, onUpdate }: DispatchR
                               </Badge>
 
                               <span className="font-medium text-foreground text-center md:text-left">
-                                {rosterEntry?.volunteer.display_name ??
+                                {rosterEntry?.profile.display_name ??
+                                  v.profile?.display_name ??
                                   v.volunteer?.display_name ??
                                   "Unknown Volunteer"}
                               </span>
 
-                              {rosterEntry?.volunteer.contact_signal && (
+                              {(rosterEntry?.profile.contact_signal ?? v.profile?.contact_signal ?? v.volunteer?.contact_signal) && (
                                 <CopySignalHandleButton
-                                  handle={rosterEntry.volunteer.contact_signal}
+                                  handle={(rosterEntry?.profile.contact_signal ?? v.profile?.contact_signal ?? v.volunteer?.contact_signal)!}
                                 />
                               )}
                             </div>
@@ -211,7 +216,7 @@ export default function DispatchRolesManager({ submission, onUpdate }: DispatchR
               .filter((v) => v.role === openRole && v.id?.startsWith("manual-"))
               .map((v) => ({
                 volunteer_id: v.id ?? "",
-                name: v.volunteer?.display_name,
+                name: v.profile?.display_name ?? v.volunteer?.display_name,
               }))
           }
           onClose={() => setOpenRole(null)}

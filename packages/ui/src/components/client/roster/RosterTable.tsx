@@ -28,14 +28,25 @@ export function RosterTable({ rows, onEdit, podName, onRemoveMember }: RosterTab
         <div className="col-span-2 text-right">Actions</div>
       </div>
 
-      {rows.map((r) => (
-        <div
-          key={r.id}
-          className="grid md:grid-cols-12 gap-2 px-4 py-3 border-b last:border-b-0"
-        >
+      {rows.map((r) => {
+        const registered = Boolean(r.profile?.user_id && r.profile.user_id.trim().length > 0);
+
+        return (
+          <div
+            key={r.id}
+            className="grid md:grid-cols-12 gap-2 px-4 py-3 border-b last:border-b-0"
+          >
           {/* Handle + mobile summary */}
           <div className="md:col-span-3">
-            <div className="font-medium">{r.handle}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{r.handle}</span>
+              <Badge
+                variant={registered ? "default" : "outline"}
+                className={registered ? "bg-emerald-500/15 text-emerald-800" : "text-muted-foreground"}
+              >
+                {registered ? "Registered" : "Manual"}
+              </Badge>
+            </div>
             {r.signal_handle && (
               <div className="text-xs text-muted-foreground">
                 📱 {r.signal_handle}
@@ -125,7 +136,8 @@ export function RosterTable({ rows, onEdit, podName, onRemoveMember }: RosterTab
             )}
           </div>
         </div>
-      ))}
+        );
+      })}
     </Card>
   );
 }

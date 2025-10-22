@@ -27,6 +27,7 @@ import { Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
+import type { RosterEntry } from "@workspace/store/types/pod.ts";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
@@ -36,6 +37,7 @@ export type DispatchSubmissionLayoutProps = {
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
   onEditUpdate: (updateId: string, text: string) => void;
   onRemoveUpdate: (updateId: string) => void;
+  roster?: RosterEntry[];
 };
 
 export function DispatchSubmissionLayout({
@@ -46,6 +48,7 @@ export function DispatchSubmissionLayout({
   onAddUpdate,
   onEditUpdate,
   onRemoveUpdate,
+  roster = [],
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
@@ -193,7 +196,11 @@ export function DispatchSubmissionLayout({
         </TabsContent>
 
         <TabsContent value="roles" className="flex-1" suppressHydrationWarning>
-          <DispatchRolesManager submission={submission} onUpdate={onUpdateSubmission} />
+          <DispatchRolesManager
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+            roster={roster}
+          />
         </TabsContent>
 
         <TabsContent value="updates" className="flex-1">

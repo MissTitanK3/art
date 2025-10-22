@@ -214,7 +214,7 @@ export default function EditShiftDrawer({
                 <SelectItem value="__custom__">Unlisted volunteer</SelectItem>
                 {availableVolunteers.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
-                    {member.volunteer.display_name} ({member.handle})
+                    {member.profile.display_name} ({member.handle})
                   </SelectItem>
                 ))}
               </SelectContent>
