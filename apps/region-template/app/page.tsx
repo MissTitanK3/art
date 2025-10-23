@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/al
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Terminal, Info, DatabaseZap } from "lucide-react"
+import { Terminal, Info, DatabaseZap, LogIn } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@workspace/ui/lib/utils"
 import { STATUS_META } from "@workspace/ui/lib/constants/dispatch"
@@ -15,6 +15,7 @@ import { DISPATCH_TYPE_LABELS, DispatchStatus } from "@workspace/store/types/dis
 import { navConfig } from "@/nav.config"
 import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider"
 import { PodStoreProvider, usePodStore } from "@/providers/PodStoreProvider"
+import { useAuth } from "@/hooks/useAuth"
 
 type ViewMode = "info" | "dashboard"
 
@@ -168,7 +169,7 @@ function TemplateInfoContent() {
               description: "Welcome to the tools.",
               action: {
                 label: "Dismiss",
-                onClick: () => {},
+                onClick: () => { },
               },
             })
           }
@@ -181,6 +182,29 @@ function TemplateInfoContent() {
 }
 
 function DemoDashboard() {
+  const { session, status } = useAuth();
+  const isAuthenticated = status === "authenticated" && !!session?.user?.id;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto mt-8 max-w-md">
+        <Alert variant="default">
+          <LogIn className="h-5 w-5" />
+          <AlertTitle>Demo Sign-in required</AlertTitle>
+          <AlertDescription>
+            You need to fake a sign in to access your region dashboard demo. (dont use real creds!)
+          </AlertDescription>
+          <div className="mt-4">
+            <Button asChild>
+              <Link href="/sign-in">Go to Sign-In</Link>
+            </Button>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
+
+  // normal dashboard when authenticated
   return (
     <DispatchStoreProvider persist={false}>
       <PodStoreProvider persist={false}>
@@ -194,7 +218,7 @@ function DemoDashboard() {
         </div>
       </PodStoreProvider>
     </DispatchStoreProvider>
-  )
+  );
 }
 
 function DashboardOverviewCards() {

@@ -268,7 +268,7 @@ export function PodManagementLayout({
           <Card className="p-4">
             <h2 className="font-semibold">Shifts</h2>
             <p className="text-sm text-muted-foreground">
-              Configure pod shifts and availability. (Placeholder)
+              Configure pod shifts and availability.
             </p>
           </Card>
         </LinkComponent>

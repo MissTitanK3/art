@@ -32,12 +32,30 @@ import { canSee, GlobalNavConfig, isActive, NavItem, NavRole } from "@workspace/
 
 const MOBILE_TOP_BAR_HEIGHT = 112;
 
+
+function filterNavTree(items: NavItem[], role?: NavRole, isAuthenticated = false): NavItem[] {
+  return items
+    .map((item) => {
+      const nextChildren = item.children ? filterNavTree(item.children, role, isAuthenticated) : undefined;
+      const hasVisibleChildren = Boolean(nextChildren?.length);
+      const selfVisible = canSee(item, role, isAuthenticated);
+
+      if (!selfVisible && !hasVisibleChildren) return null;
+      if (item.children && !hasVisibleChildren && (!selfVisible || !item.href)) return null;
+
+      return { ...item, children: nextChildren };
+    })
+    .filter((v): v is NonNullable<typeof v> => Boolean(v));
+}
+
+
 export interface GlobalNavCoreProps {
   config: GlobalNavConfig;
   role?: NavRole;
   pathname: string;
   LinkComponent: LinkLike;
   rightSlot?: React.ReactNode;
+  isAuthenticated: boolean;
 }
 
 export function GlobalNavCore({
@@ -46,12 +64,24 @@ export function GlobalNavCore({
   pathname,
   LinkComponent,
   rightSlot,
+  isAuthenticated,
 }: GlobalNavCoreProps) {
   const [desktopCollapsed, setDesktopCollapsed] = React.useState(true);
+  const [primaryItems, setPrimaryItems] = React.useState<NavItem[]>([]);
+  const [secondaryItems, setSecondaryItems] = React.useState<NavItem[]>([]);
 
   const handleAnyNavigate = React.useCallback(() => {
     // Reserved for future cross-device sync (matches previous API surface)
   }, []);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      setPrimaryItems(filterNavTree(config.primary, role, isAuthenticated));
+      setSecondaryItems(filterNavTree(config.secondary ?? [], role, isAuthenticated));
+    }, 50);
+    return () => clearTimeout(t);
+  }, [config.primary, config.secondary, role, isAuthenticated]);
+
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -81,19 +111,23 @@ export function GlobalNavCore({
     <>
       <MobileTopBar
         config={config}
-        role={role}
         LinkComponent={LinkComponent}
+        primaryItems={primaryItems}
+        secondaryItems={secondaryItems}
         onNavigate={handleAnyNavigate}
         pathname={pathname}
+        isAuthenticated={isAuthenticated}
       />
       <DesktopSideNav
         config={config}
-        role={role}
         pathname={pathname}
         LinkComponent={LinkComponent}
         onNavigate={handleAnyNavigate}
         collapsed={desktopCollapsed}
         onToggleCollapsed={() => setDesktopCollapsed((value) => !value)}
+        primaryItems={primaryItems}
+        secondaryItems={secondaryItems}
+        isAuthenticated={isAuthenticated}
       />
       {rightSlot}
     </>
@@ -102,16 +136,20 @@ export function GlobalNavCore({
 
 function MobileTopBar({
   config,
-  role,
   LinkComponent,
   onNavigate,
   pathname,
+  primaryItems,
+  secondaryItems,
+  isAuthenticated,
 }: {
   config: GlobalNavConfig;
-  role?: NavRole;
   LinkComponent: LinkLike;
   onNavigate: () => void;
   pathname: string;
+  primaryItems: NavItem[];
+  secondaryItems: NavItem[];
+  isAuthenticated: boolean;
 }) {
   return (
     <div
@@ -120,9 +158,10 @@ function MobileTopBar({
     >
       <MobileNav
         config={config}
-        role={role}
         LinkComponent={LinkComponent}
         onNavigate={onNavigate}
+        primaryItems={primaryItems}
+        secondaryItems={secondaryItems}
         pathname={pathname}
       />
       <LinkComponent
@@ -133,30 +172,39 @@ function MobileTopBar({
         <span className="truncate text-sm font-semibold">{config.brand.name}</span>
       </LinkComponent>
       <ThemeToggle />
+      {!isAuthenticated ? (
+        <a href="/sign-in">
+          <Button variant="secondary" size="sm">
+            Sign in
+          </Button>
+        </a>
+      ) : null}
+
     </div>
   );
 }
 
 function DesktopSideNav({
   config,
-  role,
   pathname,
   LinkComponent,
   onNavigate,
   collapsed,
   onToggleCollapsed,
+  primaryItems,
+  secondaryItems,
+  isAuthenticated,
 }: {
   config: GlobalNavConfig;
-  role?: NavRole;
   pathname: string;
   LinkComponent: LinkLike;
   onNavigate: () => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  primaryItems: NavItem[];
+  secondaryItems: NavItem[];
+  isAuthenticated: boolean;
 }) {
-  const primaryItems = config.primary.filter((item) => canSee(item, role));
-  const secondaryItems = (config.secondary ?? []).filter((item) => canSee(item, role));
-
   return (
     <aside
       className={cn(
@@ -201,7 +249,6 @@ function DesktopSideNav({
               item={item}
               collapsed={collapsed}
               pathname={pathname}
-              role={role}
               LinkComponent={LinkComponent}
               onNavigate={onNavigate}
             />
@@ -218,7 +265,6 @@ function DesktopSideNav({
                   item={item}
                   collapsed={collapsed}
                   pathname={pathname}
-                  role={role}
                   LinkComponent={LinkComponent}
                   onNavigate={onNavigate}
                 />
@@ -229,6 +275,13 @@ function DesktopSideNav({
         ) : null}
         <div className={cn("mt-1 flex", collapsed ? "justify-center" : "justify-start")}>
           <ThemeToggle />
+          {!isAuthenticated ? (
+            <a href="/sign-in">
+              <Button variant="secondary" size="sm">
+                Sign in
+              </Button>
+            </a>
+          ) : null}
         </div>
       </div>
     </aside>
@@ -239,18 +292,16 @@ function DesktopNavItem({
   item,
   collapsed,
   pathname,
-  role,
   LinkComponent,
   onNavigate,
 }: {
   item: NavItem;
   collapsed: boolean;
   pathname: string;
-  role?: NavRole;
   LinkComponent: LinkLike;
   onNavigate: () => void;
 }) {
-  const visibleChildren = (item.children ?? []).filter((child) => canSee(child, role));
+  const visibleChildren = item.children ?? [];
   const hasChildren = visibleChildren.length > 0;
   const active = navItemIsActive(item, pathname);
   const [open, setOpen] = React.useState(() => active && !collapsed);
@@ -480,16 +531,18 @@ function DesktopNavItem({
 
 function MobileNav({
   config,
-  role,
   LinkComponent,
   onNavigate,
   pathname,
+  primaryItems,
+  secondaryItems,
 }: {
   config: GlobalNavConfig;
-  role?: NavRole;
   LinkComponent: LinkLike;
   onNavigate: () => void;
   pathname: string;
+  primaryItems: NavItem[];
+  secondaryItems: NavItem[];
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -497,9 +550,6 @@ function MobileNav({
     setOpen(false);
     onNavigate();
   }, [onNavigate]);
-
-  const primaryItems = config.primary.filter((item) => canSee(item, role));
-  const secondaryItems = (config.secondary ?? []).filter((item) => canSee(item, role));
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -532,7 +582,6 @@ function MobileNav({
               <MobileNavItem
                 key={item.label}
                 item={item}
-                role={role}
                 LinkComponent={LinkComponent}
                 onNavigate={handleNavigate}
                 pathname={pathname}
@@ -547,7 +596,6 @@ function MobileNav({
                   <MobileNavItem
                     key={item.label}
                     item={item}
-                    role={role}
                     LinkComponent={LinkComponent}
                     onNavigate={handleNavigate}
                     pathname={pathname}
@@ -564,18 +612,16 @@ function MobileNav({
 
 function MobileNavItem({
   item,
-  role,
   LinkComponent,
   onNavigate,
   pathname,
 }: {
   item: NavItem;
-  role?: NavRole;
   LinkComponent: LinkLike;
   onNavigate: () => void;
   pathname: string;
 }) {
-  const visibleChildren = (item.children ?? []).filter((child) => canSee(child, role));
+  const visibleChildren = item.children ?? [];
   const hasChildren = visibleChildren.length > 0;
   const active = navItemIsActive(item, pathname);
 
@@ -668,7 +714,7 @@ function BrandSymbol({
       <img
         src={brand.logoSrc}
         alt={`${brand.name} logo`}
-        className={cn("h-[60px] w-[60px] shrink-0 rounded-md object-contain", className)}
+        className={cn("h-[50px] w-[50px] shrink-0 rounded-md object-contain", className)}
       />
     );
   }

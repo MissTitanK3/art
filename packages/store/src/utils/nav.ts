@@ -86,8 +86,16 @@ export function isActive(href: string | undefined, pathname: string) {
     return pathname === href || pathname.startsWith(href + '/');
   }
 }
-export function canSee(item: NavItem, role?: NavRole) {
+export function canSee(item: NavItem, role?: NavRole, isAuthenticated = false) {
+  // Public route: no roles specified
   if (!item.roles?.length) return true;
+
+  // Authenticated users can see role-restricted routes
+  // unless a specific role filter is meant to hide them
+  if (isAuthenticated) return true;
+
+  // Unauthenticated users must match a public role
   if (!role) return false;
+
   return item.roles.includes(role);
 }

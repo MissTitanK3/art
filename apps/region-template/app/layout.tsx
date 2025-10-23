@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import 'leaflet/dist/leaflet.css'
+import "leaflet/dist/leaflet.css";
 import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "@/components/client/global-nav";
 import { NavRole } from "@workspace/store/utils/nav";
+import { getServerSession } from "@/lib/auth/server";
+import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
 
 // ---------- Metadata ----------
 export const metadata: Metadata = {
@@ -73,27 +75,51 @@ const fontSans = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 // ---------- Layout ----------
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  // const role: NavRole = "regional_admin";
-  const role: NavRole = "national_admin";
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession();
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
-        <AppProviders>
-          <GlobalNav
-            config={navConfig}
-            role={role}
-            rightSlot={<Toaster
-              richColors
-              closeButton
-              position="top-right"
-            />} />
+      <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}>
+        <AppProviders initialSession={session}>
+          <GlobalNavBridge
+            rightSlot={
+              <Toaster
+                richColors
+                closeButton
+                position="top-right"
+              />
+            }
+          />
           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
         </AppProviders>
       </body>
     </html>
   );
 }
+
+// export default async function RootLayout({
+//   children,
+// }: Readonly<{ children: React.ReactNode }>) {
+//   const session = await getServerSession();
+//   const role: NavRole = session?.user.role ?? "guest";
+
+//   return (
+//     <html lang="en" suppressHydrationWarning>
+//       <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
+//         <AppProviders initialSession={session}>
+//           <GlobalNav
+//             config={navConfig}
+//             isAuthenticated={Boolean(session)}
+//             role={role}
+//             rightSlot={<Toaster
+//               richColors
+//               closeButton
+//               position="top-right"
+//             />} />
+//           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
+//         </AppProviders>
+//       </body>
+//     </html>
+//   );
+// }

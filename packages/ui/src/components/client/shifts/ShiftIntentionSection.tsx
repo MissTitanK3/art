@@ -99,7 +99,7 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
             />
 
             {/* Mobile‑friendly pickers */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-2">
               <div className="grid gap-1">
 
                 <DateTimePicker label="Starts At" value={startIso} onChange={handleStartChange} />

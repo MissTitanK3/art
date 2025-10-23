@@ -8,6 +8,7 @@ import { GlobalNavCore } from "@workspace/ui/components/client/global-nav";
 import { LinkLikeProps } from "@workspace/store/types/global.ts";
 import { GlobalNavConfig, GlobalNavConfigInput, NavItem, NavItemInput, NavRole } from "@workspace/store/utils/nav";
 import { navIconMap } from "@workspace/ui/components/icons/nav-icons";
+import { Button } from "@workspace/ui/components/button";
 
 function LinkAdapter(props: LinkLikeProps) {
   const { href = "#", children, className, target, rel, onClick } = props;
@@ -30,10 +31,12 @@ export function GlobalNav({
   config,
   role,
   rightSlot,
+  isAuthenticated
 }: {
   config: GlobalNavConfigInput;
   role?: NavRole;
   rightSlot?: React.ReactNode;
+  isAuthenticated: boolean;
 }) {
   const pathname = usePathname() ?? "/";
   const resolved: GlobalNavConfig = {
@@ -50,6 +53,7 @@ export function GlobalNav({
       pathname={pathname}
       LinkComponent={LinkAdapter}
       rightSlot={rightSlot}
+      isAuthenticated={isAuthenticated}
     />
   );
 }

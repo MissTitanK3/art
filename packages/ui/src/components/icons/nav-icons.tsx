@@ -17,6 +17,7 @@ export const navIconMap = {
   'file-search': L.FileSearch,
   users: L.Users,
   wharehouse: L.PackageCheck,
+  'log-out': L.LogOut,
   // add more as needed
 } as const;
 

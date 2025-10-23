@@ -1,10 +1,4 @@
-import {
-  completeOnboarding,
-  elevatedRoles,
-  GlobalNavConfigInput,
-  localAdmins,
-  regionAdmins,
-} from '@workspace/store/utils/nav';
+import { completeOnboarding, elevatedRoles, GlobalNavConfigInput, localAdmins } from '@workspace/store/utils/nav';
 
 export const navConfig: GlobalNavConfigInput = {
   brand: {
@@ -17,6 +11,7 @@ export const navConfig: GlobalNavConfigInput = {
       label: 'Create',
       icon: 'new',
       href: '/team-req',
+      roles: elevatedRoles,
       // children: [
       //   { label: 'Rapid Response Request', href: '/team-req', roles: elevatedRoles },
       //   { label: 'Community Aid Request', href: '/team-req', roles: elevatedRoles },
@@ -26,6 +21,7 @@ export const navConfig: GlobalNavConfigInput = {
     {
       label: 'Dispatch',
       icon: 'radio',
+      roles: completeOnboarding,
       children: [
         { label: 'Dispatch Map', href: '/dispatches', roles: elevatedRoles },
         { label: 'Community Watch', href: '/watch', roles: completeOnboarding },
@@ -35,6 +31,7 @@ export const navConfig: GlobalNavConfigInput = {
     {
       label: 'Pods',
       icon: 'map-pin',
+      roles: elevatedRoles,
       children: [
         { label: 'Directory', href: '/pods', roles: elevatedRoles },
         { label: 'Create Pod', href: '/pods/new', roles: localAdmins },
@@ -43,6 +40,7 @@ export const navConfig: GlobalNavConfigInput = {
     {
       label: 'Knowledge',
       icon: 'book',
+      roles: completeOnboarding,
       children: [
         { label: 'Academy', href: '/academy' },
         { label: 'Intents', href: '/intents' },
@@ -51,26 +49,30 @@ export const navConfig: GlobalNavConfigInput = {
       ],
     },
     {
-      label: 'Wharehousing',
+      label: 'Warehousing',
       icon: 'wharehouse',
-      href: '/wharehousing',
+      href: '/warehousing',
+      roles: completeOnboarding,
     },
     {
       label: 'Missing Persons',
       icon: 'file-search',
       href: '/missing-persons',
+      roles: completeOnboarding,
     },
   ],
   secondary: [
     {
       label: 'Settings',
       icon: 'settings',
+      roles: completeOnboarding,
       children: [
         { label: 'My Profile', href: '/my-profile' },
         {
           label: 'Signal Onboarding Group',
           href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
         },
+        { label: 'Log out', href: '/sign-out', icon: 'log-out', roles: completeOnboarding },
         // { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
         // { label: 'Settings', href: '/settings' },
         // { label: 'Credential Card', href: '/credentials' },

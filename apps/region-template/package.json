@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4",
     "@tanstack/react-table": "^8.21.3",
     "@workspace/ui": "workspace:*",
     "@workspace/store": "workspace:*",
