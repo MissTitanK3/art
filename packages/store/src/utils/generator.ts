@@ -9,6 +9,7 @@ export function makeDispatchSubmission(overrides: Partial<DispatchSubmission> = 
     id: crypto.randomUUID(), // or fakeUUID if you prefer
     timestamp: new Date().toISOString(),
     source: 'dispatch',
+    flagged: false,
     visibility_radius_km: 10,
     status: 'unconfirmed',
     training: false,

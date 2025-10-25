@@ -2,9 +2,94 @@
 
 // apps/region-template/app/(authed)/my-profile/page.tsx
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProfileDataLayer } from "@/components/dataLayer/profile/ProfileDataLayer";
 import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { Button } from "@workspace/ui/components/button";
+
+function ReasonBanner() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [hidden, setHidden] = useState(false);
+
+  const reason = searchParams.get("reason");
+
+  const message = useMemo(() => {
+    switch (reason) {
+      case "profile-required":
+        return {
+          title: "Complete your profile",
+          text: "We brought you here to complete your profile before proceeding.",
+        };
+      case "suspended":
+        return {
+          title: "Account suspended",
+          text: "Your access is temporarily suspended. Contact a region admin for help.",
+        };
+      case "awaiting_verification":
+        return {
+          title: "Verification needed",
+          text: "Your account needs verification before you can access that area.",
+        };
+      case "forbidden-admin":
+        return {
+          title: "Admin access required",
+          text: "You tried to access an admin-only area. If this is a mistake, contact an admin.",
+        };
+      case "forbidden-dispatch":
+        return {
+          title: "Dispatch privileges required",
+          text: "You need elevated dispatch privileges to view that page.",
+        };
+      case "forbidden-schedules":
+        return {
+          title: "Schedules restricted",
+          text: "Only local or dispatch admins can manage coverage schedules.",
+        };
+      case "forbidden-elevated":
+        return {
+          title: "Elevated role required",
+          text: "That action is restricted to elevated roles (pod leaders, trainers, or admins).",
+        };
+      default:
+        return reason
+          ? { title: "Access limited", text: "You were redirected due to access restrictions." }
+          : null;
+    }
+  }, [reason]);
+
+  useEffect(() => {
+    setHidden(false);
+  }, [reason]);
+
+  if (!message || hidden) return null;
+
+  return (
+    <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-semibold">{message.title}</div>
+          <div className="text-sm opacity-90">{message.text}</div>
+        </div>
+        <button
+          type="button"
+          aria-label="Dismiss"
+          className="rounded-md px-2 py-1 text-sm text-amber-900 hover:bg-amber-100"
+          onClick={() => {
+            setHidden(true);
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("reason");
+            router.replace(`${pathname}${params.size ? `?${params.toString()}` : ""}`);
+          }}
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function ProfilePageContent() {
   const profile = useProfileStore((s) => s.profile);
@@ -12,6 +97,7 @@ function ProfilePageContent() {
 
   return (
     <div className="max-w-5xl mx-auto p-0 md:p-8">
+      <ReasonBanner />
       <h1 className="text-2xl font-bold mb-2">My Profile</h1>
 
       <Link

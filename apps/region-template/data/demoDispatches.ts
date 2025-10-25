@@ -6,6 +6,7 @@ export const demoDispatches: DispatchSubmission[] = [
   {
     id: '11111111-1111-1111-1111-111111111111',
     timestamp: now.toISOString(),
+    flagged: false,
     type: 'community_aid',
     source: 'dispatch',
     status: 'unconfirmed',
@@ -41,6 +42,7 @@ export const demoDispatches: DispatchSubmission[] = [
   {
     id: '22222222-2222-2222-2222-222222222222',
     timestamp: new Date(now.getTime()).toISOString(),
+    flagged: true,
     type: 'rapid_response',
     source: 'manual',
     status: 'mobilizing',

@@ -22,13 +22,7 @@ import {
   PodAcademyDashboardStoreProvider,
   usePodAcademyDashboardStore,
 } from '@/providers/PodAcademyDashboardStoreProvider';
-import {
-  attachCourseStatusToGroups,
-  buildInstructorProfiles,
-  buildTrainingSessions,
-  convertPodsToMemberProgress,
-  deriveStats,
-} from '@/data/demoAcademy';
+import { attachCourseStatusToGroups, buildInstructorProfiles, buildTrainingSessions, convertPodsToMemberProgress, deriveStats } from '@/lib/utils';
 
 
 export default function AcademyDashboardPage() {
@@ -39,6 +33,8 @@ export default function AcademyDashboardPage() {
   const members = useMemo(() => convertPodsToMemberProgress(pods), [pods]);
   const instructors = useMemo(() => buildInstructorProfiles(pods), [pods]);
   const sessions = useMemo(() => buildTrainingSessions(instructors), [instructors]);
+  console.log('sessions', sessions);
+
   const stats = useMemo(() => deriveStats(pods, members, sessions), [pods, members, sessions]);
   const trainingClasses: AcademyTrainingClass[] = useMemo(
     () =>

@@ -1,0 +1,32 @@
+-- Migration: 001_[template].sql
+-- Purpose: [Describe the purpose of this migration]
+-- Notes: [Any special notes about this migration]
+-- Related Issues: [Link to any related issues or tickets]
+
+-- Example pattern: add a new column (idempotent)
+-- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS example_field TEXT;
+
+-- Example pattern: add a CHECK aligned with app types
+-- DO $$
+-- BEGIN
+--   IF NOT EXISTS (
+--     SELECT 1 FROM pg_constraint
+--     WHERE conrelid = 'public.dispatch_submissions'::regclass
+--       AND conname = 'dispatch_source_check'
+--   ) THEN
+--     ALTER TABLE public.dispatch_submissions
+--     ADD CONSTRAINT dispatch_source_check
+--     CHECK (source IS NULL OR source IN ('dispatch','manual','system'));
+--   END IF;
+-- END $$;
+
+-- Example pattern: add an index (idempotent)
+-- DO $$
+-- BEGIN
+--   IF NOT EXISTS (
+--     SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+--     WHERE c.relkind = 'i' AND c.relname = 'idx_profiles_user_id'
+--   ) THEN
+--     EXECUTE 'CREATE INDEX idx_profiles_user_id ON public.profiles (user_id)';
+--   END IF;
+-- END $$;

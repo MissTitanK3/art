@@ -1,356 +1,156 @@
-import type { NormalizedCertification, Pod } from '@workspace/store/types/pod.ts';
-import type {
-  AcademyCourseGroup,
-  AcademyInstructorProfile,
-  AcademyMemberProgress,
-  AcademySummaryStat,
-  AcademyTrainingSession,
-} from '@workspace/store/types/academy.ts';
-import type { CourseBlueprint } from '@workspace/ui/data/academy/course-blueprint';
+import type { AcademyTrainingSession } from '@workspace/store/types/academy.ts';
 
-function humanizeLabel(input: string): string {
-  return input
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-export function determineCourseStatus(
-  certId: string | undefined,
-  memberProgress: AcademyMemberProgress[],
-): 'completed' | 'in_progress' | 'review' | 'not_started' {
-  if (!certId) {
-    return 'not_started';
-  }
-
-  let completed = 0;
-  let inProgress = 0;
-  let expired = 0;
-
-  for (const member of memberProgress) {
-    for (const cert of member.certifications) {
-      if (cert.id !== certId) continue;
-      if (cert.level === 'completed' || cert.level === 'mentor') {
-        completed += 1;
-      } else if (cert.level === 'expired') {
-        expired += 1;
-      } else if (cert.level === 'in_progress') {
-        inProgress += 1;
-      }
-    }
-  }
-
-  if (expired > 0) return 'review';
-  if (completed > 0 && completed >= Math.max(1, Math.round(memberProgress.length * 0.6))) {
-    return 'completed';
-  }
-  if (completed > 0 || inProgress > 0) {
-    return 'in_progress';
-  }
-  return 'not_started';
-}
-
-export function deriveStats(
-  pods: Pod[],
-  members: AcademyMemberProgress[],
-  sessions: AcademyTrainingSession[],
-): AcademySummaryStat[] {
-  const totalPods = pods.length;
-  const totalMembers = members.length;
-  const fullyCertified = members.filter((member) =>
-    member.certifications.length > 0 &&
-    member.certifications.every((cert) => cert.level === 'completed' || cert.level === 'mentor'),
-  ).length;
-  const activelyTraining = members.filter((member) =>
-    member.certifications.some((cert) => cert.level === 'in_progress'),
-  ).length;
-  const mentors = members.filter((member) =>
-    member.certifications.some((cert) => cert.level === 'mentor'),
-  ).length;
-  const activeSessions = sessions.filter(
-    (session) => session.status === 'scheduled' || session.status === 'in_progress',
-  ).length;
-  const completedSessions = sessions.filter((session) => session.status === 'completed').length;
-  const archivedSessions = sessions.filter((session) => session.status === 'archived').length;
-
-  return [
-    {
-      label: 'Active Volunteers',
-      value: String(totalMembers),
-      helper: `Across ${totalPods} pods`,
+export const TraingingSessionsDemoData: AcademyTrainingSession[] = [
+  {
+    id: 'session-dispatch-drill',
+    classId: 'responding-to-dispatch-calls',
+    title: 'Responding to Dispatch Calls · Live Drill',
+    start: '2025-10-27T02:00:00.000Z',
+    end: '2025-10-27T04:00:00.000Z',
+    modality: 'online',
+    meetingUrl: 'https://meet.alwaysready.tools/dispatch-drill',
+    instructorName: 'Jean-Luc Picard',
+    instructorType: 'mentor',
+    status: 'scheduled',
+    seats: {
+      capacity: 6,
+      confirmed: 2,
+      waitlist: 1,
     },
-    {
-      label: 'Fully Certified',
-      value: `${fullyCertified}`,
-      helper: `${Math.round(totalMembers === 0 ? 0 : (fullyCertified / totalMembers) * 100)}% of roster`,
+    timezone: 'sector-001',
+    participants: [
+      {
+        id: 'participant-dispatch-1',
+        name: 'Alex Chen',
+        signalHandle: '@alex-signal',
+        understanding: 'building',
+        status: 'confirmed',
+      },
+      {
+        id: 'participant-dispatch-2',
+        name: 'Morgan Patel',
+        signalHandle: '@morgan',
+        understanding: 'confident',
+        status: 'confirmed',
+      },
+      {
+        id: 'participant-dispatch-3',
+        name: 'Jamie Rivera',
+        signalHandle: '@jamie-radio',
+        understanding: 'needs_support',
+        status: 'waitlist',
+      },
+    ],
+  },
+  {
+    id: 'session-medic-lab',
+    classId: 'medical-basics-field-safety',
+    title: 'Medical Basics · Scenario Lab',
+    start: '2025-10-29T17:00:00.000Z',
+    end: '2025-10-29T20:00:00.000Z',
+    modality: 'in_person',
+    location: 'Community Safety Hub — Oakland',
+    instructorName: 'William Riker',
+    instructorType: 'expert',
+    status: 'in_progress',
+    seats: {
+      capacity: 8,
+      confirmed: 2,
+      waitlist: 1,
     },
-    {
-      label: 'In Qualification',
-      value: `${activelyTraining}`,
-      helper: 'Currently taking academy modules',
+    timezone: 'sector-001',
+    participants: [
+      {
+        id: 'participant-medic-1',
+        name: 'Priya Das',
+        signalHandle: '@priya',
+        understanding: 'building',
+        status: 'confirmed',
+      },
+      {
+        id: 'participant-medic-2',
+        name: 'Leo Martinez',
+        signalHandle: '@leo',
+        understanding: 'needs_support',
+        status: 'confirmed',
+      },
+      {
+        id: 'participant-medic-3',
+        name: 'Sasha Brooks',
+        signalHandle: '@sasha',
+        understanding: 'confident',
+        status: 'waitlist',
+      },
+    ],
+  },
+  {
+    id: 'session-legal-clinic',
+    classId: 'trust-and-ethics-in-dispatch',
+    title: 'Trust & Ethics · After Action Clinic',
+    start: '2025-10-22T01:00:00.000Z',
+    end: '2025-10-22T03:00:00.000Z',
+    modality: 'hybrid',
+    meetingUrl: 'https://meet.alwaysready.tools/legal-clinic',
+    location: 'Hybrid — Oakland & Zoom',
+    instructorName: 'Data',
+    instructorType: 'mentor',
+    status: 'completed',
+    seats: {
+      capacity: 5,
+      confirmed: 2,
+      waitlist: 0,
     },
-    {
-      label: 'Sessions Scheduled',
-      value: `${activeSessions}`,
-      helper: `${completedSessions} completed · ${archivedSessions} archived · ${mentors} mentors guiding`,
+    timezone: 'sector-001',
+    participants: [
+      {
+        id: 'participant-legal-1',
+        name: 'Amina Hassan',
+        signalHandle: '@amina',
+        understanding: 'confident',
+        status: 'confirmed',
+      },
+      {
+        id: 'participant-legal-2',
+        name: 'Chris Nolan',
+        signalHandle: '@cnolan',
+        understanding: 'building',
+        status: 'confirmed',
+      },
+    ],
+  },
+  {
+    id: 'session-aftercare-archived',
+    classId: 'after-action-review',
+    title: 'After Action Review · Dispatch Debrief',
+    start: '2025-10-12T22:00:00.000Z',
+    end: '2025-10-13T00:00:00.000Z',
+    modality: 'online',
+    meetingUrl: 'https://meet.alwaysready.tools/debrief',
+    instructorName: 'Deanna Troi',
+    instructorType: 'expert',
+    status: 'archived',
+    seats: {
+      capacity: 6,
+      confirmed: 2,
+      waitlist: 0,
     },
-  ];
-}
-
-export function convertPodsToMemberProgress(pods: Pod[]): AcademyMemberProgress[] {
-  const results: AcademyMemberProgress[] = [];
-  for (const pod of pods) {
-    for (const member of pod.team) {
-      const completedLessons = member.certs.filter((cert) => cert.level === 'completed' || cert.level === 'mentor').length;
-      const pendingLessons = Math.max(0, 3 - completedLessons);
-      const profile = member.profile;
-      results.push({
-        id: member.id,
-        name: profile.display_name,
-        podName: pod.name,
-        role: member.role,
-        status: member.status,
-        certifications: member.certs ?? ([] as NormalizedCertification[]),
-        completedLessons,
-        pendingLessons,
-        lastActivity: member.lastShiftAt,
-      });
-    }
-  }
-  return results;
-}
-
-export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[] {
-  const seen = new Set<string>();
-  const instructors: AcademyInstructorProfile[] = [];
-
-  for (const pod of pods) {
-    for (const member of pod.team) {
-      if (seen.has(member.id)) continue;
-
-      const hasMentorLevel = member.certs.some((cert) => cert.level === 'mentor');
-      const dispatchCertified = member.certs.some((cert) => cert.id.startsWith('dispatch-'));
-      const type: AcademyInstructorProfile['type'] = hasMentorLevel
-        ? 'mentor'
-        : dispatchCertified
-          ? 'dispatcher'
-          : 'expert';
-      const availability: AcademyInstructorProfile['availability'] =
-        member.status === 'active' ? 'available' : member.status === 'inactive' ? 'limited' : 'unavailable';
-
-      const focusSource =
-        member.profile.field_roles?.[0] ?? member.skills?.[0] ?? member.profile.affiliation ?? 'Operational Support';
-      const focus = humanizeLabel(typeof focusSource === 'string' ? focusSource : String(focusSource));
-      const hasExpiredCert = member.certs.some((cert) => cert.level === 'expired');
-      const hasCompletedCert = member.certs.some((cert) => cert.level === 'completed' || cert.level === 'mentor');
-      const vettingStatus: AcademyInstructorProfile['vettingStatus'] = hasExpiredCert
-        ? 'needs_review'
-        : hasCompletedCert
-          ? 'cleared'
-          : 'awaiting_verification';
-
-      const profile = member.profile;
-      instructors.push({
-        id: member.id,
-        name: profile.display_name,
-        type,
-        availability,
-        focus,
-        timezone: profile.coordination_zone ?? undefined,
-        certifications: member.certs ?? [],
-        registrationStatus: profile.user_id ? 'registered' : 'unregistered',
-        vettingStatus,
-      });
-
-      seen.add(member.id);
-    }
-  }
-
-  return instructors;
-}
-
-export function buildTrainingSessions(instructors: AcademyInstructorProfile[]): AcademyTrainingSession[] {
-  if (instructors.length === 0) return [];
-
-  const pickInstructor = (index: number) => instructors[index % instructors.length];
-  const base = new Date();
-  const isoFromNow = (days: number, startHour: number, durationHours: number) => {
-    const start = new Date(base);
-    start.setDate(start.getDate() + days);
-    start.setHours(startHour, 0, 0, 0);
-    const end = new Date(start);
-    end.setHours(start.getHours() + durationHours);
-    return { start: start.toISOString(), end: end.toISOString() };
-  };
-
-  const firstInstructor = pickInstructor(0);
-  const secondInstructor = pickInstructor(1);
-  const thirdInstructor = pickInstructor(2);
-  const fourthInstructor = pickInstructor(3);
-
-  const dispatchDrill = isoFromNow(2, 19, 2);
-  const medicLab = isoFromNow(5, 10, 3);
-  const legalWorkshop = isoFromNow(-3, 18, 2);
-  const archivedWorkshop = isoFromNow(-12, 15, 2);
-
-  return [
-    {
-      id: 'session-dispatch-drill',
-      classId: 'responding-to-dispatch-calls',
-      title: 'Responding to Dispatch Calls · Live Drill',
-      ...dispatchDrill,
-      modality: 'online',
-      meetingUrl: 'https://meet.alwaysready.tools/dispatch-drill',
-      instructorName: firstInstructor?.name ?? 'TBD',
-      instructorType: firstInstructor?.type ?? 'expert',
-      status: 'scheduled',
-      seats: { capacity: 6, confirmed: 2, waitlist: 1 },
-      timezone: firstInstructor?.timezone ?? 'America/Los_Angeles',
-      participants: [
-        {
-          id: 'participant-dispatch-1',
-          name: 'Alex Chen',
-          signalHandle: '@alex-signal',
-          understanding: 'building',
-          status: 'confirmed',
-        },
-        {
-          id: 'participant-dispatch-2',
-          name: 'Morgan Patel',
-          signalHandle: '@morgan',
-          understanding: 'confident',
-          status: 'confirmed',
-        },
-        {
-          id: 'participant-dispatch-3',
-          name: 'Jamie Rivera',
-          signalHandle: '@jamie-radio',
-          understanding: 'needs_support',
-          status: 'waitlist',
-        },
-      ],
-    },
-    {
-      id: 'session-medic-lab',
-      classId: 'medical-basics-field-safety',
-      title: 'Medical Basics · Scenario Lab',
-      ...medicLab,
-      modality: 'in_person',
-      location: 'Community Safety Hub — Oakland',
-      instructorName: secondInstructor?.name ?? 'TBD',
-      instructorType: secondInstructor?.type ?? 'expert',
-      status: 'in_progress',
-      seats: { capacity: 8, confirmed: 2, waitlist: 1 },
-      timezone: secondInstructor?.timezone ?? 'America/Los_Angeles',
-      participants: [
-        {
-          id: 'participant-medic-1',
-          name: 'Priya Das',
-          signalHandle: '@priya',
-          understanding: 'building',
-          status: 'confirmed',
-        },
-        {
-          id: 'participant-medic-2',
-          name: 'Leo Martinez',
-          signalHandle: '@leo',
-          understanding: 'needs_support',
-          status: 'confirmed',
-        },
-        {
-          id: 'participant-medic-3',
-          name: 'Sasha Brooks',
-          signalHandle: '@sasha',
-          understanding: 'confident',
-          status: 'waitlist',
-        },
-      ],
-    },
-    {
-      id: 'session-legal-clinic',
-      classId: 'trust-and-ethics-in-dispatch',
-      title: 'Trust & Ethics · After Action Clinic',
-      ...legalWorkshop,
-      modality: 'hybrid',
-      meetingUrl: 'https://meet.alwaysready.tools/legal-clinic',
-      location: 'Hybrid — Oakland & Zoom',
-      instructorName: thirdInstructor?.name ?? 'TBD',
-      instructorType: thirdInstructor?.type ?? 'expert',
-      status: 'completed',
-      seats: { capacity: 5, confirmed: 2, waitlist: 0 },
-      timezone: thirdInstructor?.timezone ?? 'America/Los_Angeles',
-      participants: [
-        {
-          id: 'participant-legal-1',
-          name: 'Amina Hassan',
-          signalHandle: '@amina',
-          understanding: 'confident',
-          status: 'confirmed',
-        },
-        {
-          id: 'participant-legal-2',
-          name: 'Chris Nolan',
-          signalHandle: '@cnolan',
-          understanding: 'building',
-          status: 'confirmed',
-        },
-      ],
-    },
-    {
-      id: 'session-aftercare-archived',
-      classId: 'after-action-review',
-      title: 'After Action Review · Dispatch Debrief',
-      ...archivedWorkshop,
-      modality: 'online',
-      meetingUrl: 'https://meet.alwaysready.tools/debrief',
-      instructorName: fourthInstructor?.name ?? 'TBD',
-      instructorType: fourthInstructor?.type ?? 'expert',
-      status: 'archived',
-      seats: { capacity: 6, confirmed: 2, waitlist: 0 },
-      timezone: fourthInstructor?.timezone ?? 'America/Los_Angeles',
-      relatedTopic: 'after-action-review',
-      participants: [
-        {
-          id: 'participant-archive-1',
-          name: 'Dana Ortiz',
-          signalHandle: '@dana',
-          understanding: 'confident',
-          status: 'confirmed',
-        },
-        {
-          id: 'participant-archive-2',
-          name: 'Riley Sun',
-          signalHandle: '@riley',
-          understanding: 'building',
-          status: 'confirmed',
-        },
-      ],
-    },
-  ];
-}
-
-export function attachCourseStatusToGroups(
-  groups: CourseBlueprint[],
-  members: AcademyMemberProgress[],
-): AcademyCourseGroup[] {
-  return groups.map((group) => ({
-    id: group.id,
-    label: group.label,
-    trackLabel: group.trackLabel,
-    variant: group.variant,
-    courses: group.courses.map((course) => {
-      const normalizedType: 'qualified' | 'certified' =
-        course.type === 'certified' ? 'certified' : 'qualified';
-      return {
-        slug: course.slug,
-        title: course.title,
-        description: course.description,
-        icon: course.icon,
-        type: normalizedType,
-        version: course.version,
-        status: determineCourseStatus('certId' in course ? course.certId : undefined, members),
-      };
-    }),
-  }));
-}
+    timezone: 'sector-001',
+    relatedTopic: 'after-action-review',
+    participants: [
+      {
+        id: 'participant-archive-1',
+        name: 'Dana Ortiz',
+        signalHandle: '@dana',
+        understanding: 'confident',
+        status: 'confirmed',
+      },
+      {
+        id: 'participant-archive-2',
+        name: 'Riley Sun',
+        signalHandle: '@riley',
+        understanding: 'building',
+        status: 'confirmed',
+      },
+    ],
+  },
+];

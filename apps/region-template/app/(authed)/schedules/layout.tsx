@@ -1,13 +1,8 @@
-'use client';
+import type { ReactNode } from 'react';
+import { requireLocalAdminAccess } from '@/lib/guards';
+import SchedulesClientLayout from './providers.client';
 
-import type { PropsWithChildren } from 'react';
-import { PodStoreProvider } from '@/providers/PodStoreProvider';
-import { DispatchStoreProvider } from '@/providers/DispatchStoreProvider';
-
-export default function SchedulesLayout({ children }: PropsWithChildren) {
-  return (
-    <DispatchStoreProvider>
-      <PodStoreProvider>{children}</PodStoreProvider>
-    </DispatchStoreProvider>
-  );
+export default async function SchedulesLayout({ children }: { children: ReactNode }) {
+  await requireLocalAdminAccess();
+  return <SchedulesClientLayout>{children}</SchedulesClientLayout>;
 }

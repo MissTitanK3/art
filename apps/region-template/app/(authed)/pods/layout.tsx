@@ -1,8 +1,8 @@
-'use client';
+import type { ReactNode } from 'react';
+import { requireVerifiedProfileActive } from '@/lib/guards';
+import PodsClientLayout from './providers.client';
 
-import type { PropsWithChildren } from 'react';
-import { PodStoreProvider } from '@/providers/PodStoreProvider';
-
-export default function PodsLayout({ children }: PropsWithChildren) {
-  return <PodStoreProvider>{children}</PodStoreProvider>;
+export default async function PodsLayout({ children }: { children: ReactNode }) {
+  await requireVerifiedProfileActive();
+  return <PodsClientLayout>{children}</PodsClientLayout>;
 }

@@ -1,13 +1,8 @@
-'use client';
+import type { ReactNode } from 'react';
+import { requireDispatchAccess } from '@/lib/guards';
+import DispatchesClientLayout from './providers.client';
 
-import type { PropsWithChildren } from 'react';
-import { DispatchStoreProvider } from '@/providers/DispatchStoreProvider';
-import { PodStoreProvider } from '@/providers/PodStoreProvider';
-
-export default function DispatchesLayout({ children }: PropsWithChildren) {
-  return (
-    <PodStoreProvider>
-      <DispatchStoreProvider>{children}</DispatchStoreProvider>
-    </PodStoreProvider>
-  );
+export default async function DispatchesLayout({ children }: { children: ReactNode }) {
+  await requireDispatchAccess();
+  return <DispatchesClientLayout>{children}</DispatchesClientLayout>;
 }

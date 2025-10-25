@@ -38,6 +38,8 @@ export interface DispatchSubmission {
   type?: DispatchType;
   location?: { lat: number; lng: number; [key: string]: any };
   timestamp: string;
+  /** Mark for coordinator review (non-blocking) */
+  flagged?: boolean;
   required_roles?: string[];
   encrypted_payload?: string;
   auto_delete_after?: string | null;
@@ -60,3 +62,14 @@ export interface DispatchSubmission {
   updates?: DispatchUpdate[];
   logistics: LogisticsItem[];
 }
+
+export type RegionSettings = {
+  regionLabel: string;
+  timezone: string;
+  coordination_zone: string;
+  defaultDispatchRadiusKm: number;
+  cleanupIntervalsDays: number;
+  integrationSignalGroup?: string;
+  federationEndpoint?: string;
+  roleEscalationRules?: string; // JSON or text rules
+};

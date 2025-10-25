@@ -6,10 +6,12 @@ Always Ready Tools (ART) follows a rolling-release model.
 We support only the **latest deployed version** of each subdomain (`admin`, `academy`, `watch`, `[region]`) and the **current schema version** of the regional and admin databases.  
 
 Security patches will be prioritized for:
-- Admin Dispatch (admin.[domain].org)  
-- Regional Dispatch Template ([region].[domain].org)  
+- Admin Dispatch (admin.alwaysreadytools.org)  
+- Regional Dispatch Template ([region].alwaysreadytools.org)  
 - PocketServer offline sync  
-- Academy touchpoints (academy.[domain].org)  
+- Academy touchpoints (academy.alwaysreadytools.org)  
+
+> Applies to all Always Ready Tools repositories and region templates under the `alwaysreadytools` organization.
 
 ---
 
@@ -50,6 +52,11 @@ Our architecture is designed with strict data minimization:
   - Accepts only **non-PII public reports** (geo + timestamp).  
   - Automatically redacts any user-provided identifiers before storing.  
 
+- **Open Source Schema**
+  - Database schema files (`init_region.sql`, `init_rls.sql`) are public by design.
+  - They define structure only, not secrets or live database connections.
+  - Production credentials are never committed or distributed through version control.
+
 ---
 
 ## Vulnerability Categories
@@ -67,8 +74,17 @@ We consider the following **critical vulnerabilities**:
 - Privilege escalation across roles (volunteer → admin, etc.)  
 - Bypass of Trust List enforcement  
 - Data persistence without encryption at rest  
+- Misconfigured Supabase RLS or JWT claims allowing unauthorized reads/writes  
+- Exposed `service_role` or `anon` keys in environment variables  
 
 ---
+
+## Safe Publication Practices
+
+- SQL schema files may be public if they contain no credentials.  
+- Never commit `.env` or `supabase/config.toml`.  
+- All deployments must use **Row Level Security (RLS)** for every table.  
+- Secrets (API keys, JWT signing secrets) are managed via environment variables only.  
 
 ## Response Process
 
@@ -109,3 +125,4 @@ PGP key fingerprint: `TBD` (will be published on our site and repo)
 - [DATA_POLICY.md] — Details PII boundaries in ART.  
 - [INCIDENT_RESPONSE.md] — Steps for regions to take during a suspected breach.  
 - [TRUST_LIST_GUIDE.md] — Best practices for vetting and maintaining secure rosters.  
+For contributor security guidance, see [SECURITY.md (Developer)](packages/store/src/db_init/SECURITY.md).

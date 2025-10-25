@@ -48,7 +48,8 @@ const worfProfile = makeProfile(
   ['defensive', 'security_witness'],
   'USS Enterprise NCC-1701-D',
   {
-    contact_signal: 'worf@security.signal',
+    // Mark unregistered (no linked user_id, no contact signal by default)
+    registered: false,
     coordination_zone: 'klingon-frontier',
     coverage_zones: ['sector-001', 'deep-space-9'],
     operating_counties: ['alpha-quadrant'],
@@ -87,7 +88,8 @@ const troiProfile = makeProfile(
   ['mental_health', 'grounding_support'],
   'USS Enterprise NCC-1701-D',
   {
-    contact_signal: 'troi@counseling.signal',
+    // Mark unregistered as well
+    registered: false,
     coordination_zone: 'sector-001',
     coverage_zones: ['sector-001', 'betazed'],
     operating_counties: ['alpha-quadrant'],

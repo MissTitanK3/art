@@ -6,6 +6,7 @@ import L from "leaflet";
 import { WizardReport } from "@workspace/store/types/watch.ts";
 import { Button } from "@workspace/ui/components/button";
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "@workspace/ui/lib/utils";
 import {
   Select,
   SelectContent,
@@ -15,12 +16,18 @@ import {
 } from "@workspace/ui/components/select";
 
 
+type ActionMode = 'create' | 'view' | 'none'
+
 interface WatchMapProps {
   reports: WizardReport[];
   center?: [number, number];
   zoom?: number;
   onCreateDispatch?: (report: WizardReport) => void;
+  onViewDispatch?: (report: WizardReport) => void;
+  getViewHref?: (report: WizardReport) => string | undefined;
+  actionMode?: ActionMode;
   focusPoint?: MapFocus | null;
+  className?: string;
 }
 
 interface MapFocus {
@@ -113,7 +120,11 @@ export default function WatchMap({
   center = [37.7749, -122.4194], // fallback center
   zoom = 12,
   onCreateDispatch,
+  onViewDispatch,
+  getViewHref,
+  actionMode,
   focusPoint,
+  className,
 }: WatchMapProps) {
   const [tileProviderId, setTileProviderId] = useState<string>(() => {
     if (typeof window === "undefined") return DEFAULT_TILE_PROVIDER.id;
@@ -134,8 +145,14 @@ export default function WatchMap({
   if (window === undefined) {
     return null;
   }
+  const effectiveMode: ActionMode = actionMode
+    ? actionMode
+    : onCreateDispatch
+    ? 'create'
+    : 'none'
+
   return (
-    <div className="relative w-full h-[600px] lg:h-[90vh] rounded-2xl border">
+    <div className={cn("relative w-full h-[600px] lg:h-[90vh] rounded-2xl border", className)}>
       <div className="absolute right-4 top-4 z-10">
         <Select value={tileProviderId} onValueChange={setTileProviderId}>
           <SelectTrigger className="w-[220px] bg-background/80 backdrop-blur border">
@@ -172,7 +189,7 @@ export default function WatchMap({
 
             return (
               <Marker key={r.id} position={[lat, lng]} icon={reportIcon}>
-                <Popup maxWidth={200}>
+                <Popup maxWidth={220}>
                   <div className="space-y-2">
                     <div className="font-semibold text-sm">
                       {r.agency_type?.join(", ") || r.agency_other || "Unknown presence"}
@@ -190,14 +207,35 @@ export default function WatchMap({
                         View Media
                       </a>
                     )}
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() => onCreateDispatch?.(r)}
-                    >
-                      Create Dispatch
-                    </Button>
+                    {effectiveMode === 'create' && onCreateDispatch ? (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="w-full"
+                        onClick={() => onCreateDispatch?.(r)}
+                      >
+                        Create Dispatch
+                      </Button>
+                    ) : effectiveMode === 'view' ? (
+                      (() => {
+                        const href = getViewHref?.(r);
+                        if (href) {
+                          return (
+                            <Button asChild size="sm" variant="secondary" className="w-full">
+                              <a href={href}>View Dispatch</a>
+                            </Button>
+                          );
+                        }
+                        if (onViewDispatch) {
+                          return (
+                            <Button size="sm" variant="secondary" className="w-full" onClick={() => onViewDispatch(r)}>
+                              View Dispatch
+                            </Button>
+                          );
+                        }
+                        return null;
+                      })()
+                    ) : null}
                   </div>
                 </Popup>
               </Marker>

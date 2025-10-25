@@ -58,6 +58,7 @@ function ChartContainer({
 }
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
+  const slug = (key: string) => key.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color
   )
@@ -78,7 +79,8 @@ ${colorConfig
                   const color =
                     itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
                     itemConfig.color
-                  return color ? `  --color-${key}: ${color};` : null
+                  const varKey = slug(key)
+                  return color ? `  --color-${varKey}: ${color};` : null
                 })
                 .join("\n")}
 }

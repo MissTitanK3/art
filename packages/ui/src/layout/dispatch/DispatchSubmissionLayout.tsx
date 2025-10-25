@@ -23,7 +23,7 @@ import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpd
 import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
 import PublicEngagementPanel from "@workspace/ui/components/client/engagement/PublicEngagementPanel";
 import { Button } from "@workspace/ui/components/button";
-import { Copy, Share2 } from "lucide-react";
+import { Copy, Share2, Flag } from "lucide-react";
 import { toast } from "sonner";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
@@ -143,6 +143,12 @@ export function DispatchSubmissionLayout({
             <p className="text-xs text-muted-foreground" suppressHydrationWarning>
               {timestamp}
             </p>
+          ) : null}
+          {submission.flagged ? (
+            <div className="mt-2 inline-flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900">
+              <Flag className="h-3.5 w-3.5" />
+              <span>Flagged for review by admin</span>
+            </div>
           ) : null}
         </div>
         <div className="mt-3 flex flex-col items-center gap-2 sm:mt-0 sm:flex-row">

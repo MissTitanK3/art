@@ -27,7 +27,7 @@ export const elevatedRoles: NavRole[] = ['pod_leader', 'trainer', 'admin', 'regi
 /** Local Pod-level admins (pod_leader + trainer + admin) */
 export const podAdmins: NavRole[] = ['pod_leader', 'trainer', 'admin'];
 
-export const localAdmins: NavRole[] = ['admin', 'national_admin', 'national_admin'];
+export const localAdmins: NavRole[] = ['admin', 'national_admin'];
 
 /** Full administrative powers at the region level */
 export const regionAdmins: NavRole[] = ['regional_admin', 'national_admin'];
@@ -86,16 +86,11 @@ export function isActive(href: string | undefined, pathname: string) {
     return pathname === href || pathname.startsWith(href + '/');
   }
 }
-export function canSee(item: NavItem, role?: NavRole, isAuthenticated = false) {
-  // Public route: no roles specified
+export function canSee(item: NavItem, role?: NavRole, _isAuthenticated = false) {
+  // If no roles are specified, the item is public
   if (!item.roles?.length) return true;
 
-  // Authenticated users can see role-restricted routes
-  // unless a specific role filter is meant to hide them
-  if (isAuthenticated) return true;
-
-  // Unauthenticated users must match a public role
+  // Require an explicit role match for any role-restricted item
   if (!role) return false;
-
   return item.roles.includes(role);
 }

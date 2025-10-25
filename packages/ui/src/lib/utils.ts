@@ -47,6 +47,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Percentage helper that guards against divide-by-zero.
+ */
+export function percent(n: number, d: number): number {
+  if (!d) return 0;
+  return Math.round((n / d) * 100);
+}
+
 export function combineLocalDateTime(dateStr: string, timeStr: string) {
   // Treats values as local time and returns an ISO string
   // If either is missing, return empty so validation can catch it.
