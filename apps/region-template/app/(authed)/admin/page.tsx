@@ -169,18 +169,6 @@ export default function AdminPage() {
             <KeyValueItem label="location_geog sync" value={<span className="text-emerald-600 dark:text-emerald-400 font-medium">OK</span>} />
             <KeyValueItem label="Audit triggers" value={<span className="text-emerald-600 dark:text-emerald-400 font-medium">OK</span>} />
           </div>
-
-          <div className="mt-4 flex gap-2">
-            <Button asChild size="sm" variant="secondary">
-              <a href="/admin/db">Open DB Tools</a>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <a href="/admin/dispatch">Review Dispatches</a>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <a href="/admin/profiles">Manage Profiles</a>
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </section>

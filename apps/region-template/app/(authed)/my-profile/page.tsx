@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProfileDataLayer } from "@/components/dataLayer/profile/ProfileDataLayer";
 import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { Button } from "@workspace/ui/components/button";
+import { useRegionAdapters } from "@/providers/RegionProvider";
 
 function ReasonBanner() {
   const searchParams = useSearchParams();
@@ -93,7 +94,39 @@ function ReasonBanner() {
 
 function ProfilePageContent() {
   const profile = useProfileStore((s) => s.profile);
+  const setProfile = useProfileStore((s) => s.setProfile);
   const restoreDemo = useProfileStore((s) => s.restoreDemo);
+  const { profileAdapter } = useRegionAdapters();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const needsDemoVerification = useMemo(() => {
+    if (!profile) return false;
+    const unverified = !profile.verified_by || profile.verified_by === "self";
+    const notElevated = profile.access_role !== "dispatcher_admin";
+    const riskNotAck = !profile.self_risk_acknowledged;
+    return unverified || notElevated || riskNotAck;
+  }, [profile]);
+
+  async function handleDemoVerifyAll() {
+    if (!profile) return;
+    const next = {
+      ...profile,
+      verified_by: "admin" as const,
+      access_role: "dispatcher_admin" as const,
+      self_risk_acknowledged: true,
+      availability: true,
+    };
+    await profileAdapter.saveProfile(next);
+    setProfile(next);
+    // Clean up any redirect reason from URL (e.g., awaiting_verification)
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.has("reason")) {
+      params.delete("reason");
+      router.replace(`${pathname}${params.size ? `?${params.toString()}` : ""}`);
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-0 md:p-8">
@@ -120,7 +153,25 @@ function ProfilePageContent() {
           </div>
         </div>
       ) : (
-        <ProfileDataLayer />
+        <>
+          {needsDemoVerification ? (
+            <div className="mt-4 rounded-md border border-emerald-300 bg-emerald-50 p-3 text-emerald-900">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="text-sm">
+                  <div className="font-semibold">Demo: Verify at highest level</div>
+                  <div className="opacity-90">
+                    Mark your account as verified by an admin, acknowledge risk, and grant dispatch admin access.
+                  </div>
+                </div>
+                <Button type="button" onClick={handleDemoVerifyAll}>
+                  Verify everything (demo)
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          <ProfileDataLayer />
+        </>
       )}
     </div>
   );
