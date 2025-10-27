@@ -8,9 +8,11 @@ import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Input } from "@workspace/ui/components/input";
 import { toast } from "sonner";
-import { fakeUUID } from "@workspace/ui/lib/utils";
 import { slugify } from "@workspace/store/types/pod.ts";
 import { Plus, Archive, Edit, Users } from "lucide-react";
+import { safeErrorMessage } from "@workspace/ui/lib/http";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
+import { Label } from "@workspace/ui/components/label";
 
 type Props = {
   initialPods: Pod[];
@@ -19,6 +21,9 @@ type Props = {
 export default function PodsClient({ initialPods }: Props) {
   const [query, setQuery] = React.useState("");
   const [rows, setRows] = React.useState<Pod[]>(() => initialPods);
+  const [renameOpen, setRenameOpen] = React.useState(false);
+  const [renameId, setRenameId] = React.useState<string | null>(null);
+  const [renameValue, setRenameValue] = React.useState<string>("");
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -26,31 +31,66 @@ export default function PodsClient({ initialPods }: Props) {
     return rows.filter((p) => [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q));
   }, [rows, query]);
 
-  function createPod() {
+  async function createPod() {
     const name = prompt("Pod name");
     if (!name || !name.trim()) return;
-    const id = fakeUUID();
-    const slug = slugify(name);
-    const pod: Pod = { id, slug, name: name.trim(), area: "Unassigned", channels: [], team: [] };
-    setRows((prev) => [pod, ...prev]);
-    toast.success("Pod created — demo-only");
+    try {
+      const res = await fetch('/api/admin/pods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      const json = (await res.json()) as { pod: any };
+      const p = json.pod;
+      const pod: Pod = { id: String(p.id), slug: String(p.slug), name: String(p.name), area: String(p.area ?? ''), channels: Array.isArray(p.channels) ? p.channels : [], team: [] };
+      setRows((prev) => [pod, ...prev]);
+      toast.success('Pod created');
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Create failed');
+    }
   }
 
-  function renamePod(id: string) {
+  function openRename(pod: Pod) {
+    setRenameId(pod.id);
+    setRenameValue(pod.name);
+    setRenameOpen(true);
+  }
+
+  async function submitRename() {
+    const id = renameId;
+    const nextName = renameValue.trim();
+    if (!id || !nextName) return setRenameOpen(false);
     const current = rows.find((p) => p.id === id);
-    if (!current) return;
-    const nextName = prompt("Rename pod", current.name);
-    if (!nextName || !nextName.trim()) return;
-    setRows((prev) => prev.map((p) => (p.id === id ? { ...p, name: nextName.trim(), slug: slugify(nextName) } : p)));
-    toast.success("Pod renamed — demo-only");
+    try {
+      const res = await fetch(`/api/admin/pods/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nextName }),
+      });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      const json = (await res.json()) as { pod?: any };
+      const p = json.pod ?? { id, name: nextName, slug: slugify(nextName), area: current?.area, channels: current?.channels };
+      setRows((prev) => prev.map((x) => (x.id === id ? { ...x, name: String(p.name), slug: String(p.slug) } : x)));
+      toast.success('Pod renamed');
+      setRenameOpen(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Rename failed');
+    }
   }
 
-  function archivePod(id: string) {
+  async function archivePod(id: string) {
     const p = rows.find((x) => x.id === id);
     if (!p) return;
     if (!confirm(`Archive pod “${p.name}”?`)) return;
-    setRows((prev) => prev.filter((x) => x.id !== id));
-    toast.success("Pod archived — demo-only");
+    try {
+      const res = await fetch(`/api/admin/pods/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      setRows((prev) => prev.filter((x) => x.id !== id));
+      toast.success('Pod archived');
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Archive failed');
+    }
   }
 
   return (
@@ -117,7 +157,7 @@ export default function PodsClient({ initialPods }: Props) {
                             <Users className="h-4 w-4 mr-2" /> Members
                           </a>
                         </Button>
-                        <Button variant="secondary" size="sm" onClick={() => renamePod(pod.id)}>
+                        <Button variant="secondary" size="sm" onClick={() => openRename(pod)}>
                           <Edit className="h-4 w-4 mr-2" /> Rename
                         </Button>
                         <Button variant="destructive" size="sm" onClick={() => archivePod(pod.id)}>
@@ -132,7 +172,47 @@ export default function PodsClient({ initialPods }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      <RenameDialog
+        open={renameOpen}
+        onOpenChange={setRenameOpen}
+        value={renameValue}
+        onChange={setRenameValue}
+        onSubmit={submitRename}
+      />
     </section>
   );
 }
 
+// Rename dialog modal
+function RenameDialog({
+  open,
+  onOpenChange,
+  value,
+  onChange,
+  onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
+        <DialogHeader>
+          <DialogTitle>Rename Pod</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-2 py-2">
+          <Label htmlFor="pod-name">Name</Label>
+          <Input id="pod-name" value={value} onChange={(e) => onChange(e.target.value)} autoFocus />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" onClick={onSubmit}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

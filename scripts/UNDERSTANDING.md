@@ -105,7 +105,7 @@ Also derives:
 - Wire up region-specific data adapters in: `apps/region-<slug>/lib`
 - Configure environment variables in: `apps/region-<slug>/.env`
 - Connect data layers in: `apps/region-<slug>/components/dataLayer`
-- (If using Supabase) Create DB from `packages/store/src/db_init/init_region.sql` and apply `policies_region.sql`
+- (If using Supabase) Create DB from `packages/store/src/db_maintenance/init_region.sql` and apply `init_rls.sql`
 
 ---
 
@@ -143,8 +143,8 @@ Also derives:
 
 - Script path: `scripts/create-region.mjs`
 - NPM script: `"create:region": "node scripts/create-region.mjs"`
-- Schema: `packages/store/src/db_init/init_region.sql`
-- Policies: `packages/store/src/db_init/policies_region.sql`
+- Schema: `packages/store/src/db_maintenance/init_region.sql`
+- Policies: `packages/store/src/db_maintenance/init_rls.sql`
 - Security policy: `SECURITY.md`
 
 ---

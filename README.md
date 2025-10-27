@@ -155,6 +155,16 @@ Run locally:
 pnpm install  
 pnpm dev  
 
+Create a new region app:
+
+pnpm create:region <slug>
+
+This copies `apps/region-template` to `apps/region-<slug>`, updates branding and references, and registers it in the workspace. Configure the new region’s `.env` from `.env.local.example`.
+
+Database schema (Supabase or Postgres):
+- Schema: `packages/store/src/db_maintenance/init_region.sql`
+- Row Level Security policies: `packages/store/src/db_maintenance/init_rls.sql`
+
 Deploy via CI/CD pipeline (Vercel, Docker, etc.), with per-region environment configs.
 
 ---

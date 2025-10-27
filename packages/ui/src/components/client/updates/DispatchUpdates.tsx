@@ -5,6 +5,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Check, Paperclip, Pencil, Trash2, X } from "lucide-react";
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 
 type DispatchUpdatesProps = {
   updates?: DispatchUpdate[];
@@ -19,6 +20,8 @@ export default function DispatchUpdates({
   onEditUpdate,
   onRemoveUpdate,
 }: DispatchUpdatesProps) {
+  const displayName = useProfileStore((s) => s.profile?.display_name);
+  const resolvedAuthor = displayName && displayName.trim().length > 0 ? displayName : "Dispatcher";
   const [text, setText] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -26,7 +29,7 @@ export default function DispatchUpdates({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    onAddUpdate({ author: "Dispatcher A", text });
+    onAddUpdate({ author: resolvedAuthor, text });
     setText("");
   };
 
@@ -42,7 +45,7 @@ export default function DispatchUpdates({
       url: URL.createObjectURL(f),
     }));
 
-    onAddUpdate({ author: "Dispatcher A", text: "", attachments });
+    onAddUpdate({ author: resolvedAuthor, text: "", attachments });
     e.target.value = "";
   };
 

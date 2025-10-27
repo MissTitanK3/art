@@ -408,7 +408,8 @@ export function ClassAssignmentContent({
                     <div className="flex flex-col">
                       <span className="font-medium">{option.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {instructorTypeLabels[option.type]} · {option.podName}
+                        {instructorTypeLabels[option.type]}
+                        {option.podName ? ` · ${option.podName}` : ''}
                         {option.status && option.status !== 'active'
                           ? ` · ${option.status.charAt(0).toUpperCase()}${option.status.slice(1)}`
                           : null}

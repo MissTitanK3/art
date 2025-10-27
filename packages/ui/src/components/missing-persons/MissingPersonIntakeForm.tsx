@@ -38,6 +38,7 @@ export interface MissingPersonIntakeFormProps {
   seedRecords?: Iterable<DetaineeIntake>;
   defaultCaseZone?: string;
   onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
+  onPersistRecord?: (record: DetaineeIntake) => Promise<void> | void;
 }
 
 type DetaineeIntakeFormValues = z.infer<typeof DetaineeIntakeSchema>;
@@ -87,6 +88,7 @@ export function MissingPersonIntakeForm({
   seedRecords,
   defaultCaseZone = DEFAULT_CASE_ZONE,
   onExportRecord,
+  onPersistRecord,
 }: MissingPersonIntakeFormProps) {
   const [lastJson, setLastJson] = React.useState<string>("");
   const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
@@ -189,7 +191,7 @@ export function MissingPersonIntakeForm({
   }, []);
 
   const persistRecord = React.useCallback(
-    (record: DetaineeIntake, caseId: string) => {
+    async (record: DetaineeIntake, caseId: string) => {
       const timestamp = new Date().toISOString();
       const finalRecord: MissingPersonRecord = {
         ...record,
@@ -201,8 +203,15 @@ export function MissingPersonIntakeForm({
       addRecordToStore(finalRecord);
       rememberCaseId(caseId);
       setPersistedCaseId(normaliseCaseId(caseId));
+      try {
+        if (onPersistRecord) {
+          await onPersistRecord(finalRecord);
+        }
+      } catch (err) {
+        console.warn("MissingPersonIntakeForm: remote persist failed", err);
+      }
     },
-    [addRecordToStore, rememberCaseId]
+    [addRecordToStore, rememberCaseId, onPersistRecord]
   );
 
   const generateNewCaseId = React.useCallback(() => {
@@ -231,7 +240,7 @@ export function MissingPersonIntakeForm({
     [allCaseIds, persistedCaseId]
   );
 
-  const handleSubmit = (values: DetaineeIntakeFormValues) => {
+  const handleSubmit = async (values: DetaineeIntakeFormValues) => {
     const error = ensureUniqueCaseId(values.caseId);
     if (error) {
       form.setError("caseId", { type: "manual", message: error });
@@ -247,7 +256,7 @@ export function MissingPersonIntakeForm({
     };
     const normalized = deepCompact(normalizedInput);
 
-    persistRecord(normalized, normalizedCaseId);
+    await persistRecord(normalized, normalizedCaseId);
     setLastJson(JSON.stringify(normalized, null, 2));
     toast.success("Intake saved locally. Refresh the directory to see the new record.");
   };
@@ -277,7 +286,7 @@ export function MissingPersonIntakeForm({
       const normalized = deepCompact(normalizedInput);
 
       const validated = await DetaineeIntakeSchema.parseAsync(normalized);
-      persistRecord(normalized, normalizedCaseId);
+      await persistRecord(normalized, normalizedCaseId);
       const result = await onExportRecord(validated, format);
 
       if (format === "json" && typeof result === "string") {

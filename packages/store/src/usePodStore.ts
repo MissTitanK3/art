@@ -72,6 +72,7 @@ export type PodStoreState = {
   academyClasses: AcademyClass[];
 
   addPod: (pod: Pod) => void;
+  setPods: (pods: Pod[]) => void;
   updatePod: (id: string, patch: Partial<Pod>) => void;
   removePod: (id: string) => void;
 
@@ -113,6 +114,8 @@ const createPodStoreInitializer =
     academyClasses: [...initial.academyClasses],
 
     addPod: (pod) => set((s) => ({ pods: [...s.pods, pod] })),
+
+    setPods: (pods) => set(() => ({ pods: [...pods] })),
 
     updatePod: (id, patch) =>
       set((s) => ({

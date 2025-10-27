@@ -2,6 +2,7 @@
 "use client";
 
 import { NormalizedLanguage } from "@workspace/store/types/language.ts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import * as React from "react";
 
 type Props = {
@@ -115,19 +116,27 @@ export default function LanguageFluencyEditor({
             </div>
 
             {/* Selector */}
-            <select
-              className="text-sm rounded-md border bg-background px-2 py-1"
+            <Select
+              value={p ?? undefined}
+              onValueChange={(value) =>
+                setProf(l.tag, value === "unset" ? undefined : (value as any))
+              }
               disabled={disabled}
-              value={p ?? ""}
-              onChange={(e) => setProf(l.tag, (e.target.value || undefined) as any)}
             >
-              <option value="">—</option>
-              {LEVELS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt === "nonverbal" ? "Nonverbal / Context" : opt[0]?.toUpperCase() + opt.slice(1)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unset">—</SelectItem>
+                {LEVELS.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt === "nonverbal"
+                      ? "Nonverbal / Context"
+                      : opt[0]?.toUpperCase() + opt.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         );
       })}

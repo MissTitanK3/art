@@ -12,6 +12,7 @@ import { Switch } from "@workspace/ui/components/switch";
 import { Input } from "@workspace/ui/components/input";
 import { toast } from "sonner";
 import { Download, ShieldCheck, UserCheck, UserX } from "lucide-react";
+import { safeErrorMessage } from "@workspace/ui/lib/http";
 
 function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
   const color = role === "dispatcher_admin" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
@@ -44,7 +45,8 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     return rows.filter((p) => {
       if (roleFilter && p.access_role !== roleFilter) return false;
       if (verifierFilter && p.verified_by !== verifierFilter) return false;
-      if (availabilityOnly && !p.availability) return false;
+      // Treat suspended state as not available for filtering purposes
+      if (availabilityOnly && (p.state === 'suspended')) return false;
       if (query) {
         const q = query.toLowerCase();
         const hay = [
@@ -64,9 +66,28 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     });
   }, [rows, query, roleFilter, verifierFilter, availabilityOnly]);
 
-  function updateRow(id: string, patch: Partial<Profile>, actionLabel: string) {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
-    toast.success(`${actionLabel} — demo-only`);
+  async function apiUpdate(id: string, patch: Partial<Profile>, successLabel: string) {
+    try {
+      const res = await fetch(`/api/admin/profiles/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) {
+        const msg = await safeErrorMessage(res);
+        throw new Error(msg);
+      }
+      const json = (await res.json()) as { profile?: Profile | null };
+      const updated = json.profile ?? null;
+      if (updated) {
+        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+      } else {
+        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      }
+      toast.success(successLabel);
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Update failed');
+    }
   }
 
   function exportJSON() {
@@ -183,10 +204,10 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                       <TableCell><AccessRoleBadge role={p.access_role} /></TableCell>
                       <TableCell><VerifiedBadge who={p.verified_by} /></TableCell>
                       <TableCell>
-                        {p.availability ? (
-                          <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">Active</Badge>
-                        ) : (
+                        {p.state === 'suspended' ? (
                           <Badge variant="outline" className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30">Suspended</Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">Active</Badge>
                         )}
                       </TableCell>
                       <TableCell className="max-w-[220px] truncate">{p.affiliation ?? ""}</TableCell>
@@ -196,7 +217,10 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                         <div className="inline-flex gap-2">
                           <Select
                             value={p.access_role}
-                            onValueChange={(val) => !isUnregistered && updateRow(p.id, { access_role: val as any }, "Role updated")}
+                            onValueChange={(val) => {
+                              if (isUnregistered) return;
+                              apiUpdate(p.id, { access_role: val as any }, 'Role updated');
+                            }}
                           >
                             <SelectTrigger className="w-[180px]" disabled={isUnregistered} aria-disabled={isUnregistered} title={isUnregistered ? "Register this user to change role" : undefined}>
                               <SelectValue />
@@ -215,21 +239,25 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                             size="sm"
                             disabled={isUnregistered}
                             title={isUnregistered ? "Register this user to verify" : undefined}
-                            onClick={() => updateRow(p.id, { verified_by: "admin" }, "Verified")}
+                            onClick={() => apiUpdate(p.id, { verified_by: 'admin' } as any, 'Verified')}
                           >
                             <UserCheck className="h-4 w-4 mr-2" /> Verify
                           </Button>
 
                           <Button
-                            variant={p.availability ? "destructive" : "secondary"}
+                            variant={p.state === 'suspended' ? 'secondary' : 'destructive'}
                             size="sm"
-                            title={isUnregistered ? "Register this user to change availability" : undefined}
-                            onClick={() => updateRow(p.id, { availability: !p.availability }, p.availability ? "Suspended" : "Reactivated")}
+                            title={isUnregistered ? "Register this user to change state" : undefined}
+                            onClick={() => {
+                              if (isUnregistered) return;
+                              const nextState = p.state === 'suspended' ? 'active' : 'suspended';
+                              apiUpdate(p.id, { state: nextState } as any, nextState === 'suspended' ? 'Suspended' : 'Reactivated');
+                            }}
                           >
-                            {p.availability ? (
-                              <><UserX className="h-4 w-4 mr-2" /> Suspend</>
-                            ) : (
+                            {p.state === 'suspended' ? (
                               <><ShieldCheck className="h-4 w-4 mr-2" /> Activate</>
+                            ) : (
+                              <><UserX className="h-4 w-4 mr-2" /> Suspend</>
                             )}
                           </Button>
                         </div>
@@ -271,3 +299,5 @@ function redactSensitive<T extends object>(obj: T): T {
   delete clone.encrypted_payload;
   return clone as T;
 }
+
+// moved to @workspace/ui/lib/http

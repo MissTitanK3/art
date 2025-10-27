@@ -9,6 +9,7 @@ import type {
   AuthStatus,
   OtpSignInPayload,
   PasswordSignInPayload,
+  PasswordSignUpPayload,
 } from "@/lib/auth/types";
 import type { AuthClientAdapter } from "@/lib/auth/types";
 
@@ -24,6 +25,9 @@ type AuthContextValue = {
   ) => Promise<AuthSession>;
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
+  signUpWithPassword?: (
+    payload: PasswordSignUpPayload
+  ) => Promise<AuthSession | null>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
@@ -154,6 +158,22 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
     setStatus("unauthenticated");
   }, [ensureClient]);
 
+  const signUpWithPassword = React.useCallback(
+    async (payload: PasswordSignUpPayload) => {
+      const client = await ensureClient();
+      if (!client.signUpWithPassword) {
+        throw new Error(`${providerId} adapter does not support password sign-up`);
+      }
+      const next = await client.signUpWithPassword(payload);
+      if (next) {
+        setSession(next);
+        setStatus(toStatus(next));
+      }
+      return next;
+    },
+    [ensureClient, providerId]
+  );
+
   const value = React.useMemo<AuthContextValue>(
     () => ({
       providerId,
@@ -165,8 +185,9 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       signInWithPassword,
       signInWithOtp,
       signOut,
+      signUpWithPassword,
     }),
-    [providerId, session, status, refresh, signInWithPassword, signInWithOtp, signOut]
+    [providerId, session, status, refresh, signInWithPassword, signInWithOtp, signOut, signUpWithPassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

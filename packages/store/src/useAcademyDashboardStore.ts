@@ -99,7 +99,7 @@ function makeSessionFromDraft(
 
   return {
     id,
-    classId: draft.relatedTopic ?? 'freeform-session',
+    classId: draft.relatedTopic ?? '',
     title: draft.title,
     start: draft.start,
     end: draft.end,

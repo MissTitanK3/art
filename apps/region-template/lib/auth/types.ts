@@ -30,6 +30,11 @@ export type OtpSignInPayload = {
   email: string;
 };
 
+export type PasswordSignUpPayload = {
+  email: string;
+  password: string;
+};
+
 export type AuthClientAdapter = {
   /** Fetch the latest session from the underlying client SDK. */
   getSession: () => Promise<AuthSession | null>;
@@ -39,6 +44,8 @@ export type AuthClientAdapter = {
   signInWithPassword?: (payload: PasswordSignInPayload) => Promise<AuthSession>;
   /** Passwordless magic-link or OTP flow. */
   signInWithOtp?: (payload: OtpSignInPayload) => Promise<void>;
+  /** Optional password sign-up flow. Returns session if auto-confirmed. */
+  signUpWithPassword?: (payload: PasswordSignUpPayload) => Promise<AuthSession | null>;
   /** Sign the current user out. */
   signOut: () => Promise<void>;
   /** Subscribe to session changes emitted by the provider SDK. */

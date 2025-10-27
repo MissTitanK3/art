@@ -171,6 +171,22 @@
     created_at TIMESTAMPTZ DEFAULT now()
   );
 
+  -- Pod shifts (field operations scheduling)
+  -- Separate from dispatch_shifts which track dispatch desk coverage
+  CREATE TABLE IF NOT EXISTS public.pod_shifts (
+    id TEXT PRIMARY KEY,
+    pod_id TEXT REFERENCES public.pods(id) ON DELETE CASCADE,
+    start TIMESTAMPTZ,
+    "end" TIMESTAMPTZ,
+    tz TEXT,
+    headcount INTEGER DEFAULT 1 CHECK (headcount >= 1),
+    location TEXT,
+    label TEXT,
+    dispatch_link TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+  );
+
   -- Academy
   CREATE TABLE IF NOT EXISTS public.academy_instructors (
     id TEXT PRIMARY KEY,
@@ -231,6 +247,7 @@
     )
   );
 
+
   CREATE TABLE IF NOT EXISTS public.academy_sessions (
     id TEXT PRIMARY KEY,
     class_id TEXT REFERENCES public.academy_classes(id) ON DELETE CASCADE,
@@ -261,6 +278,8 @@
       instructor_type IS NULL OR instructor_type IN ('dispatcher','mentor','expert')
     )
   );
+
+  -- Allow sessions without a class; no default class_id
 
   CREATE TABLE IF NOT EXISTS public.academy_participants (
     id TEXT PRIMARY KEY,
@@ -424,6 +443,19 @@
       EXECUTE 'CREATE INDEX idx_shifts_volunteer_id ON public.dispatch_shifts (volunteer_id)';
     END IF;
 
+    -- Pod shifts indexes
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_pod_shifts_pod_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_pod_shifts_pod_id ON public.pod_shifts (pod_id)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_pod_shifts_start'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_pod_shifts_start ON public.pod_shifts (start)';
+    END IF;
+
     -- Optional performance index: roster joined_at timeline queries
     IF NOT EXISTS (
       SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_roster_joined_at'
@@ -458,6 +490,14 @@
       WHERE table_schema = 'public' AND table_name = 'dispatch_shifts' AND column_name = 'created_at'
     ) THEN
       ALTER TABLE public.dispatch_shifts ADD COLUMN created_at TIMESTAMPTZ DEFAULT now();
+    END IF;
+
+    -- pod_shifts.created_at
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'pod_shifts' AND column_name = 'created_at'
+    ) THEN
+      ALTER TABLE public.pod_shifts ADD COLUMN created_at TIMESTAMPTZ DEFAULT now();
     END IF;
 
     -- academy_instructors.created_at

@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { useProfileStore } from "@/providers/ProfileStoreProvider";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 import { ProfileLayout } from "@workspace/ui/layout/profile/ProfileLayout";
 import { NextImageAdapter } from "@/lib/adapters/NextImageAdapter";
 import { useRegionAdapters } from "@/providers/RegionProvider";

@@ -1,14 +1,21 @@
 // apps/region-template/providers/RegionProvider.tsx
 "use client";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { demoProfileAdapter } from "../lib/adapters/profile/demoProfileAdapter";
+import { supabaseProfileAdapter } from "../lib/adapters/profile/supabaseProfileAdapter";
+import { getAuthProviderId } from "@/lib/auth/adapter";
 
 const RegionContext = createContext({ profileAdapter: demoProfileAdapter });
 
 export function RegionProvider({ children }: { children: React.ReactNode }) {
-  // later, swap in supabaseProfileAdapter or pocketProfileAdapter based on env
+  // Choose data adapter based on auth provider for consistency
+  const profileAdapter = useMemo(() => {
+    const provider = getAuthProviderId();
+    return provider === "supabase" ? supabaseProfileAdapter : demoProfileAdapter;
+  }, []);
+
   return (
-    <RegionContext.Provider value={{ profileAdapter: demoProfileAdapter }}>
+    <RegionContext.Provider value={{ profileAdapter }}>
       {children}
     </RegionContext.Provider>
   );

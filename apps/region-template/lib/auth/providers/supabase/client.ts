@@ -67,6 +67,18 @@ export const supabaseClientAdapter: AuthClientAdapter = {
       throw new Error(error.message);
     }
   },
+  async signUpWithPassword(payload) {
+    const client = getBrowserClient();
+    const { data, error } = await client.auth.signUp({
+      email: payload.email,
+      password: payload.password,
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+    // When email confirmation is required, session may be null
+    return mapSupabaseSession(data.session);
+  },
   async signOut() {
     const client = getBrowserClient();
     const { error } = await client.auth.signOut();

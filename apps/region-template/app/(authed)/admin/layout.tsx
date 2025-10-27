@@ -4,10 +4,14 @@ import { requireServerSession } from "@/lib/auth/server";
 import { regionAdmins } from "@workspace/store/utils/nav";
 import { getProfileByUserId } from "@/lib/dal/admin";
 import AdminBackButton from "./_components/AdminBackButton";
+import AdminClientLayout from "./providers.client";
 
 type AdminLayoutProps = {
   children: ReactNode;
 };
+
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
   // Require authentication first
@@ -26,9 +30,9 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <>
+    <AdminClientLayout>
       <AdminBackButton />
       {children}
-    </>
+    </AdminClientLayout>
   );
 }

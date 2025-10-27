@@ -125,4 +125,4 @@ PGP key fingerprint: `TBD` (will be published on our site and repo)
 - [DATA_POLICY.md] — Details PII boundaries in ART.  
 - [INCIDENT_RESPONSE.md] — Steps for regions to take during a suspected breach.  
 - [TRUST_LIST_GUIDE.md] — Best practices for vetting and maintaining secure rosters.  
-For contributor security guidance, see [SECURITY.md (Developer)](packages/store/src/db_init/SECURITY.md).
+For contributor security guidance, see [SECURITY.md (Developer)](packages/store/src/db_maintenance/SECURITY.md).

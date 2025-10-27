@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProfileDataLayer } from "@/components/dataLayer/profile/ProfileDataLayer";
-import { useProfileStore } from "@/providers/ProfileStoreProvider";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 import { Button } from "@workspace/ui/components/button";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 

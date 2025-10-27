@@ -1,6 +1,6 @@
 import type { AuthSession } from "../../types";
 
-export const SESSION_COOKIE = "region-demo-session";
+export const SESSION_COOKIE = "region-template-session";
 export const ONE_WEEK_SECONDS = 60 * 60 * 24 * 7;
 
 const baseUser = {

@@ -57,6 +57,8 @@ export interface MissingPersonDetailProps {
   directoryHref?: string;
   renderDirectoryLink?: (href: string, label: React.ReactNode) => React.ReactNode;
   onDeleteSuccess?: (details: { caseId: string; record: DetaineeIntake; directoryHref: string }) => void;
+  onSaveRecord?: (record: DetaineeIntake) => Promise<void> | void;
+  onDeleteRecord?: (caseId: string, record: DetaineeIntake) => Promise<void> | void;
 }
 
 export function MissingPersonDetail({
@@ -66,6 +68,8 @@ export function MissingPersonDetail({
   directoryHref = DEFAULT_DIRECTORY_HREF,
   renderDirectoryLink = defaultRenderDirectoryLink,
   onDeleteSuccess,
+  onSaveRecord,
+  onDeleteRecord,
 }: MissingPersonDetailProps) {
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
   const updateRecordInStore = useMissingPersonStore((state) => state.updateRecord);
@@ -144,6 +148,13 @@ export function MissingPersonDetail({
 
     try {
       setDeleting(true);
+      try {
+        if (onDeleteRecord) {
+          await onDeleteRecord(normalizedCaseId, currentRecord);
+        }
+      } catch (err) {
+        console.warn("MissingPersonDetail: remote delete failed", err);
+      }
       removeRecordFromStore(normalizedCaseId);
       removeCaseIdFromStorage(normalizedCaseId);
       toast.success("Intake deleted. Redirecting to directory…");
@@ -165,6 +176,7 @@ export function MissingPersonDetail({
     onDeleteSuccess,
     currentRecord,
     directoryHref,
+    onDeleteRecord,
   ]);
 
   const handleExport = React.useCallback(
@@ -203,7 +215,7 @@ export function MissingPersonDetail({
   );
 
   const handleSubmit = React.useCallback(
-    (values: DetaineeIntakeFormValues) => {
+    async (values: DetaineeIntakeFormValues) => {
       if (!values.caseId?.trim()) {
         toast.error("Case ID is required.");
         return;
@@ -238,6 +250,13 @@ export function MissingPersonDetail({
       rememberCaseId(nextCaseId);
       setCurrentRecord(nextRecord);
       form.reset(toFormValues(nextRecord));
+      try {
+        if (onSaveRecord) {
+          await onSaveRecord(nextRecord);
+        }
+      } catch (err) {
+        console.warn("MissingPersonDetail: remote save failed", err);
+      }
       setIsEditing(false);
       toast.success("Intake updated.");
     },
@@ -249,6 +268,7 @@ export function MissingPersonDetail({
       removeCaseIdFromStorage,
       removeRecordFromStore,
       updateRecordInStore,
+      onSaveRecord,
     ]
   );
 

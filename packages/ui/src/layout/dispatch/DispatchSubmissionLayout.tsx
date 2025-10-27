@@ -53,6 +53,7 @@ export function DispatchSubmissionLayout({
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
 
+
   const handleShare = () => {
     if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard) {
       toast.error("Clipboard access unavailable");
@@ -102,15 +103,6 @@ export function DispatchSubmissionLayout({
     {
       id: "location",
       content: <DispatchLocationUpdater submission={submission} onUpdate={onUpdateSubmission} />,
-    },
-    {
-      id: "submitted-at",
-      label: "Submitted At",
-      content: (
-        <p suppressHydrationWarning>
-          {new Date(submission.timestamp).toLocaleString()}
-        </p>
-      ),
     },
     {
       id: "intended-action",

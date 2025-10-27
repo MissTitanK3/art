@@ -1,4 +1,4 @@
-export const DEFAULT_CASE_ZONE = "PNW";
+export const DEFAULT_CASE_ZONE = "REGION";
 export const CASE_ID_STORAGE_KEY = "missing-persons-case-ids";
 const SEQUENCE_LENGTH = 3;
 

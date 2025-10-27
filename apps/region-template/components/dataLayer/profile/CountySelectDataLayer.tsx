@@ -5,7 +5,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { useProfileStore } from '@/providers/ProfileStoreProvider';
+import { useProfileStore } from '@workspace/store/useProfileStore';
 import type { CountySelectMapProps } from '@workspace/ui/components/maps/CountySelectMap';
 import { CountyProps, SelectedCounty } from '@workspace/store/types/maps.ts';
 import { GEO_TO_FIPS } from '@workspace/store/utils/map';

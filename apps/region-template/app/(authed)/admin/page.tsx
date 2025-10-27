@@ -12,31 +12,37 @@ import { percent } from "@workspace/ui/lib/utils";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
 import { FileChartLine, MapPin, Settings, ShieldCheck, Users2, Users, Package, GraduationCap, Handshake, Database } from "lucide-react";
 
-import { demoDispatches } from "@/data/demoDispatches";
-import { demoPods, demoRoster } from "@/data/demoPods";
 import { TraingingSessionsDemoData } from "@/data/demoAcademy";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
 import { useRouter } from "next/navigation";
+import { useDispatchStore } from "@/providers/DispatchStoreProvider";
+import { usePodStore } from "@/providers/PodStoreProvider";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { useMemo } from "react";
 
 // Map component (client-only)
 const WatchMap = dynamic(() => import("@workspace/ui/components/client/watch/WatchMap"), { ssr: false });
 
 export default function AdminPage() {
   const router = useRouter();
-  // Aggregated metrics from demo data
+  const { providerId } = useAuth();
+  const submissions = useDispatchStore((s) => s.submissions);
+  const pods = usePodStore((s) => s.pods);
+  const activeRoster = usePodStore((s) => s.activeRoster);
+
   const uniqueProfiles = React.useMemo(() => {
     const ids = new Set<string>();
-    demoRoster.forEach((r) => ids.add(r.profile.id));
+    (activeRoster ?? []).forEach((r) => ids.add(r.profile.id));
     return ids.size;
-  }, []);
+  }, [activeRoster]);
 
-  const activeDispatches = React.useMemo(
-    () =>
-      demoDispatches.filter((d) => !["archived", "completed", "cancelled", "expired"].includes(d.status)).length,
-    [],
-  );
+  const activeDispatches = React.useMemo(() => {
+    const list = submissions ?? [];
+    return list.filter((d) => !["archived", "completed", "cancelled", "expired"].includes(d.status as string)).length;
+  }, [submissions]);
 
-  const podsCount = demoPods.length;
+  const podsCount = pods?.length ?? 0;
 
   const trainingCounts = React.useMemo(() => {
     const all = TraingingSessionsDemoData.filter((s) => s.status !== "archived");
@@ -49,7 +55,7 @@ export default function AdminPage() {
   const trainingPct = percent(trainingCounts.completed, trainingCounts.all);
 
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
-  const { reports, idMap } = React.useMemo(() => toWatchReports(demoDispatches), []);
+  const { reports, idMap } = React.useMemo(() => toWatchReports(submissions ?? []), [submissions]);
 
   const handleView = (r: WizardReport) => {
     const id = idMap[r.id];
@@ -61,6 +67,76 @@ export default function AdminPage() {
     { name: "In Progress", value: trainingCounts.inProgress },
     { name: "Scheduled", value: trainingCounts.scheduled },
   ];
+
+  // Simple admin actions (Supabase only) to validate new API routes
+  const canMutate = providerId === "supabase";
+  const firstSubmission = (submissions ?? [])[0];
+  const firstPod = (pods ?? [])[0];
+  const trustPair = useMemo(() => {
+    const r = activeRoster ?? [];
+    if (r.length < 2) return null;
+    const subjectId = r[0]?.profile?.id;
+    const signerId = r[1]?.profile?.id;
+    if (!subjectId || !signerId) return null;
+    return { subjectId, signerId };
+  }, [activeRoster]);
+
+  const toggleFlagged = async () => {
+    if (!firstSubmission) return;
+    const next = !Boolean(firstSubmission.flagged);
+    const res = await fetch(`/api/admin/dispatches/${firstSubmission.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flagged: next }),
+    });
+    if (!res.ok) {
+      toast.error("Failed to toggle flagged");
+      return;
+    }
+    toast.success(`Flagged set to ${next}`);
+  };
+
+  const renameFirstPod = async () => {
+    if (!firstPod) return;
+    const res = await fetch(`/api/admin/pods/${firstPod.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ area: firstPod.area || "Unassigned", name: firstPod.name + " •" }),
+    });
+    if (!res.ok) {
+      toast.error("Failed to update pod");
+      return;
+    }
+    toast.success("Pod updated");
+  };
+
+  // Trust signature demo actions (require at least 2 profiles in roster)
+  const addTrust = async () => {
+    if (!trustPair) return;
+    const res = await fetch(`/api/admin/trust`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subjectId: trustPair.subjectId, signerId: trustPair.signerId, status: "active" }),
+    });
+    if (!res.ok) return toast.error("Failed to add trust signature");
+    toast.success("Trust signature added");
+  };
+  const deactivateTrust = async () => {
+    if (!trustPair) return;
+    const res = await fetch(`/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "inactive" }),
+    });
+    if (!res.ok) return toast.error("Failed to update trust signature");
+    toast.success("Trust signature set inactive");
+  };
+  const deleteTrust = async () => {
+    if (!trustPair) return;
+    const res = await fetch(`/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`, { method: "DELETE" });
+    if (!res.ok) return toast.error("Failed to delete trust signature");
+    toast.success("Trust signature deleted");
+  };
 
   return (
     <section className="space-y-6">
@@ -100,7 +176,6 @@ export default function AdminPage() {
             <NavTile href="/admin/dispatch" icon={<MapPin className="h-5 w-5" />} label="Dispatch" description="Review and audit dispatches" />
             <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
             <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
-            <NavTile href="/admin/db" icon={<Database className="h-5 w-5" />} label="Database" description="Schema health and exports" />
           </div>
         </CardContent>
       </Card>
@@ -156,21 +231,44 @@ export default function AdminPage() {
         </Card>
       </div>
 
-      {/* System Health */}
-      <Card>
-        <CardHeader>
-          <CardTitle>System Health</CardTitle>
-          <CardDescription>Schema, spatial, and trigger checks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <KeyValueItem label="Schema Version" value={<span className="font-mono">2025.10.24</span>} />
-            <KeyValueItem label="PostGIS" value={<span className="text-emerald-600 dark:text-emerald-400 font-medium">OK</span>} />
-            <KeyValueItem label="location_geog sync" value={<span className="text-emerald-600 dark:text-emerald-400 font-medium">OK</span>} />
-            <KeyValueItem label="Audit triggers" value={<span className="text-emerald-600 dark:text-emerald-400 font-medium">OK</span>} />
-          </div>
-        </CardContent>
-      </Card>
+
+      {/* Admin Actions (demo UI) */}
+      {canMutate && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Actions</CardTitle>
+            <CardDescription>Minimal end-to-end checks for Supabase routes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={toggleFlagged} disabled={!firstSubmission} variant="outline" size="sm">
+                Toggle flagged on most recent submission
+              </Button>
+              <Button onClick={renameFirstPod} disabled={!firstPod} variant="outline" size="sm">
+                Update first pod name/area
+              </Button>
+              <Button onClick={addTrust} disabled={!trustPair} variant="outline" size="sm">
+                Add trust (first 2 roster profiles)
+              </Button>
+              <Button onClick={deactivateTrust} disabled={!trustPair} variant="outline" size="sm">
+                Set trust inactive
+              </Button>
+              <Button onClick={deleteTrust} disabled={!trustPair} variant="destructive" size="sm">
+                Delete trust
+              </Button>
+            </div>
+            {!firstSubmission && (
+              <p className="mt-2 text-sm text-muted-foreground">No submissions found to toggle flagged.</p>
+            )}
+            {!firstPod && (
+              <p className="text-sm text-muted-foreground">No pods found to update.</p>
+            )}
+            {!trustPair && (
+              <p className="text-sm text-muted-foreground">Need at least 2 roster profiles to demo trust actions.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </section>
   );
 }

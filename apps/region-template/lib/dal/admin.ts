@@ -26,6 +26,22 @@ export async function getProfileByUserId(userId: string): Promise<Profile | null
     await demoProfileAdapter.saveProfile(profile);
   }
 
+  // Demo convenience: ensure the profile appears fully verified and authorized
+  // so users can explore all areas without additional steps.
+  if (profile.verified_by === 'self' || !profile.verified_by) {
+    profile.verified_by = 'admin' as any;
+  }
+  if (profile.access_role !== 'dispatcher_admin') {
+    profile.access_role = 'dispatcher_admin' as any;
+  }
+  if (!profile.self_risk_acknowledged) {
+    profile.self_risk_acknowledged = true as any;
+  }
+  if (profile.availability !== true) {
+    profile.availability = true as any;
+  }
+  await demoProfileAdapter.saveProfile(profile);
+
   // If it doesn't match, still return the demo profile for now
   // Real implementation should strictly match userId
   return profile as Profile;

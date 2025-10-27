@@ -5,14 +5,36 @@ import { DispatchStoreContext, useDispatchStore } from "@/providers/DispatchStor
 import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+
+function mapRowToShift(row: any): DispatchShift {
+  return {
+    id: String(row.id ?? crypto.randomUUID()),
+    podId: typeof row?.pod_id === "string" ? row.pod_id : row?.podId,
+    volunteerId: typeof row?.volunteer_id === "string" ? row.volunteer_id : row?.volunteerId,
+    volunteerName: typeof row?.volunteer_name === "string" ? row.volunteer_name : row?.volunteerName,
+    startsAt: String(row?.starts_at ?? row?.startsAt ?? new Date().toISOString()),
+    endsAt: String(row?.ends_at ?? row?.endsAt ?? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()),
+    notes: typeof row?.notes === "string" ? row.notes : undefined,
+  } as DispatchShift;
+}
 
 async function fetchDispatchShiftsFromDatabase(): Promise<DispatchShift[] | null> {
-  // TODO: replace with actual persistence layer call when available.
-  // Example:
-  // const { data } = await client.from("dispatch_shifts").select("*");
-  // return data?.map(transformRowToDispatchShift) ?? [];
-  await Promise.resolve();
-  return null;
+  try {
+    const client = getSupabaseBrowserClient();
+    const { data, error } = await client
+      .from("dispatch_shifts")
+      .select("*")
+      .order("starts_at", { ascending: true });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    return rows.map(mapRowToShift);
+  } catch (e) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[DispatchShiftsDataLayer] supabase fetch error", e);
+    }
+    return null;
+  }
 }
 
 export default function DispatchShiftsDataLayer() {

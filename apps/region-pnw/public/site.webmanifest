@@ -1,0 +1,9 @@
+{
+  "name": "ART Region PNW",
+  "short_name": "ART PNW Dispatch",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": []
+}

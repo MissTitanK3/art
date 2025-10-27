@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@workspace/ui/components/input";
 import { toast } from "sonner";
 import { Plus, PauseCircle, PlayCircle, Download } from "lucide-react";
-import { fakeUUID, humanize } from "@workspace/ui/lib/utils";
+import { humanize } from "@workspace/ui/lib/utils";
+import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { Callout } from "@workspace/ui/components/academy/Callout";
 
 type Props = {
@@ -67,43 +68,48 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
     });
   }, [rows, role, status, query, nameById]);
 
-  function addEntry() {
+  async function addEntry() {
     if (!newSubjectId || !newSignerId) {
       toast.error("Select both Subject and Signer");
       return;
     }
-    const entry: TrustEntry = {
-      subjectId: newSubjectId,
-      signerId: newSignerId,
-      signer_role: newRole,
-      signer_rot: "demo-rot-fingerprint",
-      signed_at: new Date().toISOString(),
-      signed_entry_hash: fakeUUID(),
-      status: "active",
-    };
-    setRows((prev) => [entry, ...prev]);
-    toast.success("Entry added — demo-only");
-    setAddOpen(false);
-    setNewSubjectId("");
-    setNewSignerId("");
-    setNewRole("pod_leader");
+    try {
+      const res = await fetch('/api/admin/trust', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subjectId: newSubjectId, signerId: newSignerId, signer_role: newRole, signer_rot: 'rot-fingerprint', status: 'active' }),
+      });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      const json = (await res.json()) as { entry?: TrustEntry };
+      const entry = json.entry as TrustEntry;
+      setRows((prev) => [entry, ...prev]);
+      toast.success('Entry added');
+      setAddOpen(false);
+      setNewSubjectId(''); setNewSignerId(''); setNewRole('pod_leader');
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Add failed');
+    }
   }
 
-  function toggleStatus(idx: number) {
-    setRows((prev) => {
-      const copy = prev.slice();
-      const e = copy[idx];
-      if (!e) return prev;
-      if (e.status === "inactive") {
-        copy[idx] = { ...e, status: "active", signed_at: new Date().toISOString() };
-        toast.success("Entry resumed — check-in reset");
-      } else {
-        copy[idx] = { ...e, status: "inactive" };
-        toast.success("Entry deactivated");
-      }
-      return copy;
-    });
+  async function toggleStatus(idx: number) {
+    const e = rows[idx];
+    if (!e) return;
+    const nextStatus: TrustEntry['status'] = e.status === 'inactive' ? 'active' : 'inactive';
+    // optimistic
+    setRows((prev) => prev.map((row, i) => (i === idx ? { ...row, status: nextStatus, signed_at: nextStatus === 'active' ? new Date().toISOString() : row.signed_at } : row)));
+    try {
+      const res = await fetch(`/api/admin/trust/${encodeURIComponent(e.subjectId)}/${encodeURIComponent(e.signerId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus, signed_at: nextStatus === 'active' ? new Date().toISOString() : undefined }),
+      });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      toast.success(nextStatus === 'active' ? 'Entry resumed — check-in reset' : 'Entry deactivated');
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Update failed');
+    }
   }
+
+  // re-verify disabled when ROT is not used
 
   function exportJSON() {
     const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: "application/json" });
@@ -179,7 +185,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-muted-foreground">Note: This is a demo-only entry. ROT fingerprint is auto-filled and check-in is calculated from the signed date.</p>
+            <p className="text-xs text-muted-foreground">Note: You can add an entry without a key, or register + verify a key now.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
@@ -211,12 +217,12 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
             <div>
               <p className="font-medium">Using this page</p>
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                <li>Search and filter by signer role, status, or ROT fingerprint.</li>
+                <li>Search and filter by signer role or status.</li>
                 <li>Watch the Check-in column for upcoming or overdue follow-ups.</li>
                 <li>If a check-in is Overdue and there’s no recent contact, reach out to confirm safety.</li>
                 <li>Export the current view for audits or to share with leadership.</li>
               </ul>
-              <p className="text-xs text-muted-foreground mt-1">Note: actions here are demo‑only. Production endorsements and check-in cadence are governed by your region.</p>
+              <p className="text-xs text-muted-foreground mt-1">Note: Endorsements and check-in cadence are governed by your region.</p>
             </div>
           </div>
         </CardContent>
@@ -257,7 +263,6 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                   <TableHead>Subject</TableHead>
                   <TableHead>Signer</TableHead>
                   <TableHead>Signer Role</TableHead>
-                  <TableHead>ROT Fingerprint</TableHead>
                   <TableHead>Signed</TableHead>
                   <TableHead>Check-in</TableHead>
                   <TableHead>Status</TableHead>
@@ -270,7 +275,6 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                     <TableCell className="max-w-[220px] truncate">{nameById[e.subjectId] || e.subjectId}</TableCell>
                     <TableCell className="max-w-[220px] truncate">{nameById[e.signerId] || e.signerId}</TableCell>
                     <TableCell>{humanize(e.signer_role)}</TableCell>
-                    <TableCell className="max-w-[240px] truncate">{e.signer_rot}</TableCell>
                     <TableCell className="whitespace-nowrap">{dateFmt.format(new Date(e.signed_at))}</TableCell>
                     <TableCell suppressHydrationWarning>
                       {now == null ? (
@@ -316,6 +320,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                             <><PlayCircle className="h-4 w-4 mr-2" /> Resume</>
                           )}
                         </Button>
+                        {/* Re-verify removed */}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -325,6 +330,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
           </div>
         </CardContent>
       </Card>
+      {/* Verify flow removed */}
     </section>
   );
 }

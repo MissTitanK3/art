@@ -25,12 +25,14 @@ export type DispatchStoreState = {
   submissions: DispatchSubmission[];
   shifts: DispatchShift[];
   addSubmission: (d: DispatchSubmission) => void;
+  replaceSubmissions: (subs: DispatchSubmission[]) => void;
   updateSubmission: (id: string, patch: Partial<DispatchSubmission>) => void;
   removeSubmission: (id: string) => void;
   addUpdate: (dispatchId: string, update: Omit<DispatchUpdate, 'id' | 'createdAt'>) => void;
   editUpdate: (dispatchId: string, updateId: string, text: string) => void;
   removeUpdate: (dispatchId: string, updateId: string) => void;
   addShift: (shift: Omit<DispatchShift, 'id'>) => void;
+  replaceShifts: (shifts: DispatchShift[]) => void;
   updateShift: (id: string, updates: Partial<DispatchShift>) => void;
   removeShift: (id: string) => void;
   getActiveShifts: () => DispatchShift[];
@@ -56,6 +58,8 @@ const createDispatchStoreInitializer =
     shifts: initialShifts,
 
     addSubmission: (d) => set((s) => ({ submissions: [...s.submissions, d] })),
+
+    replaceSubmissions: (subs) => set(() => ({ submissions: subs })),
 
     updateSubmission: (id, patch) =>
       set((s) => ({
@@ -121,6 +125,8 @@ const createDispatchStoreInitializer =
           },
         ],
       })),
+
+    replaceShifts: (shifts) => set(() => ({ shifts })),
 
     updateShift: (id, updates) =>
       set((state) => ({

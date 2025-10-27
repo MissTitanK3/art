@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Map, Table2, Archive, Flag, FlagOff } from "lucide-react";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
 import { DISPATCH_TYPE_LABELS } from "@workspace/store/types/dispatch.ts";
+import { safeErrorMessage } from "@workspace/ui/lib/http";
 
 const WatchMap = React.lazy(() => import("@workspace/ui/components/client/watch/WatchMap"));
 
@@ -43,6 +44,11 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
   const [mapView, setMapView] = React.useState(false);
   const [rows, setRows] = React.useState<DispatchSubmission[]>(() => initialItems);
 
+  // Keep local rows in sync when new data arrives from the data layer
+  React.useEffect(() => {
+    setRows(initialItems);
+  }, [initialItems]);
+
   const filtered = React.useMemo(() => {
     return rows.filter((d) => {
       if (status && d.status !== status) return false;
@@ -55,23 +61,43 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
     });
   }, [rows, status, type, query]);
 
-  function toggleFlag(id: string) {
+  async function toggleFlag(id: string) {
     let nextFlag = false;
     setRows((prev) => prev.map((d) => {
       if (d.id === id) {
-        const next = !(d as any).flagged;
+        const next = Boolean(!(d as any).flagged);
         nextFlag = next;
         return { ...d, flagged: next } as any;
       }
       return d;
     }));
     onToggleFlag?.(id, nextFlag);
-    toast.success(nextFlag ? "Flagged for review — demo-only" : "Flag removed — demo-only");
+    try {
+      const res = await fetch(`/api/admin/dispatches/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flagged: nextFlag }),
+      });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      toast.success(nextFlag ? 'Flagged for review' : 'Flag removed');
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Update failed');
+    }
   }
 
-  function archive(id: string) {
-    setRows((prev) => prev.map((d) => (d.id === id ? { ...d, status: "archived" } : d)));
-    toast.success("Dispatch archived — demo-only");
+  async function archive(id: string) {
+    setRows((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'archived' } : d)));
+    try {
+      const res = await fetch(`/api/admin/dispatches/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'archived' }),
+      });
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
+      toast.success('Dispatch archived');
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Archive failed');
+    }
   }
 
   // AAR export hidden/back-burner
@@ -117,7 +143,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>All Dispatch Activity</CardTitle>
-          <CardDescription>Filter by status, type, and keyword. Actions are demo-only.</CardDescription>
+          <CardDescription>Filter by status, type, and keyword. Actions persist to the database.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 items-center mb-4">
