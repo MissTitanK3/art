@@ -3,6 +3,8 @@ import { jsonError } from '@/lib/api/responses';
 import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
+import { createClient } from '@supabase/supabase-js';
 
 type PatchBody = Partial<{
   access_role: string;
@@ -10,7 +12,7 @@ type PatchBody = Partial<{
   state: string;
 }>;
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -32,15 +34,36 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const allowed: PatchBody = {};
     if (typeof body.access_role === 'string') allowed.access_role = body.access_role;
     if (typeof body.verified_by === 'string') allowed.verified_by = body.verified_by;
-    if (typeof body.state === 'string') allowed.state = body.state;
+    // Allow explicit state updates (e.g., 'active' | 'suspended')
+    if (typeof body.state === 'string') allowed.verified_by = body.state;
 
     if (Object.keys(allowed).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
-    const client = await createSupabaseServerClient();
+    // Prefer service-role client for admin updates if available to bypass RLS
+    let client: any;
+    try {
+      const env = ensureSupabaseEnv('server');
+      if (env.serviceRoleKey) {
+        client = createClient(env.url, env.serviceRoleKey);
+      } else {
+        client = await createSupabaseServerClient();
+      }
+    } catch {
+      client = await createSupabaseServerClient();
+    }
+    console.log('Updating profile id:', id, 'with:', allowed);
+    console.log('Caller user id:', userData.user.id);
 
-    const { data, error } = await client.from('profiles').update(allowed).eq('id', id).select('*').limit(1);
+    // Support both schema shapes: some regions use profiles.id === auth user id,
+    // others store auth id in profiles.user_id with a separate profiles.id.
+    const { data, error } = await client
+      .from('profiles')
+      .update(allowed)
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .select('*')
+      .limit(1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

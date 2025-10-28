@@ -23,10 +23,20 @@ function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
 }
 
 function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
-  const color = who === "admin" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-    : who === "partner_org" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-      : "bg-muted text-foreground/80 border-muted-foreground/20";
-  const label = who === "admin" ? "Verified by Admin" : who === "partner_org" ? "Partner Verified" : "Self";
+  const color = who === "admin"
+    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+    : who === "partner_org"
+      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+      : who === "suspended"
+        ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+        : "bg-muted text-foreground/80 border-muted-foreground/20";
+  const label = who === "admin"
+    ? "Verified by Admin"
+    : who === "partner_org"
+      ? "Partner Verified"
+      : who === "suspended"
+        ? "Suspended"
+        : "Self";
   return <Badge variant="outline" className={`${color}`}>{label}</Badge>;
 }
 
@@ -68,7 +78,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
 
   async function apiUpdate(id: string, patch: Partial<Profile>, successLabel: string) {
     try {
-      const res = await fetch(`/api/admin/profiles/${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/admin/profiles/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch),
@@ -239,9 +249,19 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                             size="sm"
                             disabled={isUnregistered}
                             title={isUnregistered ? "Register this user to verify" : undefined}
-                            onClick={() => apiUpdate(p.id, { verified_by: 'admin' } as any, 'Verified')}
+                            onClick={() => apiUpdate(p.id, { verified_by: 'admin' } as any, 'Verified by admin')}
                           >
-                            <UserCheck className="h-4 w-4 mr-2" /> Verify
+                            <ShieldCheck className="h-4 w-4 mr-2" /> Admin verify
+                          </Button>
+
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={isUnregistered}
+                            title={isUnregistered ? "Register this user to verify" : undefined}
+                            onClick={() => apiUpdate(p.id, { verified_by: 'partner_org' } as any, 'Verified by partner org')}
+                          >
+                            <UserCheck className="h-4 w-4 mr-2" /> Partner verify
                           </Button>
 
                           <Button
@@ -258,6 +278,24 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                               <><ShieldCheck className="h-4 w-4 mr-2" /> Activate</>
                             ) : (
                               <><UserX className="h-4 w-4 mr-2" /> Suspend</>
+                            )}
+                          </Button>
+
+                          <Button
+                            variant={p.verified_by === 'suspended' ? 'secondary' : 'outline'}
+                            size="sm"
+                            disabled={isUnregistered}
+                            title={isUnregistered ? "Register this user to change verification" : undefined}
+                            onClick={() => {
+                              if (isUnregistered) return;
+                              const next = p.verified_by === 'suspended' ? 'self' : 'suspended';
+                              apiUpdate(p.id, { verified_by: next as any }, next === 'suspended' ? 'Marked suspended' : 'Marked self-verified');
+                            }}
+                          >
+                            {p.verified_by === 'suspended' ? (
+                              <><ShieldCheck className="h-4 w-4 mr-2" /> Unsuspend (verify self)</>
+                            ) : (
+                              <><UserX className="h-4 w-4 mr-2" /> Mark suspended</>
                             )}
                           </Button>
                         </div>

@@ -17,7 +17,7 @@ function isDemoProvider() {
   return p === 'demo';
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const session = await requireServerSession();
     const callerRole = session.user.role;
@@ -32,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { id } = await params;
+    const { id } = params;
     const body = (await req.json()) as PatchBody;
     const allowed: PatchBody = {};
     if (typeof body.access_role === 'string') allowed.access_role = body.access_role;
@@ -67,7 +67,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       },
     });
 
-    const { data, error } = await client.from('profiles').update(allowed).eq('id', id).select('*').limit(1);
+    const { data, error } = await client
+      .from('profiles')
+      .update(allowed)
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .select('*')
+      .limit(1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

@@ -4,7 +4,7 @@ import z from 'zod';
 export const AccessRoles = ['team_member', 'dispatcher_basic', 'dispatcher_verified', 'dispatcher_admin'] as const;
 export type AccessRole = (typeof AccessRoles)[number];
 
-export const VerifiedBy = ['self', 'partner_org', 'admin'] as const;
+export const VerifiedBy = ['self', 'partner_org', 'admin', 'suspended'] as const;
 export type VerifiedBy = (typeof VerifiedBy)[number];
 
 // Descriptions for tooltips or help text
@@ -19,6 +19,7 @@ export const VerifiedByDescriptions: Record<VerifiedBy, string> = {
   self: 'This user verified themselves during signup.',
   partner_org: 'Verified through a trusted partner organization.',
   admin: 'Verified directly by a system admin.',
+  suspended: 'Account is suspended (set by admin).',
 };
 
 export function verifierLabel(source: VerifiedBy): string {
@@ -29,6 +30,8 @@ export function verifierLabel(source: VerifiedBy): string {
       return 'Partner Org';
     case 'admin':
       return 'Admin';
+    case 'suspended':
+      return 'Suspended';
   }
 }
 

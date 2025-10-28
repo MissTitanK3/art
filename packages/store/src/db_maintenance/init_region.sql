@@ -29,7 +29,7 @@
       access_role IN ('team_member','dispatcher_basic','dispatcher_verified','dispatcher_admin')
     ),
     CONSTRAINT profiles_verified_by_check CHECK (
-      verified_by IN ('self','partner_org','admin')
+      verified_by IN ('self','partner_org','admin','suspended')
     ),
     CONSTRAINT profiles_field_roles_json_check CHECK (
       field_roles IS NULL OR jsonb_typeof(field_roles) = 'array'
