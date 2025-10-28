@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { jsonError } from '@/lib/api/responses';
 import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId, getPods } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
     const row = Array.isArray(data) ? data[0] : (data as any);
     return NextResponse.json({ pod: row });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+    return jsonError(e);
   }
 }
 
@@ -89,6 +90,6 @@ export const GET = async (_req: Request) => {
     const pods = await getPods();
     return NextResponse.json({ pods });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+    return jsonError(e);
   }
 };

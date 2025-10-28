@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { jsonError } from '@/lib/api/responses';
 import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
@@ -84,7 +85,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const row = Array.isArray(data) ? data[0] : (data as any);
     return NextResponse.json({ pod: row ?? null });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+    return jsonError(e);
   }
 }
 
@@ -97,6 +98,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+    return jsonError(e);
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { jsonError } from '@/lib/api/responses';
 import { getProfiles, type ProfilesFilter } from '@/lib/dal/admin';
 
 export async function GET(req: Request) {
@@ -19,7 +20,6 @@ export async function GET(req: Request) {
     const profiles = await getProfiles(filter);
     return NextResponse.json({ profiles });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+    return jsonError(e);
   }
 }
-
