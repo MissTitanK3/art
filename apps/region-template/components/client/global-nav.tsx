@@ -12,8 +12,16 @@ import { Button } from "@workspace/ui/components/button";
 
 function LinkAdapter(props: LinkLikeProps) {
   const { href = "#", children, className, target, rel, onClick } = props;
+  const isSignOut = typeof href === 'string' && href.startsWith('/sign-out');
   return (
-    <NextLink href={href} className={className} target={target} rel={rel} onClick={onClick}>
+    <NextLink
+      href={href}
+      className={className}
+      target={target}
+      rel={rel}
+      onClick={onClick}
+      prefetch={isSignOut ? false : undefined}
+    >
       {children}
     </NextLink>
   );
