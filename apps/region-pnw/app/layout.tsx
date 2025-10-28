@@ -10,6 +10,11 @@ import { NavRole } from "@workspace/store/utils/nav";
 import { getServerSession } from "@/lib/auth/server";
 import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
 
+// Ensure layout and session are always computed per-request in production
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
+
 // ---------- Metadata ----------
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org"),
@@ -97,4 +102,3 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     </html>
   );
 }
-

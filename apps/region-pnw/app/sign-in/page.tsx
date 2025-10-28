@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Sign in",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SignInPage() {
   const session = await getServerSession();
   if (session) {
