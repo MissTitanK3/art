@@ -130,7 +130,6 @@ function ProfilePageContent() {
   return (
     <div className="max-w-5xl mx-auto p-0 md:p-8">
       {/* Always mount the data layer so it can hydrate from Supabase */}
-      <ProfileDataLayer />
       <ReasonBanner />
       <h1 className="text-2xl font-bold mb-2">My Profile</h1>
 
@@ -157,9 +156,6 @@ function ProfilePageContent() {
                   <div className="font-semibold">Complete verification</div>
                   <div className="opacity-90">Your account may require verification and risk acknowledgement.</div>
                 </div>
-                <Button type="button" onClick={handleVerifyAll}>
-                  Verify now
-                </Button>
               </div>
             </div>
           ) : null}
@@ -167,6 +163,7 @@ function ProfilePageContent() {
           {/* Profile is present; editor below reflects current store state */}
         </>
       )}
+      <ProfileDataLayer />
     </div>
   );
 }

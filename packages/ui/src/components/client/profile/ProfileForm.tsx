@@ -308,6 +308,9 @@ export function ProfileForm({
                 <span className="text-sm">
                   I understand the risks of field work and will follow safety protocols
                 </span>
+                <span className="text-sm">
+                  In order to enable the toggle, please review the risk information below by opening the pop up. After you have reviewed it, you can acknowledge the risks by toggling the switch.
+                </span>
                 <Switch
                   checked={!!field.value}
                   onCheckedChange={field.onChange}
