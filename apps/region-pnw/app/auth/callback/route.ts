@@ -75,6 +75,14 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
+// Optional: return 204 for direct GET visits to avoid 405 noise
+export async function GET() {
+  return new Response(null, {
+    status: 204,
+    headers: { 'cache-control': 'no-store' },
+  });
+}
+
 // Ensure this handler never gets statically optimized and always runs per-request
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
