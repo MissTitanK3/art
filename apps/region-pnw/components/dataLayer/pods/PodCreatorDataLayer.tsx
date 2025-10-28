@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { channels, slugify, Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import {
   PodCreatorLayout,
   PodCreatorLayoutErrors,

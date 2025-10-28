@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { getServerSession } from "@/lib/auth/server";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { SignInCard } from "@/components/client/auth/SignInCard";
 
 export const metadata: Metadata = {
@@ -11,10 +11,23 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function SignInPage() {
-  const session = await getServerSession();
-  if (session) {
-    redirect("/");
+export default async function SignInPage({
+  searchParams,
+}: {
+  // Next.js 15 passes searchParams as a Promise
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const supabase = await createSupabaseServerClient();
+  const { data: userRes } = await supabase.auth.getUser();
+  if (userRes?.user) {
+    const redirectTo = Array.isArray(sp?.redirectTo)
+      ? sp?.redirectTo?.[0]
+      : sp?.redirectTo;
+    const target = (redirectTo && typeof redirectTo === "string")
+      ? redirectTo
+      : "/";
+    redirect(target);
   }
 
   return (

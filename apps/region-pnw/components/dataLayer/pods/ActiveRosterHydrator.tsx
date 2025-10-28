@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { RosterEntry } from "@workspace/store/types/pod";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {

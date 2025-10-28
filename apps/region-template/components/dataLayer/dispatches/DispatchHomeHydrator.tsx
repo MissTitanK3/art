@@ -4,7 +4,7 @@ import * as React from "react";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import type { DispatchSubmission } from "@workspace/store/types/global";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToSubmission(row: any): DispatchSubmission {
   const updates = Array.isArray(row?.updates) ? row.updates : [];

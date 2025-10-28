@@ -9,7 +9,7 @@ import {
   PodRosterLayout,
   PodRosterLayoutProps,
 } from "@workspace/ui/layout/pods/PodRosterLayout";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {

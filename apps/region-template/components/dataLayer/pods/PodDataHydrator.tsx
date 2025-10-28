@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToPod(row: any): Pod {
   const channels = Array.isArray(row?.channels) ? row.channels : [];

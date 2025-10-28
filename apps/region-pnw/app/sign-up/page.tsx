@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getServerSession } from "@/lib/auth/server";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { SignUpCard } from "@/components/client/auth/SignUpCard";
 
 export const metadata: Metadata = {
@@ -8,8 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SignUpPage() {
-  const session = await getServerSession();
-  if (session) {
+  const supabase = await createSupabaseServerClient();
+  const { data: userRes } = await supabase.auth.getUser();
+  if (userRes?.user) {
     redirect("/");
   }
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 import crypto from 'node:crypto';
@@ -38,7 +38,8 @@ export async function POST(req: Request) {
     const signer_role = body.signer_role ?? 'pod_leader';
     const signer_rot = body.signer_rot ?? '';
     const status = body.status ?? 'active';
-    if (!subjectId || !signerId) return NextResponse.json({ error: 'subjectId and signerId are required' }, { status: 400 });
+    if (!subjectId || !signerId)
+      return NextResponse.json({ error: 'subjectId and signerId are required' }, { status: 400 });
 
     if (isDemoProvider()) {
       return NextResponse.json({
@@ -84,11 +85,7 @@ export async function POST(req: Request) {
       signed_entry_hash: body.signed_entry_hash ?? crypto.randomUUID(),
     } as any;
 
-    const { data, error } = await client
-      .from('trust_signatures')
-      .upsert(row)
-      .select('*')
-      .limit(1);
+    const { data, error } = await client.from('trust_signatures').upsert(row).select('*').limit(1);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const out = Array.isArray(data) ? data[0] : (data as any);
     return NextResponse.json({

@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Channel, Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import {
   PodManagementLayout,
   PodManagementLayoutErrors,

@@ -6,7 +6,7 @@ import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
 import { MissingPersonsDirectory } from "@workspace/ui/components/missing-persons/MissingPersonsDirectory";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToDetaineeIntake(row: any): DetaineeIntake {
   return {

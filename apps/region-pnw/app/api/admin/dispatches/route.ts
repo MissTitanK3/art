@@ -1,22 +1,22 @@
 import { NextResponse } from 'next/server';
 import { jsonError } from '@/lib/api/responses';
-import { requireServerSession } from '@/lib/auth/server';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
 import { createClient } from '@supabase/supabase-js';
-import { demoDispatches } from '@/data/demoDispatches';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 
 export async function GET() {
   try {
-    const session = await requireServerSession();
-    let authorized = regionAdmins.includes(session.user.role);
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
+    let authorized = !!(userData.user as any)?.role && regionAdmins.includes((userData.user as any).role);
     if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
-      authorized = !!callerProfile && (
-        callerProfile.access_role === 'dispatcher_admin' ||
-        callerProfile.access_role === 'dispatcher_verified'
-      );
+      const callerProfile = await getProfileByUserId(userData.user.id);
+      authorized =
+        !!callerProfile &&
+        (callerProfile.access_role === 'dispatcher_admin' || callerProfile.access_role === 'dispatcher_verified');
     }
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
@@ -34,10 +34,11 @@ export async function GET() {
         const rows = Array.isArray(data) ? data : [];
         return NextResponse.json({ submissions: rows });
       }
-    } catch {}
-
-    // Fallback to demo data when no DB is configured
-    return NextResponse.json({ submissions: demoDispatches });
+      // If no service role is present, we can't list all dispatches safely
+      return NextResponse.json({ error: 'Service role not configured' }, { status: 501 });
+    } catch (e: any) {
+      return NextResponse.json({ error: e?.message ?? 'Supabase not configured' }, { status: 500 });
+    }
   } catch (e: any) {
     return jsonError(e);
   }

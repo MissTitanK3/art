@@ -6,7 +6,7 @@ import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchUpdate, LogisticsItem } from "@workspace/store/types/dispatch";
 
 type Props = {
@@ -352,11 +352,11 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
   const handleUpdateSubmission = async (patch: Partial<DispatchSubmission>) => {
     try {
       await persistSubmissionPatchToDatabase(submission.id, patch);
-    } catch {}
+    } catch { }
     if (patch.logistics) {
       const prev = submission.logistics ?? [];
       const next = patch.logistics ?? [];
-      try { await persistLogisticsDiff(submission.id, prev, next); } catch {}
+      try { await persistLogisticsDiff(submission.id, prev, next); } catch { }
     }
     updateSubmission(submission.id, patch);
   };
@@ -369,19 +369,19 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
       author: u.author,
       text: u.text,
     };
-    try { await insertUpdateRow(submission.id, newUpdate); } catch {}
+    try { await insertUpdateRow(submission.id, newUpdate); } catch { }
     const nextUpdates = [...(submission.updates ?? []), newUpdate];
     updateSubmission(submission.id, { updates: nextUpdates });
   };
 
   const handleEditUpdate = async (updateId: string, text: string) => {
-    try { await updateUpdateRow(updateId, text); } catch {}
+    try { await updateUpdateRow(updateId, text); } catch { }
     const nextUpdates = (submission.updates ?? []).map((u) => u.id === updateId ? { ...u, text } : u);
     updateSubmission(submission.id, { updates: nextUpdates });
   };
 
   const handleRemoveUpdate = async (updateId: string) => {
-    try { await deleteUpdateRow(updateId); } catch {}
+    try { await deleteUpdateRow(updateId); } catch { }
     const nextUpdates = (submission.updates ?? []).filter((u) => u.id !== updateId);
     updateSubmission(submission.id, { updates: nextUpdates });
   };

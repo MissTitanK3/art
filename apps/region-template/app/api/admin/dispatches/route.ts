@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createClient } from '@supabase/supabase-js';
 
 export async function GET() {
@@ -11,10 +11,9 @@ export async function GET() {
     let authorized = regionAdmins.includes(session.user.role);
     if (!authorized) {
       const callerProfile = await getProfileByUserId(session.user.id);
-      authorized = !!callerProfile && (
-        callerProfile.access_role === 'dispatcher_admin' ||
-        callerProfile.access_role === 'dispatcher_verified'
-      );
+      authorized =
+        !!callerProfile &&
+        (callerProfile.access_role === 'dispatcher_admin' || callerProfile.access_role === 'dispatcher_verified');
     }
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
@@ -38,4 +37,3 @@ export async function GET() {
     return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
   }
 }
-

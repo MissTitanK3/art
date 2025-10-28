@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchListLayout } from "@workspace/ui/layout/dispatch/DispatchListLayout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToSubmission(row: any): DispatchSubmission {
   const updates = Array.isArray(row?.updates) ? row.updates : [];

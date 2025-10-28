@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import { jsonError } from '@/lib/api/responses';
-import { requireServerSession } from '@/lib/auth/server';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies as nextCookies } from 'next/headers';
 
 type PatchBody = Partial<{
   access_role: string;
@@ -15,13 +12,15 @@ type PatchBody = Partial<{
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireServerSession();
-    const callerRole = session.user.role;
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
+    const callerRole = (userData.user as any)?.role as string | undefined;
 
     // Allow region admins directly; otherwise require dispatcher_admin via profile
-    let authorized = regionAdmins.includes(callerRole);
+    let authorized = !!callerRole && regionAdmins.includes(callerRole as any);
     if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
+      const callerProfile = await getProfileByUserId(userData.user.id);
       authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
     }
     if (!authorized) {
@@ -39,31 +38,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
-    const env = ensureSupabaseEnv('server');
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {}
-        },
-      },
-    });
+    const client = await createSupabaseServerClient();
 
-    const { data, error } = await client
-      .from('profiles')
-      .update(allowed)
-      .eq('id', id)
-      .select('*')
-      .limit(1);
+    const { data, error } = await client.from('profiles').update(allowed).eq('id', id).select('*').limit(1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

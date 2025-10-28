@@ -205,7 +205,7 @@ export function CountySelectDataLayer() {
           <>
             <h2 className="mb-1 text-lg font-semibold">No profile found</h2>
             <p className="mb-4 text-sm text-muted-foreground">
-              Restore your demo profile first, then pick counties.
+              Create your profile first, then pick counties.
             </p>
             <Link href="/my-profile" className="underline">
               Back to profile

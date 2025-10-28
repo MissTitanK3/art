@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import { getServerSession } from "@/lib/auth/server";
-import RedirectToSignIn from "@/components/client/RedirectToSignIn";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 
 type AuthedLayoutProps = {
   children: ReactNode;
@@ -10,10 +11,12 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 export default async function AuthedLayout({ children }: AuthedLayoutProps) {
-  const session = await getServerSession();
-  if (!session) {
-    // Use a client-side redirect so we can capture the exact current path
-    return <RedirectToSignIn />;
+  const supabase = await createSupabaseServerClient();
+  const { data: userRes } = await supabase.auth.getUser();
+  if (!userRes?.user) {
+    const h = await headers();
+    const nextUrl = h.get("next-url") ?? "/";
+    redirect(`/sign-in?redirectTo=${encodeURIComponent(nextUrl)}`);
   }
   return <>{children}</>;
 }

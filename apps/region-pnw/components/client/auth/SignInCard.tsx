@@ -14,12 +14,6 @@ import {
   CardFooter,
 } from "@workspace/ui/components/card";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  createDemoSession,
-  encodeSession,
-  ONE_WEEK_SECONDS,
-  SESSION_COOKIE,
-} from "@/lib/auth/providers/demo/common";
 
 type SignInCardProps = { redirectTo?: string };
 const FALLBACK_REDIRECT = "/";
@@ -47,22 +41,8 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
       setPending(true);
 
       try {
-        // Demo mode: fake session cookie + update context
-        if (providerId === "demo") {
-          const session = createDemoSession(email);
-          const encoded = encodeSession(session);
-          document.cookie = `${SESSION_COOKIE}=${encoded}; path=/; max-age=${ONE_WEEK_SECONDS}; SameSite=Lax`;
-
-          setSession(session);
-          router.push(target);
-          return;
-        }
-
-        if (providerId === "supabase") {
+        {
           const session = await signInWithPassword({ email, password });
-          // Ensure demo-mode cookie is cleared to avoid confusing other code paths
-          try { document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Lax`; } catch {}
-          // Do NOT set demo cookie in supabase mode; keep a single source of truth
           setSession(session);
           // Ensure server-side Supabase cookies are synchronized before navigating
           try {
@@ -78,13 +58,11 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
               }),
               keepalive: true,
             });
-          } catch {}
+          } catch { }
           await refresh();
           router.push(target);
           return;
         }
-
-        throw new Error(`Unsupported auth provider: ${providerId}`);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to sign in.");
       } finally {
@@ -100,11 +78,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
     <Card className="mx-auto mt-12 w-full max-w-md border-border/60 bg-background/95 backdrop-blur">
       <CardHeader>
         <CardTitle>Sign in to your region</CardTitle>
-        <CardDescription>
-          {providerId === "demo"
-            ? "Demo mode: ANY email/password works and logs you in locally."
-            : "Use your regional credentials to access dispatch tools."}
-        </CardDescription>
+        <CardDescription>Use your regional credentials to access dispatch tools.</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={handleSubmit}>
@@ -152,15 +126,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
         </form>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm text-muted-foreground">
-        {providerId === "demo" ? (
-          <>
-            Demo users are stored locally until the browser is cleared. No data is sent to a server.
-          </>
-        ) : (
-          <>
-            Don’t have an account? <a className="underline" href="/sign-up">Create one</a>
-          </>
-        )}
+        Don’t have an account? <a className="underline" href="/sign-up">Create one</a>
       </CardFooter>
     </Card>
   );

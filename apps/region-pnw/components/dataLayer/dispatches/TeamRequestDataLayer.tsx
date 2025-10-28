@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import TeamRequestForm from "@workspace/ui/components/client/team-request/TeamRequestForm";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
 

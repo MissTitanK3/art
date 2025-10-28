@@ -4,8 +4,9 @@
 import * as React from "react";
 import DispatchClient from "@workspace/ui/layout/admin/dispatch/dispatch";
 import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRow(row: any): DispatchSubmission {
   return {

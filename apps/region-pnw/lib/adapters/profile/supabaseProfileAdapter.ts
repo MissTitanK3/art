@@ -1,9 +1,9 @@
 // apps/region-pnw/lib/adapters/profile/supabaseProfileAdapter.ts
 'use client';
 
+import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
 import type { Profile } from '@workspace/store/types/global.ts';
 import type { ProfileAdapter } from '@workspace/store/types/profile.ts';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 function isUuid(value: string): boolean {
   return /^(\{)?[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[1-5][0-9a-fA-F]{3}\-[89abAB][0-9a-fA-F]{3}\-[0-9a-fA-F]{12}(\})?$/.test(

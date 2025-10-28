@@ -20,11 +20,6 @@ import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Textarea } from "@workspace/ui/components/textarea";
 import type { Profile } from "@workspace/store/types/global.ts";
 import { FIELD_ROLE_OPTIONS, type FieldRole } from "@workspace/store/types/roles.ts";
-import {
-  SESSION_COOKIE,
-  ONE_WEEK_SECONDS,
-  encodeSession,
-} from "@/lib/auth/providers/demo/common";
 
 const PENDING_PROFILE_KEY = "pending-profile";
 
@@ -97,13 +92,6 @@ export function SignUpCard() {
         } as Partial<Profile>;
 
         if (session) {
-          // Persist lightweight app session cookie for client/server harmony
-          try {
-            document.cookie = `${SESSION_COOKIE}=${encodeSession(session)}; path=/; max-age=${ONE_WEEK_SECONDS}; SameSite=Lax`;
-          } catch {
-            // non-fatal
-          }
-
           // Ensure React auth context and provider state are fully synced
           try {
             setSession(session);

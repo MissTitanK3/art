@@ -5,7 +5,7 @@ import { DispatchStoreContext, useDispatchStore } from "@/providers/DispatchStor
 import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToShift(row: any): DispatchShift {
   return {
@@ -87,8 +87,8 @@ export default function DispatchShiftsDataLayer() {
   const activeShifts = remoteShifts ? remoteShifts.filter((shift) => isShiftActive(shift)) : getActiveShifts();
   const upcomingShifts = remoteShifts
     ? remoteShifts
-        .filter((shift) => new Date(shift.startsAt) > new Date())
-        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+      .filter((shift) => new Date(shift.startsAt) > new Date())
+      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
     : getUpcomingShifts(24);
 
   const handleAddShift = React.useCallback(

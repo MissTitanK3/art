@@ -5,7 +5,7 @@ import * as React from "react";
 import { exportLegalAidReport } from "@/src/pipelines/exportLegalAidReport";
 import { MissingPersonIntakeForm } from "@workspace/ui/components/missing-persons/MissingPersonIntakeForm";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function toRow(record: DetaineeIntake) {
   return {

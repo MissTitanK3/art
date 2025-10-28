@@ -1,18 +1,21 @@
-import { NextResponse } from "next/server";
-import { getAuthProviderId } from "@/lib/auth/adapter";
-import { getServerSession } from "@/lib/auth/server";
-import { getProfileByUserId } from "@/lib/dal/admin";
-import { regionAdmins } from "@workspace/store/utils/nav";
+import { NextResponse } from 'next/server';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
+import { getProfileByUserId } from '@/lib/dal/admin';
+import { regionAdmins } from '@workspace/store/utils/nav';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
   try {
-    const provider = getAuthProviderId();
-    const session = await getServerSession();
-    const userId = session?.user?.id ?? null;
-    const role = session?.user?.role ?? null;
+    const supabase = await createSupabaseServerClient();
+    const [{ data: supaUser }, { data: supaSession }] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.auth.getSession(),
+    ]);
+    const provider = 'supabase';
+    const userId = supaUser?.user?.id ?? null;
+    const role = ((supaUser?.user as any)?.user_metadata?.role ?? (supaUser?.user as any)?.role ?? null) as any;
 
     let profile: any = null;
     if (userId) {
@@ -31,7 +34,8 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       provider,
-      session: session ? { user: { id: userId, role }, provider: session.provider } : null,
+      userId,
+      role,
       roleIsRegionAdmin: role ? regionAdmins.includes(role as any) : false,
       profile,
     });

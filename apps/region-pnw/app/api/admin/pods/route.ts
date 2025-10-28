@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import { jsonError } from '@/lib/api/responses';
-import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId, getPods } from '@/lib/dal/admin';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies as nextCookies } from 'next/headers';
 import { slugify } from '@workspace/store/types/pod.ts';
 
 type PostBody = Partial<{
@@ -16,13 +13,16 @@ type PostBody = Partial<{
 
 export async function POST(req: Request) {
   try {
-    const session = await requireServerSession();
-    const callerRole = session.user.role;
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
+    const user = userData.user as any;
+    const callerRole = user?.role as string | undefined;
 
     // Allow region admins directly; otherwise require dispatcher_admin via profile
-    let authorized = regionAdmins.includes(callerRole);
+    let authorized = !!callerRole && regionAdmins.includes(callerRole as any);
     if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
+      const callerProfile = await getProfileByUserId(userData.user.id);
       authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
     }
     if (!authorized) {
@@ -41,30 +41,9 @@ export async function POST(req: Request) {
       channels: Array.isArray(body.channels) ? body.channels : [],
     };
 
-    const env = ensureSupabaseEnv('server');
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {}
-        },
-      },
-    });
+    const client = await createSupabaseServerClient();
 
-    const { data, error } = await client
-      .from('pods')
-      .insert(payload)
-      .select('id, slug, name, area, channels')
-      .limit(1);
+    const { data, error } = await client.from('pods').insert(payload).select('id, slug, name, area, channels').limit(1);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const row = Array.isArray(data) ? data[0] : (data as any);
@@ -76,14 +55,16 @@ export async function POST(req: Request) {
 
 export const GET = async (_req: Request) => {
   try {
-    const session = await requireServerSession();
-    let authorized = regionAdmins.includes(session.user.role);
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
+    const user = userData.user as any;
+    let authorized = !!user?.role && regionAdmins.includes(user.role);
     if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
-      authorized = !!callerProfile && (
-        callerProfile.access_role === 'dispatcher_admin' ||
-        callerProfile.access_role === 'dispatcher_verified'
-      );
+      const callerProfile = await getProfileByUserId(userData.user.id);
+      authorized =
+        !!callerProfile &&
+        (callerProfile.access_role === 'dispatcher_admin' || callerProfile.access_role === 'dispatcher_verified');
     }
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 

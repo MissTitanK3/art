@@ -1,10 +1,10 @@
 // apps/region-pnw/components/dataLayer/admin/AdminTrainingDataLayer.tsx
 import TrainingClient from "@workspace/ui/layout/admin/training/training";
-import { ensureSupabaseEnv } from "@/lib/auth/providers/supabase/common";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
 import type { AcademyTrainingSession, AcademyTrainingSessionParticipant } from "@workspace/store/types/academy";
 import { TraingingSessionsDemoData } from "@/data/demoAcademy";
+import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 
 function mapRowToSession(
   row: any,
@@ -45,7 +45,7 @@ export default async function AdminTrainingDataLayer() {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch {}
+          } catch { }
         },
       },
     });

@@ -4,8 +4,8 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 import MissingPersonsDataLayer from "@/components/dataLayer/missing-persons/MissingPersonsDataLayer";
 import { Button } from "@workspace/ui/components/button";
-import { ensureSupabaseEnv } from "@/lib/auth/providers/supabase/common";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
+import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 
 function mapRowToDetaineeIntake(row: any): DetaineeIntake {
   return {
@@ -65,7 +65,7 @@ export default async function MissingPersonsPage() {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch {}
+          } catch { }
         },
       },
     });

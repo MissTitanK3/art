@@ -6,7 +6,7 @@ import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchUpdate, LogisticsItem } from "@workspace/store/types/dispatch";
 
 type Props = {

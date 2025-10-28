@@ -6,7 +6,7 @@ import { PodsListLayout } from "@workspace/ui/layout/pods/PodsListLayout";
 import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/PodsListLayout";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 type NormalizedPod = Pod & PodsListLayoutPod;
 

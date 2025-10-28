@@ -7,7 +7,8 @@ import { Toaster } from "@workspace/ui/components/sonner";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "@/components/client/global-nav";
 import { NavRole } from "@workspace/store/utils/nav";
-import { getServerSession } from "@/lib/auth/server";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
+import type { AuthSession } from "@/lib/auth/types";
 import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
 
 // Ensure layout and session are always computed per-request in production
@@ -81,21 +82,36 @@ const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 // ---------- Layout ----------
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession();
+  // Build our AuthSession from Supabase server auth
+  const supabase = await createSupabaseServerClient();
+  const [{ data: supaUser }, { data: supaSession }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.auth.getSession(),
+  ]);
+
+  const session: AuthSession | null = supaUser?.user && supaSession?.session
+    ? {
+      user: {
+        id: supaUser.user.id,
+        email: supaUser.user.email ?? "",
+        // Prefer explicit metadata role, fallback to any server-provided role, else guest
+        role: ((supaUser.user as any)?.user_metadata?.role ?? (supaUser.user as any)?.role ?? "guest") as any,
+        fullName: (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
+        avatarUrl: (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
+        metadata: (supaUser.user as any)?.user_metadata ?? undefined,
+      },
+      accessToken: (supaSession.session as any)?.access_token ?? "",
+      refreshToken: (supaSession.session as any)?.refresh_token ?? undefined,
+      expiresAt: (supaSession.session as any)?.expires_at ?? null,
+      provider: "supabase",
+    }
+    : null;
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}>
         <AppProviders initialSession={session}>
-          <GlobalNavBridge
-          // rightSlot={
-          //   <Toaster
-          //     richColors
-          //     closeButton
-          //     position="top-right"
-          //   />
-          // }
-          />
+          <GlobalNavBridge />
           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
         </AppProviders>
       </body>

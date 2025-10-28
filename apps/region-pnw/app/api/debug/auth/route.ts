@@ -1,16 +1,24 @@
-import { NextResponse } from "next/server";
-import { cookies as nextCookies } from "next/headers";
-import { getServerSession } from "@/lib/auth/server";
-import { getAuthProviderId } from "@/lib/auth/adapter";
+import { NextResponse } from 'next/server';
+import { cookies as nextCookies } from 'next/headers';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
-  const provider = getAuthProviderId();
   const cookieStore = await nextCookies();
   const cookieNames = cookieStore.getAll().map((c) => c.name);
-  const session = await getServerSession();
+
+  // Also check Supabase server auth for comparison
+  const supabase = await createSupabaseServerClient();
+  const [{ data: supaUser }, { data: supaSession }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.auth.getSession(),
+  ]);
+
+  // Prefer explicit env provider, else infer from Supabase presence
+  const provider =
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER ?? (supaUser?.user || supaSession?.session ? 'supabase' : 'unknown');
 
   const has = (key: string) => Boolean(process.env[key] && String(process.env[key]).length > 0);
 
@@ -20,22 +28,28 @@ export async function GET() {
     cookies: {
       names: cookieNames,
     },
-    serverSession: session
-      ? {
-          user: {
-            id: session.user.id,
-            email: session.user.email,
-            role: session.user.role,
-          },
-          provider: session.provider ?? null,
-          expiresAt: session.expiresAt ?? null,
-        }
-      : null,
+    serverSession: null,
+    supabaseAuth:
+      supaUser?.user || supaSession?.session
+        ? {
+            user: supaUser?.user
+              ? {
+                  id: supaUser.user.id,
+                  email: supaUser.user.email,
+                  role: (supaUser.user as any)?.role ?? (supaUser.user as any)?.user_metadata?.role ?? null,
+                }
+              : null,
+            session: supaSession?.session
+              ? {
+                  expiresAt: (supaSession.session as any)?.expires_at ?? null,
+                }
+              : null,
+          }
+        : null,
     env: {
       NEXT_PUBLIC_AUTH_PROVIDER: process.env.NEXT_PUBLIC_AUTH_PROVIDER ?? null,
-      NEXT_PUBLIC_SUPABASE_URL_present: has("NEXT_PUBLIC_SUPABASE_URL"),
-      NEXT_PUBLIC_SUPABASE_ANON_KEY_present: has("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+      NEXT_PUBLIC_SUPABASE_URL_present: has('NEXT_PUBLIC_SUPABASE_URL'),
+      NEXT_PUBLIC_SUPABASE_ANON_KEY_present: has('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     },
   });
 }
-

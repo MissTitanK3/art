@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 
@@ -67,12 +67,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       },
     });
 
-    const { data, error } = await client
-      .from('profiles')
-      .update(allowed)
-      .eq('id', id)
-      .select('*')
-      .limit(1);
+    const { data, error } = await client.from('profiles').update(allowed).eq('id', id).select('*').limit(1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

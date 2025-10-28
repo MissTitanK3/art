@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { jsonError } from '@/lib/api/responses';
-import { requireServerSession } from '@/lib/auth/server';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 
@@ -15,10 +15,12 @@ type PatchBody = Partial<{
 }>;
 
 async function authz() {
-  const session = await requireServerSession();
-  let authorized = regionAdmins.includes(session.user.role);
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) return false;
+  let authorized = !!(userData.user as any)?.role && regionAdmins.includes((userData.user as any).role);
   if (!authorized) {
-    const callerProfile = await getProfileByUserId(session.user.id);
+    const callerProfile = await getProfileByUserId(userData.user.id);
     authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
   }
   return authorized;
@@ -26,25 +28,24 @@ async function authz() {
 
 function clientFromCookies() {
   const env = ensureSupabaseEnv('server');
-  return nextCookies()
-    .then((store) =>
-      createServerClient(env.url, env.anonKey, {
-        cookies: {
-          getAll() {
-            if (!store) return [] as { name: string; value: string }[];
-            return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
-          },
-          setAll(cookies) {
-            if (!store) return;
-            try {
-              cookies.forEach(({ name, value, options }) => {
-                store.set(name, value, options as CookieOptions | undefined);
-              });
-            } catch {}
-          },
+  return nextCookies().then((store) =>
+    createServerClient(env.url, env.anonKey, {
+      cookies: {
+        getAll() {
+          if (!store) return [] as { name: string; value: string }[];
+          return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
         },
-      }),
-    );
+        setAll(cookies) {
+          if (!store) return;
+          try {
+            cookies.forEach(({ name, value, options }) => {
+              store.set(name, value, options as CookieOptions | undefined);
+            });
+          } catch {}
+        },
+      },
+    }),
+  );
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ subjectId: string; signerId: string }> }) {

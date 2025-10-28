@@ -10,7 +10,7 @@ import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 function mapRowToDetaineeIntake(row: any): DetaineeIntake {
   return {

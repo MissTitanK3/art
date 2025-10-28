@@ -7,7 +7,7 @@ import { usePodStore } from "@/providers/PodStoreProvider";
 import { CreatePathwayClassContent } from "@workspace/ui/components/academy/CreatePathwayClassContent";
 import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
 import type { AcademyClass } from "@workspace/store/usePodStore";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 type CreatePathwayClassDataLayerProps = {
   pathway: CourseBlueprint;

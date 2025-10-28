@@ -4,7 +4,7 @@
 import * as React from "react";
 import DispatchClient from "@workspace/ui/layout/admin/dispatch/dispatch";
 import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { demoDispatches } from "@/data/demoDispatches";
 

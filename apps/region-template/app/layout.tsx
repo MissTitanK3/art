@@ -82,44 +82,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}>
         <AppProviders initialSession={session}>
-          <GlobalNavBridge
-            rightSlot={
-              <Toaster
-                richColors
-                closeButton
-                position="top-right"
-              />
-            }
-          />
+          <GlobalNavBridge />
           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
         </AppProviders>
       </body>
     </html>
   );
 }
-
-// export default async function RootLayout({
-//   children,
-// }: Readonly<{ children: React.ReactNode }>) {
-//   const session = await getServerSession();
-//   const role: NavRole = session?.user.role ?? "guest";
-
-//   return (
-//     <html lang="en" suppressHydrationWarning>
-//       <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
-//         <AppProviders initialSession={session}>
-//           <GlobalNav
-//             config={navConfig}
-//             isAuthenticated={Boolean(session)}
-//             role={role}
-//             rightSlot={<Toaster
-//               richColors
-//               closeButton
-//               position="top-right"
-//             />} />
-//           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
-//         </AppProviders>
-//       </body>
-//     </html>
-//   );
-// }

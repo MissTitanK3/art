@@ -22,8 +22,8 @@ import {
   usePodAcademyDashboardStore,
 } from '@/providers/PodAcademyDashboardStoreProvider';
 import { attachCourseStatusToGroups, convertPodsToMemberProgress, deriveStats } from '@/lib/utils';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AcademyTrainingSessionParticipant } from '@workspace/store/types/academy.ts';
+import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
 
 
 export default function AcademyDashboardPage() {

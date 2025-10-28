@@ -95,13 +95,12 @@ function ReasonBanner() {
 function ProfilePageContent() {
   const profile = useProfileStore((s) => s.profile);
   const setProfile = useProfileStore((s) => s.setProfile);
-  const restoreDemo = useProfileStore((s) => s.restoreDemo);
   const { profileAdapter } = useRegionAdapters();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const needsDemoVerification = useMemo(() => {
+  const needsVerificationHint = useMemo(() => {
     if (!profile) return false;
     const unverified = !profile.verified_by || profile.verified_by === "self";
     const notElevated = profile.access_role !== "dispatcher_admin";
@@ -109,7 +108,7 @@ function ProfilePageContent() {
     return unverified || notElevated || riskNotAck;
   }, [profile]);
 
-  async function handleDemoVerifyAll() {
+  async function handleVerifyAll() {
     if (!profile) return;
     const next = {
       ...profile,
@@ -146,27 +145,20 @@ function ProfilePageContent() {
         <div className="mt-6 rounded-lg border p-6">
           <h2 className="text-lg font-semibold">No profile found</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            For demo purposes, you can restore the seeded example profile.
+            You don't have a profile yet. After signing in, create your profile to continue.
           </p>
-          <div className="mt-4">
-            <Button type="button" onClick={restoreDemo}>
-              Restore demo profile
-            </Button>
-          </div>
         </div>
       ) : (
         <>
-          {needsDemoVerification ? (
+          {needsVerificationHint ? (
             <div className="mt-4 rounded-md border border-emerald-300 bg-emerald-50 p-3 text-emerald-900">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="text-sm">
-                  <div className="font-semibold">Demo: Verify at highest level</div>
-                  <div className="opacity-90">
-                    Mark your account as verified by an admin, acknowledge risk, and grant dispatch admin access.
-                  </div>
+                  <div className="font-semibold">Complete verification</div>
+                  <div className="opacity-90">Your account may require verification and risk acknowledgement.</div>
                 </div>
-                <Button type="button" onClick={handleDemoVerifyAll}>
-                  Verify everything (demo)
+                <Button type="button" onClick={handleVerifyAll}>
+                  Verify now
                 </Button>
               </div>
             </div>

@@ -12,7 +12,7 @@ import {
   PodShiftsLayout,
   PodShiftsLayoutProps,
 } from "@workspace/ui/layout/pods/PodShiftsLayout";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 type ShiftFormState = BaseShiftIntentionFields & {
   id?: string;

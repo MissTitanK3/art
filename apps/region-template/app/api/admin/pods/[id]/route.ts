@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireServerSession } from '@/lib/auth/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
+import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 import { slugify } from '@workspace/store/types/pod.ts';

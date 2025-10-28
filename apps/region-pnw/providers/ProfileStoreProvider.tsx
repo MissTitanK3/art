@@ -6,13 +6,11 @@ import { useStoreWithEqualityFn } from 'zustand/traditional';
 import type { StoreApi } from 'zustand';
 import { createProfileStore, ProfileStoreState, ProfileStore, singletonProfileStore } from '@workspace/store/useProfileStore';
 import type { Profile } from '@workspace/store/types/global.ts';
-import { createDemoProfile } from '@/data/demoProfile';
 
 type ProfileStoreProviderProps = PropsWithChildren<{
   initialProfile?: Profile | null;
   persist?: boolean;
   storageKey?: string;
-  demoProfileFactory?: () => Profile;
 }>;
 
 const ProfileStoreContext = createContext<StoreApi<ProfileStoreState> | null>(null);
@@ -22,7 +20,6 @@ export function ProfileStoreProvider({
   initialProfile = null,
   persist = true,
   storageKey = 'profile-store',
-  demoProfileFactory = createDemoProfile,
 }: ProfileStoreProviderProps) {
   const storeRef = useRef<ProfileStore | null>(null);
 
@@ -31,7 +28,6 @@ export function ProfileStoreProvider({
       initialProfile,
       persist,
       storageKey,
-      demoProfileFactory,
     });
   }
 
