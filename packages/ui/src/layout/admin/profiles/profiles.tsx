@@ -8,10 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
 import { Switch } from "@workspace/ui/components/switch";
 import { Input } from "@workspace/ui/components/input";
 import { toast } from "sonner";
-import { Download, ShieldCheck, UserCheck, UserX } from "lucide-react";
+import { Download, ShieldCheck, UserCheck, UserX, MoreVertical } from "lucide-react";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 
 function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
@@ -224,81 +225,136 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                       <TableCell className="max-w-[180px] truncate">{p.contact_signal ?? ""}</TableCell>
                       <TableCell className="max-w-[160px] truncate">{p.coordination_zone ?? p.city ?? ""}</TableCell>
                       <TableCell className="text-right">
-                        <div className="inline-flex gap-2">
-                          <Select
-                            value={p.access_role}
-                            onValueChange={(val) => {
-                              if (isUnregistered) return;
-                              apiUpdate(p.id, { access_role: val as any }, 'Role updated');
-                            }}
-                          >
-                            <SelectTrigger className="w-[180px]" disabled={isUnregistered} aria-disabled={isUnregistered} title={isUnregistered ? "Register this user to change role" : undefined}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent align="end">
-                              {AccessRoles.map((r) => (
-                                <SelectItem key={r} value={r}>
-                                  {roleLabel(r as any)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <MoreVertical className="h-4 w-4 mr-2" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-80 p-3">
+                            <div className="space-y-3">
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-muted-foreground">Role</div>
+                                <Select
+                                  value={p.access_role}
+                                  onValueChange={(val) => {
+                                    if (isUnregistered) return;
+                                    apiUpdate(p.id, { access_role: val as any }, 'Role updated');
+                                  }}
+                                >
+                                  <SelectTrigger className="w-full" disabled={isUnregistered} aria-disabled={isUnregistered} title={isUnregistered ? "Register this user to change role" : undefined}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent align="end">
+                                    {AccessRoles.map((r) => (
+                                      <SelectItem key={r} value={r}>
+                                        {roleLabel(r as any)}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
 
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            disabled={isUnregistered}
-                            title={isUnregistered ? "Register this user to verify" : undefined}
-                            onClick={() => apiUpdate(p.id, { verified_by: 'admin' } as any, 'Verified by admin')}
-                          >
-                            <ShieldCheck className="h-4 w-4 mr-2" /> Admin verify
-                          </Button>
+                              <div className="space-y-2">
+                                <div className="text-xs font-medium text-muted-foreground">Coordination zone</div>
+                                <form
+                                  className="grid grid-cols-1 gap-2"
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (isUnregistered) return;
+                                    const fd = new FormData(e.currentTarget);
+                                    const value = String(fd.get('coordination_zone') ?? '').trim();
+                                    apiUpdate(
+                                      p.id,
+                                      { coordination_zone: value } as any,
+                                      value ? 'Zone updated' : 'Zone cleared'
+                                    );
+                                  }}
+                                >
+                                  <Input
+                                    name="coordination_zone"
+                                    placeholder="e.g. sector-001"
+                                    defaultValue={p.coordination_zone ?? ''}
+                                    disabled={isUnregistered}
+                                    title={isUnregistered ? 'Register this user to change zone' : undefined}
+                                  />
+                                  <div className="flex items-center gap-2">
+                                    <Button type="submit" size="sm" disabled={isUnregistered}>
+                                      Save
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={isUnregistered}
+                                      title={isUnregistered ? 'Register this user to change zone' : undefined}
+                                      onClick={() => apiUpdate(p.id, { coordination_zone: '' } as any, 'Zone cleared')}
+                                    >
+                                      Clear
+                                    </Button>
+                                  </div>
+                                </form>
+                              </div>
 
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            disabled={isUnregistered}
-                            title={isUnregistered ? "Register this user to verify" : undefined}
-                            onClick={() => apiUpdate(p.id, { verified_by: 'partner_org' } as any, 'Verified by partner org')}
-                          >
-                            <UserCheck className="h-4 w-4 mr-2" /> Partner verify
-                          </Button>
+                              <div className="grid grid-cols-1 gap-2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  disabled={isUnregistered}
+                                  title={isUnregistered ? "Register this user to verify" : undefined}
+                                  onClick={() => apiUpdate(p.id, { verified_by: 'admin' } as any, 'Verified by admin')}
+                                >
+                                  <ShieldCheck className="h-4 w-4 mr-2" /> Admin verify
+                                </Button>
 
-                          <Button
-                            variant={p.state === 'suspended' ? 'secondary' : 'destructive'}
-                            size="sm"
-                            title={isUnregistered ? "Register this user to change state" : undefined}
-                            onClick={() => {
-                              if (isUnregistered) return;
-                              const nextState = p.state === 'suspended' ? 'active' : 'suspended';
-                              apiUpdate(p.id, { state: nextState } as any, nextState === 'suspended' ? 'Suspended' : 'Reactivated');
-                            }}
-                          >
-                            {p.state === 'suspended' ? (
-                              <><ShieldCheck className="h-4 w-4 mr-2" /> Activate</>
-                            ) : (
-                              <><UserX className="h-4 w-4 mr-2" /> Suspend</>
-                            )}
-                          </Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  disabled={isUnregistered}
+                                  title={isUnregistered ? "Register this user to verify" : undefined}
+                                  onClick={() => apiUpdate(p.id, { verified_by: 'partner_org' } as any, 'Verified by partner org')}
+                                >
+                                  <UserCheck className="h-4 w-4 mr-2" /> Partner verify
+                                </Button>
 
-                          <Button
-                            variant={p.verified_by === 'suspended' ? 'secondary' : 'outline'}
-                            size="sm"
-                            disabled={isUnregistered}
-                            title={isUnregistered ? "Register this user to change verification" : undefined}
-                            onClick={() => {
-                              if (isUnregistered) return;
-                              const next = p.verified_by === 'suspended' ? 'self' : 'suspended';
-                              apiUpdate(p.id, { verified_by: next as any }, next === 'suspended' ? 'Marked suspended' : 'Marked self-verified');
-                            }}
-                          >
-                            {p.verified_by === 'suspended' ? (
-                              <><ShieldCheck className="h-4 w-4 mr-2" /> Unsuspend (verify self)</>
-                            ) : (
-                              <><UserX className="h-4 w-4 mr-2" /> Mark suspended</>
-                            )}
-                          </Button>
-                        </div>
+                                <Button
+                                  variant={p.verified_by === 'suspended' ? 'secondary' : 'destructive'}
+                                  size="sm"
+                                  title={isUnregistered ? "Register this user to change verification" : undefined}
+                                  onClick={() => {
+                                    if (isUnregistered) return;
+                                    const next = p.verified_by === 'suspended' ? 'self' : 'suspended';
+                                    apiUpdate(p.id, { verified_by: next as any }, next === 'suspended' ? 'Suspended' : 'Reactivated');
+                                  }}
+                                >
+                                  {p.verified_by === 'suspended' ? (
+                                    <><ShieldCheck className="h-4 w-4 mr-2" /> Activate</>
+                                  ) : (
+                                    <><UserX className="h-4 w-4 mr-2" /> Suspend</>
+                                  )}
+                                </Button>
+
+                                <Button
+                                  variant={p.verified_by === 'suspended' ? 'secondary' : 'outline'}
+                                  size="sm"
+                                  disabled={isUnregistered}
+                                  title={isUnregistered ? "Register this user to change verification" : undefined}
+                                  onClick={() => {
+                                    if (isUnregistered) return;
+                                    const next = p.verified_by === 'suspended' ? 'self' : 'suspended';
+                                    apiUpdate(p.id, { verified_by: next as any }, next === 'suspended' ? 'Marked suspended' : 'Marked self-verified');
+                                  }}
+                                >
+                                  {p.verified_by === 'suspended' ? (
+                                    <><ShieldCheck className="h-4 w-4 mr-2" /> Unsuspend (verify self)</>
+                                  ) : (
+                                    <><UserX className="h-4 w-4 mr-2" /> Mark suspended</>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </TableCell>
                     </TableRow>
                   )

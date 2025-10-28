@@ -10,6 +10,7 @@ type PatchBody = Partial<{
   access_role: string;
   verified_by: string;
   state: string;
+  coordination_zone: string;
 }>;
 
 function isDemoProvider() {
@@ -17,7 +18,7 @@ function isDemoProvider() {
   return p === 'demo';
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await requireServerSession();
     const callerRole = session.user.role;
@@ -32,12 +33,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = (await req.json()) as PatchBody;
     const allowed: PatchBody = {};
     if (typeof body.access_role === 'string') allowed.access_role = body.access_role;
     if (typeof body.verified_by === 'string') allowed.verified_by = body.verified_by;
-    if (typeof body.state === 'string') allowed.state = body.state;
+    if (typeof body.coordination_zone === 'string') allowed.coordination_zone = body.coordination_zone;
 
     if (Object.keys(allowed).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });

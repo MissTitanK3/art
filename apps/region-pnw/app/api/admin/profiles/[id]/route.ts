@@ -10,9 +10,10 @@ type PatchBody = Partial<{
   access_role: string;
   verified_by: string;
   state: string;
+  coordination_zone: string;
 }>;
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -34,8 +35,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const allowed: PatchBody = {};
     if (typeof body.access_role === 'string') allowed.access_role = body.access_role;
     if (typeof body.verified_by === 'string') allowed.verified_by = body.verified_by;
-    // Allow explicit state updates (e.g., 'active' | 'suspended')
-    if (typeof body.state === 'string') allowed.verified_by = body.state;
+    if (typeof body.coordination_zone === 'string') allowed.coordination_zone = body.coordination_zone;
 
     if (Object.keys(allowed).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
