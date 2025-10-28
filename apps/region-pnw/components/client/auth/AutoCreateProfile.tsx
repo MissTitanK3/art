@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePathname } from "next/navigation";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import type { Profile } from "@workspace/store/types/global.ts";
 
@@ -17,12 +18,16 @@ export function AutoCreateProfile() {
   const { session, status, providerId } = useAuth();
   const { profileAdapter } = useRegionAdapters();
   const createdForUserId = React.useRef<string | null>(null);
+  const pathname = usePathname();
+  // Skip auto-create on admin routes to avoid extra client reads
+  const isAdminRoute = (pathname ?? '').startsWith('/admin');
 
   React.useEffect(() => {
     let cancelled = false;
 
     async function ensureProfile() {
       if (cancelled) return;
+      if (isAdminRoute) return;
       if (providerId !== "supabase") return;
       if (status !== "authenticated" || !session?.user?.id) return;
       const userId = session.user.id;
@@ -96,7 +101,7 @@ export function AutoCreateProfile() {
     return () => {
       cancelled = true;
     };
-  }, [providerId, status, session, profileAdapter]);
+  }, [providerId, status, session, profileAdapter, isAdminRoute]);
 
   return null;
 }

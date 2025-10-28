@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { DispatchSubmission } from "@workspace/store/types/global";
 import { Pod, RosterEntry } from "@workspace/store/types/pod";
 import { AcademyTrainingSession } from "@workspace/store/types/academy";
+import type { Profile } from "@workspace/store/types/global.ts";
 
 // Map component (client-only)
 const WatchMap = dynamic(() => import("@workspace/ui/components/client/watch/WatchMap"), { ssr: false });
@@ -24,19 +25,58 @@ const WatchMap = dynamic(() => import("@workspace/ui/components/client/watch/Wat
 export default function AdminPage() {
   const router = useRouter();
   // Aggregated metrics from demo data
-  const uniqueProfiles = React.useMemo(() => {
-    const ids = new Set<string>();
-    ([] as RosterEntry[]).forEach((r) => ids.add(r.profile.id));
-    return ids.size;
+  const [uniqueProfiles, setUniqueProfiles] = React.useState<number>(0);
+  const [uniquePods, setUniquePods] = React.useState<number>(0);
+  const [dispatches, setDispatches] = React.useState<DispatchSubmission[]>([]);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const res = await fetch("/api/admin/profiles", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        const podsRes = await fetch("/api/admin/pods", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        const dispatchesRes = await fetch("/api/admin/dispatches", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!podsRes.ok) throw new Error(`HTTP ${podsRes.status}`);
+        const { pods } = (await podsRes.json()) as { pods?: Pod[] };
+        const podSize = Array.isArray(pods) ? new Set(pods.map((p) => p.id)).size : 0;
+        setUniquePods((prev) => (prev === podSize ? prev : podSize));
+
+        if (!dispatchesRes.ok) throw new Error(`HTTP ${dispatchesRes.status}`);
+        const { submissions } = (await dispatchesRes.json()) as { submissions?: DispatchSubmission[] };
+        setDispatches(Array.isArray(submissions) ? submissions : []);
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { profiles } = (await res.json()) as { profiles?: Profile[] };
+        const size = Array.isArray(profiles) ? new Set(profiles.map((p) => p.id)).size : 0;
+        setUniqueProfiles((prev) => (prev === size ? prev : size));
+      } catch (err) {
+        // ignore abort errors; keep zero on other errors
+        if ((err as any)?.name === "AbortError") return;
+        setUniqueProfiles((prev) => (prev === 0 ? prev : 0));
+      }
+    };
+    load();
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const activeDispatches = React.useMemo(
-    () =>
-      ([] as DispatchSubmission[]).filter((d) => !["archived", "completed", "cancelled", "expired"].includes(d.status)).length,
-    [],
+    () => dispatches.filter((d) => !["archived", "completed", "cancelled", "expired"].includes(d.status)).length,
+    [dispatches],
   );
-
-  const podsCount = ([] as Pod[]).length;
 
   const trainingCounts = React.useMemo(() => {
     const all = ([] as AcademyTrainingSession[]).filter((s) => s.status !== "archived");
@@ -83,7 +123,7 @@ export default function AdminPage() {
           value={activeDispatches}
           icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
         />
-        <StatCard label="Pods" value={podsCount} icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />} />
+        <StatCard label="Pods" value={uniquePods} icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />} />
         <StatCard label="Training Completed" value={`${trainingPct}%`} icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />} />
       </div>
 

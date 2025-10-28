@@ -12,7 +12,10 @@ import type { TrustEntry, TrustRole } from '@workspace/store/types/trust.ts';
 import { getAuthProviderId } from '@/lib/auth/adapter';
 import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies as nextCookies } from 'next/headers';
+import { requireServerSession } from '@/lib/auth/server';
+import { regionAdmins } from '@workspace/store/utils/nav';
 
 /**
  * Placeholder DAL for fetching a user's profile by auth user_id.
@@ -86,10 +89,41 @@ export type ProfilesFilter = {
 
 export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
   const provider = getAuthProviderId();
+  console.log('[dal/admin] getProfiles using provider', provider);
+
   // Use Supabase when available to load registered users
   if (provider === 'supabase') {
     try {
       const env = ensureSupabaseEnv('server');
+      // If we have a service role key and the caller is authorized, bypass RLS
+      const serviceKey = env.serviceRoleKey;
+      if (serviceKey) {
+        try {
+          const session = await requireServerSession();
+          let authorized = regionAdmins.includes(session.user.role);
+          if (!authorized) {
+            const callerProfile = await getProfileByUserId(session.user.id);
+            authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
+          }
+
+          if (authorized) {
+            const adminClient = createClient(env.url, serviceKey);
+            let adminQuery = adminClient.from('profiles').select('*');
+            if (filter?.access_role) adminQuery = adminQuery.eq('access_role', filter.access_role);
+            if (filter?.verified_by) adminQuery = adminQuery.eq('verified_by', filter.verified_by);
+            if (typeof filter?.availability === 'boolean') adminQuery = adminQuery.eq('availability', filter.availability);
+            const { data, error } = await adminQuery;
+            if (error) throw error;
+            const rows = Array.isArray(data) ? data : [];
+            return rows as unknown as Profile[];
+          }
+        } catch (e) {
+          // If auth check fails (e.g., no session), fall back to scoped client below
+          console.warn('[dal/admin] getProfiles service-role path unavailable, falling back to anon client', e);
+        }
+      }
+
+      // Fallback: use anon client with caller session cookies (RLS may restrict to own profile)
       const store = await nextCookies().catch(() => null as any);
       const client = createServerClient(env.url, env.anonKey, {
         cookies: {
@@ -108,17 +142,10 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
         },
       });
 
-      let query = client
-        .from('profiles')
-        .select('*')
-        // Only registered users: user_id not null and not empty
-        .not('user_id', 'is', null as any)
-        .neq('user_id', '');
-
+      let query = client.from('profiles').select('*');
       if (filter?.access_role) query = query.eq('access_role', filter.access_role);
       if (filter?.verified_by) query = query.eq('verified_by', filter.verified_by);
       if (typeof filter?.availability === 'boolean') query = query.eq('availability', filter.availability);
-
       const { data, error } = await query;
       if (error) throw error;
       const rows = Array.isArray(data) ? data : [];
@@ -164,9 +191,7 @@ export async function getPods(): Promise<Pod[]> {
           },
         },
       });
-      const { data, error } = await client
-        .from('pods')
-        .select('id, slug, name, area, channels');
+      const { data, error } = await client.from('pods').select('id, slug, name, area, channels');
       if (error) throw error;
       const rows = Array.isArray(data) ? data : [];
       return rows.map((row: any) => ({

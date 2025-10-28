@@ -83,7 +83,7 @@ export const navConfig: GlobalNavConfigInput = {
           href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
         },
         { label: 'Admin', href: '/admin', roles: regionAdmins },
-        { label: 'Log out', href: '/logout', icon: 'log-out', roles: completeOnboarding },
+        { label: 'Log out', href: '/sign-out', icon: 'log-out', roles: completeOnboarding },
         // { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
         // { label: 'Settings', href: '/settings' },
         // { label: 'Credential Card', href: '/credentials' },

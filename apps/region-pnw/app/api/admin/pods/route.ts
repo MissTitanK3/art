@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireServerSession } from '@/lib/auth/server';
-import { getProfileByUserId } from '@/lib/dal/admin';
+import { getProfileByUserId, getPods } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
 import { ensureSupabaseEnv } from '@/lib/auth/providers/supabase/common';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
@@ -73,3 +73,22 @@ export async function POST(req: Request) {
   }
 }
 
+export const GET = async (_req: Request) => {
+  try {
+    const session = await requireServerSession();
+    let authorized = regionAdmins.includes(session.user.role);
+    if (!authorized) {
+      const callerProfile = await getProfileByUserId(session.user.id);
+      authorized = !!callerProfile && (
+        callerProfile.access_role === 'dispatcher_admin' ||
+        callerProfile.access_role === 'dispatcher_verified'
+      );
+    }
+    if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const pods = await getPods();
+    return NextResponse.json({ pods });
+  } catch (e: any) {
+    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+  }
+};
