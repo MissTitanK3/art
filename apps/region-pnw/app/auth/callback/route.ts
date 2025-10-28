@@ -75,3 +75,6 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
+// Ensure this handler never gets statically optimized and always runs per-request
+export const dynamic = "force-dynamic";
+export const revalidate = 0;

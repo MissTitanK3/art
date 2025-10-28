@@ -113,7 +113,8 @@ export async function requireOnboardedAccess() {
 
   const ok = completeOnboarding.includes(session.user.role);
   if (!ok) {
-    redirect('/sign-in');
+    // If authenticated but not fully onboarded, send to profile instead of sign-in
+    redirect('/my-profile?reason=onboarding');
   }
 
   return { session, profile };
