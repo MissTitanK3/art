@@ -91,6 +91,19 @@ export const supabaseClientAdapter: AuthClientAdapter = {
     if (error) {
       throw new Error(error.message);
     }
+    // Inform server to clear SSR cookies and ensure parity on reload
+    try {
+      await fetch("/auth/callback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ event: "SIGNED_OUT", session: null }),
+        keepalive: true,
+      });
+    } catch {}
+    // Clean up any stray demo cookie if previously set
+    try {
+      document.cookie = `region-pnw-session=; path=/; max-age=0; SameSite=Lax`;
+    } catch {}
   },
   onSessionChanged(callback) {
     const client = getBrowserClient();

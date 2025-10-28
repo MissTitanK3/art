@@ -60,9 +60,26 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
 
         if (providerId === "supabase") {
           const session = await signInWithPassword({ email, password });
-          document.cookie = `${SESSION_COOKIE}=${encodeSession(session)}; path=/; max-age=${ONE_WEEK_SECONDS}; SameSite=Lax`;
-          setSession(session); // ✅ updates React context immediately
-          await refresh();     // ensures provider cookies and context stay in sync
+          // Ensure demo-mode cookie is cleared to avoid confusing other code paths
+          try { document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Lax`; } catch {}
+          // Do NOT set demo cookie in supabase mode; keep a single source of truth
+          setSession(session);
+          // Ensure server-side Supabase cookies are synchronized before navigating
+          try {
+            await fetch("/auth/callback", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                event: "SIGNED_IN",
+                session: {
+                  access_token: session.accessToken,
+                  refresh_token: session.refreshToken,
+                },
+              }),
+              keepalive: true,
+            });
+          } catch {}
+          await refresh();
           router.push(target);
           return;
         }
@@ -99,6 +116,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
           <div className="grid gap-1">
@@ -111,6 +129,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="pr-12"
+                autoComplete="current-password"
               />
               <button
                 type="button"
