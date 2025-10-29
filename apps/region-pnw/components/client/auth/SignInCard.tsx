@@ -126,7 +126,12 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
         </form>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm text-muted-foreground">
-        Don’t have an account? <a className="underline" href="/sign-up">Create one</a>
+        <div className="flex w-full items-center justify-between gap-2">
+          <span>
+            Don’t have an account? <a className="underline" href="/sign-up">Create one</a>
+          </span>
+          <a className="underline" href="/forgot-password">Forgot password?</a>
+        </div>
       </CardFooter>
     </Card>
   );

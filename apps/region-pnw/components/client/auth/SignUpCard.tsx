@@ -56,6 +56,10 @@ export function SignUpCard() {
     () => /^@[A-Za-z0-9._-]+\.[0-9]{2,}$/.test(contactSignal),
     [contactSignal]
   );
+  const displayNameValid = React.useMemo(
+    () => displayName.trim().length > 0,
+    [displayName]
+  );
   const coordinationZoneValid = React.useMemo(
     () => coordinationZone.trim().length > 0,
     [coordinationZone]
@@ -77,6 +81,9 @@ export function SignUpCard() {
           throw new Error("Password does not meet requirements");
         }
         // Required field checks
+        if (!displayNameValid) {
+          throw new Error("Display name is required.");
+        }
         if (!contactSignalValid) {
           throw new Error(
             "Signal username is required and must match @name.12 (ends with at least two digits)."
@@ -177,17 +184,18 @@ export function SignUpCard() {
       <CardContent>
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="grid gap-1">
-            <Label htmlFor="displayName">Display name</Label>
+            <Label htmlFor="displayName">Display name<span aria-hidden="true" className="text-destructive"> *</span></Label>
             <Input
               id="displayName"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
+              required
               placeholder="Ada"
             />
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email<span aria-hidden="true" className="text-destructive"> *</span></Label>
             <Input
               id="email"
               type="email"
@@ -198,7 +206,7 @@ export function SignUpCard() {
             />
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Password<span aria-hidden="true" className="text-destructive"> *</span></Label>
             <div className="relative">
               <Input
                 id="password"
@@ -246,7 +254,7 @@ export function SignUpCard() {
             </div>
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="contactSignal">Signal username</Label>
+            <Label htmlFor="contactSignal">Signal username<span aria-hidden="true" className="text-destructive"> *</span></Label>
             <Input
               id="contactSignal"
               type="text"
@@ -259,7 +267,7 @@ export function SignUpCard() {
             <p className="text-xs text-muted-foreground">Format: @name.12 and ends with at least two digits.</p>
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="coordinationZone">Coordination zone</Label>
+            <Label htmlFor="coordinationZone">Coordination zone<span aria-hidden="true" className="text-destructive"> *</span></Label>
             <Input
               id="coordinationZone"
               type="text"
@@ -303,6 +311,7 @@ export function SignUpCard() {
             disabled={
               pending ||
               !passwordRules.valid ||
+              !displayNameValid ||
               !contactSignalValid ||
               !coordinationZoneValid
             }

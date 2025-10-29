@@ -27,6 +27,13 @@ type AuthContextValue = {
   signUpWithPassword: (
     payload: PasswordSignUpPayload
   ) => Promise<AuthSession | null>;
+  /** Send a password reset email. */
+  requestPasswordReset: (
+    email: string,
+    redirectTo?: string
+  ) => Promise<void>;
+  /** Complete a password reset for the current recovery session. */
+  updatePassword: (newPassword: string) => Promise<void>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
@@ -212,6 +219,43 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
     [ensureClient]
   );
 
+  const requestPasswordReset = React.useCallback(
+    async (email: string, redirectTo?: string) => {
+      const supabase = ensureClient();
+      const url =
+        redirectTo ??
+        (typeof window !== "undefined"
+          ? `${window.location.origin}/auth/reset-password`
+          : undefined);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: url,
+      });
+      if (error) throw error;
+    },
+    [ensureClient]
+  );
+
+  const updatePassword = React.useCallback(
+    async (newPassword: string) => {
+      const supabase = ensureClient();
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+      try {
+        // Keep local state and SSR cookies in sync after password change
+        const refreshed = await supabase.auth.getSession();
+        await postAuthCallback("USER_UPDATED", refreshed.data.session as unknown as SupabaseSession);
+        const next = mapSupabaseSession(refreshed.data.session);
+        setSession(next);
+        setStatus(toStatus(next));
+      } catch {
+        // ignore
+      }
+    },
+    [ensureClient]
+  );
+
   const signOut = React.useCallback(async () => {
     const supabase = ensureClient();
     await supabase.auth.signOut();
@@ -230,8 +274,10 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       signInWithOtp,
       signOut,
       signUpWithPassword,
+      requestPasswordReset,
+      updatePassword,
     }),
-    [providerId, session, status, refresh, signInWithPassword, signInWithOtp, signOut, signUpWithPassword]
+    [providerId, session, status, refresh, signInWithPassword, signInWithOtp, signOut, signUpWithPassword, requestPasswordReset, updatePassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

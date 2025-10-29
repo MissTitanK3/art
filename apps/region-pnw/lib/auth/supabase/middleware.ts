@@ -42,6 +42,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/intents') &&
     !request.nextUrl.pathname.startsWith('/roles') &&
     !request.nextUrl.pathname.startsWith('/impact') &&
+    !request.nextUrl.pathname.startsWith('/forgot-password') &&
     !request.nextUrl.pathname.startsWith('/auth')
   ) {
     const url = request.nextUrl.clone();
