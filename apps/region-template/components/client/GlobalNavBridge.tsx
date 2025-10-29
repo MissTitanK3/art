@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "./global-nav";
@@ -10,7 +9,6 @@ import { useRegionAdapters } from "@/providers/RegionProvider";
 import type { Profile } from "@workspace/store/types/global.ts";
 
 export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) {
-  const pathname = usePathname();
   const { session, status } = useAuth();
   const { profileAdapter } = useRegionAdapters();
 
@@ -18,7 +16,21 @@ export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) 
   const [loadingProfile, setLoadingProfile] = React.useState(false);
 
   const isAuthenticated = Boolean(session);
-  const baseRole: NavRole = (session?.user?.role as NavRole) ?? "guest";
+  const baseRoleUnsafe = (session?.user?.role as any) ?? "team_member";
+  const allowedRoles: NavRole[] = [
+    "team_member",
+    "pod_leader",
+    "trainer",
+    "dispatcher_basic",
+    "dispatcher_verified",
+    "dispatcher_admin",
+    "admin",
+    "regional_admin",
+    "national_admin",
+  ];
+  const baseRole: NavRole = allowedRoles.includes(baseRoleUnsafe)
+    ? (baseRoleUnsafe as NavRole)
+    : "team_member";
 
   React.useEffect(() => {
     let cancelled = false;
@@ -44,16 +56,12 @@ export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) 
     };
   }, [session?.user?.id, profileAdapter]);
 
-  // Map dispatcher profile access_role to a UI NavRole so the nav reflects server access
+  // Trust the server-provided role where possible; fall back to baseRole.
   const role: NavRole = React.useMemo(() => {
-    // Keep elevated roles from auth as-is
-    if (baseRole && baseRole !== "guest" && baseRole !== "user") return baseRole;
-    const ar = profile?.access_role;
-    if (ar === "dispatcher_admin") return "national_admin"; // shows Admin + elevated
-    if (ar === "dispatcher_verified") return "pod_leader"; // elevated features
-    if (ar === "dispatcher_basic") return "volunteer"; // verified features
-    return baseRole ?? "guest";
-  }, [baseRole, profile?.access_role]);
+    const ar = profile?.access_role as any;
+    if (ar && allowedRoles.includes(ar)) return ar as NavRole;
+    return baseRole;
+  }, [allowedRoles, baseRole, profile?.access_role]);
 
   // wait until auth initialized
   if (status === "loading") return null;

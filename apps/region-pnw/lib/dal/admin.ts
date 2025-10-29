@@ -62,12 +62,17 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
         const user = userData?.user;
         let authorized = false;
         if (user) {
-          // Some deployments may store a nav role on the user; fall back to profile check.
-          const navRole = (user as any)?.role as string | undefined;
-          authorized = !!navRole && regionAdmins.includes(navRole as any);
+          // Admin allowlist aligned with /admin route access: dispatcher_admin + regionAdmins
+          const ADMIN_ALLOW = new Set<AccessRole>(['dispatcher_admin', ...(regionAdmins as unknown as AccessRole[])]);
+
+          // Some deployments may store a nav role on the user; trust it if in allowlist.
+          const navRole = (user as any)?.role as AccessRole | undefined;
+          authorized = !!navRole && ADMIN_ALLOW.has(navRole);
+
+          // Fall back to profile role check if needed
           if (!authorized) {
             const callerProfile = await getProfileByUserId(user.id);
-            authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
+            authorized = !!callerProfile && ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
           }
         }
 

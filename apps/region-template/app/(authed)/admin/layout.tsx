@@ -18,13 +18,13 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   const session = await requireServerSession();
 
   // Primary gate: session role includes region-level admins
-  const role = session.user.role;
-  const isRegionAdmin = regionAdmins.includes(role);
-
-  if (!isRegionAdmin) {
-    // Secondary check via DAL: require profiles.access_role === 'dispatcher_admin'
+  const role = session.user.role as any;
+  const allowed: string[] = ['dispatcher_admin', ...regionAdmins];
+  if (!allowed.includes(role)) {
+    // Fallback check via DAL: trust profile.access_role when session role is not in allowlist
     const profile = await getProfileByUserId(session.user.id);
-    if (!profile || profile.access_role !== 'dispatcher_admin') {
+    const profileRole = profile?.access_role as any;
+    if (!profileRole || !allowed.includes(profileRole)) {
       redirect("/my-profile?reason=forbidden-admin");
     }
   }

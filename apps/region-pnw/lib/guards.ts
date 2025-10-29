@@ -3,10 +3,17 @@ import 'server-only';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
+import {
+  type NavRole,
+  completeOnboarding,
+  elevatedRoles,
+  localAdmins,
+  regionAdmins,
+  nationalAdmins,
+} from '@workspace/store/utils/nav';
 
-// Access control is now driven by public.profiles.access_role
-//   access_role ∈ { 'team_member', 'dispatcher_basic', 'dispatcher_verified', 'dispatcher_admin' }
-type AccessRole = 'team_member' | 'dispatcher_basic' | 'dispatcher_verified' | 'dispatcher_admin';
+// Access control is driven by public.profiles.access_role
+// AccessRole is unified with NavRole across the app
 
 function isSuspended(state?: string | null) {
   return state === 'suspended';
@@ -17,17 +24,9 @@ function isVerified(verified_by?: string | null) {
   return verified_by && verified_by !== 'self';
 }
 
-// Dispatcher role gates derived from profiles.access_role
-function isDispatchBasic(accessRole?: string | null) {
-  return accessRole === 'dispatcher_basic' || accessRole === 'dispatcher_verified' || accessRole === 'dispatcher_admin';
-}
-
-function isDispatchVerified(accessRole?: string | null) {
-  return accessRole === 'dispatcher_verified' || accessRole === 'dispatcher_admin';
-}
-
-function isDispatchAdmin(accessRole?: string | null) {
-  return accessRole === 'dispatcher_admin';
+function hasRole(role: NavRole | undefined, allowed: NavRole[]) {
+  if (!role) return false;
+  return allowed.includes(role);
 }
 
 export async function requireVerifiedProfileActive() {
@@ -69,9 +68,35 @@ export async function requireDispatchAccess() {
     redirect('/my-profile?reason=suspended');
   }
 
-  // Require at least verified dispatcher to access protected dispatch features
-  if (!isDispatchVerified(profile.access_role)) {
+  // Align with nav: Dispatch protected routes require elevated roles
+  const role = profile.access_role as NavRole | undefined;
+  if (!hasRole(role, elevatedRoles)) {
     redirect('/my-profile?reason=forbidden-dispatch');
+  }
+
+  const session = { user: { id: user.id } } as any;
+  return { session, profile };
+}
+
+// Entry points like /team-req follow elevatedRoles in nav config
+export async function requireDispatchBasicAccess() {
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) redirect('/sign-in');
+  const user = userData!.user as any;
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile) {
+    redirect('/my-profile?reason=profile-required');
+  }
+
+  if (isSuspended(profile.state)) {
+    redirect('/my-profile?reason=suspended');
+  }
+
+  const role = profile.access_role as NavRole | undefined;
+  if (!hasRole(role, elevatedRoles)) {
+    redirect('/my-profile?reason=forbidden-dispatch-basic');
   }
 
   const session = { user: { id: user.id } } as any;
@@ -93,9 +118,9 @@ export async function requireLocalAdminAccess() {
     redirect('/my-profile?reason=suspended');
   }
 
-  // Limit to dispatcher admins for local admin features
-  const isDispatchAdminRole = isDispatchAdmin(profile.access_role);
-  if (!isDispatchAdminRole) {
+  // Align with nav: local admin features (e.g., schedules) follow localAdmins
+  const role = profile.access_role as NavRole | undefined;
+  if (!hasRole(role, localAdmins)) {
     redirect('/my-profile?reason=forbidden-schedules');
   }
 
@@ -118,9 +143,8 @@ export async function requireElevatedAccess() {
     redirect('/my-profile?reason=suspended');
   }
 
-  // Map "elevated" to dispatcher verified and above
-  const isElevated = isDispatchVerified(profile.access_role);
-  if (!isElevated) {
+  const role = profile.access_role as NavRole | undefined;
+  if (!hasRole(role, elevatedRoles)) {
     redirect('/my-profile?reason=forbidden-elevated');
   }
 
@@ -143,9 +167,9 @@ export async function requireOnboardedAccess() {
     redirect('/my-profile?reason=suspended');
   }
 
-  // Consider any valid profile.access_role as onboarded to use core features
-  const onboarded = Boolean((profile.access_role as AccessRole | null) ?? 'team_member');
-  if (!onboarded) redirect('/my-profile?reason=onboarding');
+  // Align with nav: completeOnboarding set gates access to core features
+  const role = profile.access_role as NavRole | undefined;
+  if (!hasRole(role, completeOnboarding)) redirect('/my-profile?reason=onboarding');
 
   const session = { user: { id: user.id } } as any;
   return { session, profile };

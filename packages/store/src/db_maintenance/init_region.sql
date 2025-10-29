@@ -26,7 +26,20 @@
     inserted_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     CONSTRAINT profiles_access_role_check CHECK (
-      access_role IN ('team_member','dispatcher_basic','dispatcher_verified','dispatcher_admin')
+      access_role IN (
+        'team_member',
+        'dispatcher_basic',
+        'dispatcher_verified',
+        'dispatcher_admin',
+        'guest',
+        'user',
+        'volunteer',
+        'pod_leader',
+        'trainer',
+        'admin',
+        'regional_admin',
+        'national_admin'
+      )
     ),
     CONSTRAINT profiles_verified_by_check CHECK (
       verified_by IN ('self','partner_org','admin','suspended')

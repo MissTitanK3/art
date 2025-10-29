@@ -23,12 +23,12 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   // Primary gate: session role includes region-level admins
   const role = ((user as any)?.user_metadata?.role ?? (user as any)?.role ?? "guest") as any;
-  const isRegionAdmin = regionAdmins.includes(role);
-
-  if (!isRegionAdmin) {
-    // Secondary check via DAL: require profiles.access_role === 'dispatcher_admin'
+  const allowed: string[] = ['dispatcher_admin', ...regionAdmins];
+  if (!allowed.includes(role)) {
+    // Fallback check via DAL in case session role is stale or missing
     const profile = await getProfileByUserId(user!.id);
-    if (!profile || profile.access_role !== 'dispatcher_admin') {
+    const profileRole = profile?.access_role as any;
+    if (!profileRole || !allowed.includes(profileRole)) {
       redirect("/my-profile?reason=forbidden-admin");
     }
   }

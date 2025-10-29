@@ -1,36 +1,83 @@
 // Server-safe input (no functions/classes)
 import { LucideIcon, NavIconId } from '@workspace/ui/components/icons/nav-icons';
 export type NavRole =
-  | 'guest'
-  | 'user'
-  | 'volunteer'
+  | 'team_member'
   | 'pod_leader'
   | 'trainer'
+  | 'dispatcher_basic'
+  | 'dispatcher_verified'
+  | 'dispatcher_admin'
   | 'admin'
   | 'regional_admin'
   | 'national_admin';
 
-/** Minimum: onboarded and can use core features */
+/**
+ * Minimum: onboarded and can use core features
+ * Access to
+ * `/watch`,
+ * `/academy`,
+ * `/intents`,
+ * `/roles`,
+ * `/impact`,
+ * `/pods`,
+ * `/pods/new`
+ * `/missing-persons`
+ */
 export const completeOnboarding: NavRole[] = [
-  'user',
-  'volunteer',
+  'team_member',
   'pod_leader',
   'trainer',
+  'dispatcher_basic',
+  'dispatcher_verified',
+  'dispatcher_admin',
   'admin',
   'regional_admin',
   'national_admin',
 ];
 
-/** Trusted to manage other people (Pods, volunteers, trust list) */
-export const elevatedRoles: NavRole[] = ['pod_leader', 'trainer', 'admin', 'regional_admin', 'national_admin'];
+/**
+ * Elevated roles with trusted access to manage people and pods
+ * Access completeOnboarding and to:
+ * `/dispatches`,
+ * `/schedules`,
+ * `/team-req`
+ */
+export const elevatedRoles: NavRole[] = [
+  'pod_leader',
+  'trainer',
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'dispatcher_basic',
+  'admin',
+  'regional_admin',
+  'national_admin',
+];
 
-/** Local Pod-level admins (pod_leader + trainer + admin) */
-export const podAdmins: NavRole[] = ['pod_leader', 'trainer', 'admin'];
+/**
+ * Trusted to manage other people (Pods, volunteers, trust list)
+ * Access to completeOnboarding and elevatedRoles features:
+ * `/admin`,
+ */
+export const podAdmins: NavRole[] = [
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'dispatcher_basic',
+  'admin',
+  'regional_admin',
+  'national_admin',
+];
 
-export const localAdmins: NavRole[] = ['admin', 'national_admin'];
+export const localAdmins: NavRole[] = [
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'dispatcher_basic',
+  'admin',
+  'regional_admin',
+  'national_admin',
+];
 
 /** Full administrative powers at the region level */
-export const regionAdmins: NavRole[] = ['regional_admin', 'national_admin'];
+export const regionAdmins: NavRole[] = ['admin', 'regional_admin', 'national_admin'];
 
 /** Top-level oversight (cross-region) */
 export const nationalAdmins: NavRole[] = ['national_admin'];

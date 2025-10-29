@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { requireVerifiedProfileActive } from '@/lib/guards';
+import { requireOnboardedAccess } from '@/lib/guards';
 import PodsClientLayout from './providers.client';
 
 export default async function PodsLayout({ children }: { children: ReactNode }) {
-  await requireVerifiedProfileActive();
+  // Allow any onboarded member (including team_member) to access pods
+  await requireOnboardedAccess();
   return <PodsClientLayout>{children}</PodsClientLayout>;
 }

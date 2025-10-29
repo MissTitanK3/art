@@ -1,11 +1,10 @@
-import { completeOnboarding, elevatedRoles, GlobalNavConfigInput } from '@workspace/store/utils/nav';
-import type { NavRole } from '@workspace/store/utils/nav';
-
-// Verified users and above (unlocks more operational features)
-const verifiedRoles: NavRole[] = ['volunteer', ...elevatedRoles];
-// Dispatch role helpers mapped into NavRole space via GlobalNavBridge
-const dispatchVerifiedNavRoles: NavRole[] = [...elevatedRoles]; // dispatcher_verified and above -> elevated
-const dispatchAdminNavRoles: NavRole[] = ['national_admin']; // dispatcher_admin -> national_admin
+import {
+  completeOnboarding,
+  elevatedRoles,
+  GlobalNavConfigInput,
+  localAdmins,
+  regionAdmins,
+} from '@workspace/store/utils/nav';
 
 export const navConfig: GlobalNavConfigInput = {
   brand: {
@@ -30,18 +29,18 @@ export const navConfig: GlobalNavConfigInput = {
       icon: 'radio',
       roles: completeOnboarding,
       children: [
-        { label: 'Dispatch Map', href: '/dispatches', roles: dispatchVerifiedNavRoles },
+        { label: 'Dispatch Map', href: '/dispatches', roles: elevatedRoles },
         { label: 'Community Watch', href: '/watch', roles: completeOnboarding },
-        { label: 'Coverage Schedules', href: '/schedules', roles: dispatchAdminNavRoles },
+        { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
       ],
     },
     {
       label: 'Pods',
       icon: 'map-pin',
-      roles: verifiedRoles,
+      roles: completeOnboarding,
       children: [
-        { label: 'Directory', href: '/pods', roles: verifiedRoles },
-        { label: 'Create Pod', href: '/pods/new', roles: dispatchAdminNavRoles },
+        { label: 'Directory', href: '/pods', roles: completeOnboarding },
+        { label: 'Create Pod', href: '/pods/new', roles: localAdmins },
       ],
     },
     {
@@ -65,7 +64,7 @@ export const navConfig: GlobalNavConfigInput = {
       label: 'Missing Persons',
       icon: 'file-search',
       href: '/missing-persons',
-      roles: verifiedRoles,
+      roles: completeOnboarding,
     },
   ],
   secondary: [
@@ -79,7 +78,7 @@ export const navConfig: GlobalNavConfigInput = {
           label: 'Signal Onboarding Group',
           href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
         },
-        { label: 'Admin', href: '/admin', roles: dispatchAdminNavRoles },
+        { label: 'Admin', href: '/admin', roles: ['dispatcher_admin', 'admin', 'regional_admin', 'national_admin'] },
         { label: 'Log out', href: '/sign-out', icon: 'log-out', roles: completeOnboarding },
         // { label: 'Docs', href: '/https://docs.alwaysreadytools.org', external: true },
         // { label: 'Settings', href: '/settings' },

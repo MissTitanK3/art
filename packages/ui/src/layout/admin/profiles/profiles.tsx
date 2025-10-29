@@ -16,10 +16,27 @@ import { Download, ShieldCheck, UserCheck, UserX, MoreVertical } from "lucide-re
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 
 function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
-  const color = role === "dispatcher_admin" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-    : role === "dispatcher_verified" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-      : role === "dispatcher_basic" ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30"
-        : "bg-muted text-foreground/80 border-muted-foreground/20";
+  // Distinct badge colors for all supported access roles
+  const color =
+    role === "team_member"
+      ? "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30"
+      : role === "pod_leader"
+        ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30"
+        : role === "trainer"
+          ? "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30"
+          : role === "dispatcher_basic"
+            ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30"
+            : role === "dispatcher_verified"
+              ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+              : role === "dispatcher_admin"
+                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                : role === "admin"
+                  ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                  : role === "regional_admin"
+                    ? "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30"
+                    : role === "national_admin"
+                      ? "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/30"
+                      : "bg-muted text-foreground/80 border-muted-foreground/20";
   return <Badge variant="outline" className={`${color}`}>{roleLabel(role as any)}</Badge>;
 }
 

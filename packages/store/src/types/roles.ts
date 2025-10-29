@@ -1,7 +1,18 @@
 import z from 'zod';
 
 // Role types (used throughout the app)
-export const AccessRoles = ['team_member', 'dispatcher_basic', 'dispatcher_verified', 'dispatcher_admin'] as const;
+// Align AccessRole with NavRole from utils/nav.ts
+export const AccessRoles = [
+  'team_member',
+  'pod_leader',
+  'trainer',
+  'dispatcher_basic',
+  'dispatcher_verified',
+  'dispatcher_admin',
+  'admin',
+  'regional_admin',
+  'national_admin',
+] as const;
 export type AccessRole = (typeof AccessRoles)[number];
 
 export const VerifiedBy = ['self', 'partner_org', 'admin', 'suspended'] as const;
@@ -9,10 +20,15 @@ export type VerifiedBy = (typeof VerifiedBy)[number];
 
 // Descriptions for tooltips or help text
 export const AccessRoleDescriptions: Record<AccessRole, string> = {
-  team_member: 'Team members can view and respond to field tasks, but do not have dispatch privileges.',
-  dispatcher_basic: 'Basic dispatchers can coordinate with field teams but cannot manage team members.',
-  dispatcher_verified: 'Verified dispatchers are trusted coordinators with elevated permissions.',
-  dispatcher_admin: 'Admins can fully manage dispatch operations, teams, and settings.',
+  team_member: 'Team members can use core features, view pods, and participate in operations after onboarding.',
+  pod_leader: 'Pod Leaders coordinate local pods and people, including elevated operational actions.',
+  trainer: 'Trainers can create and manage training content and certify others.',
+  dispatcher_basic: 'Basic Dispatchers can assist coordination and engage with dispatch features.',
+  dispatcher_verified: 'Verified Dispatchers are trusted coordinators with elevated permissions.',
+  dispatcher_admin: 'Dispatcher Admins oversee dispatch operations and have local administrative powers.',
+  admin: 'Region Admin with full administrative powers for the region.',
+  regional_admin: 'Regional Admin with broader oversight across the region.',
+  national_admin: 'National Admin with cross-region oversight and top-level permissions.',
 };
 
 export const VerifiedByDescriptions: Record<VerifiedBy, string> = {
@@ -39,12 +55,22 @@ export function roleLabel(role: AccessRole): string {
   switch (role) {
     case 'team_member':
       return 'Team Member';
+    case 'pod_leader':
+      return 'Pod Leader';
+    case 'trainer':
+      return 'Trainer';
     case 'dispatcher_basic':
       return 'Dispatcher (Basic)';
     case 'dispatcher_verified':
       return 'Dispatcher (Verified)';
     case 'dispatcher_admin':
       return 'Dispatcher Admin';
+    case 'admin':
+      return 'Admin';
+    case 'regional_admin':
+      return 'Regional Admin';
+    case 'national_admin':
+      return 'National Admin';
   }
 }
 
