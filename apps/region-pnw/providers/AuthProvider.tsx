@@ -222,11 +222,13 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
   const requestPasswordReset = React.useCallback(
     async (email: string, redirectTo?: string) => {
       const supabase = ensureClient();
-      const url =
-        redirectTo ??
-        (typeof window !== "undefined"
-          ? `${window.location.origin}/auth/reset-password`
-          : undefined);
+      const url = (() => {
+        if (redirectTo) return redirectTo;
+        const base = process.env.NEXT_PUBLIC_SITE_URL;
+        if (base) return `${base.replace(/\/$/, "")}/auth/reset-password`;
+        if (typeof window !== "undefined") return `${window.location.origin}/auth/reset-password`;
+        return undefined;
+      })();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: url,
       });
