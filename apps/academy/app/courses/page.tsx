@@ -13,11 +13,6 @@ export default async function AcademyHome() {
         <h1 className="text-3xl font-bold mb-6">🎓 ART Academy</h1>
         <div className="flex gap-3">
           <ThemeToggle />
-          <Link
-            href="/protected"
-            className="bg-green-600 text-white px-4 py-2 rounded hover:scale-105 transition text-sm">
-            My Dashboard
-          </Link>
         </div>
       </div>
       <p className="text-muted-foreground mb-10">

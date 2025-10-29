@@ -131,16 +131,19 @@ export function ClassAssignmentContent({
   const [memberName, setMemberName] = React.useState<string>('');
   const [memberNotes, setMemberNotes] = React.useState<string>('');
   const [members, setMembers] = React.useState<AcademyClassMember[]>([]);
+  const [membersDirty, setMembersDirty] = React.useState(false);
   const [editingMember, setEditingMember] = React.useState<{
     id: string;
     name: string;
     notes: string;
   } | null>(null);
   const [sessions, setSessions] = React.useState<AcademyClassSession[]>([]);
+  const [sessionsDirty, setSessionsDirty] = React.useState(false);
   const [newSession, setNewSession] = React.useState<SessionDraft>(() => makeEmptySessionDraft());
   const [saving, setSaving] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [instructorDirty, setInstructorDirty] = React.useState(false);
 
   const filteredInstructorOptions = React.useMemo(() => {
     if (!academyClass) return instructorOptions;
@@ -161,9 +164,18 @@ export function ClassAssignmentContent({
     if (!academyClass) return;
     setInstructorName(academyClass.instructorName ?? '');
     setMembers(academyClass.members ?? []);
-    setSessions(academyClass.sessions ?? []);
+    if (!sessionsDirty) {
+      setSessions(academyClass.sessions ?? []);
+    }
     setEditingMember(null);
-  }, [academyClass]);
+  }, [academyClass, sessionsDirty]);
+
+  // Reset dirty status when switching classes
+  React.useEffect(() => {
+    setSessionsDirty(false);
+    setMembersDirty(false);
+    setInstructorDirty(false);
+  }, [classId]);
 
   const handleInstructorSelect = React.useCallback(
     (value: string) => {
@@ -175,6 +187,7 @@ export function ClassAssignmentContent({
       const match = instructorOptions.find((option) => option.id === value);
       if (match) {
         setInstructorName(match.name);
+        setInstructorDirty(true);
       }
     },
     [instructorOptions],
@@ -192,17 +205,20 @@ export function ClassAssignmentContent({
   const handleAddMember = React.useCallback(() => {
     if (!memberName.trim()) return;
     setMembers((prev) => [...prev, makeAcademyClassMember(memberName, memberNotes)]);
+    setMembersDirty(true);
     setMemberName('');
     setMemberNotes('');
   }, [makeAcademyClassMember, memberName, memberNotes]);
 
   const handleUpdateMember = React.useCallback((id: string, patch: Partial<AcademyClassMember>) => {
     setMembers((prev) => prev.map((member) => (member.id === id ? { ...member, ...patch } : member)));
+    setMembersDirty(true);
   }, []);
 
   const handleRemoveMember = React.useCallback((id: string) => {
     setMembers((prev) => prev.filter((member) => member.id !== id));
     setEditingMember((prev) => (prev?.id === id ? null : prev));
+    setMembersDirty(true);
   }, []);
 
   const beginEditMember = React.useCallback((member: AcademyClassMember) => {
@@ -230,10 +246,12 @@ export function ClassAssignmentContent({
       notes: nextNotes ? nextNotes : undefined,
     });
     setEditingMember(null);
+    setMembersDirty(true);
   }, [editingMember, handleUpdateMember]);
 
   const handleUpdateSession = React.useCallback((id: string, patch: Partial<AcademyClassSession>) => {
     setSessions((prev) => prev.map((session) => (session.id === id ? { ...session, ...patch } : session)));
+    setSessionsDirty(true);
   }, []);
 
   const handleSaveAssignments = React.useCallback(async () => {
@@ -291,10 +309,23 @@ export function ClassAssignmentContent({
     try {
       setSaving(true);
       await onSave(updatedClass);
+      setInstructorDirty(false);
+      setMembersDirty(false);
+      setSessionsDirty(false);
     } finally {
       setSaving(false);
     }
   }, [academyClass, instructorName, members, onSave, sessions]);
+
+  // Debounced autosave when any tracked section becomes dirty
+  React.useEffect(() => {
+    if (!academyClass) return;
+    if (!(instructorDirty || membersDirty || sessionsDirty)) return;
+    const t = window.setTimeout(() => {
+      void handleSaveAssignments();
+    }, 800);
+    return () => window.clearTimeout(t);
+  }, [academyClass, instructorDirty, membersDirty, sessionsDirty, instructorName, members, sessions, handleSaveAssignments]);
 
   const handleDeleteClass = React.useCallback(async () => {
     if (!academyClass) return;
@@ -426,6 +457,7 @@ export function ClassAssignmentContent({
               onChange={(event) => {
                 setSelectedInstructorId('manual');
                 setInstructorName(event.target.value);
+                setInstructorDirty(true);
               }}
               placeholder="Add a primary instructor"
             />
@@ -647,6 +679,7 @@ export function ClassAssignmentContent({
                     participants: [],
                   },
                 ]);
+                setSessionsDirty(true);
                 setNewSession(makeEmptySessionDraft());
               }}
             >
@@ -665,9 +698,10 @@ export function ClassAssignmentContent({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        setSessions((prev) => prev.filter((s) => s.id !== session.id))
-                      }
+                      onClick={() => {
+                        setSessions((prev) => prev.filter((s) => s.id !== session.id));
+                        setSessionsDirty(true);
+                      }}
                     >
                       Remove
                     </Button>
@@ -795,6 +829,7 @@ export function ClassAssignmentContent({
                                             : s,
                                         );
                                         setSessions(updated);
+                                        setSessionsDirty(true);
                                       }}
                                     >
                                       <Icon className="h-3.5 w-3.5" />
@@ -825,6 +860,7 @@ export function ClassAssignmentContent({
                                       : s,
                                   );
                                   setSessions(updated);
+                                  setSessionsDirty(true);
                                 }}
                               >
                                 <SelectTrigger size="sm" className="w-[140px] justify-between text-xs">
@@ -862,6 +898,7 @@ export function ClassAssignmentContent({
                                       : s,
                                   );
                                   setSessions(updated);
+                                  setSessionsDirty(true);
                                 }}
                               >
                                 <SelectTrigger size="sm" className="w-[160px] justify-between text-xs">
@@ -934,7 +971,7 @@ export function ClassAssignmentContent({
           disabled={saving}
           aria-busy={saving}
         >
-          {saving ? 'Saving…' : 'Save roster & return'}
+          {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
     </div>

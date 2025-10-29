@@ -289,6 +289,12 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.1,
     "type": "qualified"
   },
+  "managing-meetings-virtual-physical": {
+    "title": "Managing and Conducting Meetings (Virtual & Physical)",
+    "description": "Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.",
+    "version": 1.1,
+    "type": "qualified"
+  },
   "media-awareness-volunteers": {
     "title": "Media Awareness for Volunteers",
     "description": "Learn how to handle livestreamers, journalists, and public exposure while protecting yourself, your pod, and sensitive information during actions.",
@@ -490,6 +496,12 @@ export const GENERATED_COURSE_DETAILS = {
   "visual-alerts": {
     "title": "Designing Secure, Visual Alerts",
     "description": "Learn how to create fast, high-impact alert graphics for Signal or social media that improve action response and reinforce operational security.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "weapon-safety-firearms-101": {
+    "title": "Weapon Safety & Firearms 101",
+    "description": "Foundational firearm safety, handling principles, and community risk protocols for field teams operating near or around weapons.",
     "version": 1,
     "type": "qualified"
   },

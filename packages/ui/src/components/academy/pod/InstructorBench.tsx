@@ -88,6 +88,12 @@ type InstructorBenchProps = {
   onUpdateInstructor?: (instructorId: string, patch: Partial<AcademyInstructorProfile>) => void
   onRemoveInstructor?: (instructorId: string) => void
   learnerCount: number
+  /**
+   * Whether the current user can add/remove/update instructors on the bench.
+   * Gate this to Admin Dispatchers in apps by checking profile.access_role === 'dispatcher_admin'.
+   * Defaults to false to keep @workspace/ui store-agnostic.
+   */
+  canManageInstructors?: boolean
 }
 
 function highestCertificationLevel(certs: NormalizedCertification[]): CertificationLevel | undefined {
@@ -113,6 +119,7 @@ export function InstructorBench({
   onUpdateInstructor,
   onRemoveInstructor,
   learnerCount,
+  canManageInstructors = false,
 }: InstructorBenchProps) {
   const handleCreateInstructor = onCreateInstructor ?? (() => { })
   const handleUpdateInstructor = onUpdateInstructor ?? (() => { })
@@ -419,22 +426,26 @@ export function InstructorBench({
           <p className="text-sm text-muted-foreground">
             {totalInstructors > 0
               ? `${instructorSummaryLabel}`
-              : `No instructors on the bench yet. Add mentors or dispatcher instructors to support ${learnerSummaryLabel}.`}
+              : canManageInstructors
+                ? `No instructors on the bench yet. Add mentors or dispatcher instructors to support ${learnerSummaryLabel}.`
+                : `No instructors on the bench yet.`}
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Button type="button" onClick={() => setIsAddDialogOpen(true)}>
-            Add instructor
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsManageSheetOpen(true)}
-            disabled={instructors.length === 0}
-          >
-            Manage instructors
-          </Button>
-        </div>
+        {canManageInstructors ? (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button type="button" onClick={() => setIsAddDialogOpen(true)}>
+              Add instructor
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsManageSheetOpen(true)}
+              disabled={instructors.length === 0}
+            >
+              Manage instructors
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {instructors.length === 0 ? (
@@ -530,318 +541,33 @@ export function InstructorBench({
         </div>
       )}
 
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-lg bg-card text-card-foreground">
-          <DialogHeader>
-            <DialogTitle>Add instructor</DialogTitle>
-            <DialogDescription>Track a new dispatcher instructor or guest SME on your bench.</DialogDescription>
-          </DialogHeader>
-          <form className="space-y-4" onSubmit={handleSubmitNewInstructor}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="new-instructor-name">Name</Label>
-                <Input
-                  id="new-instructor-name"
-                  value={newInstructorName}
-                  onChange={(event) => setNewInstructorName(event.target.value)}
-                  placeholder="Taylor Jordan"
-                  autoFocus
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-instructor-type">Type</Label>
-                <Select value={newInstructorType} onValueChange={(value) => setNewInstructorType(value as AcademyInstructorProfile['type'])}>
-                  <SelectTrigger id="new-instructor-type">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {instructorTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="new-instructor-availability">Availability</Label>
-                <Select
-                  value={newInstructorAvailability}
-                  onValueChange={(value) => setNewInstructorAvailability(value as AcademyInstructorProfile['availability'])}
-                >
-                  <SelectTrigger id="new-instructor-availability">
-                    <SelectValue placeholder="Availability" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availabilityOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-instructor-registration">Registration</Label>
-                <Select
-                  value={newInstructorRegistration}
-                  onValueChange={(value) => setNewInstructorRegistration(value as AcademyInstructorDraft['registrationStatus'])}
-                >
-                  <SelectTrigger id="new-instructor-registration">
-                    <SelectValue placeholder="Registration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {registrationOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="new-instructor-vetting">Vetting status</Label>
-              <Select
-                value={newInstructorVetting}
-                onValueChange={(value) => setNewInstructorVetting(value as AcademyInstructorVettingStatus)}
-              >
-                <SelectTrigger id="new-instructor-vetting">
-                  <SelectValue placeholder="Vetting status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vettingOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="new-instructor-focus">Focus area</Label>
-              <Input
-                id="new-instructor-focus"
-                value={newInstructorFocus}
-                onChange={(event) => setNewInstructorFocus(event.target.value)}
-                placeholder="Field coordination basics"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="new-instructor-timezone">Timezone</Label>
-              <Input
-                id="new-instructor-timezone"
-                value={newInstructorTimezone}
-                onChange={(event) => setNewInstructorTimezone(event.target.value)}
-                placeholder="America/Los_Angeles"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="new-instructor-skill-select">Certifications / Skills</Label>
-                <p className="text-xs text-muted-foreground">
-                  Add from the Academy catalog or enter a custom skill to track this instructor&apos;s expertise.
-                </p>
-              </div>
-              <Select
-                value={newInstructorSkillSelect}
-                onValueChange={(value) => {
-                  setNewInstructorSkillSelect(undefined)
-                  const option = academyCertificationOptions.find((item) => item.id === value)
-                  if (!option) return
-                  addNewCertification(createCertification(option.label, option.id, 'academy'))
-                }}
-              >
-                <SelectTrigger id="new-instructor-skill-select">
-                  <SelectValue placeholder="Add from Academy catalog" />
-                </SelectTrigger>
-                <SelectContent>
-                  {academyCertificationOptions
-                    .filter(
-                      (option) => !newInstructorCertifications.some((cert) => cert.id === option.id),
-                    )
-                    .map((option) => (
-                      <SelectItem key={option.id} value={option.id}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  id="new-instructor-custom-skill"
-                  value={newInstructorCustomSkill}
-                  onChange={(event) => setNewInstructorCustomSkill(event.target.value)}
-                  placeholder="Add custom skill"
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    if (!newInstructorCustomSkill.trim()) return
-                    addNewCertification(createCertification(newInstructorCustomSkill))
-                    setNewInstructorCustomSkill('')
-                  }}
-                >
-                  Add skill
-                </Button>
-              </div>
-              {newInstructorCertifications.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {newInstructorCertifications.map((cert) => (
-                    <button
-                      key={cert.id}
-                      type="button"
-                      onClick={() => removeNewCertification(cert.id)}
-                      className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
-                      aria-label={`Remove ${cert.display_name}`}
-                    >
-                      {cert.display_name}
-                      <X className="size-3" />
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            {addFormError ? <p className="text-sm text-destructive">{addFormError}</p> : null}
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Save instructor</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Sheet open={isManageSheetOpen} onOpenChange={setIsManageSheetOpen}>
-        <SheetContent side="right" className="flex h-full flex-col p-0 sm:w-[520px] lg:w-[640px] bg-card text-card-foreground">
-          <SheetHeader className="space-y-2 border-b px-6 py-5">
-            <SheetTitle>Manage instructors</SheetTitle>
-            <SheetDescription>
-              Update instructor details, registration status, and the skills you track for the bench.
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="flex-1 overflow-y-auto px-6 py-5">
-            {instructors.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Add an instructor to start managing the bench.</p>
-            ) : (
-              <form id="manage-instructor-form" className="space-y-5" onSubmit={handleSaveManagedInstructor}>
+      {canManageInstructors ? (
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogContent className="max-w-lg bg-card text-card-foreground">
+            <DialogHeader>
+              <DialogTitle>Add instructor</DialogTitle>
+              <DialogDescription>Track a new dispatcher instructor or guest SME on your bench.</DialogDescription>
+            </DialogHeader>
+            <form className="space-y-4" onSubmit={handleSubmitNewInstructor}>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="manage-instructor-select">Select instructor</Label>
-                  <Select
-                    value={manageInstructorId ?? undefined}
-                    onValueChange={(value) => setManageInstructorId(value)}
-                  >
-                    <SelectTrigger id="manage-instructor-select">
-                      <SelectValue placeholder="Choose instructor" />
+                  <Label htmlFor="new-instructor-name">Name</Label>
+                  <Input
+                    id="new-instructor-name"
+                    value={newInstructorName}
+                    onChange={(event) => setNewInstructorName(event.target.value)}
+                    placeholder="Taylor Jordan"
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-instructor-type">Type</Label>
+                  <Select value={newInstructorType} onValueChange={(value) => setNewInstructorType(value as AcademyInstructorProfile['type'])}>
+                    <SelectTrigger id="new-instructor-type">
+                      <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {instructors.map((instructor) => (
-                        <SelectItem key={instructor.id} value={instructor.id}>
-                          {instructor.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="manage-instructor-name">Name</Label>
-                    <Input
-                      id="manage-instructor-name"
-                      value={manageInstructorName}
-                      onChange={(event) => setManageInstructorName(event.target.value)}
-                      placeholder="Taylor Jordan"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="manage-instructor-type">Type</Label>
-                    <Select
-                      value={manageInstructorType}
-                      onValueChange={(value) => setManageInstructorType(value as AcademyInstructorProfile['type'])}
-                    >
-                      <SelectTrigger id="manage-instructor-type">
-                        <SelectValue placeholder="Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {instructorTypeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="manage-instructor-availability">Availability</Label>
-                    <Select
-                      value={manageInstructorAvailability}
-                      onValueChange={(value) =>
-                        setManageInstructorAvailability(value as AcademyInstructorProfile['availability'])
-                      }
-                    >
-                      <SelectTrigger id="manage-instructor-availability">
-                        <SelectValue placeholder="Availability" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availabilityOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="manage-instructor-registration">Registration</Label>
-                    <Select
-                      value={manageInstructorRegistration}
-                      onValueChange={(value) =>
-                        setManageInstructorRegistration(value as AcademyInstructorProfile['registrationStatus'])
-                      }
-                    >
-                      <SelectTrigger id="manage-instructor-registration">
-                        <SelectValue placeholder="Registration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {registrationOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="manage-instructor-vetting">Vetting status</Label>
-                  <Select
-                    value={manageInstructorVetting}
-                    onValueChange={(value) =>
-                      setManageInstructorVetting(value as AcademyInstructorVettingStatus)
-                    }
-                  >
-                    <SelectTrigger id="manage-instructor-vetting">
-                      <SelectValue placeholder="Vetting status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vettingOptions.map((option) => (
+                      {instructorTypeOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -849,128 +575,417 @@ export function InstructorBench({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="manage-instructor-focus">Focus area</Label>
-                  <Input
-                    id="manage-instructor-focus"
-                    value={manageInstructorFocus}
-                    onChange={(event) => setManageInstructorFocus(event.target.value)}
-                    placeholder="Field coordination basics"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="manage-instructor-timezone">Timezone</Label>
-                  <Input
-                    id="manage-instructor-timezone"
-                    value={manageInstructorTimezone}
-                    onChange={(event) => setManageInstructorTimezone(event.target.value)}
-                    placeholder="America/Los_Angeles"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex flex-col gap-1">
-                    <Label htmlFor="manage-instructor-skill-select">Certifications / Skills</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Track verified Academy courses or add custom skills for this instructor.
-                    </p>
-                  </div>
+                  <Label htmlFor="new-instructor-availability">Availability</Label>
                   <Select
-                    value={manageInstructorSkillSelect}
-                    onValueChange={(value) => {
-                      setManageInstructorSkillSelect(undefined)
-                      const option = academyCertificationOptions.find((item) => item.id === value)
-                      if (!option) return
-                      addManagedCertification(createCertification(option.label, option.id, 'academy'))
-                    }}
+                    value={newInstructorAvailability}
+                    onValueChange={(value) => setNewInstructorAvailability(value as AcademyInstructorProfile['availability'])}
                   >
-                    <SelectTrigger id="manage-instructor-skill-select">
-                      <SelectValue placeholder="Add from Academy catalog" />
+                    <SelectTrigger id="new-instructor-availability">
+                      <SelectValue placeholder="Availability" />
                     </SelectTrigger>
                     <SelectContent>
-                      {academyCertificationOptions
-                        .filter((option) => !manageInstructorCertifications.some((cert) => cert.id === option.id))
-                        .map((option) => (
-                          <SelectItem key={option.id} value={option.id}>
+                      {availabilityOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-instructor-registration">Registration</Label>
+                  <Select
+                    value={newInstructorRegistration}
+                    onValueChange={(value) => setNewInstructorRegistration(value as AcademyInstructorDraft['registrationStatus'])}
+                  >
+                    <SelectTrigger id="new-instructor-registration">
+                      <SelectValue placeholder="Registration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {registrationOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-instructor-vetting">Vetting status</Label>
+                <Select
+                  value={newInstructorVetting}
+                  onValueChange={(value) => setNewInstructorVetting(value as AcademyInstructorVettingStatus)}
+                >
+                  <SelectTrigger id="new-instructor-vetting">
+                    <SelectValue placeholder="Vetting status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vettingOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-instructor-focus">Focus area</Label>
+                <Input
+                  id="new-instructor-focus"
+                  value={newInstructorFocus}
+                  onChange={(event) => setNewInstructorFocus(event.target.value)}
+                  placeholder="Field coordination basics"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-instructor-timezone">Timezone</Label>
+                <Input
+                  id="new-instructor-timezone"
+                  value={newInstructorTimezone}
+                  onChange={(event) => setNewInstructorTimezone(event.target.value)}
+                  placeholder="America/Los_Angeles"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="new-instructor-skill-select">Certifications / Skills</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Add from the Academy catalog or enter a custom skill to track this instructor&apos;s expertise.
+                  </p>
+                </div>
+                <Select
+                  value={newInstructorSkillSelect}
+                  onValueChange={(value) => {
+                    setNewInstructorSkillSelect(undefined)
+                    const option = academyCertificationOptions.find((item) => item.id === value)
+                    if (!option) return
+                    addNewCertification(createCertification(option.label, option.id, 'academy'))
+                  }}
+                >
+                  <SelectTrigger id="new-instructor-skill-select">
+                    <SelectValue placeholder="Add from Academy catalog" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {academyCertificationOptions
+                      .filter(
+                        (option) => !newInstructorCertifications.some((cert) => cert.id === option.id),
+                      )
+                      .map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <Input
+                    id="new-instructor-custom-skill"
+                    value={newInstructorCustomSkill}
+                    onChange={(event) => setNewInstructorCustomSkill(event.target.value)}
+                    placeholder="Add custom skill"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      if (!newInstructorCustomSkill.trim()) return
+                      addNewCertification(createCertification(newInstructorCustomSkill))
+                      setNewInstructorCustomSkill('')
+                    }}
+                  >
+                    Add skill
+                  </Button>
+                </div>
+                {newInstructorCertifications.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {newInstructorCertifications.map((cert) => (
+                      <button
+                        key={cert.id}
+                        type="button"
+                        onClick={() => removeNewCertification(cert.id)}
+                        className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
+                        aria-label={`Remove ${cert.display_name}`}
+                      >
+                        {cert.display_name}
+                        <X className="size-3" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              {addFormError ? <p className="text-sm text-destructive">{addFormError}</p> : null}
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Save instructor</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      ) : null}
+
+      {canManageInstructors ? (
+        <Sheet open={isManageSheetOpen} onOpenChange={setIsManageSheetOpen}>
+          <SheetContent side="right" className="flex h-full flex-col p-0 sm:w-[520px] lg:w-[640px] bg-card text-card-foreground">
+            <SheetHeader className="space-y-2 border-b px-6 py-5">
+              <SheetTitle>Manage instructors</SheetTitle>
+              <SheetDescription>
+                Update instructor details, registration status, and the skills you track for the bench.
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {instructors.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Add an instructor to start managing the bench.</p>
+              ) : (
+                <form id="manage-instructor-form" className="space-y-5" onSubmit={handleSaveManagedInstructor}>
+                  <div className="space-y-2">
+                    <Label htmlFor="manage-instructor-select">Select instructor</Label>
+                    <Select
+                      value={manageInstructorId ?? undefined}
+                      onValueChange={(value) => setManageInstructorId(value)}
+                    >
+                      <SelectTrigger id="manage-instructor-select">
+                        <SelectValue placeholder="Choose instructor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {instructors.map((instructor) => (
+                          <SelectItem key={instructor.id} value={instructor.id}>
+                            {instructor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="manage-instructor-name">Name</Label>
+                      <Input
+                        id="manage-instructor-name"
+                        value={manageInstructorName}
+                        onChange={(event) => setManageInstructorName(event.target.value)}
+                        placeholder="Taylor Jordan"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="manage-instructor-type">Type</Label>
+                      <Select
+                        value={manageInstructorType}
+                        onValueChange={(value) => setManageInstructorType(value as AcademyInstructorProfile['type'])}
+                      >
+                        <SelectTrigger id="manage-instructor-type">
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {instructorTypeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="manage-instructor-availability">Availability</Label>
+                      <Select
+                        value={manageInstructorAvailability}
+                        onValueChange={(value) =>
+                          setManageInstructorAvailability(value as AcademyInstructorProfile['availability'])
+                        }
+                      >
+                        <SelectTrigger id="manage-instructor-availability">
+                          <SelectValue placeholder="Availability" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availabilityOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="manage-instructor-registration">Registration</Label>
+                      <Select
+                        value={manageInstructorRegistration}
+                        onValueChange={(value) =>
+                          setManageInstructorRegistration(value as AcademyInstructorProfile['registrationStatus'])
+                        }
+                      >
+                        <SelectTrigger id="manage-instructor-registration">
+                          <SelectValue placeholder="Registration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {registrationOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manage-instructor-vetting">Vetting status</Label>
+                    <Select
+                      value={manageInstructorVetting}
+                      onValueChange={(value) =>
+                        setManageInstructorVetting(value as AcademyInstructorVettingStatus)
+                      }
+                    >
+                      <SelectTrigger id="manage-instructor-vetting">
+                        <SelectValue placeholder="Vetting status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vettingOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
                         ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manage-instructor-focus">Focus area</Label>
                     <Input
-                      id="manage-instructor-custom-skill"
-                      value={manageInstructorCustomSkill}
-                      onChange={(event) => setManageInstructorCustomSkill(event.target.value)}
-                      placeholder="Add custom skill"
+                      id="manage-instructor-focus"
+                      value={manageInstructorFocus}
+                      onChange={(event) => setManageInstructorFocus(event.target.value)}
+                      placeholder="Field coordination basics"
                     />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        if (!manageInstructorCustomSkill.trim()) return
-                        addManagedCertification(createCertification(manageInstructorCustomSkill))
-                        setManageInstructorCustomSkill('')
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manage-instructor-timezone">Timezone</Label>
+                    <Input
+                      id="manage-instructor-timezone"
+                      value={manageInstructorTimezone}
+                      onChange={(event) => setManageInstructorTimezone(event.target.value)}
+                      placeholder="America/Los_Angeles"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="manage-instructor-skill-select">Certifications / Skills</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Track verified Academy courses or add custom skills for this instructor.
+                      </p>
+                    </div>
+                    <Select
+                      value={manageInstructorSkillSelect}
+                      onValueChange={(value) => {
+                        setManageInstructorSkillSelect(undefined)
+                        const option = academyCertificationOptions.find((item) => item.id === value)
+                        if (!option) return
+                        addManagedCertification(createCertification(option.label, option.id, 'academy'))
                       }}
                     >
-                      Add skill
+                      <SelectTrigger id="manage-instructor-skill-select">
+                        <SelectValue placeholder="Add from Academy catalog" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {academyCertificationOptions
+                          .filter((option) => !manageInstructorCertifications.some((cert) => cert.id === option.id))
+                          .map((option) => (
+                            <SelectItem key={option.id} value={option.id}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <Input
+                        id="manage-instructor-custom-skill"
+                        value={manageInstructorCustomSkill}
+                        onChange={(event) => setManageInstructorCustomSkill(event.target.value)}
+                        placeholder="Add custom skill"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          if (!manageInstructorCustomSkill.trim()) return
+                          addManagedCertification(createCertification(manageInstructorCustomSkill))
+                          setManageInstructorCustomSkill('')
+                        }}
+                      >
+                        Add skill
+                      </Button>
+                    </div>
+                    {manageInstructorCertifications.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {manageInstructorCertifications.map((cert) => (
+                          <button
+                            key={cert.id}
+                            type="button"
+                            onClick={() => removeManagedCertification(cert.id)}
+                            className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
+                            aria-label={`Remove ${cert.display_name}`}
+                          >
+                            {cert.display_name}
+                            <X className="size-3" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {manageFormError ? <p className="text-sm text-destructive">{manageFormError}</p> : null}
+                </form>
+              )}
+            </div>
+
+            <SheetFooter className="gap-3 border-t px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              {instructors.length > 0 ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleRemoveSelectedInstructor}
+                    disabled={!selectedInstructor}
+                  >
+                    Remove instructor
+                  </Button>
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
+                    <Button type="button" variant="outline" onClick={() => setIsManageSheetOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" form="manage-instructor-form">
+                      Save changes
                     </Button>
                   </div>
-                  {manageInstructorCertifications.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {manageInstructorCertifications.map((cert) => (
-                        <button
-                          key={cert.id}
-                          type="button"
-                          onClick={() => removeManagedCertification(cert.id)}
-                          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
-                          aria-label={`Remove ${cert.display_name}`}
-                        >
-                          {cert.display_name}
-                          <X className="size-3" />
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-
-                {manageFormError ? <p className="text-sm text-destructive">{manageFormError}</p> : null}
-              </form>
-            )}
-          </div>
-
-          <SheetFooter className="gap-3 border-t px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            {instructors.length > 0 ? (
-              <>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleRemoveSelectedInstructor}
-                  disabled={!selectedInstructor}
-                >
-                  Remove instructor
-                </Button>
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
+                </>
+              ) : (
+                <div className="flex w-full justify-end">
                   <Button type="button" variant="outline" onClick={() => setIsManageSheetOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" form="manage-instructor-form">
-                    Save changes
+                    Close
                   </Button>
                 </div>
-              </>
-            ) : (
-              <div className="flex w-full justify-end">
-                <Button type="button" variant="outline" onClick={() => setIsManageSheetOpen(false)}>
-                  Close
-                </Button>
-              </div>
-            )}
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+              )}
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      ) : null}
     </section>
   )
 }

@@ -45,6 +45,8 @@ export type PodAcademyDashboardLayoutProps = {
   instructors: AcademyInstructorProfile[]
   trainingClasses: AcademyTrainingClass[]
   sessions: AcademyTrainingSession[]
+  /** Whether current user can manage instructors (admin dispatcher). */
+  canManageInstructors?: boolean
   onScheduleClass?: (classId: string) => void
   onUpdateSessionStatus?: (sessionId: string, status: AcademyTrainingSession['status']) => void
   onCreateInstructor?: (instructor: AcademyInstructorDraft) => void
@@ -67,6 +69,7 @@ export function PodAcademyDashboardLayout({
   instructors,
   trainingClasses,
   sessions,
+  canManageInstructors = false,
   onScheduleClass,
   onUpdateSessionStatus,
   onCreateInstructor,
@@ -133,6 +136,7 @@ export function PodAcademyDashboardLayout({
       label: 'Instructor Bench',
       value: String(total),
       helper: helperSegments.join(' · '),
+      href: '#instructor-bench',
     }
   }, [instructors])
   const statsWithBench = React.useMemo(() => {
@@ -172,13 +176,16 @@ export function PodAcademyDashboardLayout({
         onDeleteSession={handleDeleteTrainingSession}
       />
 
-      <InstructorBench
-        instructors={instructors}
-        learnerCount={members.length}
-        onCreateInstructor={handleCreateInstructor}
-        onUpdateInstructor={handleUpdateInstructor}
-        onRemoveInstructor={handleDeleteInstructor}
-      />
+      <div id="instructor-bench" className="scroll-mt-28">
+        <InstructorBench
+          instructors={instructors}
+          learnerCount={members.length}
+          onCreateInstructor={handleCreateInstructor}
+          onUpdateInstructor={handleUpdateInstructor}
+          onRemoveInstructor={handleDeleteInstructor}
+          canManageInstructors={canManageInstructors}
+        />
+      </div>
 
       <QualificationPathwaysSection
         courseGroups={courseGroups}

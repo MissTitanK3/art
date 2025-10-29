@@ -10,7 +10,6 @@ const __dirname = path.dirname(__filename);
 
 const REGION_PREFIX = "region-";
 const WORKSPACE_ROOT = path.resolve(__dirname, "..");
-const TEMPLATE_DIR = path.resolve(__dirname, "../apps/region-template");
 const PNPM_COMMAND = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const TEXT_EXTENSIONS = new Set([
   ".ts",
@@ -37,8 +36,125 @@ const TEXT_EXTENSIONS = new Set([
 const TEXT_BASENAMES = new Set([".env", ".env.local", ".env.example", "CONTRIBUTING.md"]);
 const SKIP_COPY_NAMES = new Set(["node_modules", ".next", ".turbo"]);
 
+// Styling helpers (no external deps)
+const supportsColor = process.stdout.isTTY && process.env.NO_COLOR !== "1";
+const code = (open, close) => (str) => (supportsColor ? `\x1b[${open}m${str}\x1b[${close}m` : String(str));
+const bold = code(1, 22);
+const dim = code(2, 22);
+const red = code(31, 39);
+const green = code(32, 39);
+const yellow = code(33, 39);
+const blue = code(34, 39);
+const magenta = code(35, 39);
+const cyan = code(36, 39);
+const gray = code(90, 39);
+
+const symbols = {
+  info: "ℹ",
+  success: "✔",
+  warn: "⚠",
+  error: "✖",
+  step: "➜",
+  skip: "⏭",
+  dry: "🧪",
+};
+
+const log = {
+  header(title) {
+    console.log(bold(cyan(title)));
+  },
+  hr(len = 13) {
+    console.log(dim("-".repeat(len)));
+  },
+  info(msg) {
+    console.log(`${cyan(symbols.info)} ${msg}`);
+  },
+  step(msg) {
+    console.log(`${cyan(symbols.step)} ${msg}`);
+  },
+  success(msg) {
+    console.log(`${green(symbols.success)} ${msg}`);
+  },
+  warn(msg) {
+    console.log(`${yellow(symbols.warn)} ${msg}`);
+  },
+  error(msg) {
+    console.log(`${red(symbols.error)} ${msg}`);
+  },
+  skip(msg) {
+    console.log(`${yellow(symbols.skip)} ${dim(msg)}`);
+  },
+  dry(msg) {
+    console.log(`${yellow(symbols.dry)} ${dim(msg)}`);
+  },
+};
+
+// ASCII art banner provided by user
+const BANNER = `
+                                                                                                    
+                                                                                                    
+                                                @@@@                                                
+                                             @@@@@@@@@@                                             
+                                           @@@@@@  @@@@@@                                           
+                                       @@@@@@@@  @@  @@@@@@@@                                       
+                                    @@@@@@@@   @@@@@@   @@@@@@@@                                    
+                                @@@@@@@@@   @@@@%=+@@@@@   @@@@@@@@@                                
+                          @@@@@@@@@@@    @@@@@#-::::-%@@@@@    @@@@@@@@@@@                          
+            @@@@@@@@@@@@@@@@@@@@@    @@@@@@%=::::::::::+%@@@@@@    @@@@@@@@@@@@@@@@@@@@@            
+           @@@@@@@@@@@@@@@@      @@@@@@%*=-::::::::::::::-=*%@@@@@@      @@@@@@@@@@@@@@@            
+           @@@@          @@@@@@@@@@%+--::::::::::::::::::::::--*%@@@@@@@@@@          @@@@           
+           @@@@  @@@@@@@@@@@@%*=::::::::::::::::::::::::::::::::::::=*%@@@@@@@@@@@@  @@@@           
+           @@@@  @@#===-:::::::::::::::::::::::::::::::::::-=**+-:::::::::::-===%@@  @@@@           
+           @@@@ @@@*::::::::::::::::::::::::::::::::::::-*%@@@@@@#=:::::::::::::*@@  @@@@           
+           @@@@ @@@+::::::-@@=:::::::::::::::::::::==-:%@@@@@@@@@@+:::::::::::::*@@  @@@@           
+           @@@@ @@@+::::::+@%--:::::::::::::::::=*@@@@%=+@@@@@@@@%=:::::::::::::*@@  @@@@           
+            @@@  @@*::::::*@@@@@@%%#**-::::::-*%@@@@@@@@%=#@@@@#=*%@%=::::::::::*@@  @@@            
+            @@@  @@*:::::-%@=--==+*#%%=:::-*@@@@@@@@@@@@@@*=%+*@@@@@@@*-::::::::#@@  @@@            
+            @@@@ @@%:::::=%@:::::::::::-%@@@@@@@@@@@@@@@@@@@=*@@@@@@@@%-::::::::%@@ @@@@            
+            @@@@ @@@::::::::--::::-===-@@@@@@@@@@@@%+@@@@@@@@*+@@@@@@@=::::::::-@@@ @@@@            
+            @@@@ @@@=:::::*@@@%=+%@@@+:%@@@@@@@@**#%-#@@@@@@@@%*@@@@*=++-::::::+@@@ @@@@            
+            @@@@ @@@*::::=%@=-*@@#=-:::*@@@@@@@@@#***=*@@@@@@#*@@*=%@@@@@*:::::#@@@ @@@@            
+             @@@@ @@@-:::=%%::=@%::::::-@@@@@@@@######**##%###*=%@@@@@@@@%=:::-@@@ @@@@             
+             @@@@ @@@+:::=%@%@@@@@@@@#::%@@@@@@%############%%@@@@@@@@@@@%=:::+@@@ @@@@             
+              @@@@ @@#-::-+*++++=====+::+@@@@@@%###########@@@@@@@@@@@@@*=:::-%@@ @@@@              
+              @@@@ @@@=:::::::::::=@@%=:-@@@@@@%###########@@@@@@@@@%+*@@@@=:=@@@ @@@@              
+               @@@@ @@#-::::::-=%@@@+:::-%@@@@@@%%##########%@@%%**%@@@@@@@#-#@@ @@@@               
+               @@@@ @@@=::::=#@@%*%@=::::*@@@@@@@%%#######%%*=*@@@@@@@@@@@@++@@@ @@@@               
+                @@@@ @@@-::*@@*=::*@#::::=@@@@@@@@@@%####%@@%+#@@@@@@@@@@%=-@@@ @@@@                
+                @@@@ @@@%::=@@@@@@@@@@@%:=%@@@@%@@@@@@%%@@@@%#+@@@@%*===::-%@@@@@@@                 
+                 @@@@ @@@*::::::::::-==+:-%@@@@@@@@@@@@%@%@@@@@++*%@@@*::-*@@@@@@@@                 
+                  @@@@ @@@+::::::::::::::=@@@@@@@@@@@@@@@@@@%@@@@@@@@=:::*@@@ @@@@                  
+                   @@@@ @@@=::::::::::::=@@@@@@@@@@@@@@@@@@@@@@@@@@#-:::+@@@ @@@@                   
+                    @@@@ @@@+::::::::::*@@@@@@@@@@@@@@%%@@@@@@@@@@+::::*@@@ @@@@                    
+                     @@@@ @@@*-::::::-#@@@@@@@@@@@@@@@%%@@@@@@@@*-:::-*@@@ @@@@                     
+                      @@@@ @@@*-::::=%@@@@@@@@@@@@@@@@%%@@@@%*=:::::-#@@@ @@@@                      
+                       @@@@ @@@@-::=@@@@@@@@@@@@@@@@@@@@@@+::::::::-@@@@ @@@@                       
+                        @@@@@@@@@**@@@@@@@@@@@@@@@@@@@@@@*:::::::-*@@@ @@@@@                        
+                         @@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@*:::::::=%@@@ @@@@@                         
+                           @@@@  @@@@@@@@@@@@@@@@@@@@@@#::::::-#@@@ @@@@@                           
+                            @@@@@ @@@@@@@@@@@@@@@@@@@@#-::::-*@@@@ @@@@@                            
+                             @@@@@@ @@@@@@@@@@@@@@@@@%=:::-*@@@@ @@@@@@                             
+                               @@@@@@ @@@@@@@@@@@@@@@=::-#@@@@ @@@@@@                               
+                                 @@@@@@ @@@@@@@@@@@@=:+%@@@@ @@@@@@                                 
+                                   @@@@@@  @@@@@@@@=#@@@@  @@@@@@                                   
+                                     @@@@@@  @@@@@@@@@@  @@@@@@                                     
+                                       @@@@@@@  @@@@  @@@@@@@                                       
+                                          @@@@@@    @@@@@@                                          
+                                            @@@@@@@@@@@@                                            
+                                               @@@@@@                                               
+                                                                                                    
+                                                                                                    
+                                                                                                    
+`;
+
+function printBanner(options) {
+  if (!options.banner) return;
+  if (!process.stdout.isTTY && process.env.FORCE_BANNER !== "1") return;
+  console.log(cyan(BANNER));
+}
+
 function parseArgs(argv) {
-  const options = { dryRun: false, skipInstall: false };
+  const options = { dryRun: false, skipInstall: false, useSupa: false, banner: true };
   let nameArg;
   const extras = [];
 
@@ -47,7 +163,13 @@ function parseArgs(argv) {
       options.dryRun = true;
     } else if (arg === "--skip-install" || arg === "--no-install") {
       options.skipInstall = true;
-    } else if (arg.startsWith("--")) {
+    } else if (arg === "-supa" || arg === "--supa") {
+      options.useSupa = true;
+    } else if (arg === "--no-banner") {
+      options.banner = false;
+    } else if (arg === "--banner" || arg === "-b") {
+      options.banner = true;
+    } else if (/^--?/.test(arg)) {
       fail(`Unknown flag "${arg}".`);
     } else if (!nameArg) {
       nameArg = arg;
@@ -70,13 +192,13 @@ function fail(message) {
 
 async function ensureTemplateExists() {
   try {
-    const stat = await fs.stat(TEMPLATE_DIR);
+    const stat = await fs.stat(getTemplateDir({ useSupa: false }));
     if (!stat.isDirectory()) {
-      fail(`Template directory is not a folder: ${TEMPLATE_DIR}`);
+      fail(`Template directory is not a folder: ${getTemplateDir({ useSupa: false })}`);
     }
   } catch (err) {
     if (err && err.code === "ENOENT") {
-      fail(`Template directory not found: ${TEMPLATE_DIR}`);
+      fail(`Template directory not found: ${getTemplateDir({ useSupa: false })}`);
     }
     throw err;
   }
@@ -94,13 +216,17 @@ async function ensureDestinationAvailable(destDir) {
   }
 }
 
+function getTemplateDir(options) {
+  return path.resolve(__dirname, "../apps", options.useSupa ? "region-pnw" : "region-template");
+}
+
 async function copyTemplate(destDir, options) {
   if (options.dryRun) {
-    console.log(`[dry-run] Would copy ${TEMPLATE_DIR} -> ${destDir}`);
+    log.dry(`Would copy ${getTemplateDir(options)} -> ${destDir}`);
     return;
   }
   try {
-    await fs.cp(TEMPLATE_DIR, destDir, {
+    await fs.cp(getTemplateDir(options), destDir, {
       recursive: true,
       filter: (src) => {
         const name = path.basename(src);
@@ -118,7 +244,7 @@ async function copyTemplate(destDir, options) {
 async function removeTemplateDataDir(destDir, options) {
   const dataDir = path.join(destDir, "data");
   if (options.dryRun) {
-    console.log(`[dry-run] Would remove demo data directory at ${dataDir}`);
+    log.dry(`Would remove demo data directory at ${dataDir}`);
     return;
   }
   try {
@@ -133,7 +259,7 @@ async function removeTemplateDataDir(destDir, options) {
 async function updatePackageJson(destDir, regionName, options) {
   const pkgPath = path.join(destDir, "package.json");
   if (options.dryRun) {
-    console.log(`[dry-run] Would update package name to "${regionName}" in ${pkgPath}`);
+    log.dry(`Would update package name to "${regionName}" in ${pkgPath}`);
     return;
   }
   const raw = await fs.readFile(pkgPath, "utf8");
@@ -164,9 +290,9 @@ async function gatherFiles(dir) {
   return files;
 }
 
-async function replaceTemplateName(destDir, regionName, options) {
+async function replaceTemplateName(destDir, regionName, fromName, options) {
   if (options.dryRun) {
-    console.log(`[dry-run] Would replace "region-template" references within ${destDir}`);
+    log.dry(`Would replace "${fromName}" references within ${destDir}`);
     return;
   }
   const files = await gatherFiles(destDir);
@@ -180,8 +306,8 @@ async function replaceTemplateName(destDir, regionName, options) {
       } catch {
         return;
       }
-      if (!contents.includes("region-template")) return;
-      const updated = contents.replace(/region-template/g, regionName);
+      if (!contents.includes(fromName)) return;
+      const updated = contents.replace(new RegExp(fromName, "g"), regionName);
       if (updated !== contents) {
         await fs.writeFile(file, updated, "utf8");
       }
@@ -230,16 +356,19 @@ function normalizeRegionName(rawValue) {
 }
 
 function printIntro(options) {
-  console.log("Create Region");
-  console.log("-------------");
-  console.log("This command copies apps/region-template into a new region directory,");
-  console.log("updates package metadata, and replaces any references to \"region-template\".");
-  console.log("You'll receive reminders about wiring up adapters and environment variables once it finishes.\n");
+  printBanner(options);
+  log.header("Create Region");
+  log.hr("Create Region".length);
+  const templateRel = path.relative(process.cwd(), getTemplateDir(options));
+  console.log(dim(`This command copies ${templateRel} into a new region directory,`));
+  const baseName = options.useSupa ? "region-pnw" : "region-template";
+  console.log(dim(`updates package metadata, and replaces any references to "${baseName}".`));
+  console.log(dim("You'll receive reminders about wiring up adapters and environment variables once it finishes.\n"));
   if (options.dryRun) {
-    console.log("Dry-run enabled — listing actions only. No files will be modified.\n");
+    log.warn("Dry-run enabled — listing actions only. No files will be modified.\n");
   }
   if (options.skipInstall && !options.dryRun) {
-    console.log("Skip install enabled — will not run pnpm install.\n");
+    log.skip("Skip install enabled — will not run pnpm install.\n");
   }
 }
 
@@ -260,7 +389,7 @@ async function updateFileIfChanged(filePath, updater) {
 
 async function updateBranding(destDir, regionLabel, options) {
   if (options.dryRun) {
-    console.log(`[dry-run] Would update branding strings for "${regionLabel}" in ${destDir}`);
+    log.dry(`Would update branding strings for "${regionLabel}" in ${destDir}`);
     return;
   }
   const brandName = `ART Region ${regionLabel}`;
@@ -270,14 +399,18 @@ async function updateBranding(destDir, regionLabel, options) {
   const layoutPath = path.join(destDir, "app", "layout.tsx");
   const manifestPath = path.join(destDir, "public", "site.webmanifest");
 
-  await updateFileIfChanged(navPath, (content) =>
-    content.replace(/(name:\s*)(["'])ART Region Template\2/, `$1$2${brandName}$2`)
-  );
+  await updateFileIfChanged(navPath, (content) => {
+    // Replace any nav name like: name: "ART Region <X>"
+    const re = /(name:\s*)(["'])ART Region[^"']*\2/;
+    return content.replace(re, `$1$2${brandName}$2`);
+  });
 
   await updateFileIfChanged(layoutPath, (content) => {
-    let next = content.replaceAll("ART Region Template", brandName);
-    next = next.replaceAll("ART. Region Template", brandNameWithDot);
-    next = next.replaceAll("ART Dispatch — Region", dispatchName);
+    let next = content;
+    // Replace various forms of branding from either template (Template/PNW/other slug)
+    next = next.replace(/ART Region (Template|PNW|[A-Z0-9-]+)/g, brandName);
+    next = next.replace(/ART\. Region (Template|PNW|[A-Z0-9-]+)/g, brandNameWithDot);
+    next = next.replace(/ART Dispatch — (Region|PNW|[A-Z0-9-]+)/g, dispatchName);
     return next;
   });
 
@@ -296,10 +429,10 @@ async function updateBranding(destDir, regionLabel, options) {
 async function runPnpmInstall(regionName, options) {
   if (options.dryRun || options.skipInstall) {
     const reason = options.dryRun ? "dry-run" : "--skip-install";
-    console.log(`[skip] pnpm install (${reason})`);
+    log.skip(`pnpm install (${reason})`);
     return;
   }
-  console.log(`\nRunning pnpm install to register ${regionName} with the workspace...`);
+  console.log(`\n${cyan("Running pnpm install")} to register ${yellow(regionName)} with the workspace...`);
   await new Promise((resolve, reject) => {
     const child = spawn(PNPM_COMMAND, ["install"], {
       cwd: WORKSPACE_ROOT,
@@ -326,29 +459,49 @@ async function main() {
   printIntro(options);
   const rawInput = await promptForRegionInput(nameArg, options);
   const { regionName, regionLabel } = normalizeRegionName(rawInput);
-
-  await ensureTemplateExists();
-
   const destDir = path.resolve(__dirname, "../apps", regionName);
+  const baseName = options.useSupa ? "region-pnw" : "region-template";
+
+  // Make sure the selected template exists
+  try {
+    const templateDir = getTemplateDir(options);
+    const stat = await fs.stat(templateDir);
+    if (!stat.isDirectory()) {
+      fail(`Template directory is not a folder: ${templateDir}`);
+    }
+  } catch (err) {
+    if (err && err.code === "ENOENT") {
+      fail(`Template directory not found: ${getTemplateDir(options)}`);
+    }
+    throw err;
+  }
+
   await ensureDestinationAvailable(destDir);
+  log.step(`Creating new region ${yellow(`"${regionName}"`)} at ${dim(destDir)}...\n`);
 
   await copyTemplate(destDir, options);
+  if (!options.dryRun) console.log(`${green("✔")} Copied template to ${dim(destDir)}`);
+
   await removeTemplateDataDir(destDir, options);
+  if (!options.dryRun) console.log(`${green("✔")} Removed demo data directory.`);
   await updatePackageJson(destDir, regionName, options);
-  await replaceTemplateName(destDir, regionName, options);
+  if (!options.dryRun) console.log(`${green("✔")} Updated package.json.`);
+  await replaceTemplateName(destDir, regionName, baseName, options);
+  if (!options.dryRun) console.log(`${green("✔")} Replaced references to ${yellow(`"${baseName}"`)}.`);
   await updateBranding(destDir, regionLabel, options);
+  if (!options.dryRun) console.log(`${green("✔")} Updated branding strings.`);
   await runPnpmInstall(regionName, options);
 
   const relPath = path.relative(process.cwd(), destDir);
   if (options.dryRun) {
-    console.log(`\nDry run complete. ${regionName} would be created at ${relPath}.`);
+    console.log(`\n${green("Dry run complete.")} ${yellow(regionName)} would be created at ${dim(relPath)}.`);
     return;
   }
-  console.log(`\nCreated ${regionName} at ${relPath}`);
-  console.log("Next steps:");
-  console.log(`- Wire up region-specific data adapters in ${path.join(relPath, "lib")}`);
-  console.log(`- Update any environment variables in ${path.join(relPath, ".env")}`);
-  console.log(`- Configure data layers to use the new database connections inside ${path.join(relPath, "components/dataLayer")}`);
+  console.log(`\n${green("✔ Created")} ${yellow(regionName)} at ${dim(relPath)}`);
+  console.log(bold("Next steps:"));
+  console.log(`- ${cyan("Wire up")} region-specific data adapters in ${dim(path.join(relPath, "lib"))}`);
+  console.log(`- ${cyan("Update")} any environment variables in ${dim(path.join(relPath, ".env"))}`);
+  console.log(`- ${cyan("Configure")} data layers to use the new database connections inside ${dim(path.join(relPath, "components/dataLayer"))}`);
 }
 
 main().catch((err) => {

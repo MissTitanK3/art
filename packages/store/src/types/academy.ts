@@ -6,6 +6,8 @@ export type AcademySummaryStat = {
   label: string;
   value: string;
   helper?: string;
+  /** Optional link target. When provided, stat cards can render as links (e.g., to in-page anchors). */
+  href?: string;
 };
 
 export type AcademyCourseSummary = {

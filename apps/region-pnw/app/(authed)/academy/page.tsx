@@ -24,6 +24,7 @@ import {
 import { attachCourseStatusToGroups, convertPodsToMemberProgress, deriveStats } from '@/lib/utils';
 import type { AcademyTrainingSessionParticipant } from '@workspace/store/types/academy.ts';
 import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
+import { useProfileStore } from '@workspace/store/useProfileStore';
 
 
 export default function AcademyDashboardPage() {
@@ -144,6 +145,16 @@ function AcademyDashboardContent({
     row: any,
     participantsBySession: Record<string, AcademyTrainingSessionParticipant[]>,
   ): AcademyTrainingSession {
+    const participants = participantsBySession[String(row.id)] ?? [];
+    const derivedConfirmed = participants.filter((p) => p.status === 'confirmed').length;
+    const derivedWaitlist = participants.filter((p) => p.status === 'waitlist').length;
+    const seatsFromDb = (typeof row.seats === 'object' && row.seats !== null) ? row.seats : null;
+    const seats = {
+      capacity: Number(seatsFromDb?.capacity ?? 0),
+      confirmed: Number.isFinite(Number(seatsFromDb?.confirmed)) ? Number(seatsFromDb.confirmed) : derivedConfirmed,
+      waitlist: Number.isFinite(Number(seatsFromDb?.waitlist)) ? Number(seatsFromDb.waitlist) : derivedWaitlist,
+    } as const;
+
     return {
       id: String(row.id),
       classId: row.class_id ? String(row.class_id) : '',
@@ -156,10 +167,10 @@ function AcademyDashboardContent({
       instructorName: String(row.instructor_name ?? 'TBD'),
       instructorType: row.instructor_type ?? 'expert',
       status: row.status ?? 'scheduled',
-      seats: typeof row.seats === 'object' && row.seats !== null ? row.seats : { capacity: 0, confirmed: 0, waitlist: 0 },
+      seats,
       timezone: row.timezone ?? undefined,
       relatedTopic: row.related_topic ?? undefined,
-      participants: participantsBySession[String(row.id)] ?? [],
+      participants,
     } as AcademyTrainingSession;
   }
 
@@ -318,6 +329,8 @@ function AcademyDashboardContent({
   const storeInstructors = usePodAcademyDashboardStore((state) => state.instructors);
   const storeTrainingClasses = usePodAcademyDashboardStore((state) => state.trainingClasses);
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
+  const profile = useProfileStore((s) => s.profile);
+  const canManageInstructors = profile?.access_role === 'dispatcher_admin';
 
   return (
     <PodAcademyDashboardLayout
@@ -328,6 +341,7 @@ function AcademyDashboardContent({
       instructors={storeInstructors}
       trainingClasses={storeTrainingClasses}
       sessions={storeSessions}
+      canManageInstructors={canManageInstructors}
       onScheduleClass={onScheduleClass}
       onUpdateSessionStatus={async (sessionId, status) => {
         updateTrainingSessionStatus(sessionId, status);

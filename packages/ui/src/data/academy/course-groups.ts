@@ -343,6 +343,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'after-action-data-hygiene', icon: '🗃️' },
       { slug: 'legal-followthrough-jail-support', icon: '⚖️' },
       { slug: 'mutual-aid-history', icon: '🤲' },
+      { slug: 'visual-alerts', icon: '📢' },
     ],
   },
   {
@@ -356,6 +357,11 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'signal-tips', icon: '📶' },
       { slug: 'logistics-resource-management', icon: '📦' },
       { slug: 'mutual-aid-history', icon: '🤲' },
+      { slug: 'weapon-safety-firearms-101', icon: '🔫' },
+      { slug: 'care-support', icon: '💞' },
+      { slug: 'crisis-debrief-care', icon: '🫂' },
+      { slug: 'otg-checklist', icon: '📋' },
+      { slug: 'trauma-risk-awareness', icon: '🧠' },
     ],
   },
   {
@@ -370,6 +376,9 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'wellness-float', icon: '💧' },
       { slug: 'decolonization-land-context', icon: '🌎' },
       { slug: 'mutual-aid-history', icon: '🤲' },
+      { slug: 'care-support', icon: '💞' },
+      { slug: 'crisis-debrief-care', icon: '🫂' },
+      { slug: 'trauma-risk-awareness', icon: '🧠' },
     ],
   },
   {
@@ -384,7 +393,8 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'checkpoint-monitoring', icon: '🚧' },
       { slug: 'heatmap-verification', icon: '🌡️' },
       { slug: 'mutual-aid-history', icon: '🤲' },
-      // { slug: 'opsec-101', icon: '🛡️' },
+      { slug: 'app-free-tactics', icon: '🧭' },
+      { slug: 'visual-alerts', icon: '📢' },
     ],
   },
   {
@@ -403,6 +413,8 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'mesh-networks-pod-ops', icon: '📶' },
       { slug: 'meshtastic-large-scale', icon: '♾️' },
       { slug: 'mesh-networks-hardware-guide', icon: '🔌' },
+      { slug: 'app-free-tactics', icon: '🧭' },
+      { slug: 'visual-alerts', icon: '📢' },
     ],
   },
   {
@@ -417,6 +429,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'solidarity-economics-resource-ethics', icon: '💰' },
       { slug: 'resource-drop', icon: '📥' },
       { slug: 'mutual-aid-history', icon: '🤲' },
+      { slug: 'otg-checklist', icon: '📋' },
     ],
   },
   {
@@ -431,7 +444,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'care-emotional-support', icon: '💞' },
       { slug: 'docket-tracker', icon: '📋' },
       { slug: 'mutual-aid-history', icon: '🤲' },
-      // { slug: 'legal-risk-tech', icon: '🧾' },
+      { slug: 'legal-risk-tech', icon: '🧾' },
     ],
   },
   {
@@ -446,6 +459,12 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'movement-strategy-escalation-logic', icon: '🗺️' },
       { slug: 'decolonization-land-context', icon: '🌎' },
       { slug: 'mutual-aid-history', icon: '🤲' },
+      { slug: 'managing-meetings-virtual-physical', icon: '🗣️' },
+      { slug: 'app-free-tactics', icon: '🧭' },
+      { slug: 'care-support', icon: '💞' },
+      { slug: 'crisis-debrief-care', icon: '🫂' },
+      { slug: 'otg-checklist', icon: '📋' },
+      { slug: 'visual-alerts', icon: '📢' },
     ],
   },
   {
@@ -460,7 +479,8 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'decolonization-land-context', icon: '🌎' },
       { slug: 'ethical-dilemmas-mutual-aid', icon: '⚖️' },
       { slug: 'mutual-aid-history', icon: '🤲' },
-      // { slug: 'legal-risk-tech', icon: '🧾' },
+      { slug: 'managing-meetings-virtual-physical', icon: '🗣️' },
+      { slug: 'trauma-risk-awareness', icon: '🧠' },
     ],
   },
   {

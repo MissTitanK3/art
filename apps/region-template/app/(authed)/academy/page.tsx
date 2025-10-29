@@ -23,6 +23,7 @@ import {
   usePodAcademyDashboardStore,
 } from '@/providers/PodAcademyDashboardStoreProvider';
 import { attachCourseStatusToGroups, buildInstructorProfiles, buildTrainingSessions, convertPodsToMemberProgress, deriveStats } from '@/lib/utils';
+import { useProfileStore } from '@workspace/store/useProfileStore';
 
 
 export default function AcademyDashboardPage() {
@@ -128,6 +129,8 @@ function AcademyDashboardContent({
   onScheduleClass,
   onCreatePathwayClass,
 }: AcademyDashboardContentProps) {
+  const profile = useProfileStore((s) => s.profile);
+  const canManageInstructors = profile?.access_role === 'dispatcher_admin';
   const setStats = usePodAcademyDashboardStore((state) => state.setStats);
   const setCourseGroups = usePodAcademyDashboardStore((state) => state.setCourseGroups);
   const setMembers = usePodAcademyDashboardStore((state) => state.setMembers);
@@ -182,6 +185,7 @@ function AcademyDashboardContent({
       instructors={storeInstructors}
       trainingClasses={storeTrainingClasses}
       sessions={storeSessions}
+      canManageInstructors={canManageInstructors}
       onScheduleClass={onScheduleClass}
       onUpdateSessionStatus={updateTrainingSessionStatus}
       onCreateInstructor={(draft) => {
