@@ -18,14 +18,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
-    const callerRole = (userData.user as any)?.role as string | undefined;
-
-    // Allow region admins directly; otherwise require dispatcher_admin via profile
-    let authorized = !!callerRole && regionAdmins.includes(callerRole as any);
-    if (!authorized) {
-      const callerProfile = await getProfileByUserId(userData.user.id);
-      authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
-    }
+    // Determine authorization based on the caller's application role from their profile
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    // Allow region admins directly; also allow dispatcher_admin
+    const authorized =
+      !!callerAccessRole && (regionAdmins.includes(callerAccessRole) || callerAccessRole === 'dispatcher_admin');
     if (!authorized) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

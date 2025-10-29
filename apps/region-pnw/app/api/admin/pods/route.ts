@@ -16,15 +16,11 @@ export async function POST(req: Request) {
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
-    const user = userData.user as any;
-    const callerRole = user?.role as string | undefined;
-
-    // Allow region admins directly; otherwise require dispatcher_admin via profile
-    let authorized = !!callerRole && regionAdmins.includes(callerRole as any);
-    if (!authorized) {
-      const callerProfile = await getProfileByUserId(userData.user.id);
-      authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
-    }
+    // Authorize based on application access_role (profile)
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    const authorized =
+      !!callerAccessRole && (regionAdmins.includes(callerAccessRole) || callerAccessRole === 'dispatcher_admin');
     if (!authorized) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -58,14 +54,13 @@ export const GET = async (_req: Request) => {
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
-    const user = userData.user as any;
-    let authorized = !!user?.role && regionAdmins.includes(user.role);
-    if (!authorized) {
-      const callerProfile = await getProfileByUserId(userData.user.id);
-      authorized =
-        !!callerProfile &&
-        (callerProfile.access_role === 'dispatcher_admin' || callerProfile.access_role === 'dispatcher_verified');
-    }
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    const authorized =
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        callerAccessRole === 'dispatcher_admin' ||
+        callerAccessRole === 'dispatcher_verified');
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const pods = await getPods();

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { Profile } from "@workspace/store/types/global.ts";
-import { AccessRoles, VerifiedBy, roleLabel, VerifiedByDescriptions } from "@workspace/store/types/roles.ts";
+import { AccessRoles, VerifiedBy, roleLabel, VerifiedByDescriptions, verifierLabel } from "@workspace/store/types/roles.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
 import { Button } from "@workspace/ui/components/button";
@@ -16,45 +16,40 @@ import { Download, ShieldCheck, UserCheck, UserX, MoreVertical } from "lucide-re
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 
 function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
-  // Distinct badge colors for all supported access roles
-  const color =
-    role === "team_member"
-      ? "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30"
-      : role === "pod_leader"
-        ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30"
-        : role === "trainer"
-          ? "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30"
-          : role === "dispatcher_basic"
-            ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30"
-            : role === "dispatcher_verified"
-              ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-              : role === "dispatcher_admin"
-                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                : role === "admin"
-                  ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                  : role === "regional_admin"
-                    ? "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30"
-                    : role === "national_admin"
-                      ? "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/30"
-                      : "bg-muted text-foreground/80 border-muted-foreground/20";
+  // Dynamically assign distinct badge colors across all roles, including any newly added ones
+  const palette = [
+    "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30", // 0 team_member
+    "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30", // 1 pod_leader
+    "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30", // 2 trainer
+    "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30", // 3 dispatcher_basic
+    "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30", // 4 dispatcher_verified
+    "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30", // 5 dispatcher_admin
+    "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30", // 6 admin
+    "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30", // 7 regional_admin
+    "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/30", // 8 national_admin
+    // Reserve extras for any new roles appended later without changing code
+    "bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30",
+    "bg-lime-500/15 text-lime-700 dark:text-lime-300 border-lime-500/30",
+    "bg-pink-500/15 text-pink-700 dark:text-pink-300 border-pink-500/30",
+    "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+    "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
+    "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+  ];
+  const roleIndex = AccessRoles.indexOf(role as any);
+  const color = roleIndex >= 0 ? (palette[roleIndex] ?? palette[palette.length - 1]) : "bg-muted text-foreground/80 border-muted-foreground/20";
   return <Badge variant="outline" className={`${color}`}>{roleLabel(role as any)}</Badge>;
 }
 
 function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
-  const color = who === "admin"
-    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-    : who === "partner_org"
-      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-      : who === "suspended"
-        ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-        : "bg-muted text-foreground/80 border-muted-foreground/20";
-  const label = who === "admin"
-    ? "Verified by Admin"
-    : who === "partner_org"
-      ? "Partner Verified"
-      : who === "suspended"
-        ? "Suspended"
-        : "Self";
+  const color =
+    who === "admin"
+      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+      : who === "partner_org"
+        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+        : who === "suspended"
+          ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+          : "bg-muted text-foreground/80 border-muted-foreground/20";
+  const label = verifierLabel(who as any);
   return <Badge variant="outline" className={`${color}`}>{label}</Badge>;
 }
 

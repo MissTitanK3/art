@@ -1,7 +1,7 @@
 // apps/region-pnw/lib/dal/admin.ts
 import 'server-only';
 import type { Profile, RegionSettings } from '@workspace/store/types/global.ts';
-import type { Pod } from '@workspace/store/types/pod.ts';
+import type { Pod, RosterEntry } from '@workspace/store/types/pod.ts';
 import type { DispatchSubmission } from '@workspace/store/types/global.ts';
 import { AccessRole, VerifiedBy } from '@workspace/store/types/roles.ts';
 import { TraingingSessionsDemoData } from '@/data/demoAcademy';
@@ -112,19 +112,107 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
 }
 
 export async function getPods(): Promise<Pod[]> {
-  try {
-    const client = await createSupabaseServerClient();
-    const { data, error } = await client.from('pods').select('id, slug, name, area, channels');
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    return rows.map((row: any) => ({
+  // Helper to normalize roster entry rows into RosterEntry type
+  const mapRowToRosterEntry = (row: any): RosterEntry => {
+    return {
       id: String(row.id),
-      slug: String(row.slug),
-      name: String(row.name ?? ''),
-      area: String(row.area ?? ''),
-      channels: Array.isArray(row.channels) ? row.channels : [],
-      team: [],
-    })) as Pod[];
+      profile: row.profile,
+      role: row.role,
+      status: row.status,
+      langs: Array.isArray(row.langs) ? row.langs : [],
+      skills: Array.isArray(row.skills) ? row.skills : [],
+      certs: Array.isArray(row.certs) ? row.certs : [],
+      notes: row.notes ?? undefined,
+      handle: row.handle ?? row.profile?.display_name ?? '',
+      joinedAt: String(row.joined_at ?? row.joinedAt ?? new Date().toISOString()),
+      lastShiftAt: row.last_shift_at ?? row.lastShiftAt ?? undefined,
+      signal_handle: row.signal_handle ?? undefined,
+    } as RosterEntry;
+  };
+
+  try {
+    const env = ensureSupabaseEnv('server');
+    const serviceKey = env.serviceRoleKey;
+    if (serviceKey) {
+      try {
+        // Use the new server helper to get the current user
+        const supabase = await createSupabaseServerClient();
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+
+        const user = userData?.user;
+        let authorized = false;
+        if (user) {
+          // Admin allowlist aligned with /admin route access: dispatcher_admin + regionAdmins
+          const ADMIN_ALLOW = new Set<AccessRole>(['dispatcher_admin', ...(regionAdmins as unknown as AccessRole[])]);
+
+          // Some deployments may store a nav role on the user; trust it if in allowlist.
+          const navRole = (user as any)?.role as AccessRole | undefined;
+          authorized = !!navRole && ADMIN_ALLOW.has(navRole);
+
+          // Fall back to profile role check if needed
+          if (!authorized) {
+            const callerProfile = await getProfileByUserId(user.id);
+            authorized = !!callerProfile && ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
+          }
+        }
+
+        if (authorized) {
+          const adminClient = createClient(env.url, serviceKey);
+          const { data, error } = await adminClient
+            .from('pods')
+            .select(
+              'id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))',
+            );
+          if (error) throw error;
+          const rows = Array.isArray(data) ? data : [];
+          return rows.map((row: any) => ({
+            id: String(row.id),
+            slug: String(row.slug),
+            name: String(row.name ?? ''),
+            area: String(row.area ?? ''),
+            channels: Array.isArray(row.channels) ? row.channels : [],
+            team: Array.isArray(row.team) ? row.team.map(mapRowToRosterEntry) : [],
+          })) as Pod[];
+        }
+      } catch (e) {
+        // If auth check fails (e.g., no session), fall back to scoped client below
+        console.warn('[dal/admin] getPods service-role path unavailable, falling back to anon client', e);
+      }
+    }
+
+    // Fallback: use anon client with caller session cookies
+    const client = await createSupabaseServerClient();
+    try {
+      const { data, error } = await client
+        .from('pods')
+        .select(
+          'id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))',
+        );
+      if (error) throw error;
+      const rows = Array.isArray(data) ? data : [];
+      return rows.map((row: any) => ({
+        id: String(row.id),
+        slug: String(row.slug),
+        name: String(row.name ?? ''),
+        area: String(row.area ?? ''),
+        channels: Array.isArray(row.channels) ? row.channels : [],
+        team: Array.isArray(row.team) ? row.team.map(mapRowToRosterEntry) : [],
+      })) as Pod[];
+    } catch (_e) {
+      // If RLS prevents joining roster entries, fall back to pods-only
+      const { data, error } = await client.from('pods').select('id, slug, name, area, channels');
+      if (error) throw error;
+      const rows = Array.isArray(data) ? data : [];
+      return rows.map((row: any) => ({
+        id: String(row.id),
+        slug: String(row.slug),
+        name: String(row.name ?? ''),
+        area: String(row.area ?? ''),
+        channels: Array.isArray(row.channels) ? row.channels : [],
+        team: [],
+      })) as Pod[];
+    }
   } catch (e) {
     console.warn('[dal/admin] getPods supabase error', e);
     return [];
