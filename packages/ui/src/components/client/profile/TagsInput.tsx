@@ -51,7 +51,7 @@ export function TagsInput({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" || e.key === ",") {
               e.preventDefault()
               handleAdd(draft)
             } else if (e.key === "Backspace" && !draft && value.length) {

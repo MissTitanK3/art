@@ -31,6 +31,7 @@ export type Profile = {
   self_risk_acknowledged: boolean;
   city?: string;
   operating_counties: string[];
+  self_status_flags?: string[];
 };
 
 export interface DispatchSubmission {

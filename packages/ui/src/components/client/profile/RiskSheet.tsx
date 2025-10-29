@@ -48,7 +48,7 @@ export function RiskSheet({
           Review Risk Expectations
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
+      <SheetContent side="bottom" className="p-4 max-w-3xl m-auto bg-secondary text-foreground overflow-auto h-3/4">
         <SheetHeader>
           <SheetTitle>Field Risk Awareness</SheetTitle>
           <SheetDescription>

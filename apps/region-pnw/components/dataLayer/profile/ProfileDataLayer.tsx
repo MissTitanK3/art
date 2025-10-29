@@ -139,6 +139,8 @@ export function ProfileDataLayer() {
               city: nz((values as any).city) ?? activeProfile.city,
               operating_counties:
                 (values as any).operating_counties ?? activeProfile.operating_counties ?? [],
+              self_status_flags:
+                (values as any).self_status_flags ?? activeProfile.self_status_flags ?? [],
             };
 
             // Persist using region-selected adapter (Supabase in production)
