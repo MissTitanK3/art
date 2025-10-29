@@ -37,6 +37,11 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname !== '/' &&
     !user &&
     !request.nextUrl.pathname.startsWith('/sign-in') &&
+    // Allow unauthenticated access to sign-up as a public route
+    !request.nextUrl.pathname.startsWith('/sign-up') &&
+    !request.nextUrl.pathname.startsWith('/intents') &&
+    !request.nextUrl.pathname.startsWith('/roles') &&
+    !request.nextUrl.pathname.startsWith('/impact') &&
     !request.nextUrl.pathname.startsWith('/auth')
   ) {
     const url = request.nextUrl.clone();

@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Textarea } from "@workspace/ui/components/textarea";
 import type { Profile } from "@workspace/store/types/global.ts";
 import { FIELD_ROLE_OPTIONS, type FieldRole } from "@workspace/store/types/roles.ts";
 
@@ -52,6 +51,16 @@ export function SignUpCard() {
     return { length, lower, upper, number, special, valid };
   }, [password]);
 
+  // Simple client-side validation for required fields
+  const contactSignalValid = React.useMemo(
+    () => /^@[A-Za-z0-9._-]+\.[0-9]{2,}$/.test(contactSignal),
+    [contactSignal]
+  );
+  const coordinationZoneValid = React.useMemo(
+    () => coordinationZone.trim().length > 0,
+    [coordinationZone]
+  );
+
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -67,13 +76,17 @@ export function SignUpCard() {
         if (!passwordRules.valid) {
           throw new Error("Password does not meet requirements");
         }
-        const session = await signUpWithPassword({ email, password });
+        // Required field checks
+        if (!contactSignalValid) {
+          throw new Error(
+            "Signal username is required and must match @name.12 (ends with at least two digits)."
+          );
+        }
+        if (!coordinationZoneValid) {
+          throw new Error("Coordination zone is required.");
+        }
 
-        const toCounties = (raw: string): string[] =>
-          raw
-            .split(/[,\s]+/)
-            .map((s) => s.trim())
-            .filter((s) => /^\d{5}$/.test(s));
+        const session = await signUpWithPassword({ email, password });
 
         const now = new Date().toISOString();
         const baseProfile: Partial<Profile> = {
@@ -81,8 +94,8 @@ export function SignUpCard() {
           affiliation: affiliation || "",
           city: city || "",
           state: state || "",
-          contact_signal: contactSignal || "",
-          coordination_zone: coordinationZone || "",
+          contact_signal: contactSignal,
+          coordination_zone: coordinationZone,
           field_roles: fieldRoles,
           coverage_zones: [],
           weekly_availability: { blocks: {} },
@@ -233,23 +246,26 @@ export function SignUpCard() {
             </div>
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="contactSignal">Signal username (optional)</Label>
+            <Label htmlFor="contactSignal">Signal username</Label>
             <Input
               id="contactSignal"
               type="text"
               value={contactSignal}
               onChange={(e) => setContactSignal(e.target.value)}
+              required
+              pattern="^@[A-Za-z0-9._-]+\\.[0-9]{2,}$"
               placeholder="@yourname.12"
             />
             <p className="text-xs text-muted-foreground">Format: @name.12 and ends with at least two digits.</p>
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="coordinationZone">Coordination zone (optional)</Label>
+            <Label htmlFor="coordinationZone">Coordination zone</Label>
             <Input
               id="coordinationZone"
               type="text"
               value={coordinationZone}
               onChange={(e) => setCoordinationZone(e.target.value)}
+              required
               placeholder="e.g. Seattle Metro"
             />
           </div>
@@ -281,7 +297,16 @@ export function SignUpCard() {
           {info && (
             <p className="text-sm text-muted-foreground" role="status">{info}</p>
           )}
-          <Button type="submit" className="w-full" disabled={pending || !passwordRules.valid}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={
+              pending ||
+              !passwordRules.valid ||
+              !contactSignalValid ||
+              !coordinationZoneValid
+            }
+          >
             {pending ? "Creating account…" : "Create account"}
           </Button>
         </form>
