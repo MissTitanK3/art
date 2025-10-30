@@ -42,7 +42,7 @@ export const WeeklyAvailabilitySchema = z
   })
   .default({ blocks: {} });
 
-export const SIGNAL_HANDLE_RE = /^@?.*\.\d{2,}$/;
+export const SIGNAL_HANDLE_RE = /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{0,8}|1000000000)$/;
 
 export const DispatchProfileSchema = z.object({
   id: z.string().uuid(),
