@@ -375,7 +375,7 @@ function ShiftColumn({
     <div className="space-y-3">
       <div>
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-        <p className="text-xs text-muted-foreground">Pulled from the dispatch roster demo data layer.</p>
+        <p className="text-xs text-muted-foreground">Pulled from the dispatch roster.</p>
       </div>
       {shifts.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyCopy}</p>
