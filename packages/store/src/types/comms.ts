@@ -65,3 +65,11 @@ export interface ComBriefing {
   updates?: string;
   updated_at: string; // ISO
 }
+
+export interface ComAlert {
+  id: string;
+  event_id: string; // dispatch/event id
+  direction: string;
+  description: string;
+  updated_at: string; // ISO
+}

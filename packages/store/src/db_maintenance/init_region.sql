@@ -187,6 +187,8 @@
   -- =========================================================
   -- Comms: teams, operators, logs, channels, briefings
   -- These tables support the Dispatch Comms Management Module
+  -- Ensure gen_random_uuid() is available for UUID defaults used below
+  CREATE EXTENSION IF NOT EXISTS pgcrypto;
   CREATE TABLE IF NOT EXISTS public.com_teams (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -285,6 +287,15 @@
     safety_notes TEXT,
     updates TEXT,
     updated_at TIMESTAMPTZ DEFAULT now()
+  );
+
+  -- Comms alerts: lightweight custom alerts tied to events
+  CREATE TABLE IF NOT EXISTS public.com_alerts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id TEXT NOT NULL,
+    direction TEXT NOT NULL,
+    description TEXT NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );
 
   -- Pod shifts (field operations scheduling)
@@ -595,6 +606,20 @@
       SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_com_channels_team_id'
     ) THEN
       EXECUTE 'CREATE INDEX idx_com_channels_team_id ON public.com_channels (team_id)';
+    END IF;
+
+    -- Comms optional index: team last_check_in for recency sorts
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_com_teams_last_check_in'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_com_teams_last_check_in ON public.com_teams (last_check_in DESC)';
+    END IF;
+
+    -- Comms alerts index for per-event lookup
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'com_alerts_event_id_idx'
+    ) THEN
+      EXECUTE 'CREATE INDEX com_alerts_event_id_idx ON public.com_alerts (event_id)';
     END IF;
 
     -- Optional performance index: roster joined_at timeline queries

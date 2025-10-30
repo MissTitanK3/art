@@ -22,6 +22,7 @@ ALTER TABLE com_operators ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_channels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_briefings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE com_alerts ENABLE ROW LEVEL SECURITY;
 
 -- Trust
 ALTER TABLE trust_signatures ENABLE ROW LEVEL SECURITY;
@@ -239,6 +240,28 @@ WITH CHECK (
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+
+-- Alerts: permissive starter policies (tune per region auth)
+CREATE POLICY com_alerts_select_all
+ON com_alerts
+FOR SELECT
+USING (TRUE);
+
+CREATE POLICY com_alerts_insert_all
+ON com_alerts
+FOR INSERT
+WITH CHECK (TRUE);
+
+CREATE POLICY com_alerts_update_all
+ON com_alerts
+FOR UPDATE
+USING (TRUE)
+WITH CHECK (TRUE);
+
+CREATE POLICY com_alerts_delete_all
+ON com_alerts
+FOR DELETE
+USING (TRUE);
 
 -- Operators: dispatchers manage all
 CREATE POLICY "dispatchers_manage_com_operators"

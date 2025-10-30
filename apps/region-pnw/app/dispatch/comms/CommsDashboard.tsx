@@ -25,6 +25,7 @@ export function CommsDashboard({ eventId }: Props) {
     logs,
     channels,
     briefing,
+    alerts,
     setGlobalCheckInMinutes,
     globalCheckInMinutes,
     addLog,
@@ -33,6 +34,9 @@ export function CommsDashboard({ eventId }: Props) {
     updateTeam,
     deleteTeam,
     upsertBriefing,
+    createAlert,
+    updateAlert,
+    deleteAlert,
   } = useCommsData({ eventId });
 
   const [checkInInput, setCheckInInput] = React.useState<string>(
@@ -92,14 +96,24 @@ export function CommsDashboard({ eventId }: Props) {
       </div>
 
       <div className="flex w-full flex-col gap-3 xl:w-2/3">
-        <CommsBriefing briefing={briefing} onSave={async (patch) => { await upsertBriefing(patch as any); }} />
-        <CommsAlertsCard onLog={(e) => addLog({ message: e.message, message_type: e.message_type, importance: e.importance })} />
-
         <Tabs defaultValue="log" className="flex h-full flex-col">
           <TabsList className="mb-2 w-full overflow-x-auto flex flex-wrap gap-2">
+            <TabsTrigger value="briefing">Briefing</TabsTrigger>
+            <TabsTrigger value="alerts">Alerts</TabsTrigger>
             <TabsTrigger value="log">Logs</TabsTrigger>
             <TabsTrigger value="scratch">Scratchpad</TabsTrigger>
           </TabsList>
+          <TabsContent value="briefing" className="flex-1">
+            <CommsBriefing briefing={briefing} onSave={async (patch) => { await upsertBriefing(patch as any); }} />
+          </TabsContent>
+          <TabsContent value="alerts" className="flex-1">
+            <CommsAlertsCard
+              alerts={alerts?.map(a => ({ id: a.id, direction: a.direction, description: a.description }))}
+              onCreateAlert={async (input) => { return await createAlert(input); }}
+              onUpdateAlert={async (id, patch) => { await updateAlert(id, patch as any); }}
+              onDeleteAlert={async (id) => { await deleteAlert(id); }}
+            />
+          </TabsContent>
           <TabsContent value="log" className="flex-1">
             <CommsLogView logs={logs} onAddLog={addLog} />
           </TabsContent>
