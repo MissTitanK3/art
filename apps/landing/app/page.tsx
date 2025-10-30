@@ -94,7 +94,7 @@ export default function LandingPage() {
       {/* NGC Intro Section */}
       <section aria-labelledby="ngc-intro" className="mx-auto mt-14 max-w-5xl px-4">
         <div className="rounded-2xl border border-input bg-card p-6 shadow">
-          <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="mb-4 flex-col md:flex-row items-center justify-between gap-4">
             <h2 id="ngc-intro" className="text-2xl font-semibold">
               Next-Generation Constitution (NGC)
             </h2>

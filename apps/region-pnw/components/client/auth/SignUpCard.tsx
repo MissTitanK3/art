@@ -53,7 +53,10 @@ export function SignUpCard() {
 
   // Simple client-side validation for required fields
   const contactSignalValid = React.useMemo(
-    () => /^@[A-Za-z0-9._-]+\.[0-9]{2,}$/.test(contactSignal),
+    // @nickname.discriminator where:
+    // nickname: 3–32 chars, [A-Za-z0-9_], not starting with a digit
+    // discriminator: 01–09 OR 10–999999999 OR exactly 1000000000
+    () => /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{1,8}|1000000000)$/.test(contactSignal),
     [contactSignal]
   );
   const displayNameValid = React.useMemo(
@@ -261,10 +264,10 @@ export function SignUpCard() {
               value={contactSignal}
               onChange={(e) => setContactSignal(e.target.value)}
               required
-              pattern="^@[A-Za-z0-9._-]+\\.[0-9]{2,}$"
+              pattern="^@[A-Za-z_][A-Za-z0-9_]{2,31}\\.(?:0[1-9]|[1-9][0-9]{1,8}|1000000000)$"
               placeholder="@yourname.12"
             />
-            <p className="text-xs text-muted-foreground">Format: @name.12 and ends with at least two digits.</p>
+            <p className="text-xs text-muted-foreground">Format: @nickname.discriminator — nickname is 3–32 letters/numbers/underscore (no starting digit); discriminator is 01–1000000000 with no leading zeros (except 01–09).</p>
           </div>
           <div className="grid gap-1">
             <Label htmlFor="coordinationZone">Coordination zone<span aria-hidden="true" className="text-destructive"> *</span></Label>
