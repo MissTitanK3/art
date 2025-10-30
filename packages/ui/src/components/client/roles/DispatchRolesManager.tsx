@@ -8,7 +8,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { humanize } from "@workspace/ui/lib/utils";
 import VolunteerStatusBadge from "../status/VolunteerStatusBadge.tsx";
@@ -31,9 +31,14 @@ export default function DispatchRolesManager({
   onUpdate,
   roster,
 }: DispatchRolesManagerProps) {
-  const allRoster = roster ?? [];
+  const providedRoster = roster ?? [];
   const [openRole, setOpenRole] = useState<string | null>(null);
   const [openRolesEditor, setOpenRolesEditor] = useState(false);
+  const [loadingRoster, setLoadingRoster] = useState(false);
+  const [rosterOptions, setRosterOptions] = useState<RosterEntry[] | null>(null);
+  // Role-filtered roster for the currently opened role drawer
+  const [loadingRoleRoster, setLoadingRoleRoster] = useState(false);
+  const [roleRosterOptions, setRoleRosterOptions] = useState<RosterEntry[] | null>(null);
 
   type AssignedVolunteer = Partial<RosterEntry> & {
     volunteer?: {
@@ -43,6 +48,117 @@ export default function DispatchRolesManager({
   };
 
   const assignedVolunteers = (submission.assigned_volunteers ?? []) as AssignedVolunteer[];
+
+  // Convert a plain profile into a synthetic RosterEntry for selection, similar to AddMemberButton
+  const profileToRosterEntry = (profile: any): RosterEntry => ({
+    id: String(profile.id),
+    profile,
+    role: "member" as PodRole,
+    status: "active" as PodMemberStatus,
+    langs: [],
+    skills: [],
+    certs: [],
+    notes: undefined,
+    handle: profile.display_name ?? "",
+    joinedAt: new Date().toISOString(),
+    lastShiftAt: undefined,
+    signal_handle: profile.contact_signal ?? undefined,
+  });
+
+  // Load all registered users and merge with provided roster; prefer provided entries when profile.id matches
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProfiles() {
+      setLoadingRoster(true);
+      try {
+        const res = await fetch('/api/dispatch/profiles', { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
+          const synthetic = profiles.map(profileToRosterEntry);
+
+          // Map by profile.id, prefer providedRoster entries
+          const mapByProfile = new Map<string, RosterEntry>();
+          for (const r of providedRoster) {
+            const pid = r.profile?.id ? String(r.profile.id) : undefined;
+            if (pid) mapByProfile.set(pid, r);
+          }
+          for (const s of synthetic) {
+            const pid = s.profile?.id ? String(s.profile.id) : undefined;
+            if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
+          }
+          const merged = Array.from(mapByProfile.values()).sort((a, b) =>
+            (a.profile?.display_name ?? '').localeCompare(b.profile?.display_name ?? '')
+          );
+          if (!cancelled) setRosterOptions(merged);
+          return;
+        }
+      } catch {
+        // ignore and fall through to fallback
+      } finally {
+        if (!cancelled) setLoadingRoster(false);
+      }
+
+      if (!cancelled) setRosterOptions(providedRoster);
+    }
+    loadProfiles();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(providedRoster.map(r => r.profile?.id))]);
+
+  const allRoster = useMemo(() => rosterOptions ?? providedRoster, [rosterOptions, providedRoster]);
+
+  // When managing a specific role, fetch only profiles eligible for that role (based on public.profile.field_roles)
+  useEffect(() => {
+    let cancelled = false;
+    async function loadEligibleForRole() {
+      if (!openRole) {
+        setRoleRosterOptions(null);
+        return;
+      }
+      setLoadingRoleRoster(true);
+      try {
+        const res = await fetch(`/api/dispatch/profiles?field_role=${encodeURIComponent(openRole)}`, { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
+          const synthetic = profiles.map(profileToRosterEntry);
+
+          // Build a map by profile.id; prefer provided roster entries when present
+          const mapByProfile = new Map<string, RosterEntry>();
+          for (const r of providedRoster) {
+            const pid = r.profile?.id ? String(r.profile.id) : undefined;
+            // Only include if the profile explicitly lists this role in field_roles
+            const hasRole = Array.isArray((r.profile as any)?.field_roles)
+              ? ((r.profile as any).field_roles as string[]).includes(openRole)
+              : false;
+            if (pid && hasRole) mapByProfile.set(pid, r);
+          }
+          for (const s of synthetic) {
+            const pid = s.profile?.id ? String(s.profile.id) : undefined;
+            if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
+          }
+          const merged = Array.from(mapByProfile.values()).sort((a, b) =>
+            (a.profile?.display_name ?? '').localeCompare(b.profile?.display_name ?? '')
+          );
+          if (!cancelled) setRoleRosterOptions(merged);
+          return;
+        }
+      } catch {
+        // ignore, fallback below
+      } finally {
+        if (!cancelled) setLoadingRoleRoster(false);
+      }
+
+      // Fallback: filter provided roster by field_roles if available
+      const filteredProvided = providedRoster.filter((r) =>
+        Array.isArray((r.profile as any)?.field_roles) && ((r.profile as any).field_roles as string[]).includes(openRole!)
+      );
+      if (!cancelled) setRoleRosterOptions(filteredProvided);
+    }
+    loadEligibleForRole();
+    return () => { cancelled = true; };
+  }, [openRole, providedRoster]);
 
   const handleSaveAssignments = (
     role: string,
@@ -57,11 +173,11 @@ export default function DispatchRolesManager({
           const rosterEntry = allRoster.find((r) => r.id === rosterId);
           return rosterEntry
             ? {
-                id: rosterEntry.id,
-                profile: rosterEntry.profile,
-                role: role as PodRole,
-                status: "active" as PodMemberStatus,
-              }
+              id: rosterEntry.id,
+              profile: rosterEntry.profile,
+              role: role as PodRole,
+              status: "active" as PodMemberStatus,
+            }
             : { id: rosterId, role: role as PodRole, status: "active" as PodMemberStatus };
         }),
       ...manualVolunteers
@@ -228,7 +344,8 @@ export default function DispatchRolesManager({
           }
           onClose={() => setOpenRole(null)}
           onSave={handleSaveAssignments}
-          allRoster={allRoster}
+          allRoster={roleRosterOptions ?? allRoster}
+          loading={loadingRoleRoster}
         />
       ) : null}
 

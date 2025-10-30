@@ -15,6 +15,7 @@ export default function ManageRoleDrawer({
   onClose,
   onSave,
   allRoster,
+  loading,
 }: {
   role: string;
   submissionId: string;
@@ -27,6 +28,7 @@ export default function ManageRoleDrawer({
     manualVolunteers: { id: string; name: string }[]
   ) => void;
   allRoster: RosterEntry[];
+  loading?: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>(assigned);
   const [manualName, setManualName] = useState("");
@@ -61,44 +63,58 @@ export default function ManageRoleDrawer({
           <DrawerTitle>Manage Role: {role}</DrawerTitle>
           <DrawerDescription>
             Assign or unassign volunteers for this role.
+            {loading ? " Loading eligible users…" : null}
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="max-h-[50vh] overflow-y-auto mt-4 space-y-2">
-          {/* Existing roster */}
-          {allRoster.map((r) => (
-            <label
-              key={r.id}
-              className="flex items-center gap-2 text-sm cursor-pointer"
-            >
-              <Checkbox
-                checked={selected.includes(r.id)}
-                onCheckedChange={() => toggle(r.id)}
-              />
+        <div className="max-h-[50vh] overflow-y-auto mt-4 space-y-2" aria-busy={loading}>
+          {loading ? (
+            // Skeleton placeholder to avoid flicker while loading
+            Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-sm bg-muted animate-pulse" />
+                <div className="h-4 w-48 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-16 rounded bg-muted animate-pulse ml-2" />
+              </div>
+            ))
+          ) : (
+            <>
+              {/* Existing roster */}
+              {allRoster.map((r) => (
+                <label
+                  key={r.id}
+                  className="flex items-center gap-2 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selected.includes(r.id)}
+                    onCheckedChange={() => toggle(r.id)}
+                  />
 
-              <span className="font-medium">{r.profile.display_name}</span>
-              <Badge variant="outline" className="text-[10px] capitalize">
-                {r.role}
-              </Badge>
-            </label>
-          ))}
+                  <span className="font-medium">{r.profile.display_name}</span>
+                  <Badge variant="outline" className="text-[10px] capitalize">
+                    {r.role}
+                  </Badge>
+                </label>
+              ))}
 
-          {/* Manual volunteers */}
-          {manualVolunteers.map((m) => (
-            <label
-              key={m.id}
-              className="flex items-center gap-2 text-sm cursor-pointer"
-            >
-              <Checkbox
-                checked={selected.includes(m.id)}
-                onCheckedChange={() => toggle(m.id)}
-              />
-              <span className="font-medium">{m.name}</span>
-              <Badge variant="outline" className="text-[10px] capitalize">
-                manual
-              </Badge>
-            </label>
-          ))}
+              {/* Manual volunteers */}
+              {manualVolunteers.map((m) => (
+                <label
+                  key={m.id}
+                  className="flex items-center gap-2 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selected.includes(m.id)}
+                    onCheckedChange={() => toggle(m.id)}
+                  />
+                  <span className="font-medium">{m.name}</span>
+                  <Badge variant="outline" className="text-[10px] capitalize">
+                    manual
+                  </Badge>
+                </label>
+              ))}
+            </>
+          )}
         </div>
 
         {/* Manual entry field */}
@@ -116,7 +132,7 @@ export default function ManageRoleDrawer({
         </div>
 
         <DrawerFooter>
-          <Button onClick={() => onSave(role, selected, manualVolunteers)}>
+          <Button onClick={() => onSave(role, selected, manualVolunteers)} disabled={!!loading}>
             Save
           </Button>
           <Button variant="secondary" onClick={onClose}>

@@ -21,6 +21,7 @@ export async function GET(req: Request) {
     const access_role = searchParams.get('access_role');
     const verified_by = searchParams.get('verified_by');
     const availability = searchParams.get('availability');
+    const field_role = searchParams.get('field_role');
 
     if (access_role) filter.access_role = access_role as any;
     if (verified_by) filter.verified_by = verified_by as any;
@@ -32,7 +33,14 @@ export async function GET(req: Request) {
     // Filter to pod_leader and higher (elevatedRoles)
     const allowed = new Set(elevatedRoles);
     const scoped = profiles.filter((p) => p?.access_role && allowed.has(p.access_role as any));
-    return NextResponse.json({ profiles: scoped });
+
+    // Optional: filter by field role (public.profile.field_roles)
+    const result =
+      field_role && field_role.trim().length > 0
+        ? scoped.filter((p: any) => Array.isArray(p?.field_roles) && p.field_roles.includes(field_role))
+        : scoped;
+
+    return NextResponse.json({ profiles: result });
   } catch (e: any) {
     return jsonError(e);
   }

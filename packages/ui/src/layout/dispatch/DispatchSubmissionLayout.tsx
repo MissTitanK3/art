@@ -31,13 +31,15 @@ import type { RosterEntry } from "@workspace/store/types/pod.ts";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
-  defaultTab?: "overview" | "roles" | "updates" | "logistics" | "public_engagement";
+  defaultTab?: "overview" | "roles" | "updates" | "logistics" | "public_engagement" | "comms";
   loadingMessage?: React.ReactNode;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
   onEditUpdate: (updateId: string, text: string) => void;
   onRemoveUpdate: (updateId: string) => void;
   roster?: RosterEntry[];
+  commsTabContent?: React.ReactNode;
+  commsTabLabel?: string;
 };
 
 export function DispatchSubmissionLayout({
@@ -49,6 +51,8 @@ export function DispatchSubmissionLayout({
   onEditUpdate,
   onRemoveUpdate,
   roster = [],
+  commsTabContent,
+  commsTabLabel = "Comms",
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
@@ -126,7 +130,7 @@ export function DispatchSubmissionLayout({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="sticky top-14 z-10 mb-3 flex flex-col items-center justify-between border-b bg-background px-4 py-3 md:flex-row">
+      <div className="mb-3 flex flex-col items-center justify-between border-b bg-background px-4 py-3 md:flex-row">
         <div>
           {locationLabel ? (
             <h2 className="text-lg font-bold">{locationLabel}</h2>
@@ -155,7 +159,7 @@ export function DispatchSubmissionLayout({
         <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>
       ) : null}
 
-      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col lg:mt-11">
+      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
         <TabsList className="mb-3 flex h-full w-full flex-wrap md:flex-nowrap">
           <TabsTrigger value="overview" className="flex-1 basis-1/2">
             Overview
@@ -172,6 +176,11 @@ export function DispatchSubmissionLayout({
           <TabsTrigger value="public_engagement" className="flex-1 basis-1/2">
             Public Engagement
           </TabsTrigger>
+          {commsTabContent ? (
+            <TabsTrigger value="comms" className="flex-1 basis-1/2">
+              {commsTabLabel}
+            </TabsTrigger>
+          ) : null}
         </TabsList>
 
         <TabsContent value="overview" className="flex-1 overflow-y-auto">
@@ -227,6 +236,12 @@ export function DispatchSubmissionLayout({
         <TabsContent value="public_engagement" className="flex-1">
           <PublicEngagementPanel submission={submission} />
         </TabsContent>
+
+        {commsTabContent ? (
+          <TabsContent value="comms" className="flex-1">
+            {commsTabContent}
+          </TabsContent>
+        ) : null}
       </Tabs>
     </div>
   );

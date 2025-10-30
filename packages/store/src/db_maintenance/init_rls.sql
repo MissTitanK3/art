@@ -16,6 +16,13 @@ ALTER TABLE academy_participants ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE missing_person_records ENABLE ROW LEVEL SECURITY;
 
+-- Comms
+ALTER TABLE com_teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE com_operators ENABLE ROW LEVEL SECURITY;
+ALTER TABLE com_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE com_channels ENABLE ROW LEVEL SECURITY;
+ALTER TABLE com_briefings ENABLE ROW LEVEL SECURITY;
+
 -- Trust
 ALTER TABLE trust_signatures ENABLE ROW LEVEL SECURITY;
 
@@ -211,6 +218,123 @@ USING (
   status IN ('confirmed','in_progress','completed')
 );
 
+-- =========================================================
+-- Comms policies
+
+-- Teams: dispatchers manage all, others no access by default
+CREATE POLICY "dispatchers_manage_com_teams"
+ON com_teams
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Operators: dispatchers manage all
+CREATE POLICY "dispatchers_manage_com_operators"
+ON com_operators
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Channels: dispatchers manage all
+CREATE POLICY "dispatchers_manage_com_channels"
+ON com_channels
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Logs: visible when related dispatch is visible to team; dispatchers manage
+CREATE POLICY "visible_to_related_dispatch_com_logs"
+ON com_logs
+FOR SELECT
+USING (
+  event_id IN (
+    SELECT id FROM dispatch_submissions
+    WHERE status IN ('confirmed','in_progress','completed')
+  )
+);
+
+CREATE POLICY "dispatchers_manage_com_logs"
+ON com_logs
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Briefings: visible when related dispatch is visible to team; dispatchers manage
+CREATE POLICY "visible_to_related_dispatch_com_briefings"
+ON com_briefings
+FOR SELECT
+USING (
+  event_id IN (
+    SELECT id FROM dispatch_submissions
+    WHERE status IN ('confirmed','in_progress','completed')
+  )
+);
+
+CREATE POLICY "dispatchers_manage_com_briefings"
+ON com_briefings
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
 -- Dispatchers can create and manage all dispatches
 CREATE POLICY "dispatchers_manage_dispatches"
 ON dispatch_submissions

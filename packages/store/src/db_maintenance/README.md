@@ -3,7 +3,7 @@
 This folder contains schema and RLS policy SQL for region-level store databases used by the apps in this monorepo.
 
 Files
-- `init_region.sql` — primary schema: tables for profiles, pods, roster, dispatch, academy, missing_person_records, trust_signatures. Includes idempotent indexes and CHECK constraints aligned with app types.
+- `init_region.sql` — primary schema: tables for profiles, pods, roster, dispatch, comms (com_teams, com_operators, com_logs, com_channels, com_briefings), academy, missing_person_records, trust_signatures. Includes idempotent indexes and CHECK constraints aligned with app types.
 - `init_rls.sql` — Row Level Security enablement and policies. Assumes a Supabase-style request environment (`auth.uid()` and `request.jwt.claims`).
 - `migrations/001_[template].sql` — starting point if you prefer follow-up migrations separate from `init_region.sql`.
 - `SECURITY.md` — security guidance for these artifacts.
@@ -14,6 +14,7 @@ Design notes
 
 Running and testing
 - If you're using Supabase CLI or a migration tool, apply `init_region.sql` first, then `init_rls.sql`. You can place incremental changes into files under `migrations/`.
+  - For existing deployments, apply the additive migration `migrations/20251030_05_comms_module.sql` to create the Comms tables, then re-run `init_rls.sql` (or cherry-pick the Comms section) to apply policies.
 
 RLS quick test (local session simulation)
 1. Simulate dispatcher role in the session:
