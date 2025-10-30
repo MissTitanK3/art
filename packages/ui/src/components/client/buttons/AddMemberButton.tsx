@@ -40,6 +40,69 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
   );
   const [role, setRole] = React.useState<"lead" | "member" | "trainee">("member");
 
+  // Load eligible profiles (pod_leader and higher) from server route when dialog opens
+  const [loadingOptions, setLoadingOptions] = React.useState(false);
+  const [rosterOptions, setRosterOptions] = React.useState<RosterEntry[] | null>(null);
+
+  // Convert a plain profile into a synthetic RosterEntry for selection
+  const profileToRosterEntry = React.useCallback((profile: any): RosterEntry => ({
+    id: String(profile.id), // synthetic id for selection (we generate a new one on add)
+    profile,
+    role: "member",
+    status: "active",
+    langs: [],
+    skills: [],
+    certs: [],
+    notes: undefined,
+    handle: profile.display_name ?? "",
+    joinedAt: new Date().toISOString(),
+    lastShiftAt: undefined,
+    signal_handle: profile.contact_signal ?? undefined,
+  }), []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    async function loadEligible() {
+      if (!open || mode !== 'registered') return;
+      // Avoid refetch if already loaded
+      if (rosterOptions && rosterOptions.length > 0) return;
+      setLoadingOptions(true);
+      try {
+        // Try server route (filters to pod_leader+ and authorizes podAdmins)
+        const res = await fetch('/api/dispatch/profiles', { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
+          const synthetic = profiles.map(profileToRosterEntry);
+          // Merge with activeRoster and de-dup by profile.id (prefer activeRoster entries when present)
+          const mapByProfile = new Map<string, RosterEntry>();
+          for (const r of activeRoster) {
+            const pid = r.profile?.id ? String(r.profile.id) : undefined;
+            if (pid) mapByProfile.set(pid, r);
+          }
+          for (const s of synthetic) {
+            const pid = s.profile?.id ? String(s.profile.id) : undefined;
+            if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
+          }
+          const merged = Array.from(mapByProfile.values()).sort((a, b) =>
+            (a.profile?.display_name ?? '').localeCompare(b.profile?.display_name ?? '')
+          );
+          if (!cancelled) setRosterOptions(merged);
+          return;
+        }
+      } catch {
+        // ignore and fall back below
+      } finally {
+        if (!cancelled) setLoadingOptions(false);
+      }
+
+      // Fallback: use provided activeRoster
+      if (!cancelled) setRosterOptions(activeRoster);
+    }
+    loadEligible();
+    return () => { cancelled = true; };
+  }, [open, mode, activeRoster, rosterOptions, profileToRosterEntry]);
+
   if (!pod) return null;
 
   const handleAdd = () => {
@@ -65,7 +128,8 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
         []
       );
     } else {
-      const found = activeRoster.find((r) => r.id === selectedRosterId);
+      const list = rosterOptions ?? activeRoster;
+      const found = list.find((r) => r.id === selectedRosterId);
       if (!found) {
         alert("Please select a registered roster entry");
         return;
@@ -126,12 +190,12 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
                 onValueChange={(v) => setSelectedRosterId(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a roster member" />
+                  <SelectValue placeholder={loadingOptions ? "Loading users..." : "Select a roster member"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {activeRoster.map((r) => (
+                  {(rosterOptions ?? activeRoster).map((r) => (
                     <SelectItem key={r.id} value={r.id}>
-                      {r.profile.display_name} ({r.role})
+                      {(r.profile?.display_name ?? r.handle ?? 'Unknown')} ({r.role})
                     </SelectItem>
                   ))}
                 </SelectContent>

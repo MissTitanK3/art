@@ -1,46 +1,13 @@
--- Core
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pods ENABLE ROW LEVEL SECURITY;
-ALTER TABLE roster_entries ENABLE ROW LEVEL SECURITY;
+-- Migration: Remove RLS helper functions and inline role checks to avoid recursion (54001)
+-- Align policies with role groups from packages/store/src/utils/nav.ts
+-- Date: 2025-10-30
 
--- Core
-ALTER TABLE dispatch_updates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE dispatch_logistics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE dispatch_shifts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pod_shifts ENABLE ROW LEVEL SECURITY;
+BEGIN;
 
-ALTER TABLE academy_instructors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE academy_classes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE academy_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE academy_participants ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE missing_person_records ENABLE ROW LEVEL SECURITY;
-
--- Trust
-ALTER TABLE trust_signatures ENABLE ROW LEVEL SECURITY;
-
--- Everyone can view their own profile
-CREATE POLICY "select_own_profile"
-ON profiles
-FOR SELECT
-USING (user_id = auth.uid()::text);
-
--- Users can update only their own profile
-CREATE POLICY "update_own_profile"
-ON profiles
-FOR UPDATE
-USING (user_id = auth.uid()::text);
-
--- Allow authenticated users to insert their own profile
-create policy "insert_own_profile"
-on public.profiles
-for insert
-to authenticated
-with check (user_id = (auth.uid())::text);
-
--- Pod/admin roles can view all profiles (use JWT claim to avoid recursion)
+-- Profiles: allow pod/admin roles to view all profiles via JWT claim to avoid recursion
+DROP POLICY IF EXISTS "dispatchers_view_profiles" ON public.profiles;
 CREATE POLICY "dispatchers_view_profiles"
-ON profiles
+ON public.profiles
 FOR SELECT
 USING (
   current_setting('request.jwt.claims', true)::json->>'role' IN (
@@ -48,21 +15,8 @@ USING (
   )
 );
 
--- Team members can read pods they belong to
-CREATE POLICY "read_assigned_pods"
-ON pods
-FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM roster_entries r
-    WHERE r.pod_id = pods.id
-    AND r.profile_id IN (
-      SELECT id FROM profiles WHERE user_id = auth.uid()::text
-    )
-  )
-);
-
--- Pod/admin roles can read and modify all pods
+-- Pods: pod/admin roles can read and modify all pods
+DROP POLICY IF EXISTS dispatchers_manage_pods ON public.pods;
 CREATE POLICY dispatchers_manage_pods
 ON public.pods
 FOR ALL
@@ -81,24 +35,10 @@ WITH CHECK (
   )
 );
 
--- Roster entries: users see and edit only their own
-CREATE POLICY "read_own_roster_entry"
-ON roster_entries
-FOR SELECT
-USING (
-  profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()::text)
-);
-
-CREATE POLICY "update_own_roster_entry"
-ON roster_entries
-FOR UPDATE
-USING (
-  profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()::text)
-);
-
--- Dispatchers manage all roster entries
+-- Roster entries: pod/admin roles manage
+DROP POLICY IF EXISTS "dispatchers_manage_roster" ON public.roster_entries;
 CREATE POLICY "dispatchers_manage_roster"
-ON roster_entries
+ON public.roster_entries
 FOR ALL
 USING (
   EXISTS (
@@ -115,16 +55,17 @@ WITH CHECK (
   )
 );
 
--- Pod shifts: team members of a pod can view/manage that pod's shifts; dispatchers can manage all
+-- Pod shifts: team view/insert/update/delete or pod/admin roles
+DROP POLICY IF EXISTS "team_view_pod_shifts" ON public.pod_shifts;
 CREATE POLICY "team_view_pod_shifts"
-ON pod_shifts
+ON public.pod_shifts
 FOR SELECT
 USING (
   EXISTS (
-    SELECT 1 FROM roster_entries r
+    SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text
       )
   )
   OR EXISTS (
@@ -134,16 +75,17 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS "team_insert_pod_shifts" ON public.pod_shifts;
 CREATE POLICY "team_insert_pod_shifts"
-ON pod_shifts
+ON public.pod_shifts
 FOR INSERT
 TO authenticated
 WITH CHECK (
   EXISTS (
-    SELECT 1 FROM roster_entries r
+    SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text
       )
   )
   OR EXISTS (
@@ -153,15 +95,16 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS "team_update_pod_shifts" ON public.pod_shifts;
 CREATE POLICY "team_update_pod_shifts"
-ON pod_shifts
+ON public.pod_shifts
 FOR UPDATE
 USING (
   EXISTS (
-    SELECT 1 FROM roster_entries r
+    SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text
       )
   )
   OR EXISTS (
@@ -172,10 +115,10 @@ USING (
 )
 WITH CHECK (
   EXISTS (
-    SELECT 1 FROM roster_entries r
+    SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text
       )
   )
   OR EXISTS (
@@ -185,15 +128,16 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS "team_delete_pod_shifts" ON public.pod_shifts;
 CREATE POLICY "team_delete_pod_shifts"
-ON pod_shifts
+ON public.pod_shifts
 FOR DELETE
 USING (
   EXISTS (
-    SELECT 1 FROM roster_entries r
+    SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text
       )
   )
   OR EXISTS (
@@ -203,17 +147,10 @@ USING (
   )
 );
 
--- Team members can see confirmed dispatches
-CREATE POLICY "team_view_dispatches"
-ON dispatch_submissions
-FOR SELECT
-USING (
-  status IN ('confirmed','in_progress','completed')
-);
-
--- Dispatchers can create and manage all dispatches
+-- Dispatch: submissions/updates/logistics
+DROP POLICY IF EXISTS "dispatchers_manage_dispatches" ON public.dispatch_submissions;
 CREATE POLICY "dispatchers_manage_dispatches"
-ON dispatch_submissions
+ON public.dispatch_submissions
 FOR ALL
 USING (
   EXISTS (
@@ -230,18 +167,9 @@ WITH CHECK (
   )
 );
 
-CREATE POLICY "visible_to_related_dispatch"
-ON dispatch_updates
-FOR SELECT
-USING (
-  dispatch_id IN (
-    SELECT id FROM dispatch_submissions
-    WHERE status IN ('confirmed','in_progress','completed')
-  )
-);
-
+DROP POLICY IF EXISTS "dispatchers_manage_dispatch_updates" ON public.dispatch_updates;
 CREATE POLICY "dispatchers_manage_dispatch_updates"
-ON dispatch_updates
+ON public.dispatch_updates
 FOR ALL
 USING (
   EXISTS (
@@ -258,19 +186,9 @@ WITH CHECK (
   )
 );
 
--- Logistics: visible when related dispatch is visible to team; dispatchers manage
-CREATE POLICY "visible_to_related_dispatch_logistics"
-ON dispatch_logistics
-FOR SELECT
-USING (
-  dispatch_id IN (
-    SELECT id FROM dispatch_submissions
-    WHERE status IN ('confirmed','in_progress','completed')
-  )
-);
-
+DROP POLICY IF EXISTS "dispatchers_manage_dispatch_logistics" ON public.dispatch_logistics;
 CREATE POLICY "dispatchers_manage_dispatch_logistics"
-ON dispatch_logistics
+ON public.dispatch_logistics
 FOR ALL
 USING (
   EXISTS (
@@ -287,16 +205,17 @@ WITH CHECK (
   )
 );
 
--- Dispatch desk shifts: team members of the pod or any dispatcher can view; dispatchers manage
+-- Dispatch shifts
+DROP POLICY IF EXISTS "team_view_dispatch_shifts" ON public.dispatch_shifts;
 CREATE POLICY "team_view_dispatch_shifts"
-ON dispatch_shifts
+ON public.dispatch_shifts
 FOR SELECT
 USING (
   EXISTS (
-    SELECT 1 FROM roster_entries r
+    SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = dispatch_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text
       )
   )
   OR EXISTS (
@@ -306,8 +225,9 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS "dispatchers_manage_dispatch_shifts" ON public.dispatch_shifts;
 CREATE POLICY "dispatchers_manage_dispatch_shifts"
-ON dispatch_shifts
+ON public.dispatch_shifts
 FOR ALL
 USING (
   EXISTS (
@@ -324,15 +244,10 @@ WITH CHECK (
   )
 );
 
--- Anyone can view public classes/sessions
-CREATE POLICY "public_view_academy_classes"
-ON academy_classes
-FOR SELECT
-USING (TRUE);
-
--- Dispatchers can manage classes and sessions
+-- Academy
+DROP POLICY IF EXISTS "dispatchers_manage_academy" ON public.academy_classes;
 CREATE POLICY "dispatchers_manage_academy"
-ON academy_classes
+ON public.academy_classes
 FOR ALL
 USING (
   EXISTS (
@@ -349,15 +264,9 @@ WITH CHECK (
   )
 );
 
--- Anyone can view sessions
-CREATE POLICY "public_view_academy_sessions"
-ON academy_sessions
-FOR SELECT
-USING (TRUE);
-
--- Dispatchers can manage sessions
+DROP POLICY IF EXISTS "dispatchers_manage_academy_sessions" ON public.academy_sessions;
 CREATE POLICY "dispatchers_manage_academy_sessions"
-ON academy_sessions
+ON public.academy_sessions
 FOR ALL
 USING (
   EXISTS (
@@ -374,15 +283,9 @@ WITH CHECK (
   )
 );
 
--- Anyone can view instructors
-CREATE POLICY "public_view_academy_instructors"
-ON academy_instructors
-FOR SELECT
-USING (TRUE);
-
--- Dispatchers can manage instructors
+DROP POLICY IF EXISTS "dispatchers_manage_academy_instructors" ON public.academy_instructors;
 CREATE POLICY "dispatchers_manage_academy_instructors"
-ON academy_instructors
+ON public.academy_instructors
 FOR ALL
 USING (
   EXISTS (
@@ -399,9 +302,9 @@ WITH CHECK (
   )
 );
 
--- Dispatchers can create sessions
+DROP POLICY IF EXISTS "dispatchers_insert_academy_sessions" ON public.academy_sessions;
 CREATE POLICY "dispatchers_insert_academy_sessions"
-ON academy_sessions
+ON public.academy_sessions
 FOR INSERT
 WITH CHECK (
   EXISTS (
@@ -411,9 +314,9 @@ WITH CHECK (
   )
 );
 
--- Dispatchers can update sessions
+DROP POLICY IF EXISTS "dispatchers_update_academy_sessions" ON public.academy_sessions;
 CREATE POLICY "dispatchers_update_academy_sessions"
-ON academy_sessions
+ON public.academy_sessions
 FOR UPDATE
 USING (
   EXISTS (
@@ -430,15 +333,9 @@ WITH CHECK (
   )
 );
 
--- Anyone can view session participants
-CREATE POLICY "public_view_academy_participants"
-ON academy_participants
-FOR SELECT
-USING (TRUE);
-
--- Dispatchers can manage participants
+DROP POLICY IF EXISTS "dispatchers_manage_academy_participants" ON public.academy_participants;
 CREATE POLICY "dispatchers_manage_academy_participants"
-ON academy_participants
+ON public.academy_participants
 FOR ALL
 USING (
   EXISTS (
@@ -455,9 +352,9 @@ WITH CHECK (
   )
 );
 
--- Dispatchers can create participants
+DROP POLICY IF EXISTS "dispatchers_insert_academy_participants" ON public.academy_participants;
 CREATE POLICY "dispatchers_insert_academy_participants"
-ON academy_participants
+ON public.academy_participants
 FOR INSERT
 WITH CHECK (
   EXISTS (
@@ -467,9 +364,9 @@ WITH CHECK (
   )
 );
 
--- Dispatchers can update participants
+DROP POLICY IF EXISTS "dispatchers_update_academy_participants" ON public.academy_participants;
 CREATE POLICY "dispatchers_update_academy_participants"
-ON academy_participants
+ON public.academy_participants
 FOR UPDATE
 USING (
   EXISTS (
@@ -486,9 +383,10 @@ WITH CHECK (
   )
 );
 
--- Dispatchers can read and write
+-- Missing person records
+DROP POLICY IF EXISTS "dispatchers_manage_missing_persons" ON public.missing_person_records;
 CREATE POLICY "dispatchers_manage_missing_persons"
-ON missing_person_records
+ON public.missing_person_records
 FOR ALL
 USING (
   EXISTS (
@@ -505,21 +403,10 @@ WITH CHECK (
   )
 );
 
--- Other roles: read-only if marked by same creator
-CREATE POLICY "creator_view_own_case"
-ON missing_person_records
-FOR SELECT
-USING (created_by = auth.uid()::text);
-
--- Public read (non-sensitive)
-CREATE POLICY "anyone_can_view_trust_signatures"
-ON trust_signatures
-FOR SELECT
-USING (TRUE);
-
--- Only dispatch admins can add or revoke trust
+-- Trust signatures
+DROP POLICY IF EXISTS "dispatch_admins_manage_trust" ON public.trust_signatures;
 CREATE POLICY "dispatch_admins_manage_trust"
-ON trust_signatures
+ON public.trust_signatures
 FOR ALL
 USING (
   EXISTS (
@@ -536,29 +423,14 @@ WITH CHECK (
   )
 );
 
--- Enable RLS globally
-DO $$
-DECLARE
-  sql TEXT;
-BEGIN
-  -- Enable RLS only on tables we can ALTER and that are not extension-owned
-  SELECT string_agg(
-           format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY;', t.schemaname, t.tablename),
-           E'\n'
-         )
-    INTO sql
-    FROM pg_tables t
-    JOIN pg_class c
-      ON c.relname = t.tablename
-     AND c.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = t.schemaname)
-    LEFT JOIN pg_depend d
-      ON d.objid = c.oid
-     AND d.deptype = 'e' -- extension-owned objects (e.g., PostGIS spatial_ref_sys)
-   WHERE t.schemaname = 'public'
-     AND d.objid IS NULL
-     AND c.relowner = (SELECT oid FROM pg_roles WHERE rolname = current_user);
+-- Drop helper functions if they exist (remove recursion risk)
+DROP FUNCTION IF EXISTS public.is_in_roles(text[]);
+DROP FUNCTION IF EXISTS public.current_access_role();
+DROP FUNCTION IF EXISTS public.is_complete_onboarding();
+DROP FUNCTION IF EXISTS public.is_elevated();
+DROP FUNCTION IF EXISTS public.is_pod_admin();
+DROP FUNCTION IF EXISTS public.is_region_admin();
+DROP FUNCTION IF EXISTS public.is_national_admin();
+DROP FUNCTION IF EXISTS public.can_manage_academy();
 
-  IF sql IS NOT NULL THEN
-    EXECUTE sql;
-  END IF;
-END $$;
+COMMIT;

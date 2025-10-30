@@ -33,14 +33,15 @@ export default function ShiftCard({
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const pod = pods.find((p) => p.id === shift.podId);
-  const volunteer = roster.find((v) => v.id === shift.volunteerId);
+  // Resolve volunteer by either roster entry id (local shifts) or profile id (DB-fetched shifts)
+  const volunteer =
+    roster.find((v) => v.id === shift.volunteerId) ||
+    roster.find((v) => v.profile?.id === shift.volunteerId);
+  // Prefer roster match by profile id or hydrated volunteerName from DB; do not show raw ids
   const volunteerDisplayName =
     volunteer?.profile?.display_name ??
     shift.volunteerName ??
-    shift.volunteerId ??
     "Unknown Volunteer";
-  const volunteerIdentifier =
-    volunteer || !shift.volunteerId ? null : ` (${shift.volunteerId})`;
 
   const statusBadge = useMemo(() => {
     const now = new Date();
@@ -85,10 +86,7 @@ export default function ShiftCard({
                 <p>(Pod: {pod?.name ?? shift.podId ?? "—"})</p>
                 <hr className="my-1 w-full h-2 bg-muted md:hidden" />
                 <hr className="my-1 w-7 h-2 rotate-90 bg-muted hidden md:block" />
-                <span>
-                  {volunteerDisplayName}
-                  {volunteerIdentifier}
-                </span>
+                <span>{volunteerDisplayName}</span>
                 {statusBadge}
               </div>
               <div className="flex items-center gap-1">

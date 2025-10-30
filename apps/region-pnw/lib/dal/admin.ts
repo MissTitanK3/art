@@ -7,7 +7,7 @@ import { AccessRole, VerifiedBy } from '@workspace/store/types/roles.ts';
 import { TraingingSessionsDemoData } from '@/data/demoAcademy';
 import type { TrustEntry, TrustRole } from '@workspace/store/types/trust.ts';
 import { createClient } from '@supabase/supabase-js';
-import { regionAdmins } from '@workspace/store/utils/nav';
+import { regionAdmins, podAdmins } from '@workspace/store/utils/nav';
 import { ensureSupabaseEnv } from '../auth/supabase/utils';
 import { createSupabaseServerClient } from '../auth/supabase/server';
 
@@ -62,17 +62,17 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
         const user = userData?.user;
         let authorized = false;
         if (user) {
-          // Admin allowlist aligned with /admin route access: dispatcher_admin + regionAdmins
-          const ADMIN_ALLOW = new Set<AccessRole>(['dispatcher_admin', ...(regionAdmins as unknown as AccessRole[])]);
+          // Allow pod admins (dispatcher_basic/verified/admin + region/national admins)
+          const ALLOW = new Set<AccessRole>([...(podAdmins as unknown as AccessRole[])]);
 
           // Some deployments may store a nav role on the user; trust it if in allowlist.
           const navRole = (user as any)?.role as AccessRole | undefined;
-          authorized = !!navRole && ADMIN_ALLOW.has(navRole);
+          authorized = !!navRole && ALLOW.has(navRole);
 
           // Fall back to profile role check if needed
           if (!authorized) {
             const callerProfile = await getProfileByUserId(user.id);
-            authorized = !!callerProfile && ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
+            authorized = !!callerProfile && ALLOW.has(callerProfile.access_role as AccessRole);
           }
         }
 

@@ -40,6 +40,49 @@ async function fetchActiveRoster(): Promise<Array<{ podId: string; entry: Roster
   }
 }
 
+async function fetchProfilesAsEntries(): Promise<RosterEntry[]> {
+  try {
+    // Prefer server route for pod admins: returns all profiles when authorized
+    let rows: any[] | null = null;
+    try {
+      const res = await fetch('/api/dispatch/profiles', { credentials: 'include' });
+      if (res.ok) {
+        const json = await res.json();
+        rows = Array.isArray(json?.profiles) ? json.profiles : [];
+      }
+    } catch { }
+
+    if (!rows) {
+      const client = getSupabaseBrowserClient();
+      const { data, error } = await client
+        .from('profiles')
+        .select('*')
+        .order('display_name', { ascending: true });
+      if (error) throw error;
+      rows = Array.isArray(data) ? data : [];
+    }
+    // Convert each profile to a synthetic roster entry for selection purposes
+    const entries: RosterEntry[] = rows.map((profile: any) => ({
+      id: String(profile.id), // synthetic id for selection; real id will be generated on add
+      profile,
+      role: "member",
+      status: "active",
+      langs: [],
+      skills: [],
+      certs: [],
+      notes: undefined,
+      handle: profile.display_name ?? "",
+      joinedAt: new Date().toISOString(),
+      lastShiftAt: undefined,
+      signal_handle: profile.contact_signal ?? undefined,
+    }));
+    return entries;
+  } catch (e) {
+    console.warn("[ActiveRosterHydrator] supabase profiles fetch error", e);
+    return [];
+  }
+}
+
 export default function ActiveRosterHydrator() {
   const setActiveRoster = usePodStore((s) => s.setActiveRoster);
   const updatePod = usePodStore((s) => s.updatePod);
@@ -53,11 +96,20 @@ export default function ActiveRosterHydrator() {
       if (hydratedRef.current) return;
       if (!pods || pods.length === 0) return;
       const rows = await fetchActiveRoster();
-      if (cancelled || rows.length === 0) return;
+      if (cancelled) return;
+
+      // Also fetch all profiles (RLS allows dispatchers to view all; team_members will see their own only)
+      const profileEntries = await fetchProfilesAsEntries();
+      if (cancelled) return;
 
       // Set global active roster for other views
       const rosterOnly = rows.map((r) => r.entry);
-      setActiveRoster(rosterOnly);
+      // Merge in profiles not already represented by an existing roster entry (by profile.id)
+      const existingProfileIds = new Set(rosterOnly.map((e) => e.profile?.id).filter(Boolean));
+      const merged = rosterOnly.concat(
+        profileEntries.filter((e) => !existingProfileIds.has(e.profile?.id))
+      );
+      setActiveRoster(merged);
 
       // Group roster by podId and attach to pods in store
       const byPod = new Map<string, RosterEntry[]>();

@@ -17,7 +17,13 @@ async function authz() {
   if (error || !data?.user) return false;
   const callerProfile = await getProfileByUserId(data.user.id);
   const callerAccessRole = callerProfile?.access_role as any | undefined;
-  return !!callerAccessRole && (regionAdmins.includes(callerAccessRole) || callerAccessRole === 'dispatcher_admin');
+  return (
+    !!callerAccessRole &&
+    (regionAdmins.includes(callerAccessRole) ||
+      callerAccessRole === 'dispatcher_admin' ||
+      callerAccessRole === 'dispatcher_verified' ||
+      callerAccessRole === 'dispatcher_basic')
+  );
 }
 
 // Use the shared server-side Supabase client that correctly wires Next.js cookies.

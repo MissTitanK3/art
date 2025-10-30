@@ -330,7 +330,7 @@ function AcademyDashboardContent({
   const storeTrainingClasses = usePodAcademyDashboardStore((state) => state.trainingClasses);
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
   const profile = useProfileStore((s) => s.profile);
-  const canManageInstructors = profile?.access_role === 'dispatcher_admin';
+  const canManageInstructors = profile?.access_role === 'dispatcher_admin' || profile?.access_role === 'admin' || profile?.access_role === 'regional_admin' || profile?.access_role === 'national_admin';
 
   return (
     <PodAcademyDashboardLayout

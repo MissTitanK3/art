@@ -20,7 +20,11 @@ export async function POST(req: Request) {
     const callerProfile = await getProfileByUserId(userData.user.id);
     const callerAccessRole = callerProfile?.access_role as any | undefined;
     const authorized =
-      !!callerAccessRole && (regionAdmins.includes(callerAccessRole) || callerAccessRole === 'dispatcher_admin');
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        callerAccessRole === 'dispatcher_admin' ||
+        callerAccessRole === 'dispatcher_verified' ||
+        callerAccessRole === 'dispatcher_basic');
     if (!authorized) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -60,7 +64,8 @@ export const GET = async (_req: Request) => {
       !!callerAccessRole &&
       (regionAdmins.includes(callerAccessRole) ||
         callerAccessRole === 'dispatcher_admin' ||
-        callerAccessRole === 'dispatcher_verified');
+        callerAccessRole === 'dispatcher_verified' ||
+        callerAccessRole === 'dispatcher_basic');
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const pods = await getPods();

@@ -28,6 +28,8 @@ export type DispatchShiftsLayoutProps = {
   addDrawerOpen: boolean;
   onAddDrawerChange: (open: boolean) => void;
   loadingMessage?: React.ReactNode;
+  // Optional: fetch members for the selected pod from the app's data layer
+  getVolunteersForPod?: (podId: string) => Promise<import("@workspace/store/types/pod.ts").RosterEntry[]>;
 };
 
 export function DispatchShiftsLayout({
@@ -44,10 +46,11 @@ export function DispatchShiftsLayout({
   addDrawerOpen,
   onAddDrawerChange,
   loadingMessage,
+  getVolunteersForPod,
 }: DispatchShiftsLayoutProps) {
   return (
     <div className="flex h-full flex-col overflow-y-hidden">
-      <div className="sticky top-14 z-10 mb-3 border-b bg-background px-4 py-3">
+      <div className="sticky top-14 z-10 mb-3 border-b bg-background px-4">
         <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-lg font-bold">Dispatch Shifts</h2>
@@ -65,7 +68,7 @@ export function DispatchShiftsLayout({
         <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>
       ) : null}
 
-      <Tabs defaultValue="active" className="flex flex-1 flex-col overflow-hidden lg:mt-14">
+      <Tabs defaultValue="active" className="flex flex-1 flex-col mt-14 overflow-hidden lg:mt-14">
         <TabsList className="mb-3 grid w-full shrink-0 grid-cols-3 gap-2 border-b border-border bg-background/60 p-1">
           <TabsTrigger
             value="active"
@@ -155,6 +158,7 @@ export function DispatchShiftsLayout({
         pods={pods}
         roster={roster}
         onSubmit={onAddShift}
+        getVolunteersForPod={getVolunteersForPod}
       />
     </div>
   );

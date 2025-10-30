@@ -626,7 +626,7 @@ export function SessionsBoard({
         </div>
 
         {sessionStatusFilter === 'all' ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-3">
             {sessionStatusColumns.map((column) => {
               const columnSessions = sessions.filter((session) => session.status === column.status)
 
@@ -682,7 +682,7 @@ export function SessionsBoard({
 
       {sessionStatusFilter === 'all' && archivedSessions.length > 0 ? (
         <section className="space-y-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 lg:flex-row items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Archived Sessions</h3>
               <p className="text-sm text-muted-foreground">

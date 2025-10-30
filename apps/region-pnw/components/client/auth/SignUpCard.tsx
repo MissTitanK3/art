@@ -51,13 +51,21 @@ export function SignUpCard() {
     return { length, lower, upper, number, special, valid };
   }, [password]);
 
+  // Helper to scrub zero-width characters and trim edges
+  const normalizeSignalUsername = React.useCallback((s: string) => {
+    return s.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+  }, []);
+
+  // Normalize whitespace from Signal username to avoid copy/paste issues
+  const contactSignalClean = React.useMemo(() => normalizeSignalUsername(contactSignal), [contactSignal, normalizeSignalUsername]);
+
   // Simple client-side validation for required fields
   const contactSignalValid = React.useMemo(
     // @nickname.discriminator where:
     // nickname: 3–32 chars, [A-Za-z0-9_], not starting with a digit
     // discriminator: 01–09 OR 10–999999999 OR exactly 1000000000
-    () => /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{1,8}|1000000000)$/.test(contactSignal),
-    [contactSignal]
+    () => /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{0,8}|1000000000)$/.test(contactSignalClean),
+    [contactSignalClean]
   );
   const displayNameValid = React.useMemo(
     () => displayName.trim().length > 0,
@@ -262,9 +270,14 @@ export function SignUpCard() {
               id="contactSignal"
               type="text"
               value={contactSignal}
-              onChange={(e) => setContactSignal(e.target.value)}
+              onChange={(e) => setContactSignal(normalizeSignalUsername(e.target.value))}
+              onBlur={() => setContactSignal((v) => normalizeSignalUsername(v))}
               required
-              pattern="^@[A-Za-z_][A-Za-z0-9_]{2,31}\\.(?:0[1-9]|[1-9][0-9]{1,8}|1000000000)$"
+              title="Use @nickname.discriminator — nickname: 3–32 letters/numbers/_ (no starting digit); discriminator: 01–09 or 10–999999999 or 1000000000"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              inputMode="text"
               placeholder="@yourname.12"
             />
             <p className="text-xs text-muted-foreground">Format: @nickname.discriminator — nickname is 3–32 letters/numbers/underscore (no starting digit); discriminator is 01–1000000000 with no leading zeros (except 01–09).</p>
