@@ -27,6 +27,12 @@ ALTER TABLE com_alerts ENABLE ROW LEVEL SECURITY;
 -- Feedback
 ALTER TABLE bug_reports ENABLE ROW LEVEL SECURITY;
 
+-- Mutual Aid
+ALTER TABLE meet_a_need ENABLE ROW LEVEL SECURITY;
+
+-- Event Wizard
+ALTER TABLE wizard ENABLE ROW LEVEL SECURITY;
+
 -- Trust
 ALTER TABLE trust_signatures ENABLE ROW LEVEL SECURITY;
 
@@ -54,8 +60,17 @@ CREATE POLICY "dispatchers_view_profiles"
 ON profiles
 FOR SELECT
 USING (
-  current_setting('request.jwt.claims', true)::json->>'role' IN (
-    'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'
+  -- Allow if the JWT includes an app-level dispatcher role, either as a top-level claim
+  -- or under app_metadata.access_role (Supabase places custom claims here by default).
+  (
+    current_setting('request.jwt.claims', true)::json->>'role' IN (
+      'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'
+    )
+  )
+  OR (
+    (current_setting('request.jwt.claims', true)::json->'app_metadata'->>'access_role') IN (
+      'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'
+    )
   )
 );
 
@@ -295,6 +310,80 @@ WITH CHECK (
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+
+-- Meet-A-Need policies
+-- Visibility policy: public, region (matching coordination_zone), or pod (dispatch/admin roles)
+CREATE POLICY man_select_visibility
+ON public.meet_a_need
+FOR SELECT
+TO authenticated
+USING (
+  visibility = 'public'
+  OR (
+    visibility = 'region' AND EXISTS (
+      SELECT 1 FROM public.profiles viewer
+      JOIN public.profiles owner ON owner.id = meet_a_need.created_by
+      WHERE viewer.user_id = (auth.uid())::text
+        AND viewer.coordination_zone IS NOT NULL
+        AND viewer.coordination_zone = owner.coordination_zone
+    )
+  )
+  OR (
+    visibility = 'pod' AND EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+    )
+  )
+);
+
+-- Creator can read/write their own needs
+CREATE POLICY man_owner_rw
+ON public.meet_a_need
+FOR ALL
+TO authenticated
+USING (
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text)
+)
+WITH CHECK (
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text)
+);
+
+-- Dispatchers/admins manage all
+CREATE POLICY man_dispatchers_manage
+ON public.meet_a_need
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Allow any authenticated user to insert their own need
+CREATE POLICY man_insert_authenticated
+ON public.meet_a_need
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text)
+);
+
+-- TEMPORARY: permissive update for responders list (replace with RPC/trigger later)
+CREATE POLICY man_update_responders_any_authenticated
+ON public.meet_a_need
+FOR UPDATE
+TO authenticated
+USING (TRUE)
+WITH CHECK (TRUE);
 
 -- Operators: dispatchers manage all
 CREATE POLICY "dispatchers_manage_com_operators"

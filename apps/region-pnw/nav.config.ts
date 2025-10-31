@@ -4,6 +4,7 @@ import {
   GlobalNavConfigInput,
   localAdmins,
   regionAdmins,
+  verifiedAdmins,
 } from '@workspace/store/utils/nav';
 
 export const navConfig: GlobalNavConfigInput = {
@@ -25,12 +26,25 @@ export const navConfig: GlobalNavConfigInput = {
       // ],
     },
     {
+      label: 'Meet-A-Need',
+      icon: 'hand-heart',
+      href: '/meet-a-need',
+      roles: completeOnboarding,
+    },
+    {
+      label: 'Missing Persons',
+      icon: 'file-search',
+      href: '/missing-persons',
+      roles: completeOnboarding,
+    },
+    {
       label: 'Dispatch',
       icon: 'radio',
       roles: completeOnboarding,
       children: [
         { label: 'Dispatch Map', href: '/dispatches', roles: elevatedRoles },
         { label: 'Community Watch', href: '/watch', roles: completeOnboarding },
+        { label: 'Confirmed Watch', href: '/confirmed-watch', roles: verifiedAdmins },
         { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
       ],
     },
@@ -60,12 +74,6 @@ export const navConfig: GlobalNavConfigInput = {
     //   href: '/warehousing',
     //   roles: verifiedRoles,
     // },
-    {
-      label: 'Missing Persons',
-      icon: 'file-search',
-      href: '/missing-persons',
-      roles: completeOnboarding,
-    },
   ],
   secondary: [
     {

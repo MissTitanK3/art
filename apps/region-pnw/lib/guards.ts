@@ -10,6 +10,7 @@ import {
   localAdmins,
   regionAdmins,
   nationalAdmins,
+  verifiedAdmins,
 } from '@workspace/store/utils/nav';
 
 // Access control is driven by public.profiles.access_role
@@ -122,6 +123,30 @@ export async function requireLocalAdminAccess() {
   const role = profile.access_role as NavRole | undefined;
   if (!hasRole(role, localAdmins)) {
     redirect('/my-profile?reason=forbidden-schedules');
+  }
+
+  const session = { user: { id: user.id } } as any;
+  return { session, profile };
+}
+
+export async function requireVerifiedAdminAccess() {
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) redirect('/sign-in');
+  const user = userData!.user as any;
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile) {
+    redirect('/my-profile?reason=profile-required');
+  }
+
+  if (isSuspended(profile.state)) {
+    redirect('/my-profile?reason=suspended');
+  }
+
+  const role = profile.access_role as NavRole | undefined;
+  if (!hasRole(role, verifiedAdmins)) {
+    redirect('/my-profile?reason=forbidden-elevated');
   }
 
   const session = { user: { id: user.id } } as any;

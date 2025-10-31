@@ -89,7 +89,7 @@ export default function AdminPage() {
   const trainingPct = percent(trainingCounts.completed, trainingCounts.all);
 
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
-  const { reports, idMap } = React.useMemo(() => toWatchReports(([] as DispatchSubmission[])), []);
+  const { reports, idMap } = React.useMemo(() => toWatchReports(dispatches), [dispatches]);
 
   const handleView = (r: WizardReport) => {
     const id = idMap[r.id];
@@ -133,17 +133,17 @@ export default function AdminPage() {
           <CardTitle>Admin Sections</CardTitle>
           <CardDescription>Jump into a specific management area</CardDescription>
         </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-              <NavTile href="/admin/profiles" icon={<Users className="h-5 w-5" />} label="Profiles" description="Manage users, roles, verification" />
-              <NavTile href="/admin/pods" icon={<Package className="h-5 w-5" />} label="Pods" description="Organize pods and rosters" />
-              <NavTile href="/admin/dispatch" icon={<MapPin className="h-5 w-5" />} label="Dispatch" description="Review and audit dispatches" />
-              <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
-              <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
-              <NavTile href="/admin/bug-reports" icon={<Bug className="h-5 w-5" />} label="Bug Reports" description="User-submitted platform issues" />
-            </div>
-          </CardContent>
-        </Card>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <NavTile href="/admin/profiles" icon={<Users className="h-5 w-5" />} label="Profiles" description="Manage users, roles, verification" />
+            <NavTile href="/admin/pods" icon={<Package className="h-5 w-5" />} label="Pods" description="Organize pods and rosters" />
+            <NavTile href="/admin/dispatch" icon={<MapPin className="h-5 w-5" />} label="Dispatch" description="Review and audit dispatches" />
+            <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
+            <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
+            <NavTile href="/admin/bug-reports" icon={<Bug className="h-5 w-5" />} label="Bug Reports" description="User-submitted platform issues" />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -160,6 +160,8 @@ export default function AdminPage() {
                 className="h-full lg:h-full"
                 actionMode="view"
                 onViewDispatch={handleView}
+                zoom={4}
+                center={[39.8283, -99.5795]}
               />
             </div>
           </CardContent>

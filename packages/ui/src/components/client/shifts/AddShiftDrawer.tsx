@@ -220,11 +220,16 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
               <SelectContent className="max-h-48 overflow-y-auto">
                 <SelectItem value="__none__">No volunteer assigned</SelectItem>
                 <SelectItem value="__custom__">Unlisted volunteer</SelectItem>
-                {availableVolunteers.map((member) => (
-                  <SelectItem key={member.id} value={member.id}>
-                    {member.profile.display_name} ({member.handle})
-                  </SelectItem>
-                ))}
+                {availableVolunteers.map((member) => {
+                  const display = member?.profile?.display_name || member?.handle || "Unknown";
+                  const handle = member?.handle ? ` (${member.handle})` : "";
+                  return (
+                    <SelectItem key={member.id} value={member.id}>
+                      {display}
+                      {handle}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
 

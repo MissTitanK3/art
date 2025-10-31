@@ -18,6 +18,7 @@ import DispatchIntendedActionsUpdater from "@workspace/ui/components/client/acti
 import DispatchSignalLinkUpdater from "@workspace/ui/components/client/external-link/DispatchSignalLinkUpdater";
 import DispatchNotesUpdater from "@workspace/ui/components/client/notes/DispatchNotesUpdater";
 import DispatchLocationUpdater from "@workspace/ui/components/client/location/DispatchLocationUpdater";
+import DispatchLocationPinSelector from "@workspace/ui/components/client/location/DispatchLocationPinSelector";
 import DispatchRolesManager from "@workspace/ui/components/client/roles/DispatchRolesManager";
 import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpdates";
 import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
@@ -107,6 +108,10 @@ export function DispatchSubmissionLayout({
     {
       id: "location",
       content: <DispatchLocationUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+    },
+    {
+      id: "location-pin",
+      content: <DispatchLocationPinSelector submission={submission} onUpdate={onUpdateSubmission} />,
     },
     {
       id: "intended-action",

@@ -1,15 +1,8 @@
 import { WizardReport } from '@workspace/store/types/watch.ts';
 
-// Prefer env-configured endpoint so regions can override without code changes
-const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL_WIZZARD ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  '';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL_WIZZARD;
 const WIZARD_ENDPOINT = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1/wizard` : '';
-const ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_WIZZARD ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  '';
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_WIZZARD || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // 7 days in ms
 const CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
@@ -54,10 +47,10 @@ export async function fetchReports(options?: {
   if (!includeTests) params.set('test', 'eq.false');
   if (cutoff) params.set('timestamp', `gte.${cutoff}`);
 
-  // 3. Fetch from Supabase
+  // 3. Fetch from Supabase (PostgREST: public.submissions)
   if (!SUPABASE_URL || !ANON_KEY) {
     throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL_WIZZARD and/or NEXT_PUBLIC_SUPABASE_ANON_KEY_WIZZARD. See apps/region-template/.env.local.example',
+      'Missing NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY. Configure Supabase env for this region.',
     );
   }
 

@@ -30,7 +30,8 @@ import ThemeToggle from "./ThemeToggle.tsx";
 import { LinkLike } from "@workspace/store/types/global.ts";
 import { canSee, GlobalNavConfig, isActive, NavItem, NavRole } from "@workspace/store/utils/nav";
 
-const MOBILE_TOP_BAR_HEIGHT = 112;
+// Keep the top bar compact on small screens
+const MOBILE_TOP_BAR_HEIGHT = 56;
 
 
 function filterNavTree(items: NavItem[], role?: NavRole, isAuthenticated = false): NavItem[] {
@@ -212,7 +213,7 @@ function DesktopSideNav({
         collapsed ? "w-28" : "w-72",
       )}
     >
-      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-2">
+      <div className="flex h-10 items-center gap-2 border-b border-sidebar-border px-2">
         <LinkComponent
           href={config.brand.href ?? "/"}
           className={cn(
@@ -714,7 +715,7 @@ function BrandSymbol({
       <img
         src={brand.logoSrc}
         alt={`${brand.name} logo`}
-        className={cn("h-[50px] w-[50px] shrink-0 rounded-md object-contain", className)}
+        className={cn("h-7 w-7 shrink-0 rounded-md object-contain", className)}
       />
     );
   }
@@ -730,7 +731,7 @@ function BrandSymbol({
   return (
     <span
       className={cn(
-        "flex h-[100px] w-[100px] shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-sm font-semibold text-sidebar-accent-foreground",
+        "flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground",
         className,
       )}
     >

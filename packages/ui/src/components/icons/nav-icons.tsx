@@ -18,6 +18,7 @@ export const navIconMap = {
   users: L.Users,
   wharehouse: L.PackageCheck,
   'log-out': L.LogOut,
+  'hand-heart': L.HandHeart,
   // add more as needed
 } as const;
 

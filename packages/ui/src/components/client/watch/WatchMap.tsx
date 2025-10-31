@@ -6,7 +6,7 @@ import L from "leaflet";
 import { WizardReport } from "@workspace/store/types/watch.ts";
 import { Button } from "@workspace/ui/components/button";
 import { useEffect, useMemo, useState } from "react";
-import { cn } from "@workspace/ui/lib/utils";
+import { cn, humanize } from "@workspace/ui/lib/utils";
 import {
   Select,
   SelectContent,
@@ -182,17 +182,96 @@ export default function WatchMap({
         <FocusController focus={focusPoint} fallbackZoom={zoom} />
 
         {reports
-          .filter((r) => (r.location as any)?.lat && (r.location as any)?.lng)
           .map((r) => {
-            const lat = (r.location as any).lat;
-            const lng = (r.location as any).lng;
+            // Resolve coordinates from multiple possible shapes, including location_geog
+            const loc: any = (r as any)?.location ?? {};
+            let lat: number | undefined = undefined;
+            let lng: number | undefined = undefined;
+
+            const num = (v: any) => {
+              if (typeof v === 'number') return v;
+              if (typeof v === 'string') {
+                const n = Number(v);
+                return Number.isFinite(n) ? n : undefined;
+              }
+              return undefined;
+            };
+
+            // 1) Direct lat/lng on location
+            lat = num(loc?.lat);
+            lng = num(loc?.lng);
+
+            // 2) GeoJSON-like coordinates [lng, lat]
+            if ((lat === undefined || lng === undefined) && Array.isArray(loc?.coordinates) && loc.coordinates.length >= 2) {
+              const c0 = num(loc.coordinates[0]);
+              const c1 = num(loc.coordinates[1]);
+              if (c0 !== undefined && c1 !== undefined) {
+                lng = c0; lat = c1;
+              }
+            }
+
+            // 3) coords array [lat, lng] (legacy JSON pattern)
+            if ((lat === undefined || lng === undefined) && Array.isArray(loc?.coords) && loc.coords.length >= 2) {
+              const c0 = num(loc.coords[0]);
+              const c1 = num(loc.coords[1]);
+              if (c0 !== undefined && c1 !== undefined) {
+                lat = c0; lng = c1;
+              }
+            }
+
+            // 4) x/y style
+            if ((lat === undefined || lng === undefined) && (num(loc?.y) !== undefined) && (num(loc?.x) !== undefined)) {
+              lat = num(loc?.y);
+              lng = num(loc?.x);
+            }
+
+            // 5) location_geog from DB (object or WKT string)
+            if ((lat === undefined || lng === undefined)) {
+              const geog: any = (r as any)?.location_geog ?? (r as any)?.location_grog; // tolerate common typo
+              if (geog && typeof geog === 'object') {
+                // GeoJSON-like
+                if (Array.isArray(geog.coordinates) && geog.coordinates.length >= 2) {
+                  const c0 = num(geog.coordinates[0]);
+                  const c1 = num(geog.coordinates[1]);
+                  if (c0 !== undefined && c1 !== undefined) {
+                    lng = c0; lat = c1;
+                  }
+                }
+                if ((lat === undefined || lng === undefined) && (num(geog?.y) !== undefined) && (num(geog?.x) !== undefined)) {
+                  lat = num(geog?.y);
+                  lng = num(geog?.x);
+                }
+                if ((lat === undefined || lng === undefined) && (num(geog?.lat) !== undefined) && (num(geog?.lng) !== undefined)) {
+                  lat = num(geog?.lat);
+                  lng = num(geog?.lng);
+                }
+              } else if (typeof geog === 'string') {
+                // Try parsing WKT-like: "POINT(lng lat)" or with SRID prefix
+                const m = geog.match(/POINT\s*\(\s*([\-\d\.]+)\s+([\-\d\.]+)\s*\)/i);
+                if (m) {
+                  const c0 = num(m[1]);
+                  const c1 = num(m[2]);
+                  if (c0 !== undefined && c1 !== undefined) {
+                    lng = c0; lat = c1;
+                  }
+                }
+              }
+            }
+
+            if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+              return null;
+            }
 
             return (
               <Marker key={r.id} position={[lat, lng]} icon={reportIcon}>
                 <Popup maxWidth={220}>
                   <div className="space-y-2">
                     <div className="font-semibold text-sm">
-                      {r.agency_type?.join(", ") || r.agency_other || "Unknown presence"}
+                      {Array.isArray(r.agency_type) && r.agency_type.length > 0
+                        ? r.agency_type.map(humanize).join(", ")
+                        : r.agency_other
+                        ? humanize(r.agency_other)
+                        : "Unknown presence"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(r.timestamp).toLocaleString()}

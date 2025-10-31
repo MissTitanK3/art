@@ -101,6 +101,20 @@ export const localAdmins: NavRole[] = [
   'national_admin',
 ];
 
+/**
+ * Verified to manage other people (Pods, volunteers, trust list)
+ * Access to completeOnboarding and elevatedRoles features:
+ * `/admin`,
+ */
+// Verified to manage people, pods, and related admin areas. Grants /admin.
+export const verifiedAdmins: NavRole[] = [
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'admin',
+  'regional_admin',
+  'national_admin',
+];
+
 /** Full administrative powers at the region level */
 // Full administrative powers at the region level and above.
 export const regionAdmins: NavRole[] = ['admin', 'regional_admin', 'national_admin'];
