@@ -48,6 +48,63 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
   const [notes, setNotes] = useState("");
   const [availableVolunteers, setAvailableVolunteers] = useState<RosterEntry[]>(roster);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [podMemberCounts, setPodMemberCounts] = useState<Record<string, number>>({});
+  const [loadingPodCounts, setLoadingPodCounts] = useState(false);
+
+  // Determine eligible pods:
+  // - If a loader is provided, use per-pod counts gathered from roster_entries.
+  // - Otherwise, fall back to any team data attached to pods (if present).
+  const eligiblePods = useMemo(() => {
+    if (getVolunteersForPod) {
+      return pods.filter((p) => (podMemberCounts[p.id] ?? 0) > 0);
+    }
+    return pods.filter((p) => (p.team?.length ?? 0) > 0);
+  }, [getVolunteersForPod, pods, podMemberCounts]);
+
+  // When the drawer opens (and a loader exists), prefetch member counts for all pods
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCounts() {
+      if (!open || !getVolunteersForPod || pods.length === 0) return;
+      setLoadingPodCounts(true);
+      try {
+        const entries = await Promise.all(
+          pods.map(async (p) => {
+            try {
+              const members = await getVolunteersForPod(p.id);
+              return [p.id, (members ?? []).length] as const;
+            } catch {
+              return [p.id, 0] as const;
+            }
+          }),
+        );
+        if (!cancelled) {
+          const next: Record<string, number> = {};
+          for (const [id, count] of entries) next[id] = count;
+          setPodMemberCounts(next);
+        }
+      } finally {
+        if (!cancelled) setLoadingPodCounts(false);
+      }
+    }
+    loadCounts();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, pods, getVolunteersForPod]);
+
+  // If a selected pod later resolves to no members, clear the selection
+  useEffect(() => {
+    if (!podId) return;
+    if (getVolunteersForPod && (podMemberCounts[podId] ?? 0) === 0) {
+      setPodId(undefined);
+      setVolunteerMode("none");
+      setVolunteerId("");
+      setSelectedRosterEntryId("");
+      setVolunteerName("");
+      setAvailableVolunteers([]);
+    }
+  }, [getVolunteersForPod, podId, podMemberCounts]);
 
   // When pod changes, fetch members for that pod (if a loader is provided).
   useEffect(() => {
@@ -96,18 +153,18 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
       return "__custom__";
     }
 
-    if (volunteerMode === "roster" && volunteerId) {
-      // Use the tracked roster entry id for the Select value; ensure it still exists
+    if (volunteerMode === "roster" && selectedRosterEntryId) {
+      // Drive the Select by the chosen roster entry id, independent of volunteerId presence
       return availableVolunteers.some((member) => member.id === selectedRosterEntryId)
         ? selectedRosterEntryId
         : "__none__";
     }
 
     return "__none__";
-  }, [availableVolunteers, selectedRosterEntryId, volunteerId, volunteerMode]);
+  }, [availableVolunteers, selectedRosterEntryId, volunteerMode]);
 
   useEffect(() => {
-    if (volunteerMode === "roster" && volunteerId) {
+    if (volunteerMode === "roster" && selectedRosterEntryId) {
       const stillAvailable = availableVolunteers.some((member) => member.id === selectedRosterEntryId);
       if (!stillAvailable) {
         setVolunteerMode("none");
@@ -116,7 +173,7 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
         setVolunteerName("");
       }
     }
-  }, [availableVolunteers, selectedRosterEntryId, volunteerId, volunteerMode]);
+  }, [availableVolunteers, selectedRosterEntryId, volunteerMode]);
 
   // Removed volunteer autofill by design per request
 
@@ -142,7 +199,12 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
           : trimmedVolunteerId
             ? trimmedVolunteerId
             : undefined,
-      volunteerName: volunteerMode === "custom" ? trimmedVolunteerName : undefined,
+      volunteerName:
+        volunteerMode === "custom"
+          ? trimmedVolunteerName
+          : volunteerMode === "roster" && volunteerName
+            ? volunteerName
+            : undefined,
       startsAt,
       endsAt,
       notes,
@@ -172,12 +234,16 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
           {/* Pod Selector */}
           <div className="space-y-1">
             <Label>Pod</Label>
-            <Select value={podId} onValueChange={(v) => setPodId(v)}>
+            <Select
+              value={podId}
+              onValueChange={(v) => setPodId(v)}
+              disabled={eligiblePods.length === 0 || loadingPodCounts}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select pod" />
+                <SelectValue placeholder={loadingPodCounts ? "Loading pods..." : eligiblePods.length === 0 ? "No pods with members" : "Select pod"} />
               </SelectTrigger>
               <SelectContent className="max-h-48 overflow-y-auto">
-                {pods.map((p) => (
+                {eligiblePods.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -206,12 +272,13 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
                   setSelectedRosterEntryId("");
                   return;
                 }
-                // Roster selection: value is roster entry id; map to profile.id for volunteerId
+                // Roster selection: value is roster entry id; store that as volunteerId
                 setVolunteerMode("roster");
                 setSelectedRosterEntryId(value);
                 const member = availableVolunteers.find((m) => m.id === value);
-                setVolunteerId(member?.profile?.id ?? "");
-                setVolunteerName("");
+                setVolunteerId(value);
+                const display = member?.profile?.display_name || member?.handle || "";
+                setVolunteerName(display);
               }}
             >
               <SelectTrigger>

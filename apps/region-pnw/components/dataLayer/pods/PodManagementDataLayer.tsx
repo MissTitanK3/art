@@ -117,7 +117,7 @@ export default function PodManagementDataLayer() {
     reset,
     setValue,
     watch,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -210,7 +210,7 @@ export default function PodManagementDataLayer() {
     } else {
       addPod(nextPod);
     }
-    router.push("/pods");
+    router.refresh();
   };
 
   const archive = async () => {
@@ -225,6 +225,21 @@ export default function PodManagementDataLayer() {
 
   const channelLink = watch("channelLink");
   const channelTypeValue = watch("channelType");
+  const currentValues = watch();
+
+  // Some environments reported isDirty not toggling when only updating the
+  // recruiting/vetting link. As a fallback, detect deltas against the active pod.
+  const hasFormChanges = React.useMemo(() => {
+    const primary = activePod.channels?.[0];
+    const cleanLink = (v?: string) => (v === "" ? undefined : v);
+    return (
+      currentValues?.name !== activePod.name ||
+      currentValues?.area !== activePod.area ||
+      currentValues?.slug !== activePod.slug ||
+      currentValues?.channelType !== (primary?.type ?? "Signal") ||
+      cleanLink(currentValues?.channelLink) !== cleanLink(primary?.link)
+    );
+  }, [activePod, currentValues]);
 
   const fieldBindings = React.useMemo(
     () => ({
@@ -262,7 +277,7 @@ export default function PodManagementDataLayer() {
       }}
       channelLinkValue={channelLink}
       errors={formErrors}
-      disableSave={!isDirty || isSubmitting}
+      disableSave={isSubmitting}
       isSubmitting={isSubmitting}
       onBack={() => router.push("/pods")}
       onSubmit={handleSubmit(onSubmit)}

@@ -66,7 +66,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
           {label}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-4 w-auto space-y-3" align="start">
+      <PopoverContent className="p-4 w-auto space-y-3 z-[80]" align="start">
         <div className="flex gap-2">
           {/* Hours */}
           <Select value={hour} onValueChange={setHour}>

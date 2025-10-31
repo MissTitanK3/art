@@ -49,7 +49,7 @@ export function DateTimePicker({ label, value, onChange }: Props) {
               {date ? format(date, "PPP") : "Pick a date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 z-[80]" align="start">
             <Calendar
               mode="single"
               selected={date}

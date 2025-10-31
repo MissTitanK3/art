@@ -108,7 +108,9 @@ export default function EditShiftDrawer({
       setVolunteerName(shift.volunteerName ?? "");
       if (shift.volunteerId && roster.some((member) => member.id === shift.volunteerId)) {
         setVolunteerMode("roster");
-        setVolunteerName("");
+        const member = roster.find((m) => m.id === shift.volunteerId);
+        const display = member?.profile?.display_name || member?.handle || shift.volunteerName || "";
+        setVolunteerName(display);
       } else if (shift.volunteerName) {
         setVolunteerMode("custom");
       } else if (shift.volunteerId) {
@@ -144,7 +146,12 @@ export default function EditShiftDrawer({
           : trimmedVolunteerId
             ? trimmedVolunteerId
             : undefined,
-      volunteerName: volunteerMode === "custom" ? trimmedVolunteerName : undefined,
+      volunteerName:
+        volunteerMode === "custom"
+          ? trimmedVolunteerName
+          : volunteerMode === "roster" && volunteerName
+            ? volunteerName
+            : undefined,
       startsAt,
       endsAt,
       notes,
@@ -203,7 +210,9 @@ export default function EditShiftDrawer({
                 }
                 setVolunteerMode("roster");
                 setVolunteerId(value);
-                setVolunteerName("");
+                const member = availableVolunteers.find((m) => m.id === value);
+                const display = member?.profile?.display_name || member?.handle || "";
+                setVolunteerName(display);
               }}
             >
               <SelectTrigger>
