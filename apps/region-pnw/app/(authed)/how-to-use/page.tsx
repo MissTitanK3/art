@@ -204,16 +204,14 @@ export default function HowToUsePlatformPage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl mx-auto px-4 py-10">
-        <header className="mb-8 flex items-start justify-between gap-2">
-          <nav className="text-sm mb-2 text-muted-foreground">
-          </nav>
-          <div>
+        <header className="mb-8 flex flex-col items-center text-center gap-2 lg:flex-row md:items-start md:justify-center">
+          <div className="text-center">
             <h1 className="text-3xl font-bold">How To Use Platform</h1>
             <p className="text-muted-foreground mt-1">
               Learn how to navigate the platform and report issues effectively.
             </p>
           </div>
-          <div className="lg:hidden">
+          <div className="mt-2 lg:hidden z-10">
             <Button variant="outline" onClick={() => setMobileOpen(true)}>Sections</Button>
           </div>
         </header>
