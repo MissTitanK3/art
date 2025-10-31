@@ -14,6 +14,7 @@ import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {
     id: String(row.id),
+    profile_id: typeof row.profile_id === 'string' ? row.profile_id : row.profile?.id,
     profile: row.profile,
     role: row.role,
     status: row.status,
@@ -60,7 +61,7 @@ async function persistRosterEntryToDatabase(podId: string, entry: RosterEntry): 
       id: entry.id,
       pod_id: podId,
       // DB stores a FK to profiles; send the id only
-      profile_id: entry.profile?.id,
+      profile_id: entry.profile?.id ?? entry.profile_id,
       role: entry.role,
       status: entry.status,
       langs: entry.langs,

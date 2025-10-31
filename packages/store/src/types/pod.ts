@@ -29,6 +29,8 @@ export type PodRole = 'lead' | 'member' | 'trainee';
 
 export type RosterEntry = {
   id: string;
+  // Optional direct FK to profiles when present in roster_entries
+  profile_id?: string;
   profile: DispatchProfile;
   role: PodRole;
   status: PodMemberStatus;

@@ -61,12 +61,18 @@ export default function NeedsList({ needs, onOfferHelp, onUpdateStatus, onUpdate
               </div>
             ) : null}
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span>Visibility: {n.visibility}</span>
                 {n.location?.label ? (
                   <>
                     <span>•</span>
                     <span>Where: {n.location.label}</span>
+                  </>
+                ) : null}
+                {n.contact_preference ? (
+                  <>
+                    <span>•</span>
+                    <span>Contact: {n.contact_preference}</span>
                   </>
                 ) : null}
               </div>
@@ -204,51 +210,53 @@ function EditNeedDrawer({
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Edit</Button>
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
+        <DrawerContent className="p-0 max-w-3xl m-auto bg-card text-card-foreground h-[80vh]">
           <DrawerHeader>
             <DrawerTitle>Edit Need</DrawerTitle>
             <DrawerDescription>Update fields for this need.</DrawerDescription>
           </DrawerHeader>
-          <form onSubmit={handleSave} className="space-y-3 p-1">
-            <div className="space-y-1">
-              <Label className="text-xs">Category</Label>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Description</Label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <form onSubmit={handleSave} className="flex flex-1 min-h-0 flex-col">
+            <div className="flex-1 overflow-y-auto space-y-3 p-4">
               <div className="space-y-1">
-                <Label className="text-xs">Urgency</Label>
-                <Select value={urgency} onValueChange={(v) => setUrgency(v as NeedUrgency)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Category</Label>
+                <Input value={category} onChange={(e) => setCategory(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Visibility</Label>
-                <Select value={visibility} onValueChange={(v) => setVisibility(v as NeedVisibility)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="region">Region only</SelectItem>
-                    <SelectItem value="pod">Pod/dispatchers</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Description</Label>
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
               </div>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Location (optional)</Label>
-              <Input value={locationLabel} onChange={(e) => setLocationLabel(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Contact preference (optional)</Label>
-              <Input value={contact} onChange={(e) => setContact(e.target.value)} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Urgency</Label>
+                  <Select value={urgency} onValueChange={(v) => setUrgency(v as NeedUrgency)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Visibility</Label>
+                  <Select value={visibility} onValueChange={(v) => setVisibility(v as NeedVisibility)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="region">Region only</SelectItem>
+                      <SelectItem value="pod">Pod/dispatchers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Location (optional)</Label>
+                <Input value={locationLabel} onChange={(e) => setLocationLabel(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Contact preference (optional)</Label>
+                <Input value={contact} onChange={(e) => setContact(e.target.value)} />
+              </div>
             </div>
             <DrawerFooter className="gap-2 sm:flex-row sm:justify-end">
               <Button type="submit" disabled={pending}>Save</Button>

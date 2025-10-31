@@ -43,7 +43,7 @@ async function upsertDispatchShiftToDatabase(
   roster: RosterEntry[],
 ): Promise<void> {
   const client = getSupabaseBrowserClient();
-  // volunteerId from UI is roster entry id; map to profile id if possible
+  // volunteerId from UI is a roster entry id; map to roster_entries.profile_id (or profile.id) if possible
   let volunteer_profile_id: string | null = null;
   if (shift.volunteerId) {
     const pod = pods.find((p: any) => p.id === shift.podId);
@@ -52,11 +52,34 @@ async function upsertDispatchShiftToDatabase(
     // If shift.volunteerId is a roster entry id, map to profile.id; otherwise use it if it's a UUID (profile id), else null
     const uuidRe = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const byProfileId = roster.find((m: any) => m.profile?.id === shift.volunteerId)?.profile?.id;
+    const fromRosterProfileFk = fromRoster?.profile_id as string | undefined;
+    const fromPodProfileFk = (fromPod as any)?.profile_id as string | undefined;
     volunteer_profile_id =
+      // Prefer direct FK values when provided
+      fromPodProfileFk ??
+      fromRosterProfileFk ??
+      // Then fall back to joined profile objects
       fromPod?.profile?.id ??
       fromRoster?.profile?.id ??
       byProfileId ??
       (uuidRe.test(String(shift.volunteerId)) ? String(shift.volunteerId) : null);
+
+    // As a final fallback, fetch the roster entry to resolve its profile_id directly
+    if (!volunteer_profile_id) {
+      try {
+        const client2 = getSupabaseBrowserClient();
+        const { data: r, error: rErr } = await client2
+          .from('roster_entries')
+          .select('profile_id')
+          .eq('id', shift.volunteerId)
+          .maybeSingle();
+        if (!rErr && r?.profile_id && typeof r.profile_id === 'string') {
+          volunteer_profile_id = r.profile_id;
+        }
+      } catch {
+        // ignore best-effort fallback
+      }
+    }
   }
 
   const payload = {
@@ -213,7 +236,7 @@ export default function DispatchShiftsDataLayer() {
           const client = getSupabaseBrowserClient();
           const { data, error } = await client
             .from("roster_entries")
-            .select("id, role, status, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*)")
+            .select("id, profile_id, role, status, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*)")
             .eq("pod_id", podId)
             .order("joined_at", { ascending: true });
           if (error) throw error;
@@ -221,6 +244,7 @@ export default function DispatchShiftsDataLayer() {
           // Map to RosterEntry shape used by UI
           return rows.map((row: any) => ({
             id: String(row.id),
+            profile_id: typeof row.profile_id === 'string' ? row.profile_id : row.profile?.id,
             profile: row.profile,
             role: row.role,
             status: row.status,

@@ -163,7 +163,7 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
 
           options.push({
             id: member.id,
-            name: member.profile.display_name,
+            name: (member.profile?.display_name ?? member.handle ?? 'Unknown').toString(),
             type: hasMentorLevel ? "mentor" : dispatchCertified ? "dispatcher" : "expert",
             podName: pod.name,
             status: member.status,

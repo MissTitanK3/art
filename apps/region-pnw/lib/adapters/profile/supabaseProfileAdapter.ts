@@ -28,9 +28,12 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     }
     const row = Array.isArray(data) ? (data[0] as any) : (data as any);
     if (!row) return null;
-    return {
-      ...row,
+    // Normalize nullable fields to avoid runtime null reads
+    const normalized: Profile = {
+      ...(row as any),
+      display_name: String((row as any)?.display_name ?? ''),
     } as Profile;
+    return normalized;
   },
   async saveProfile(profile: Profile): Promise<void> {
     const client = getSupabaseBrowserClient();

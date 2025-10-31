@@ -36,6 +36,19 @@ export function AutoCreateProfile() {
       try {
         const existing = await profileAdapter.loadProfile(userId);
         if (existing) {
+          // Hydrate missing display_name for legacy/null rows
+          const needsName = typeof (existing as any).display_name !== 'string' || (existing as any).display_name.trim().length === 0;
+          if (needsName) {
+            try {
+              const next = {
+                ...(existing as any),
+                display_name: defaultDisplayName(session.user.email, session.user.fullName),
+              } as Profile;
+              await profileAdapter.saveProfile(next);
+            } catch {
+              // ignore; non-blocking
+            }
+          }
           createdForUserId.current = userId;
           return;
         }

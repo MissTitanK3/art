@@ -105,10 +105,10 @@ export function convertPodsToMemberProgress(pods: Pod[]): AcademyMemberProgress[
         (cert) => cert.level === 'completed' || cert.level === 'mentor',
       ).length;
       const pendingLessons = Math.max(0, 3 - completedLessons);
-      const profile = member.profile;
+      const profile = member.profile as any;
       results.push({
         id: member.id,
-        name: profile.display_name,
+        name: (profile?.display_name ?? member.handle ?? '').toString(),
         podName: pod.name,
         role: member.role,
         status: member.status,
@@ -150,16 +150,16 @@ export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[]
           ? 'cleared'
           : 'awaiting_verification';
 
-      const profile = member.profile;
+      const profile = member.profile as any;
       instructors.push({
         id: member.id,
-        name: profile.display_name,
+        name: (profile?.display_name ?? member.handle ?? 'Unknown').toString(),
         type,
         availability,
         focus,
-        timezone: profile.coordination_zone ?? undefined,
+        timezone: profile?.coordination_zone ?? undefined,
         certifications: member.certs ?? [],
-        registrationStatus: profile.user_id ? 'registered' : 'unregistered',
+        registrationStatus: profile?.user_id ? 'registered' : 'unregistered',
         vettingStatus,
       });
 
