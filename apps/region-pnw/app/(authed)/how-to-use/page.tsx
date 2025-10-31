@@ -155,7 +155,7 @@ export default function HowToUsePlatformPage() {
   return (
     <div className="flex w-full min-h-screen bg-background">
       {/* Left Sidebar */}
-      <aside className="hidden lg:block w-fit max-w-72 border-r border-muted py-6">
+      <aside className="hidden lg:block w-fit max-w-full border-r border-muted py-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-semibold">Help & Guide</h2>
         </div>

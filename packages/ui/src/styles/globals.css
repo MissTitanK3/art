@@ -209,6 +209,13 @@
   }
 }
 
+/* Ensure readable typography in dim theme */
+@layer utilities {
+  .dim .prose {
+    @apply prose-invert;
+  }
+}
+
 .leaflet-container {
   z-index: 0 !important; /* or any value lower than your nav */
 }
