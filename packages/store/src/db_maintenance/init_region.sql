@@ -298,6 +298,28 @@
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );
 
+  -- =========================================================
+  -- Feedback: Bug Reports
+  -- Lightweight issue tracker for platform feedback within a region
+  CREATE TABLE IF NOT EXISTS public.bug_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_by TEXT, -- auth uid
+    title TEXT NOT NULL,
+    area TEXT NOT NULL DEFAULT 'general',
+    steps TEXT,
+    expected TEXT,
+    actual TEXT,
+    status TEXT NOT NULL DEFAULT 'open', -- open, triage, in_progress, resolved, closed
+    priority TEXT, -- low, medium, high, critical
+    metadata JSONB
+  );
+
+  -- Helpful indexes
+  CREATE INDEX IF NOT EXISTS idx_bug_reports_created_at ON public.bug_reports (created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_bug_reports_created_by ON public.bug_reports (created_by);
+  CREATE INDEX IF NOT EXISTS idx_bug_reports_status ON public.bug_reports (status);
+
   -- Pod shifts (field operations scheduling)
   -- Separate from dispatch_shifts which track dispatch desk coverage
   CREATE TABLE IF NOT EXISTS public.pod_shifts (

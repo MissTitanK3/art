@@ -24,6 +24,9 @@ ALTER TABLE com_channels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_briefings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_alerts ENABLE ROW LEVEL SECURITY;
 
+-- Feedback
+ALTER TABLE bug_reports ENABLE ROW LEVEL SECURITY;
+
 -- Trust
 ALTER TABLE trust_signatures ENABLE ROW LEVEL SECURITY;
 
@@ -262,6 +265,36 @@ CREATE POLICY com_alerts_delete_all
 ON com_alerts
 FOR DELETE
 USING (TRUE);
+
+-- Bug reports: any authenticated user can submit; creators read their own; admins manage all
+CREATE POLICY insert_bug_report_authenticated
+ON bug_reports
+FOR INSERT
+TO authenticated
+WITH CHECK (TRUE);
+
+CREATE POLICY read_own_bug_reports
+ON bug_reports
+FOR SELECT
+USING (created_by = auth.uid()::text);
+
+CREATE POLICY admins_manage_bug_reports
+ON bug_reports
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
 
 -- Operators: dispatchers manage all
 CREATE POLICY "dispatchers_manage_com_operators"

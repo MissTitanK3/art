@@ -1,5 +1,24 @@
 // Server-safe input (no functions/classes)
 import { LucideIcon, NavIconId } from '@workspace/ui/components/icons/nav-icons';
+/**
+ * Navigation roles and access helpers
+ *
+ * This module centralizes the role taxonomy used by the app and the convenience
+ * groupings that drive what a user can see in the global navigation. It also
+ * provides a small helper to determine whether a given nav item should be
+ * visible to the current user (canSee) and a path helper (isActive).
+ *
+ * Quick reference:
+ * - team_member: onboarded volunteer; lowest access
+ * - pod_leader: leads a pod; can manage local work
+ * - trainer: facilitates training and classes
+ * - dispatcher_basic: dispatcher in training or limited duties
+ * - dispatcher_verified: verified dispatcher with broader access
+ * - dispatcher_admin: admin dispatcher; can manage instructors and sessions
+ * - admin: region admin (alias for regionAdmins grouping)
+ * - regional_admin: explicit region admin role
+ * - national_admin: cross‑region oversight
+ */
 export type NavRole =
   | 'team_member'
   | 'pod_leader'
@@ -23,6 +42,8 @@ export type NavRole =
  * `/pods/new`
  * `/missing-persons`
  */
+// Minimum: onboarded and can use core features. Use this for items that
+// should appear to anyone with a real profile in the region.
 export const completeOnboarding: NavRole[] = [
   'team_member',
   'pod_leader',
@@ -42,6 +63,8 @@ export const completeOnboarding: NavRole[] = [
  * `/schedules`,
  * `/team-req`
  */
+// Elevated roles with trusted access to create/coordinate dispatch work and
+// scheduling. Use for items like Dispatches, Schedules, and Team Requests.
 export const elevatedRoles: NavRole[] = [
   'pod_leader',
   'trainer',
@@ -58,6 +81,7 @@ export const elevatedRoles: NavRole[] = [
  * Access to completeOnboarding and elevatedRoles features:
  * `/admin`,
  */
+// Trusted to manage people, pods, and related admin areas. Grants /admin.
 export const podAdmins: NavRole[] = [
   'dispatcher_admin',
   'dispatcher_verified',
@@ -67,6 +91,7 @@ export const podAdmins: NavRole[] = [
   'national_admin',
 ];
 
+// Same as podAdmins — kept for semantic clarity when scoping local controls.
 export const localAdmins: NavRole[] = [
   'dispatcher_admin',
   'dispatcher_verified',
@@ -77,6 +102,7 @@ export const localAdmins: NavRole[] = [
 ];
 
 /** Full administrative powers at the region level */
+// Full administrative powers at the region level and above.
 export const regionAdmins: NavRole[] = ['admin', 'regional_admin', 'national_admin'];
 
 /** Top-level oversight (cross-region) */
@@ -124,6 +150,10 @@ export type GlobalNavConfig = {
   hideSearch?: boolean;
 };
 
+/**
+ * Returns true when the current URL pathname matches (or is nested under)
+ * the item's href. Accepts absolute or relative hrefs.
+ */
 export function isActive(href: string | undefined, pathname: string) {
   if (!href) return false;
   try {
@@ -133,11 +163,18 @@ export function isActive(href: string | undefined, pathname: string) {
     return pathname === href || pathname.startsWith(href + '/');
   }
 }
+/**
+ * Determines whether a user with `role` should see a nav item.
+ *
+ * Rules:
+ * - No roles on the item → public (visible to all).
+ * - Roles set on the item → require an explicit match.
+ *
+ * Compose with the exported groupings (e.g., completeOnboarding, elevatedRoles)
+ * when authoring nav configs so intent stays readable.
+ */
 export function canSee(item: NavItem, role?: NavRole, _isAuthenticated = false) {
-  // If no roles are specified, the item is public
   if (!item.roles?.length) return true;
-
-  // Require an explicit role match for any role-restricted item
   if (!role) return false;
   return item.roles.includes(role);
 }

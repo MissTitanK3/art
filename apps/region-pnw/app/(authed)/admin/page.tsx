@@ -10,7 +10,7 @@ import NavTile from "@workspace/ui/components/nav-tile";
 import KeyValueItem from "@workspace/ui/components/key-value-item";
 import { percent } from "@workspace/ui/lib/utils";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
-import { FileChartLine, MapPin, Settings, ShieldCheck, Users2, Users, Package, GraduationCap, Handshake, Database } from "lucide-react";
+import { FileChartLine, MapPin, Settings, ShieldCheck, Users2, Users, Package, GraduationCap, Handshake, Database, Bug } from "lucide-react";
 
 import type { WizardReport } from "@workspace/store/types/watch.ts";
 import { useRouter } from "next/navigation";
@@ -133,16 +133,17 @@ export default function AdminPage() {
           <CardTitle>Admin Sections</CardTitle>
           <CardDescription>Jump into a specific management area</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            <NavTile href="/admin/profiles" icon={<Users className="h-5 w-5" />} label="Profiles" description="Manage users, roles, verification" />
-            <NavTile href="/admin/pods" icon={<Package className="h-5 w-5" />} label="Pods" description="Organize pods and rosters" />
-            <NavTile href="/admin/dispatch" icon={<MapPin className="h-5 w-5" />} label="Dispatch" description="Review and audit dispatches" />
-            <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
-            <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
-          </div>
-        </CardContent>
-      </Card>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              <NavTile href="/admin/profiles" icon={<Users className="h-5 w-5" />} label="Profiles" description="Manage users, roles, verification" />
+              <NavTile href="/admin/pods" icon={<Package className="h-5 w-5" />} label="Pods" description="Organize pods and rosters" />
+              <NavTile href="/admin/dispatch" icon={<MapPin className="h-5 w-5" />} label="Dispatch" description="Review and audit dispatches" />
+              <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
+              <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
+              <NavTile href="/admin/bug-reports" icon={<Bug className="h-5 w-5" />} label="Bug Reports" description="User-submitted platform issues" />
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
