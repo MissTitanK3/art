@@ -5,6 +5,12 @@ import { Button } from "@workspace/ui/components/button";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer";
+import {
   HOW_TO_SECTIONS,
   HowToBugTracker,
   NavRolesGuide,
@@ -84,6 +90,7 @@ export default function HowToUsePlatformPage() {
   const initialSection =
     (searchParams.get("section") as HowToSectionId) || DEFAULT_HOW_TO_SECTION_ID;
   const [active, setActive] = useState<HowToSectionId>(initialSection);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const fromUrl =
@@ -97,6 +104,7 @@ export default function HowToUsePlatformPage() {
     const params = new URLSearchParams(Array.from(searchParams.entries()));
     params.set("section", id);
     router.replace(`?${params.toString()}`, { scroll: false });
+    setMobileOpen(false);
   };
 
   // Map section ids to rendered components
@@ -196,13 +204,18 @@ export default function HowToUsePlatformPage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl mx-auto px-4 py-10">
-        <header className="mb-8">
+        <header className="mb-8 flex items-start justify-between gap-2">
           <nav className="text-sm mb-2 text-muted-foreground">
           </nav>
-          <h1 className="text-3xl font-bold">How To Use Platform</h1>
-          <p className="text-muted-foreground mt-1">
-            Learn how to navigate the platform and report issues effectively.
-          </p>
+          <div>
+            <h1 className="text-3xl font-bold">How To Use Platform</h1>
+            <p className="text-muted-foreground mt-1">
+              Learn how to navigate the platform and report issues effectively.
+            </p>
+          </div>
+          <div className="lg:hidden">
+            <Button variant="outline" onClick={() => setMobileOpen(true)}>Sections</Button>
+          </div>
         </header>
 
         {/* Top quick-access section for key guides */}
@@ -221,6 +234,56 @@ export default function HowToUsePlatformPage() {
         </section>
 
         {sectionComponents[active] ?? null}
+
+        {/* Mobile Sections Drawer */}
+        <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
+          <DrawerContent className="bg-card text-card-foreground">
+            <DrawerHeader>
+              <DrawerTitle>Help & Guide</DrawerTitle>
+            </DrawerHeader>
+            <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
+              <nav className="text-sm">
+                <div className="text-muted-foreground mb-2">Sections</div>
+                <ul className="space-y-1">
+                  {grouped.map(({ parent, children }) => (
+                    <li key={parent.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectSection(parent.id)}
+                        className={
+                          "w-full text-left block px-2 py-2 rounded hover:bg-muted " +
+                          (active === parent.id ? "bg-muted font-medium" : "")
+                        }
+                        aria-current={active === parent.id ? "page" : undefined}
+                      >
+                        {parent.label}
+                      </button>
+                      {children.length > 0 ? (
+                        <ul className="mt-1 ml-2 space-y-1">
+                          {children.map((c) => (
+                            <li key={c.id}>
+                              <button
+                                type="button"
+                                onClick={() => selectSection(c.id)}
+                                className={
+                                  "w-full text-left block px-2 py-1 rounded hover:bg-muted text-muted-foreground " +
+                                  (active === c.id ? "bg-muted font-medium text-foreground" : "")
+                                }
+                                aria-current={active === c.id ? "page" : undefined}
+                              >
+                                {c.label}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </main>
     </div>
   );
