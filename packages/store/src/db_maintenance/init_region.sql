@@ -106,6 +106,7 @@
     intended_actions JSONB,
     intended_actions_custom TEXT,
     signal_link TEXT,
+    public_signal_link TEXT,
     training BOOLEAN DEFAULT FALSE,
     flagged BOOLEAN DEFAULT FALSE,
     updated_at TIMESTAMPTZ DEFAULT now(),

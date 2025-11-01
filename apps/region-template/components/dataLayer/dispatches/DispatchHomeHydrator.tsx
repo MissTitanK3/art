@@ -36,6 +36,7 @@ function mapRowToSubmission(row: any): DispatchSubmission {
     intended_actions: Array.isArray(row?.intended_actions) ? row.intended_actions : undefined,
     intended_actions_custom: typeof row?.intended_actions_custom === "string" ? row.intended_actions_custom : undefined,
     signal_link: typeof row?.signal_link === "string" ? row.signal_link : undefined,
+    public_signal_link: typeof row?.public_signal_link === "string" ? row.public_signal_link : undefined,
     training: Boolean(row?.training ?? false),
     updates,
     logistics,
@@ -95,4 +96,3 @@ export default function DispatchHomeHydrator() {
 
   return null;
 }
-

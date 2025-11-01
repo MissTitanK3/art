@@ -16,6 +16,7 @@ import {
 import DispatchStatusUpdater from "@workspace/ui/components/client/status/DispatchStatusUpdater";
 import DispatchIntendedActionsUpdater from "@workspace/ui/components/client/actions/DispatchIntendedActionsUpdater";
 import DispatchSignalLinkUpdater from "@workspace/ui/components/client/external-link/DispatchSignalLinkUpdater";
+import DispatchPublicSignalLinkUpdater from "@workspace/ui/components/client/external-link/DispatchPublicSignalLinkUpdater";
 import DispatchNotesUpdater from "@workspace/ui/components/client/notes/DispatchNotesUpdater";
 import DispatchLocationUpdater from "@workspace/ui/components/client/location/DispatchLocationUpdater";
 import DispatchLocationPinSelector from "@workspace/ui/components/client/location/DispatchLocationPinSelector";
@@ -86,7 +87,8 @@ export function DispatchSubmissionLayout({
       submission.intended_action_notes
         ? `📝 Notes: ${submission.intended_action_notes}`
         : null,
-      submission.signal_link ? `🔗 Signal: ${submission.signal_link}` : null,
+      submission.public_signal_link ? `🔗 Public Link: ${submission.public_signal_link}` : null,
+      submission.signal_link ? `🔒 Private Dispatch Link: ${submission.signal_link}` : null,
     ]
       .filter(Boolean)
       .join("\n");
@@ -130,6 +132,15 @@ export function DispatchSubmissionLayout({
     {
       id: "signal-link",
       content: <DispatchSignalLinkUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+    },
+    {
+      id: "public-signal-link",
+      content: (
+        <DispatchPublicSignalLinkUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
   ];
 

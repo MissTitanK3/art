@@ -36,20 +36,37 @@ function extractCityState(locationLabel?: string | null): string {
 }
 
 function formatRoles(dispatch: DispatchSubmission): string {
+  // Prefer structured counts when available
+  if (dispatch.required_roles_by_type && Object.keys(dispatch.required_roles_by_type).length > 0) {
+    const assignedCounts: Record<string, number> = {};
+    for (const v of dispatch.assigned_volunteers ?? []) {
+      const key = (v as any)?.role as string | undefined; // assigned with field role key in UI
+      if (!key) continue;
+      assignedCounts[key] = (assignedCounts[key] ?? 0) + 1;
+    }
+
+    const lines = Object.entries(dispatch.required_roles_by_type)
+      .filter(([, required]) => required > 0)
+      .map(([role, required]) => {
+        const assigned = assignedCounts[role] ?? 0;
+        const remaining = Math.max(0, required - assigned);
+        return { role, required, assigned, remaining };
+      })
+      .filter(({ remaining }) => remaining > 0)
+      .map(({ role, remaining }) => {
+        const label = FIELD_ROLE_LABELS[role as keyof typeof FIELD_ROLE_LABELS] || humanize(role);
+        return `• ${label} (${remaining} needed)`;
+      });
+
+    if (lines.length > 0) return lines.join('\n');
+    return '• All listed roles filled';
+  }
+
+  // Fallback to simple list when only an array is provided
   if (dispatch.required_roles?.length) {
     return dispatch.required_roles
       .map((r) => FIELD_ROLE_LABELS[r as keyof typeof FIELD_ROLE_LABELS] || humanize(r))
       .join(', ');
-  }
-
-  if (dispatch.required_roles_by_type) {
-    return Object.entries(dispatch.required_roles_by_type)
-      .filter(([, count]) => count > 0)
-      .map(([role]) => {
-        const label = FIELD_ROLE_LABELS[role as keyof typeof FIELD_ROLE_LABELS] || humanize(role);
-        return `• ${label}`;
-      })
-      .join('\n');
   }
 
   return '• Support roles';
@@ -90,6 +107,13 @@ export function generateMessages(dispatch: DispatchSubmission, urgency: string) 
 
   const cityState = extractCityState(dispatch.location_label);
 
+  // Include notes alongside intended actions where applicable
+  const actionsWithOptionalNotes = () => {
+    const base = formatActions(dispatch);
+    const notes = dispatch.intended_action_notes?.trim();
+    return notes ? `${base}\n\n📝 Notes:\n${notes}` : base;
+  };
+
   // --- Grouped cards for detailed ---
   const detailedSections = [
     {
@@ -102,7 +126,7 @@ export function generateMessages(dispatch: DispatchSubmission, urgency: string) 
     },
     {
       title: '📋 Intended Actions',
-      body: formatActions(dispatch),
+      body: actionsWithOptionalNotes(),
     },
     {
       title: '💡 Roles Needed',
@@ -128,7 +152,7 @@ export function generateMessages(dispatch: DispatchSubmission, urgency: string) 
     },
     {
       title: '📋 Intended Actions',
-      body: formatActions(dispatch),
+      body: actionsWithOptionalNotes(),
     },
     {
       title: '💡 Roles Needed',
@@ -154,12 +178,13 @@ Roles: ${formatRoles(dispatch).replace(/\n/g, ', ')}
 Volunteers: ${volunteerLine}
 Timing: ${urgency}
 
-📲 Reply in this group if available.
+${dispatch.intended_action_notes ? `\n📝 Notes: ${dispatch.intended_action_notes}` : ''}
+\n📲 Reply in this group if available.
 `.trim(),
 
     tldr: `${emoji} ${cityState}: ${volunteerLine}. Roles: ${formatRoles(dispatch).replace(
       /\n/g,
       ', ',
-    )}. 📲 Reply in this group if available.`,
+    )}. ${dispatch.intended_action_notes ? `Notes: ${dispatch.intended_action_notes}. ` : ''}📲 Reply in this group if available.`,
   };
 }

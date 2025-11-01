@@ -43,6 +43,7 @@ function mapRowToSubmission(row: any): DispatchSubmission {
     intended_actions: Array.isArray(row?.intended_actions) ? row.intended_actions : undefined,
     intended_actions_custom: typeof row?.intended_actions_custom === "string" ? row.intended_actions_custom : undefined,
     signal_link: typeof row?.signal_link === "string" ? row.signal_link : undefined,
+    public_signal_link: typeof row?.public_signal_link === "string" ? row.public_signal_link : undefined,
     training: Boolean(row?.training ?? false),
     updates,
     logistics,
@@ -149,6 +150,7 @@ async function persistSubmissionPatchToDatabase(id: string, patch: Partial<Dispa
     "intended_actions",
     "intended_actions_custom",
     "signal_link",
+    "public_signal_link",
     "training",
     "flagged",
   ];

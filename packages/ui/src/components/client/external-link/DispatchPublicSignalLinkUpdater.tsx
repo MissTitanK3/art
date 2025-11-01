@@ -10,77 +10,78 @@ import {
 } from "@workspace/ui/components/drawer";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Copy } from "lucide-react";
-import { toast } from "sonner"; // ✅ toast import
+import { toast } from "sonner";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
-type DispatchSignalLinkUpdaterProps = {
+type Props = {
   submission: DispatchSubmission;
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchSignalLinkUpdater({ submission, onUpdate }: DispatchSignalLinkUpdaterProps) {
+export default function DispatchPublicSignalLinkUpdater({ submission, onUpdate }: Props) {
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState(submission?.signal_link ?? "");
+
+  const publicLink = submission.public_signal_link ?? "";
+  const [draft, setDraft] = useState(publicLink);
 
   useEffect(() => {
-    setDraft(submission.signal_link ?? "");
-  }, [submission.signal_link]);
+    setDraft(submission.public_signal_link ?? "");
+  }, [submission.public_signal_link]);
 
   const saveLink = () => {
-    onUpdate({ signal_link: draft.trim() || undefined });
-    toast.success("Signal link updated");
+    onUpdate({ public_signal_link: draft.trim() || undefined });
+    toast.success("Public engagement link updated");
     setOpen(false);
   };
 
   const copyLink = async () => {
-    if (submission.signal_link) {
-      await navigator.clipboard.writeText(submission.signal_link);
-      toast.success("Signal link copied to clipboard ✅");
+    if (publicLink) {
+      await navigator.clipboard.writeText(publicLink);
+      toast.success("Public engagement link copied ✅");
     }
   };
 
   return (
     <div className="space-y-2">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <p className="font-medium">Private Dispatch Signal Link</p>
-        {submission.signal_link ? (
+        <p className="font-medium">Public Engagement Signal Link</p>
+        {publicLink ? (
           <div className="flex items-center gap-2">
             <a
-              href={submission.signal_link}
+              href={publicLink}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline break-all"
             >
-              {submission.signal_link}
+              {publicLink}
             </a>
             <Button
               size="icon"
               variant="ghost"
               onClick={copyLink}
-              title="Copy private dispatch link"
+              title="Copy public link"
             >
               <Copy className="w-4 h-4" />
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No private link set.</p>
+          <p className="text-sm text-muted-foreground">No public engagement link set.</p>
         )}
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          {submission.signal_link ? "Edit Link" : "Add Link"}
+          {publicLink ? "Edit Link" : "Add Link"}
         </Button>
       </div>
-
 
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
           <DrawerHeader>
             <DrawerTitle>
-              {submission.signal_link ? "Edit Private Dispatch Link" : "Add Private Dispatch Link"}
+              {publicLink ? "Edit Public Engagement Link" : "Add Public Engagement Link"}
             </DrawerTitle>
             <DrawerDescription>
-              Provide the private Signal group link for coordinators/assigned volunteers.
+              Provide a public Signal link for outreach (unvetted chat).
             </DrawerDescription>
           </DrawerHeader>
 

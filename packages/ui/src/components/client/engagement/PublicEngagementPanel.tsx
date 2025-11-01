@@ -124,6 +124,15 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
   const [selectedTier, setSelectedTier] = useState<keyof ReturnType<typeof generateMessages>>("callout");
 
   const msgs = useMemo(() => generateMessages(submission, urgency), [submission, urgency]);
+  const publicChatUrl = useMemo(() => {
+    if (submission.public_signal_link) return submission.public_signal_link;
+    try {
+      const payload = JSON.parse(submission.encrypted_payload || "{}");
+      return payload?.public_signal_link || REGION_PUBLIC_CHAT_URL;
+    } catch {
+      return REGION_PUBLIC_CHAT_URL;
+    }
+  }, [submission.public_signal_link, submission.encrypted_payload]);
 
   return (
     <Tabs defaultValue="messaging" className="flex-1">
@@ -209,7 +218,7 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <QRCode
-                        value={REGION_PUBLIC_CHAT_URL}
+                        value={publicChatUrl}
                         size={60}
                         bgColor="transparent"
                         fgColor="#ffffff"
@@ -256,7 +265,7 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                 </div>
                 <div className="flex flex-col items-center gap-1">
                   <QRCode
-                    value={REGION_PUBLIC_CHAT_URL}
+                    value={publicChatUrl}
                     size={80}
                     bgColor="transparent"
                     fgColor="#ffffff"
@@ -359,7 +368,7 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
               {/* Footer with QR */}
               <footer className="flex flex-col items-center mt-8">
                 <QRCode
-                  value={REGION_PUBLIC_CHAT_URL}
+                  value={publicChatUrl}
                   size={160}
                   bgColor="transparent"
                   fgColor="#000000"

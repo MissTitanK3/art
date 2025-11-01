@@ -59,6 +59,7 @@ export interface DispatchSubmission {
   intended_actions?: string[];
   intended_actions_custom?: string;
   signal_link?: string;
+  public_signal_link?: string;
   training?: boolean;
   updates?: DispatchUpdate[];
   logistics: LogisticsItem[];
