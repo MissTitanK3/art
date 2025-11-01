@@ -191,6 +191,7 @@
   CREATE EXTENSION IF NOT EXISTS pgcrypto;
   CREATE TABLE IF NOT EXISTS public.com_teams (
     id TEXT PRIMARY KEY,
+    event_id TEXT REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     channel TEXT,
     encryption_mode TEXT,
@@ -205,6 +206,15 @@
       encryption_mode IS NULL OR encryption_mode IN ('Clear','AES-256','Proprietary','Other')
     )
   );
+  -- Backfill: ensure column exists when re-running on older schemas
+  DO $$ BEGIN
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'com_teams' AND column_name = 'event_id';
+    IF NOT FOUND THEN
+      ALTER TABLE public.com_teams ADD COLUMN event_id TEXT REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE;
+    END IF;
+  END $$;
+
+  CREATE INDEX IF NOT EXISTS idx_com_teams_event ON public.com_teams(event_id);
 
   CREATE TABLE IF NOT EXISTS public.com_operators (
     id TEXT PRIMARY KEY,

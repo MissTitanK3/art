@@ -449,7 +449,6 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
           <div className="flex items-center gap-2 justify-between">
             <label className="text-sm font-medium">TTL (minutes)</label>
             <div className="flex items-center gap-2">
-
               <label htmlFor="sticky" className="text-sm">Sticky (no TTL)</label>
               <Switch id="sticky" checked={sticky} onCheckedChange={setSticky} />
             </div>

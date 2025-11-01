@@ -34,7 +34,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
       try {
         // NOTE: real tables are expected: com_teams, com_operators, com_logs, com_channels, com_briefings
         const [teamsRes, opsRes, logsRes, chansRes, briefRes, alertsRes] = await Promise.all([
-          client.from('com_teams').select('*'),
+          client.from('com_teams').select('*').eq('event_id', eventId),
           client.from('com_operators').select('*'),
           client.from('com_logs').select('*').eq('event_id', eventId),
           client.from('com_channels').select('*'),
@@ -42,7 +42,8 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
           client.from('com_alerts').select('*').eq('event_id', eventId).order('updated_at', { ascending: false }),
         ]);
         if (!cancelled) {
-          setTeams(Array.isArray(teamsRes.data) ? (teamsRes.data as any) : []);
+          const teamRows = Array.isArray(teamsRes.data) ? (teamsRes.data as any) : [];
+          setTeams(teamRows);
           setOperators(Array.isArray(opsRes.data) ? (opsRes.data as any) : []);
           setLogs(Array.isArray(logsRes.data) ? (logsRes.data as any) : []);
           setChannels(Array.isArray(chansRes.data) ? (chansRes.data as any) : []);
@@ -137,6 +138,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     const client = clientRef.current ?? getSupabaseBrowserClient();
     const { error } = await client.from('com_teams').insert({
       id,
+      event_id: eventId,
       name: input.name,
       channel: input.channel ?? null,
       encryption_mode: input.encryption_mode ?? null,
@@ -147,7 +149,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     });
     if (error) console.warn('[useCommsData] insert com_teams failed', error);
     return id;
-  }, []);
+  }, [eventId]);
 
   const updateTeam = React.useCallback(async (id: string, patch: Partial<ComTeam>) => {
     setTeams((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -292,4 +294,3 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     deleteAlert,
   } as const;
 }
-
