@@ -35,11 +35,14 @@ export default function DonutChart({
   showLegend = true,
 }: DonutChartProps) {
   const slug = React.useCallback((key: string) => key.toLowerCase().replace(/[^a-z0-9]+/g, '-'), []);
+  const total = React.useMemo(() => data.reduce((acc, d) => acc + (Number(d.value) || 0), 0), [data]);
+  const hasData = total > 0;
+  const plotData = hasData ? data : [{ name: 'No Data', value: 1, fill: '#e5e7eb' }];
   return (
     <ChartContainer id={id} className={className} config={config}>
       <Recharts.PieChart>
         <Recharts.Pie
-          data={data}
+          data={plotData}
           dataKey="value"
           nameKey="name"
           cx="50%"
@@ -47,9 +50,9 @@ export default function DonutChart({
           innerRadius={innerRadius}
           outerRadius={outerRadius}
           paddingAngle={paddingAngle}
-          label={showLabels}
+          label={showLabels && hasData}
         >
-          {data.map((d) => (
+          {plotData.map((d) => (
             <Recharts.Cell key={d.name} fill={d.fill || `var(--color-${slug(d.name)})`} />
           ))}
         </Recharts.Pie>

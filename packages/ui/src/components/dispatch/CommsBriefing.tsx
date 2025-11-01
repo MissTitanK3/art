@@ -99,3 +99,6 @@ export function CommsBriefing({ briefing, onSave }: Props) {
     </Card>
   );
 }
+
+export default CommsBriefing;
+

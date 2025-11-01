@@ -4,7 +4,6 @@ import type { Profile, RegionSettings } from '@workspace/store/types/global.ts';
 import type { Pod, RosterEntry } from '@workspace/store/types/pod.ts';
 import type { DispatchSubmission } from '@workspace/store/types/global.ts';
 import { AccessRole, VerifiedBy } from '@workspace/store/types/roles.ts';
-import { TraingingSessionsDemoData } from '@/data/demoAcademy';
 import type { TrustEntry, TrustRole } from '@workspace/store/types/trust.ts';
 import { createClient } from '@supabase/supabase-js';
 import { regionAdmins, podAdmins } from '@workspace/store/utils/nav';
@@ -287,12 +286,23 @@ export type AcademyStats = {
 };
 
 export async function getAcademyStats(): Promise<AcademyStats> {
-  const all = TraingingSessionsDemoData.filter((s) => s.status !== 'archived');
-  const completed = all.filter((s) => s.status === 'completed').length;
-  const inProgress = all.filter((s) => s.status === 'in_progress').length;
-  const scheduled = all.filter((s) => s.status === 'scheduled').length;
-  const completionPct = all.length ? Math.round((completed / all.length) * 100) : 0;
-  return { totalActive: all.length, completed, inProgress, scheduled, completionPct };
+  try {
+    const client = await createSupabaseServerClient();
+    const { data, error } = await client.from('academy_sessions').select('status');
+    if (error) throw error;
+    const rows = Array.isArray(data) ? (data as any[]) : [];
+    // Normalize null/undefined to 'scheduled' (treat missing status as scheduled)
+    const norm = rows.map((r) => ({ status: (r?.status ?? 'scheduled') as string }));
+    const active = norm.filter((r) => r.status !== 'archived');
+    const completed = active.filter((r) => r.status === 'completed').length;
+    const inProgress = active.filter((r) => r.status === 'in_progress').length;
+    const scheduled = active.filter((r) => r.status === 'scheduled').length;
+    const totalActive = active.length;
+    const completionPct = totalActive ? Math.round((completed / totalActive) * 100) : 0;
+    return { totalActive, completed, inProgress, scheduled, completionPct };
+  } catch (e) {
+    return { totalActive: 0, completed: 0, inProgress: 0, scheduled: 0, completionPct: 0 };
+  }
 }
 
 export type DbHealth = {

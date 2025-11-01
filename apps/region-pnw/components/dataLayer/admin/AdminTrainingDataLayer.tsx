@@ -3,7 +3,6 @@ import TrainingClient from "@workspace/ui/layout/admin/training/training";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
 import type { AcademyTrainingSession, AcademyTrainingSessionParticipant } from "@workspace/store/types/academy";
-import { TraingingSessionsDemoData } from "@/data/demoAcademy";
 import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 
 function mapRowToSession(
@@ -73,7 +72,7 @@ export default async function AdminTrainingDataLayer() {
     const mapped = (sessions ?? []).map((row: any) => mapRowToSession(row, bySession));
     return <TrainingClient initialSessions={mapped} />;
   } catch (e) {
-    // Fallback: demo data if Supabase not configured
-    return <TrainingClient initialSessions={TraingingSessionsDemoData} />;
+    // Fallback: no data if Supabase not configured
+    return <TrainingClient initialSessions={[]} />;
   }
 }

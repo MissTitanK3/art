@@ -1,6 +1,5 @@
 "use client";
 
-import BugReportForm from "@/components/client/BugReportForm";
 import { Button } from "@workspace/ui/components/button";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -46,6 +45,7 @@ import {
   type HowToSectionId,
   DEFAULT_HOW_TO_SECTION_ID,
 } from "@workspace/ui/components/how-to";
+import { BugReportForm } from "@workspace/ui/components/feedback/BugReportForm";
 
 export default function HowToUsePlatformPage() {
   const router = useRouter();

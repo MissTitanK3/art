@@ -5,10 +5,11 @@ import * as React from "react";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
-import CommsDashboard from "@/app/dispatch/comms/CommsDashboard";
+
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchUpdate, LogisticsItem } from "@workspace/store/types/dispatch";
+import CommsDashboard from "@/components/comms/CommsDashboard";
 
 type Props = {
   id: string;

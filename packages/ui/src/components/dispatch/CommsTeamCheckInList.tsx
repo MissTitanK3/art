@@ -2,39 +2,17 @@
 
 import * as React from "react";
 import type { ComTeam } from "@workspace/store/types/comms.ts";
-import { useCheckInTimer } from "./useCheckInTimer";
 import { Button } from "@workspace/ui/components/button";
+import { CheckInTimerBadge } from "@workspace/ui/components/dispatch/CheckInTimerBadge";
+import { EmptyText } from "@workspace/ui/components/status-text";
 
 type Props = {
   teams: ComTeam[];
   defaultCheckInMinutes: number;
-  onCheckIn?: (id: string) => void | Promise<void>;
+  onCheckIn?: (id: string) => void | Promise<unknown>;
 };
 
-function TimerBadge({ lastCheckIn, intervalMinutes }: { lastCheckIn: string | null | undefined; intervalMinutes: number }) {
-  const { status, percent, overdueMinutes } = useCheckInTimer({ lastCheckIn, intervalMinutes });
-  const color = status === 'green' ? 'bg-emerald-500/15 text-emerald-800 border-emerald-200'
-    : status === 'yellow' ? 'bg-amber-500/15 text-amber-900 border-amber-200'
-    : 'bg-red-500/15 text-red-900 border-red-200';
-  // Countdown minutes remaining until next check-in (non-negative)
-  const remainingMinutes = Math.max(0, Math.ceil(intervalMinutes * (1 - percent)));
-  const label = status === 'red'
-    ? `Overdue by ${Math.max(1, Math.ceil(overdueMinutes))}m`
-    : remainingMinutes === 0
-      ? 'Due now'
-      : `Due in ${remainingMinutes}m`;
-  return (
-    <span
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs ${color}`}
-      title={lastCheckIn ? `Last check-in: ${new Date(lastCheckIn).toLocaleString()}` : 'No previous check-in'}
-    >
-      {label}
-    </span>
-  );
-}
-
 export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn }: Props) {
-  // Persist a local default interval in 10-minute increments
   const [localDefault, setLocalDefault] = React.useState<number>(() => {
     if (typeof window === 'undefined') return defaultCheckInMinutes;
     const stored = window.localStorage.getItem('comms.defaultCheckInMinutes');
@@ -43,7 +21,6 @@ export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn }
   });
 
   React.useEffect(() => {
-    // If the prop changes (e.g., admin updates), sync when no local override exists
     if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem('comms.defaultCheckInMinutes');
     if (!stored) setLocalDefault(defaultCheckInMinutes);
@@ -66,20 +43,14 @@ export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn }
         <span className="text-xs text-muted-foreground">Default interval:</span>
         <div className="flex flex-wrap gap-1.5">
           {choices.map((v) => (
-            <Button
-              key={v}
-              size="sm"
-              variant={localDefault === v ? 'default' : 'outline'}
-              onClick={() => setDefault(v)}
-              aria-label={`Set default check-in to ${v} minutes`}
-            >
+            <Button key={v} size="sm" variant={localDefault === v ? 'default' : 'outline'} onClick={() => setDefault(v)} aria-label={`Set default check-in to ${v} minutes`}>
               {v}m
             </Button>
           ))}
         </div>
       </div>
       {teams.length === 0 ? (
-        <p className="text-muted-foreground">No teams configured.</p>
+        <EmptyText>No teams configured.</EmptyText>
       ) : (
         teams.map((t) => {
           const interval = t.default_check_in_interval_minutes ?? localDefault;
@@ -94,7 +65,7 @@ export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn }
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TimerBadge lastCheckIn={t.last_check_in ?? undefined} intervalMinutes={interval} />
+                  <CheckInTimerBadge lastCheckIn={t.last_check_in ?? undefined} intervalMinutes={interval} mode="due" />
                   <Button size="sm" variant="outline" onClick={() => onCheckIn?.(t.id)} aria-label={`Check in team ${t.name}`}>
                     Check In
                   </Button>

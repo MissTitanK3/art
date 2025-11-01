@@ -5,7 +5,7 @@ import type { ComLog, CommsImportance, CommsMessageType } from "@workspace/store
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@workspace/ui/components/select";
+import { CommsImportanceSelect, CommsTypeSelect } from "@workspace/ui/components/dispatch/comms-selects";
 
 type Props = {
   logs: ComLog[];
@@ -19,12 +19,7 @@ export function CommsLogView({ logs, onAddLog }: Props) {
 
   const submit = () => {
     if (!message.trim()) return;
-    onAddLog({
-      message: message.trim(),
-      message_type: type,
-      importance,
-      tags: [],
-    });
+    onAddLog({ message: message.trim(), message_type: type, importance, tags: [] });
     setMessage("");
   };
 
@@ -36,22 +31,8 @@ export function CommsLogView({ logs, onAddLog }: Props) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <Select value={type} onValueChange={(v) => setType(v as CommsMessageType)}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Routine">Routine</SelectItem>
-                <SelectItem value="Priority">Priority</SelectItem>
-                <SelectItem value="Emergency">Emergency</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={importance} onValueChange={(v) => setImportance(v as CommsImportance)}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Importance" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Normal">Normal</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-              </SelectContent>
-            </Select>
+            <CommsTypeSelect value={type} onChange={setType} className="w-[160px]" />
+            <CommsImportanceSelect value={importance} onChange={setImportance} className="w-[160px]" />
           </div>
           <div className="mt-2 grid gap-2">
             <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Log message..." />
@@ -81,3 +62,6 @@ export function CommsLogView({ logs, onAddLog }: Props) {
     </div>
   );
 }
+
+export default CommsLogView;
+

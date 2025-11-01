@@ -78,15 +78,24 @@ export default function AdminPage() {
     [dispatches],
   );
 
-  const trainingCounts = React.useMemo(() => {
-    const all = ([] as AcademyTrainingSession[]).filter((s) => s.status !== "archived");
-    const completed = all.filter((s) => s.status === "completed").length;
-    const scheduled = all.filter((s) => s.status === "scheduled").length;
-    const inProgress = all.filter((s) => s.status === "in_progress").length;
-    return { all: all.length, completed, scheduled, inProgress };
+  const [trainingStats, setTrainingStats] = React.useState<{ totalActive: number; completed: number; inProgress: number; scheduled: number; completionPct: number }>({ totalActive: 0, completed: 0, inProgress: 0, scheduled: 0, completionPct: 0 });
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/academy/stats', { credentials: 'include', signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { stats } = await res.json();
+        if (stats) setTrainingStats(stats);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => controller.abort();
   }, []);
 
-  const trainingPct = percent(trainingCounts.completed, trainingCounts.all);
+  const trainingPct = trainingStats.completionPct;
 
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
   const { reports, idMap } = React.useMemo(() => toWatchReports(dispatches), [dispatches]);
@@ -96,10 +105,10 @@ export default function AdminPage() {
     if (id) router.push(`/dispatches/submission/${id}`);
   };
 
+  const remaining = Math.max(0, trainingStats.totalActive - trainingStats.completed);
   const chartData = [
-    { name: "Completed", value: trainingCounts.completed },
-    { name: "In Progress", value: trainingCounts.inProgress },
-    { name: "Scheduled", value: trainingCounts.scheduled },
+    { name: "Completed", value: trainingStats.completed },
+    { name: "Remaining", value: remaining },
   ];
 
   return (
@@ -172,19 +181,18 @@ export default function AdminPage() {
           <CardHeader>
             <CardTitle>Training Progress</CardTitle>
             <CardDescription>
-              {trainingCounts.completed} completed of {trainingCounts.all} active sessions
+              {trainingStats.completed} completed of {trainingStats.totalActive} active sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
             <DonutChart
               id="training-progress"
-              className="w-full h-[220px]"
+              className="w-full h-[280px] aspect-auto"
               data={chartData}
               config={{
                 // Use standard colors (hex/HSL/RGB)
                 Completed: { label: "Completed", color: "#10b981" }, // emerald-500
-                "In Progress": { label: "In Progress", color: "#f59e0b" }, // amber-500
-                Scheduled: { label: "Scheduled", color: "#3b82f6" }, // blue-500
+                Remaining: { label: "Remaining", color: "#3b82f6" }, // blue-500
               }}
               innerRadius={50}
               outerRadius={80}

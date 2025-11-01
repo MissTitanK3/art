@@ -6,11 +6,12 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import { EmptyText } from "@workspace/ui/components/status-text";
 
 type Props = {
   teams: ComTeam[];
   channels: ComChannel[];
-  onCreateTeam?: (team: Omit<ComTeam, 'id'>) => void | Promise<void>;
+  onCreateTeam?: (team: Omit<ComTeam, 'id'>) => void | Promise<unknown>;
   onUpdateTeam?: (id: string, patch: Partial<ComTeam>) => void | Promise<void>;
   onDeleteTeam?: (id: string) => void | Promise<void>;
 };
@@ -101,7 +102,7 @@ export function CommsTeamList({ teams, channels, onCreateTeam, onUpdateTeam, onD
         )}
       </div>
       {teams.length === 0 ? (
-        <p className="text-muted-foreground">No teams configured.</p>
+        <EmptyText>No teams configured.</EmptyText>
       ) : (
         teams.map((t) => {
           const teamChannels = channels.filter((c) => c.team_id === t.id);
@@ -182,3 +183,5 @@ export function CommsTeamList({ teams, channels, onCreateTeam, onUpdateTeam, onD
     </div>
   );
 }
+
+export default CommsTeamList;

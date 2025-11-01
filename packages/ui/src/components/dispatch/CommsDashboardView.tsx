@@ -1,46 +1,64 @@
 "use client";
 
 import * as React from "react";
+import type {
+  ComTeam,
+  ComChannel,
+  ComBriefing,
+  ComLog,
+  ComAlert,
+} from "@workspace/store/types/comms.ts";
 import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/ui/components/tabs";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
-import { CommsTeamList } from "./CommsTeamList";
-import { CommsTeamCheckInList } from "./CommsTeamCheckInList";
-import { CommsLogView } from "./CommsLogView";
-import { CommsScratchpad } from "./CommsScratchpad";
-import { CommsMap } from "./CommsMap";
-import { CommsBriefing } from "./CommsBriefing";
-import { CommsAlertsCard } from "./CommsAlertsCard";
-import { useCommsData } from "./useCommsData";
+import { CommsTeamList } from "@workspace/ui/components/dispatch/CommsTeamList";
+import { CommsTeamCheckInList } from "@workspace/ui/components/dispatch/CommsTeamCheckInList";
+import { CommsLogView } from "@workspace/ui/components/dispatch/CommsLogView";
+import { CommsScratchpad } from "@workspace/ui/components/dispatch/CommsScratchpad";
+import { CommsBriefing } from "@workspace/ui/components/dispatch/CommsBriefing";
+import { CommsAlertsCard } from "@workspace/ui/components/dispatch/CommsAlertsCard";
 
 type Props = {
-  eventId: string;
+  teams: ComTeam[];
+  logs: ComLog[];
+  channels: ComChannel[];
+  briefing: ComBriefing | null;
+  alerts: ComAlert[] | null | undefined;
+  globalCheckInMinutes?: number;
+  setGlobalCheckInMinutes: (n: number) => void;
+  addLog: React.ComponentProps<typeof CommsLogView>["onAddLog"];
+  checkInTeam: (id: string) => void | Promise<unknown>;
+  createTeam?: (team: Omit<ComTeam, 'id'>) => void | Promise<unknown>;
+  updateTeam?: (id: string, patch: Partial<ComTeam>) => void | Promise<void>;
+  deleteTeam?: (id: string) => void | Promise<void>;
+  upsertBriefing?: (patch: Partial<ComBriefing>) => void | Promise<void>;
+  createAlert?: (input: { direction: string; description: string }) => Promise<string> | string | void;
+  updateAlert?: (id: string, patch: Partial<{ direction: string; description: string }>) => Promise<void> | void;
+  deleteAlert?: (id: string) => Promise<void> | void;
 };
 
-export function CommsDashboard({ eventId }: Props) {
-  const {
-    teams,
-    logs,
-    channels,
-    briefing,
-    alerts,
-    setGlobalCheckInMinutes,
-    globalCheckInMinutes,
-    addLog,
-    checkInTeam,
-    createTeam,
-    updateTeam,
-    deleteTeam,
-    upsertBriefing,
-    createAlert,
-    updateAlert,
-    deleteAlert,
-  } = useCommsData({ eventId });
-
+export function CommsDashboardView({
+  teams,
+  logs,
+  channels,
+  briefing,
+  alerts,
+  globalCheckInMinutes,
+  setGlobalCheckInMinutes,
+  addLog,
+  checkInTeam,
+  createTeam,
+  updateTeam,
+  deleteTeam,
+  upsertBriefing,
+  createAlert,
+  updateAlert,
+  deleteAlert,
+}: Props) {
   const [checkInInput, setCheckInInput] = React.useState<string>(
-    globalCheckInMinutes?.toString() ?? "60",
+    (globalCheckInMinutes ?? 60).toString(),
   );
 
   const applyGlobalInterval = () => {
@@ -59,9 +77,9 @@ export function CommsDashboard({ eventId }: Props) {
             <CommsTeamList
               teams={teams}
               channels={channels}
-              onCreateTeam={async (t) => { await createTeam(t as any); }}
-              onUpdateTeam={async (id, patch) => { await updateTeam(id, patch as any); }}
-              onDeleteTeam={async (id) => { await deleteTeam(id); }}
+              onCreateTeam={createTeam}
+              onUpdateTeam={updateTeam}
+              onDeleteTeam={deleteTeam}
             />
           </CardContent>
         </Card>
@@ -89,7 +107,7 @@ export function CommsDashboard({ eventId }: Props) {
             <CommsTeamCheckInList
               teams={teams}
               defaultCheckInMinutes={globalCheckInMinutes ?? 60}
-              onCheckIn={async (id) => { await checkInTeam(id); }}
+              onCheckIn={checkInTeam}
             />
           </CardContent>
         </Card>
@@ -104,14 +122,14 @@ export function CommsDashboard({ eventId }: Props) {
             <TabsTrigger value="scratch">Scratchpad</TabsTrigger>
           </TabsList>
           <TabsContent value="briefing" className="flex-1">
-            <CommsBriefing briefing={briefing} onSave={async (patch) => { await upsertBriefing(patch as any); }} />
+            <CommsBriefing briefing={briefing} onSave={upsertBriefing} />
           </TabsContent>
           <TabsContent value="alerts" className="flex-1">
             <CommsAlertsCard
-              alerts={alerts?.map(a => ({ id: a.id, direction: a.direction, description: a.description }))}
-              onCreateAlert={async (input) => { return await createAlert(input); }}
-              onUpdateAlert={async (id, patch) => { await updateAlert(id, patch as any); }}
-              onDeleteAlert={async (id) => { await deleteAlert(id); }}
+              alerts={alerts?.map((a) => ({ id: a.id, direction: a.direction, description: a.description }))}
+              onCreateAlert={createAlert}
+              onUpdateAlert={updateAlert}
+              onDeleteAlert={deleteAlert}
             />
           </TabsContent>
           <TabsContent value="log" className="flex-1">
@@ -126,4 +144,4 @@ export function CommsDashboard({ eventId }: Props) {
   );
 }
 
-export default CommsDashboard;
+export default CommsDashboardView;

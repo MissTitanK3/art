@@ -3,22 +3,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card';
 import { Badge } from '@workspace/ui/components/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@workspace/ui/components/select';
+import { PageHeader } from '@workspace/ui/components/page-header';
+import { LoadingText, ErrorText, EmptyText } from '@workspace/ui/components/status-text';
+import { safeErrorMessage } from '@workspace/ui/lib/http';
+import { BugAreaSelect, BugStatusFilterSelect } from '@workspace/ui/components/admin/bug-report-selects';
+import type { BugArea, BugPriority, BugStatus } from '@workspace/ui/components/admin/bug-report-selects';
+import { BugPriorityBadge } from '@workspace/ui/components/admin/bug-report-badges';
 
 type ReportRow = {
   id: string;
   created_at: string;
   created_by: string;
   title: string;
-  area: string;
-  status: string;
-  priority: string | null;
+  area: BugArea;
+  status: BugStatus;
+  priority: BugPriority;
 };
 
 export default function AdminBugReportsPage() {
   const [rows, setRows] = useState<ReportRow[]>([]);
-  const [status, setStatus] = useState<string | undefined>(undefined);
-  const [area, setArea] = useState<string | undefined>(undefined);
+  const [status, setStatus] = useState<BugStatus | undefined>(undefined);
+  const [area, setArea] = useState<BugArea | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,10 +35,7 @@ export default function AdminBugReportsPage() {
       if (status) params.set('status', status);
       if (area) params.set('area', area);
       const res = await fetch(`/api/admin/bug-reports?${params.toString()}`, { credentials: 'include', signal });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
       const j = (await res.json()) as { reports?: ReportRow[] };
       setRows(Array.isArray(j.reports) ? j.reports : []);
     } catch (e: any) {
@@ -62,9 +64,7 @@ export default function AdminBugReportsPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Bug Reports</h1>
-      </div>
+      <PageHeader title="Bug Reports" />
 
       <Card>
         <CardHeader>
@@ -73,45 +73,8 @@ export default function AdminBugReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 items-center">
-            <div className="min-w-48">
-              <Select onValueChange={(v) => setStatus(v === 'all' ? undefined : v)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="triage">Triage</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="min-w-48">
-              <Select onValueChange={(v) => setArea(v === 'all' ? undefined : v)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Area" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="create">Create</SelectItem>
-                  <SelectItem value="dispatches">Dispatch Map</SelectItem>
-                  <SelectItem value="watch">Community Watch</SelectItem>
-                  <SelectItem value="schedules">Coverage Schedules</SelectItem>
-                  <SelectItem value="pods">Pods</SelectItem>
-                  <SelectItem value="academy">Academy</SelectItem>
-                  <SelectItem value="intents">Intents</SelectItem>
-                  <SelectItem value="roles">Roles</SelectItem>
-                  <SelectItem value="impact">Impact</SelectItem>
-                  <SelectItem value="missing-persons">Missing Persons</SelectItem>
-                  <SelectItem value="profile">My Profile</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="auth">Auth / Sign-in</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <BugStatusFilterSelect value={status} onChange={setStatus} />
+            <BugAreaSelect value={area} onChange={setArea} />
             <button className="text-sm underline text-muted-foreground" onClick={() => { setStatus(undefined); setArea(undefined); }}>
               Reset
             </button>
@@ -119,8 +82,8 @@ export default function AdminBugReportsPage() {
         </CardContent>
       </Card>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-      {loading && <div className="text-muted-foreground text-sm">Loading…</div>}
+      {error && <ErrorText>{error}</ErrorText>}
+      {loading && <LoadingText />}
 
       <div className="grid gap-4">
         {grouped.map(([stat, items]) => (
@@ -155,19 +118,7 @@ export default function AdminBugReportsPage() {
                           </Badge>
                         </td>
                         <td className="py-2 pr-4 align-top">
-                          {r.priority ? (
-                            r.priority === 'critical' ? (
-                              <Badge variant="destructive">Critical</Badge>
-                            ) : r.priority === 'high' ? (
-                              <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">High</Badge>
-                            ) : r.priority === 'medium' ? (
-                              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">Medium</Badge>
-                            ) : (
-                              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">Low</Badge>
-                            )
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
+                          <BugPriorityBadge priority={r.priority} />
                         </td>
                         <td className="py-2 pr-4 align-top">
                           <span className="font-mono text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
@@ -184,7 +135,7 @@ export default function AdminBugReportsPage() {
           </Card>
         ))}
         {rows.length === 0 && !loading && !error && (
-          <div className="text-muted-foreground text-sm">No reports found.</div>
+          <EmptyText>No reports found.</EmptyText>
         )}
       </div>
     </section>

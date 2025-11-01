@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card';
 import { Input } from '@workspace/ui/components/input';
 import { Label } from '@workspace/ui/components/label';
 import { Textarea } from '@workspace/ui/components/textarea';
 import { Button } from '@workspace/ui/components/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@workspace/ui/components/select';
+import { PageHeader } from '@workspace/ui/components/page-header';
+import { FormSectionCard } from '@workspace/ui/components/form-section-card';
+import { ErrorText, LoadingText, EmptyText } from '@workspace/ui/components/status-text';
+import { safeErrorMessage } from '@workspace/ui/lib/http';
+import { BugPrioritySelect, BugStatusSelect } from '@workspace/ui/components/admin/bug-report-selects';
+import type { BugPriority, BugStatus } from '@workspace/ui/components/admin/bug-report-selects';
 
 type Report = {
   id: string;
@@ -18,8 +22,8 @@ type Report = {
   steps?: string | null;
   expected?: string | null;
   actual?: string | null;
-  status: string;
-  priority?: string | null;
+  status: BugStatus;
+  priority?: BugPriority;
   metadata?: Record<string, any> | null;
 };
 
@@ -38,10 +42,7 @@ export default function AdminBugReportDetailPage() {
     const load = async () => {
       try {
         const res = await fetch(`/api/admin/bug-reports/${id}`, { credentials: 'include', signal: controller.signal });
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          throw new Error(j?.error || `HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(await safeErrorMessage(res));
         const j = (await res.json()) as { report?: Report };
         if (!j.report) throw new Error('Not found');
         setReport(j.report);
@@ -68,10 +69,7 @@ export default function AdminBugReportDetailPage() {
         credentials: 'include',
         body: JSON.stringify(payload),
       });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
     } catch (e: any) {
       setError(e?.message || 'Failed to save');
       return;
@@ -86,10 +84,7 @@ export default function AdminBugReportDetailPage() {
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/bug-reports/${report.id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(await safeErrorMessage(res));
       router.push('/admin/bug-reports');
     } catch (e: any) {
       setError(e?.message || 'Failed to delete');
@@ -98,78 +93,52 @@ export default function AdminBugReportDetailPage() {
     }
   };
 
-  if (loading) return <div className="text-muted-foreground text-sm">Loading…</div>;
-  if (error) return <div className="text-red-600 text-sm">{String(error)}</div>;
-  if (!report) return <div className="text-muted-foreground text-sm">Not found</div>;
+  if (loading) return <LoadingText />;
+  if (error) return <ErrorText>{String(error)}</ErrorText>;
+  if (!report) return <EmptyText>Not found</EmptyText>;
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Bug Report</h1>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => router.push('/admin/bug-reports')}>Back</Button>
-          <Button variant="destructive" onClick={remove} disabled={deleting}>{deleting ? 'Deleting…' : 'Delete'}</Button>
-          <Button onClick={update} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Bug Report"
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => router.push('/admin/bug-reports')}>Back</Button>
+            <Button variant="destructive" onClick={remove} disabled={deleting}>{deleting ? 'Deleting…' : 'Delete'}</Button>
+            <Button onClick={update} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+          </>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit</CardTitle>
-          <CardDescription>Update status, priority, and details</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 max-w-2xl">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" value={report.title} onChange={(e) => setReport({ ...report, title: e.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="area">Area</Label>
-              <Input id="area" value={report.area} onChange={(e) => setReport({ ...report, area: e.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <Label>Status</Label>
-              <Select value={report.status} onValueChange={(v) => setReport({ ...report, status: v })}>
-                <SelectTrigger className="w-60"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="triage">Triage</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>Priority</Label>
-              <Select value={report.priority ?? 'none'} onValueChange={(v) => setReport({ ...report, priority: v === 'none' ? null : v })}>
-                <SelectTrigger className="w-60"><SelectValue placeholder="None" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="steps">Steps to reproduce</Label>
-              <Textarea id="steps" rows={4} value={report.steps ?? ''} onChange={(e) => setReport({ ...report, steps: e.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="expected">Expected</Label>
-              <Textarea id="expected" rows={3} value={report.expected ?? ''} onChange={(e) => setReport({ ...report, expected: e.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="actual">Actual</Label>
-              <Textarea id="actual" rows={3} value={report.actual ?? ''} onChange={(e) => setReport({ ...report, actual: e.target.value })} />
-            </div>
-            <div className="text-xs text-muted-foreground">Reported: {new Date(report.created_at).toLocaleString()} · Reporter: {report.created_by.slice(0,8)}…</div>
-          </div>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Edit"
+        description="Update status, priority, and details"
+        contentClassName="grid gap-4 max-w-2xl"
+      >
+        <div className="grid gap-2">
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" value={report.title} onChange={(e) => setReport({ ...report, title: e.target.value })} />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="area">Area</Label>
+          <Input id="area" value={report.area} onChange={(e) => setReport({ ...report, area: e.target.value })} />
+        </div>
+        <BugStatusSelect value={report.status} onChange={(v) => setReport({ ...report, status: v })} />
+        <BugPrioritySelect value={report.priority ?? null} onChange={(v) => setReport({ ...report, priority: v })} />
+        <div className="grid gap-2">
+          <Label htmlFor="steps">Steps to reproduce</Label>
+          <Textarea id="steps" rows={4} value={report.steps ?? ''} onChange={(e) => setReport({ ...report, steps: e.target.value })} />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="expected">Expected</Label>
+          <Textarea id="expected" rows={3} value={report.expected ?? ''} onChange={(e) => setReport({ ...report, expected: e.target.value })} />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="actual">Actual</Label>
+          <Textarea id="actual" rows={3} value={report.actual ?? ''} onChange={(e) => setReport({ ...report, actual: e.target.value })} />
+        </div>
+        <div className="text-xs text-muted-foreground">Reported: {new Date(report.created_at).toLocaleString()} · Reporter: {report.created_by.slice(0, 8)}…</div>
+      </FormSectionCard>
     </section>
   );
 }

@@ -19,33 +19,16 @@ type Props = {
 type CustomAlert = { id: string; direction: string; description: string };
 
 const EXAMPLES: CustomAlert[] = [
-  {
-    id: 'ex-consolidate',
-    direction: 'Consolidate ×3',
-    description: 'Consolidate, Consolidate, Consolidate — {location}.',
-  },
-  {
-    id: 'ex-break',
-    direction: 'Break ×3 (urgent)',
-    description: 'Break, Break, Break — {location}.',
-  },
-  {
-    id: 'ex-silence',
-    direction: 'Radio silence',
-    description: 'All stations, radio silence — reason: {location}.',
-  },
-  {
-    id: 'ex-hail',
-    direction: 'Hailing format',
-    description: 'Recipient, this is {your_callsign}, over.',
-  },
+  { id: 'ex-consolidate', direction: 'Consolidate ×3', description: 'Consolidate, Consolidate, Consolidate — {location}.' },
+  { id: 'ex-break', direction: 'Break ×3 (urgent)', description: 'Break, Break, Break — {location}.' },
+  { id: 'ex-silence', direction: 'Radio silence', description: 'All stations, radio silence — reason: {location}.' },
+  { id: 'ex-hail', direction: 'Hailing format', description: 'Recipient, this is {your_callsign}, over.' },
 ];
 
 export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAlert, onDeleteAlert, storageKey = 'comms-alerts:default' }: Props) {
   const [localAlerts, setLocalAlerts] = React.useState<CustomAlert[]>(EXAMPLES);
   const useExternal = Array.isArray(extAlerts);
 
-  // Load from localStorage (scoped by storageKey)
   React.useEffect(() => {
     if (useExternal) return;
     try {
@@ -54,18 +37,16 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
         const parsed = JSON.parse(raw) as CustomAlert[];
         if (Array.isArray(parsed)) setLocalAlerts(parsed);
       }
-    } catch { /* noop */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {}
   }, [storageKey, useExternal]);
 
-  // Persist to localStorage when alerts change
   React.useEffect(() => {
     if (useExternal) return;
     try {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(storageKey, JSON.stringify(localAlerts));
       }
-    } catch { /* noop */ }
+    } catch {}
   }, [localAlerts, storageKey, useExternal]);
 
   const addAlert = async () => {
@@ -92,7 +73,6 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
   const resetExamples = async () => {
     const exampleSet = EXAMPLES.map((e) => ({ ...e, id: crypto.randomUUID() }));
     if (useExternal && onDeleteAlert && onCreateAlert && Array.isArray(extAlerts)) {
-      // naive reset: delete all, then insert examples
       await Promise.all(extAlerts.map((a) => onDeleteAlert(a.id)));
       for (const ex of exampleSet) {
         await onCreateAlert({ direction: ex.direction, description: ex.description });
@@ -123,20 +103,11 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div className="grid gap-1">
                     <Label>Direction</Label>
-                    <Input
-                      placeholder="e.g., Consolidate ×3"
-                      value={a.direction}
-                      onChange={(e) => void updateAlert(a.id, { direction: e.target.value })}
-                    />
+                    <Input placeholder="e.g., Consolidate ×3" value={a.direction} onChange={(e) => void updateAlert(a.id, { direction: e.target.value })} />
                   </div>
                   <div className="grid gap-1">
                     <Label>Description</Label>
-                    <Textarea
-                      placeholder="e.g., Consolidate, Consolidate, Consolidate — {location}."
-                      value={a.description}
-                      onChange={(e) => void updateAlert(a.id, { description: e.target.value })}
-                      rows={2}
-                    />
+                    <Textarea placeholder="e.g., Consolidate, Consolidate, Consolidate — {location}." value={a.description} onChange={(e) => void updateAlert(a.id, { description: e.target.value })} rows={2} />
                   </div>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -153,10 +124,10 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
         <div className="grid gap-2">
           <p className="font-medium">Standard radio identification format</p>
           <p className="text-muted-foreground">
-            To identify yourself on a radio, state the recipient’s call sign followed by “this is” and your own call sign, then
-            “over”. For example: “Nighthawk, this is Drifter 23, over”. Use the recipient’s call sign first, then your call sign to
-            make it clear who you are calling and who is doing the calling. In an event context, use your team’s established call
-            signs and procedures for the specific situation.
+            To identify yourself on a radio, state the recipient’s call sign followed by “this is” and your own call sign, then “over”.
+            For example: “Nighthawk, this is Drifter 23, over”. Use the recipient’s call sign first, then your call sign to make it
+            clear who you are calling and who is doing the calling. In an event context, use your team’s established call signs and
+            procedures for the specific situation.
           </p>
           <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
             <li>Identify the recipient: state their call sign.</li>

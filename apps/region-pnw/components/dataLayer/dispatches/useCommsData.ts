@@ -131,10 +131,9 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
   }, []);
 
   // Teams CRUD
-  const createTeam = React.useCallback(async (input: Omit<ComTeam, 'id' | 'created_at' | 'updated_at'>) => {
+  const createTeam = React.useCallback(async (input: Omit<ComTeam, 'id'>) => {
     const id = crypto.randomUUID();
-    const record: any = { id, ...input };
-    setTeams((prev) => [...prev, { ...(record as ComTeam) }]);
+    setTeams((prev) => [...prev, { id, ...input } as ComTeam]);
     const client = clientRef.current ?? getSupabaseBrowserClient();
     const { error } = await client.from('com_teams').insert({
       id,
@@ -293,3 +292,4 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     deleteAlert,
   } as const;
 }
+
