@@ -27,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/component
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@workspace/ui/components/collapsible";
 import { Menu, ChevronRight, ChevronLeft, ChevronDown, Circle } from "lucide-react";
 import ThemeToggle from "./ThemeToggle.tsx";
+import { Bell } from "@workspace/ui/components/Bell";
 import { LinkLike } from "@workspace/store/types/global.ts";
 import { canSee, GlobalNavConfig, isActive, NavItem, NavRole } from "@workspace/store/utils/nav";
 
@@ -172,7 +173,6 @@ function MobileTopBar({
         <BrandSymbol brand={config.brand} />
         <span className="truncate text-sm font-semibold">{config.brand.name}</span>
       </LinkComponent>
-      <ThemeToggle />
       {!isAuthenticated ? (
         <a href="/sign-in">
           <Button variant="secondary" size="sm">
@@ -180,7 +180,10 @@ function MobileTopBar({
           </Button>
         </a>
       ) : null}
-
+      <div className="flex items-center gap-1">
+        <Bell popoverSide="bottom" popoverAlign="end" />
+        <ThemeToggle />
+      </div>
     </div>
   );
 }
@@ -214,6 +217,7 @@ function DesktopSideNav({
       )}
     >
       <div className="flex h-10 items-center gap-2 border-b border-sidebar-border px-2">
+
         <LinkComponent
           href={config.brand.href ?? "/"}
           className={cn(
@@ -238,6 +242,18 @@ function DesktopSideNav({
         </Button>
       </div>
       <ScrollArea className="flex-1">
+        <div className={cn("mt-1 flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-start")}>
+          <ThemeToggle />
+          <Bell popoverSide="right" popoverAlign="start" />
+          {!isAuthenticated ? (
+            <a href="/sign-in">
+              <Button variant="secondary" size="sm">
+                Sign in
+              </Button>
+            </a>
+          ) : null}
+        </div>
+        <Separator className="my-3 bg-sidebar-border" />
         <div
           className={cn(
             "flex flex-col space-y-1 py-3",
@@ -271,19 +287,10 @@ function DesktopSideNav({
                 />
               ))}
             </div>
-            <Separator className="my-3 bg-sidebar-border" />
+
           </>
         ) : null}
-        <div className={cn("mt-1 flex", collapsed ? "justify-center" : "justify-start")}>
-          <ThemeToggle />
-          {!isAuthenticated ? (
-            <a href="/sign-in">
-              <Button variant="secondary" size="sm">
-                Sign in
-              </Button>
-            </a>
-          ) : null}
-        </div>
+
       </div>
     </aside>
   );

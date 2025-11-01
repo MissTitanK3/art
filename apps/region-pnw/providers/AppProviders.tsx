@@ -7,6 +7,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import type { AuthSession } from "@/lib/auth/types";
 import { RegionProvider } from "@/providers/RegionProvider";
 import { AutoCreateProfile } from "@/components/client/auth/AutoCreateProfile";
+import { NotificationsRealtime } from "@/providers/NotificationsRealtime";
 
 type AppProvidersProps = {
   children: React.ReactNode;
@@ -33,6 +34,8 @@ export function AppProviders({ children, initialSession }: AppProvidersProps) {
           duration={4000} // default auto-dismiss (ms)
           theme="system"
         />
+        {/* Optional: live broadcast notifications via Supabase Realtime */}
+        <NotificationsRealtime />
         <AutoCreateProfile />
         {children}
         </NextThemesProvider>
