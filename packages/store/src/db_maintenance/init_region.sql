@@ -334,6 +334,7 @@
     agency_other TEXT,
     location JSONB,
     media_url TEXT,
+    vet_method TEXT,
     officer_moving BOOLEAN,
     officer_direction TEXT,
     lights_on BOOLEAN,

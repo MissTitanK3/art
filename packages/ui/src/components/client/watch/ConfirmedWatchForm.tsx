@@ -80,11 +80,16 @@ type Props = {
 };
 
 export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabaseAnonKey, className }: Props) {
+  // Helpers for date input formatting (for type="datetime-local")
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  const toLocalInputValue = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
   const [agencyType, setAgencyType] = React.useState<string[]>([]);
   const [agencyOther, setAgencyOther] = React.useState("");
   const [mediaUrl, setMediaUrl] = React.useState("");
   const [lat, setLat] = React.useState<number | null>(null);
   const [lng, setLng] = React.useState<number | null>(null);
+  const [reportedAt, setReportedAt] = React.useState<string>(() => toLocalInputValue(new Date()));
   const [lightsOn, setLightsOn] = React.useState(false);
   const [sirensOn, setSirensOn] = React.useState(false);
   const [selectedDirection, setSelectedDirection] = React.useState<Direction | null>(null);
@@ -132,6 +137,7 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
     setVetMethod("");
     setVetNotes("");
     setTest(false);
+    setReportedAt(toLocalInputValue(new Date()));
   }, []);
 
   const addAgencyType = (value: string) => setAgencyType((prev) => (prev.includes(value) ? prev : [...prev, value]));
@@ -149,8 +155,16 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
 
     const moving = stationary ? false : selectedDirection ? true : null;
 
+    let timestampIso = new Date().toISOString();
+    try {
+      if (reportedAt) {
+        const d = new Date(reportedAt);
+        if (!isNaN(d.getTime())) timestampIso = d.toISOString();
+      }
+    } catch {}
+
     const payload: ConfirmedWatchPayload = {
-      timestamp: new Date().toISOString(),
+      timestamp: timestampIso,
       agency_type: agencyType.length ? agencyType : null,
       agency_other: agencyOther || null,
       location: { lat, lng },
@@ -183,15 +197,31 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
             body: JSON.stringify([body]),
           });
 
+        // Build DB payload with only columns that exist on public.wizard
+        const dbPayload = {
+          timestamp: payload.timestamp,
+          agency_type: payload.agency_type,
+          agency_other: payload.agency_other,
+          location: payload.location,
+          media_url: payload.media_url,
+          vet_method: payload.vet_method,
+          officer_moving: payload.officer_moving,
+          officer_direction: payload.officer_direction,
+          lights_on: payload.lights_on,
+          sirens_on: payload.sirens_on,
+          submitted_by: payload.submitted_by,
+          test: payload.test,
+        } as const;
+
         // Try insert including submitted_by; fallback to omitting if FK fails
-        let res = await ins(payload);
+        let res = await ins(dbPayload);
         if (!res.ok && payload.submitted_by) {
           try {
             const err = await res.json().catch(() => ({}));
             const msg = (err && (err.message || err.error)) || `${res.status} ${res.statusText}`;
             const isFk = typeof msg === "string" && /foreign key|constraint|uuid/i.test(msg);
             if (isFk) {
-              const { submitted_by, ...rest } = payload as any;
+              const { submitted_by, ...rest } = dbPayload as any;
               res = await ins(rest);
             }
           } catch {}
@@ -219,6 +249,16 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
       {error && <div className="text-destructive text-sm">{error}</div>}
       {success && <div className="text-emerald-600 text-sm">{success}</div>}
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="reported_at">Reported Date/Time</Label>
+          <Input
+            id="reported_at"
+            type="datetime-local"
+            value={reportedAt}
+            onChange={(e) => setReportedAt(e.target.value)}
+          />
+          <div className="text-xs text-muted-foreground">Defaults to now; adjust if reporting a past event.</div>
+        </div>
         <div className="space-y-2">
           <Label>Pin Location</Label>
           <div className="w-full rounded-md overflow-hidden border" style={{ height: 360, minHeight: 260 }}>
