@@ -11,6 +11,7 @@ export function DemoControls() {
         value={scenario}
         onChange={e => setScenario(e.target.value as any)}
         title="Load a pre-baked scenario"
+        aria-label="Scenario preset"
       >
         <option value="default">Scenario: Default</option>
         <option value="busy">Scenario: Busy board</option>

@@ -152,14 +152,10 @@ export function ProfileDataLayer() {
           }
         }}
         onDeleteProfile={async (id) => {
-          try {
-            clearProfile();
-            setRemoteProfile(null);
-            if (id) {
-              await deleteProfileFromDatabase(id, profileAdapter);
-            }
-          } catch (error) {
-            throw error;
+          clearProfile();
+          setRemoteProfile(null);
+          if (id) {
+            await deleteProfileFromDatabase(id, profileAdapter);
           }
         }}
       />

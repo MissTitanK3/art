@@ -24,7 +24,7 @@ type Report = {
   actual?: string | null;
   status: BugStatus;
   priority?: BugPriority;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 export default function AdminBugReportDetailPage() {
@@ -47,9 +47,10 @@ export default function AdminBugReportDetailPage() {
         if (!j.report) throw new Error('Not found');
         setReport(j.report);
         setError(null);
-      } catch (e: any) {
-        if (e?.name === 'AbortError') return;
-        setError(e?.message || 'Failed to load');
+      } catch (e: unknown) {
+        if (e && typeof e === 'object' && 'name' in e && (e as any).name === 'AbortError') return;
+        const message = e instanceof Error ? e.message : 'Failed to load';
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -62,7 +63,16 @@ export default function AdminBugReportDetailPage() {
     if (!report) return;
     setSaving(true);
     try {
-      const { id: _id, created_at: _a, created_by: _b, ...payload } = report;
+      const payload = {
+        title: report.title,
+        area: report.area,
+        steps: report.steps,
+        expected: report.expected,
+        actual: report.actual,
+        status: report.status,
+        priority: report.priority,
+        metadata: report.metadata ?? null,
+      };
       const res = await fetch(`/api/admin/bug-reports/${report.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -70,8 +80,9 @@ export default function AdminBugReportDetailPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
-    } catch (e: any) {
-      setError(e?.message || 'Failed to save');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to save';
+      setError(message);
       return;
     } finally {
       setSaving(false);
@@ -86,8 +97,9 @@ export default function AdminBugReportDetailPage() {
       const res = await fetch(`/api/admin/bug-reports/${report.id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       router.push('/admin/bug-reports');
-    } catch (e: any) {
-      setError(e?.message || 'Failed to delete');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to delete';
+      setError(message);
     } finally {
       setDeleting(false);
     }

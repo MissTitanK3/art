@@ -8,6 +8,18 @@ import type { NavRole } from "@workspace/store/utils/nav";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import type { Profile } from "@workspace/store/types/global.ts";
 
+const ALLOWED_ROLES: NavRole[] = [
+  "team_member",
+  "pod_leader",
+  "trainer",
+  "dispatcher_basic",
+  "dispatcher_verified",
+  "dispatcher_admin",
+  "admin",
+  "regional_admin",
+  "national_admin",
+];
+
 export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) {
   const { session, status } = useAuth();
   const { profileAdapter } = useRegionAdapters();
@@ -17,17 +29,7 @@ export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) 
 
   const isAuthenticated = Boolean(session);
   const baseRoleUnsafe = (session?.user?.role as any) ?? "team_member";
-  const allowedRoles: NavRole[] = [
-    "team_member",
-    "pod_leader",
-    "trainer",
-    "dispatcher_basic",
-    "dispatcher_verified",
-    "dispatcher_admin",
-    "admin",
-    "regional_admin",
-    "national_admin",
-  ];
+  const allowedRoles = ALLOWED_ROLES;
   const baseRole: NavRole = allowedRoles.includes(baseRoleUnsafe)
     ? (baseRoleUnsafe as NavRole)
     : "team_member"; // sanitize unknown auth roles like "authenticated"
@@ -59,9 +61,9 @@ export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) 
   // Prefer profile.access_role if it is a NavRole; else use baseRole
   const role: NavRole = React.useMemo(() => {
     const ar = profile?.access_role as any;
-    if (ar && allowedRoles.includes(ar)) return ar as NavRole;
+    if (ar && ALLOWED_ROLES.includes(ar)) return ar as NavRole;
     return baseRole;
-  }, [allowedRoles, baseRole, profile?.access_role]);
+  }, [baseRole, profile?.access_role]);
 
   // wait until auth initialized
   if (status === "loading") return null;

@@ -49,11 +49,9 @@ export function CreatePathwayClassDataLayer({ pathway }: CreatePathwayClassDataL
         } as const;
         const { error } = await client.from("academy_classes").upsert(row);
         if (error) {
-          // eslint-disable-next-line no-console
           console.warn("Failed to create academy class in Supabase", error);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("Error creating academy class in Supabase", e);
       }
 

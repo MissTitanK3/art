@@ -52,6 +52,7 @@ export function CountySelectDataLayer() {
   const didHydrateRef = React.useRef(false);
 
   // hydrate from store (unchanged logic, but guarded + merged)
+  const operatingSignature = (profile?.operating_counties ?? []).join('|');
   React.useEffect(() => {
     let alive = true;
 
@@ -103,7 +104,7 @@ export function CountySelectDataLayer() {
     })();
 
     return () => { alive = false; };
-  }, [session?.user?.id, profile?.user_id, profile?.operating_counties?.join('|'), profileAdapter, setOperating]);
+  }, [session?.user?.id, profile?.user_id, profile?.operating_counties, operatingSignature, profileAdapter, setOperating]);
 
   // --- helper: reconcile prev selection with possibly-delta "next"
   const reconcileSelection = React.useCallback(
@@ -183,7 +184,7 @@ export function CountySelectDataLayer() {
         setIsSaving(false);
       }
     })();
-  }, [profile?.id, router, selectedCounties, setOperating]);
+  }, [profile, profileAdapter, router, selectedCounties, setOperating]);
 
 
 

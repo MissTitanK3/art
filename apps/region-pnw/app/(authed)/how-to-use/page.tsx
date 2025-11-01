@@ -96,7 +96,6 @@ export default function HowToUsePlatformPage() {
     const fromUrl =
       (searchParams.get("section") as HowToSectionId) || DEFAULT_HOW_TO_SECTION_ID;
     setActive(fromUrl);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const selectSection = (id: HowToSectionId) => {

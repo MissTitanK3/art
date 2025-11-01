@@ -382,9 +382,9 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
 
         <div className="flex gap-3 flex-col md:flex-row md:items-end">
           <div>
-            <label className="text-sm font-medium">Level</label>
+            <span id="level-label" className="text-sm font-medium">Level</span>
             <Select value={level} onValueChange={(v) => setLevel(v as any)}>
-              <SelectTrigger>
+              <SelectTrigger aria-labelledby="level-label">
                 <SelectValue placeholder="info" />
               </SelectTrigger>
               <SelectContent>
@@ -396,9 +396,9 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium">Channel</label>
+            <span id="channel-label" className="text-sm font-medium">Channel</span>
             <Select value={channel} onValueChange={(v) => setChannel(v)}>
-              <SelectTrigger>
+              <SelectTrigger aria-labelledby="channel-label">
                 <SelectValue placeholder="system" />
               </SelectTrigger>
               <SelectContent>
@@ -416,8 +416,8 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
 
       {/* Presets */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Quick presets</label>
-        <div className="flex flex-wrap gap-2">
+        <span id="presets-label" className="text-sm font-medium">Quick presets</span>
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="presets-label">
           <Button type="button" variant="secondary" size="sm" onClick={() => applyPreset('verified_dispatchers')}>Verified Dispatchers only</Button>
           <Button type="button" variant="secondary" size="sm" onClick={() => applyPreset('all_dispatchers')}>All Dispatchers</Button>
           <Button type="button" variant="secondary" size="sm" onClick={() => applyPreset('admins_only')}>Admins only</Button>
@@ -429,7 +429,7 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
 
       {/* Recipients: role groups and specific roles */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Recipients</label>
+        <span className="text-sm font-medium">Recipients</span>
         {/* Multiselect combobox for specific access roles */}
         <AccessRoleMultiSelect
           value={selectedRoles}
@@ -447,13 +447,14 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
       <div className="flex gap-3 flex-col md:flex-row md:items-end">
         <div className="max-w-xs">
           <div className="flex items-center gap-2 justify-between">
-            <label className="text-sm font-medium">TTL (minutes)</label>
+            <label htmlFor="ttl-minutes" className="text-sm font-medium">TTL (minutes)</label>
             <div className="flex items-center gap-2">
               <label htmlFor="sticky" className="text-sm">Sticky (no TTL)</label>
               <Switch id="sticky" checked={sticky} onCheckedChange={setSticky} />
             </div>
           </div>
           <Input
+            id="ttl-minutes"
             type="number"
             min={0}
             className="mt-3"
@@ -464,7 +465,7 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
           />
           <p className="mt-1 text-xs text-muted-foreground">
             How long this notification stays visible before auto-expiring. Leave blank or set to 0 for no auto-expiry. If
-            "Sticky" is enabled, TTL is ignored.
+            &quot;Sticky&quot; is enabled, TTL is ignored.
           </p>
         </div>
         <div className="flex items-end">
@@ -473,17 +474,17 @@ function CustomNotificationForm({ onSend }: { onSend: (args: SendArgs) => void }
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="text-sm font-medium">Title</label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
+          <label htmlFor="notif-title" className="text-sm font-medium">Title</label>
+          <Input id="notif-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium">Body</label>
-        <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="Message body" />
+        <label htmlFor="notif-body" className="text-sm font-medium">Body</label>
+        <Textarea id="notif-body" value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="Message body" />
       </div>
       <div>
-        <label className="text-sm font-medium">Link (optional)</label>
-        <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://..." />
+        <label htmlFor="notif-link" className="text-sm font-medium">Link (optional)</label>
+        <Input id="notif-link" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://..." />
       </div>
       <div className="flex justify-end">
         <Button type="submit">Send Custom Notification</Button>
@@ -515,10 +516,16 @@ function AccessRoleMultiSelect({
 
   return (
     <div className="w-full max-w-xl">
-      <label className="text-sm text-muted-foreground">Specific roles</label>
+      <span id="specific-roles-label" className="text-sm text-muted-foreground">Specific roles</span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button type="button" className="w-full mt-1 inline-flex items-center justify-between rounded-md border bg-background px-3 py-2 text-left text-sm shadow-sm hover:bg-accent/20 focus:outline-none">
+          <button
+            type="button"
+            className="w-full mt-1 inline-flex items-center justify-between rounded-md border bg-background px-3 py-2 text-left text-sm shadow-sm hover:bg-accent/20 focus:outline-none"
+            aria-labelledby="specific-roles-label"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+          >
             <span className="flex flex-wrap gap-1">
               {value.length === 0 ? (
                 <span className="text-muted-foreground">{placeholder}</span>
@@ -526,7 +533,14 @@ function AccessRoleMultiSelect({
                 value.map((r) => (
                   <Badge key={r} variant="secondary" className="flex items-center gap-1">
                     {roleLabel(r as any)}
-                    <X className="h-3 w-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); toggle(r); }} />
+                    <button
+                      type="button"
+                      className="rounded p-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                      aria-label={`Remove ${roleLabel(r as any)}`}
+                      onClick={(e) => { e.stopPropagation(); toggle(r); }}
+                    >
+                      <X className="h-3 w-3" aria-hidden="true" />
+                    </button>
                   </Badge>
                 ))
               )}

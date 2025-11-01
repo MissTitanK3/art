@@ -50,7 +50,7 @@ async function fetchProfilesAsEntries(): Promise<RosterEntry[]> {
         const json = await res.json();
         rows = Array.isArray(json?.profiles) ? json.profiles : [];
       }
-    } catch { }
+    } catch { /* fall back to direct Supabase query */ void 0; }
 
     if (!rows) {
       const client = getSupabaseBrowserClient();

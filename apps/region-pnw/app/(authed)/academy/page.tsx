@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import * as React from 'react';
@@ -33,11 +32,7 @@ export default function AcademyDashboardPage() {
   // Using Supabase-backed classes; do not pull from local pod store
 
   const members = useMemo(() => convertPodsToMemberProgress(pods), [pods]);
-  const instructors: AcademyInstructorProfile[] = [];
-  const sessions: AcademyTrainingSession[] = [];
-
-  const stats = useMemo(() => deriveStats(pods, members, sessions), [pods, members, sessions]);
-  const trainingClasses: AcademyTrainingClass[] = [];
+  const stats = useMemo(() => deriveStats(pods, members, []), [pods, members]);
 
   const courseGroups: AcademyCourseGroup[] = useMemo(
     () => attachCourseStatusToGroups(COURSE_BLUEPRINT, members),
@@ -46,7 +41,7 @@ export default function AcademyDashboardPage() {
 
   const headingCta = (
     <Button asChild variant="outline">
-      <a href="https://academy.alwaysreadytools.org" target="_blank" rel="noreferrer">
+      <a href="https://academy.alwaysreadytools.org" target="_blank" rel="noopener noreferrer">
         Open Academy
       </a>
     </Button>
@@ -73,9 +68,6 @@ export default function AcademyDashboardPage() {
         stats={stats}
         courseGroups={courseGroups}
         members={members}
-        instructors={instructors}
-        trainingClasses={trainingClasses}
-        sessions={sessions}
         onScheduleClass={(classId) => {
           router.push(`/academy/class/${classId}`);
         }}
@@ -96,9 +88,6 @@ type AcademyDashboardContentProps = {
   stats: AcademySummaryStat[];
   courseGroups: AcademyCourseGroup[];
   members: AcademyMemberProgress[];
-  instructors: AcademyInstructorProfile[];
-  trainingClasses: AcademyTrainingClass[];
-  sessions: AcademyTrainingSession[];
   onScheduleClass: (classId: string) => void;
   onCreatePathwayClass: (pathwayId: string) => void;
 };
@@ -108,21 +97,15 @@ function AcademyDashboardContent({
   stats,
   courseGroups,
   members,
-  instructors,
-  trainingClasses,
-  sessions,
   onScheduleClass,
   onCreatePathwayClass,
 }: AcademyDashboardContentProps) {
   const setStats = usePodAcademyDashboardStore((state) => state.setStats);
   const setCourseGroups = usePodAcademyDashboardStore((state) => state.setCourseGroups);
   const setMembers = usePodAcademyDashboardStore((state) => state.setMembers);
-  const setInstructors = usePodAcademyDashboardStore((state) => state.setInstructors);
   const addInstructor = usePodAcademyDashboardStore((state) => state.addInstructor);
   const updateInstructor = usePodAcademyDashboardStore((state) => state.updateInstructor);
   const removeInstructor = usePodAcademyDashboardStore((state) => state.removeInstructor);
-  const setTrainingClasses = usePodAcademyDashboardStore((state) => state.setTrainingClasses);
-  const setSessions = usePodAcademyDashboardStore((state) => state.setSessions);
   const addTrainingSession = usePodAcademyDashboardStore((state) => state.addTrainingSession);
   const updateTrainingSessionStatus = usePodAcademyDashboardStore(
     (state) => state.updateTrainingSessionStatus,
@@ -142,39 +125,41 @@ function AcademyDashboardContent({
   const supabaseSetClasses = usePodAcademyDashboardStore((state) => state.setTrainingClasses);
 
   function mapRowToSession(
-    row: any,
+    row: Record<string, unknown>,
     participantsBySession: Record<string, AcademyTrainingSessionParticipant[]>,
   ): AcademyTrainingSession {
-    const participants = participantsBySession[String(row.id)] ?? [];
+    const r = row as Record<string, any>;
+    const participants = participantsBySession[String(r.id)] ?? [];
     const derivedConfirmed = participants.filter((p) => p.status === 'confirmed').length;
     const derivedWaitlist = participants.filter((p) => p.status === 'waitlist').length;
-    const seatsFromDb = (typeof row.seats === 'object' && row.seats !== null) ? row.seats : null;
+    const seatsFromDb: Partial<{ capacity: number; confirmed: number; waitlist: number }> | null =
+      r.seats && typeof r.seats === 'object' ? (r.seats as any) : null;
     const seats = {
       capacity: Number(seatsFromDb?.capacity ?? 0),
-      confirmed: Number.isFinite(Number(seatsFromDb?.confirmed)) ? Number(seatsFromDb.confirmed) : derivedConfirmed,
-      waitlist: Number.isFinite(Number(seatsFromDb?.waitlist)) ? Number(seatsFromDb.waitlist) : derivedWaitlist,
+      confirmed: Number.isFinite(Number(seatsFromDb?.confirmed)) ? Number(seatsFromDb?.confirmed) : derivedConfirmed,
+      waitlist: Number.isFinite(Number(seatsFromDb?.waitlist)) ? Number(seatsFromDb?.waitlist) : derivedWaitlist,
     } as const;
 
     return {
-      id: String(row.id),
-      classId: row.class_id ? String(row.class_id) : '',
-      title: String(row.title ?? 'Untitled Session'),
-      start: String(row.start),
-      end: String(row.end),
-      modality: row.modality ?? 'online',
-      location: row.location ?? undefined,
-      meetingUrl: row.meeting_url ?? undefined,
-      instructorName: String(row.instructor_name ?? 'TBD'),
-      instructorType: row.instructor_type ?? 'expert',
-      status: row.status ?? 'scheduled',
+      id: String(r.id),
+      classId: r.class_id ? String(r.class_id) : '',
+      title: String((r.title ?? 'Untitled Session') as string),
+      start: String(r.start),
+      end: String(r.end),
+      modality: (r.modality as AcademyTrainingSession['modality']) ?? 'online',
+      location: typeof r.location === 'string' ? r.location : undefined,
+      meetingUrl: typeof r.meeting_url === 'string' ? r.meeting_url : undefined,
+      instructorName: String((r.instructor_name ?? 'TBD') as string),
+      instructorType: (r.instructor_type as AcademyTrainingSession['instructorType']) ?? 'expert',
+      status: (r.status as AcademyTrainingSession['status']) ?? 'scheduled',
       seats,
-      timezone: row.timezone ?? undefined,
-      relatedTopic: row.related_topic ?? undefined,
+      timezone: typeof r.timezone === 'string' ? r.timezone : undefined,
+      relatedTopic: typeof r.related_topic === 'string' ? r.related_topic : undefined,
       participants,
     } as AcademyTrainingSession;
   }
 
-  async function fetchSessionsFromDatabase(): Promise<void> {
+  const fetchSessionsFromDatabase = React.useCallback(async (): Promise<void> => {
     try {
       const client = getSupabaseBrowserClient();
       const [{ data: sessions, error: sErr }, { data: participants, error: pErr }] = await Promise.all([
@@ -197,23 +182,16 @@ function AcademyDashboardContent({
         });
       }
 
-      const mapped = (sessions ?? []).map((row: any) => mapRowToSession(row, partsBySession));
+      const mapped = (sessions ?? []).map((row) => mapRowToSession(row as Record<string, unknown>, partsBySession));
       supabaseSetSessions(mapped);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('[AcademyDashboard] supabase fetch sessions error', e);
     }
-  }
+  }, [supabaseSetSessions]);
 
-  useEffect(() => {
-    // Hydrate from Supabase; if not configured, safely no-op
-    fetchSessionsFromDatabase();
-    fetchInstructorsFromDatabase();
-    fetchClassesFromDatabase();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // moved after callback declarations for init order
 
-  async function persistSessionToDatabase(session: AcademyTrainingSession): Promise<void> {
+  const persistSessionToDatabase = React.useCallback(async (session: AcademyTrainingSession): Promise<void> => {
     try {
       const client = getSupabaseBrowserClient();
       const payload = {
@@ -235,15 +213,14 @@ function AcademyDashboardContent({
       const { error } = await client.from('academy_sessions').upsert(payload);
       if (error) throw error;
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('[AcademyDashboard] supabase upsert session failed', e);
     }
-  }
+  }, []);
 
-  async function persistParticipantsForSession(
+  const persistParticipantsForSession = React.useCallback(async (
     sessionId: string,
     participantsList: AcademyTrainingSessionParticipant[],
-  ): Promise<void> {
+  ): Promise<void> => {
     try {
       const client = getSupabaseBrowserClient();
       // Replace set for simplicity
@@ -261,27 +238,46 @@ function AcademyDashboardContent({
       const ins = await client.from('academy_participants').insert(rows);
       if (ins.error) throw ins.error;
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('[AcademyDashboard] supabase replace participants failed', e);
     }
-  }
+  }, []);
 
   // Instructors
-  function mapRowToInstructor(row: any): AcademyInstructorProfile {
-    return {
-      id: String(row.id),
-      name: String(row.name ?? 'Unknown'),
-      type: (row.type ?? 'expert') as AcademyInstructorProfile['type'],
-      focus: String(row.focus ?? 'General'),
-      availability: (row.availability ?? 'available') as AcademyInstructorProfile['availability'],
-      timezone: row.timezone ?? undefined,
-      certifications: Array.isArray(row.certifications) ? (row.certifications as any) : [],
-      registrationStatus: (row.registration_status ?? 'pending') as any,
-      vettingStatus: (row.vetting_status ?? 'awaiting_verification') as any,
-    };
-  }
+  const mapRowToInstructor = React.useCallback((row: Record<string, unknown>): AcademyInstructorProfile => {
+    const r = row as Record<string, any>;
+    const rawCerts = Array.isArray(r.certifications) ? r.certifications : [];
+    const certifications = rawCerts
+      .map((c: any) => {
+        if (c && typeof c === 'object' && 'id' in c) {
+          return {
+            id: String((c as any).id),
+            display_name: String((c as any).display_name ?? (c as any).id ?? ''),
+            level: typeof (c as any).level === 'string' ? (c as any).level : undefined,
+          };
+        }
+        if (typeof c === 'string') {
+          return { id: c, display_name: c };
+        }
+        return null;
+      })
+      .filter(Boolean) as AcademyInstructorProfile['certifications'];
 
-  async function fetchInstructorsFromDatabase(): Promise<void> {
+    const reg = typeof r.registration_status === 'string' ? r.registration_status : 'pending';
+    const vet = typeof r.vetting_status === 'string' ? r.vetting_status : 'awaiting_verification';
+    return {
+      id: String(r.id),
+      name: String((r.name ?? 'Unknown') as string),
+      type: (r.type as AcademyInstructorProfile['type']) ?? 'expert',
+      focus: String((r.focus ?? 'General') as string),
+      availability: (r.availability as AcademyInstructorProfile['availability']) ?? 'available',
+      timezone: typeof r.timezone === 'string' ? r.timezone : undefined,
+      certifications,
+      registrationStatus: (reg as AcademyInstructorProfile['registrationStatus']),
+      vettingStatus: (vet as AcademyInstructorProfile['vettingStatus']),
+    };
+  }, []);
+
+  const fetchInstructorsFromDatabase = React.useCallback(async (): Promise<void> => {
     try {
       const client = getSupabaseBrowserClient();
       const { data, error } = await client.from('academy_instructors').select('*');
@@ -289,28 +285,28 @@ function AcademyDashboardContent({
       const mapped = (data ?? []).map(mapRowToInstructor);
       supabaseSetInstructors(mapped);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('[AcademyDashboard] supabase fetch instructors error', e);
     }
-  }
+  }, [mapRowToInstructor, supabaseSetInstructors]);
 
   // Classes
-  function mapRowToClass(row: any): AcademyTrainingClass {
+  const mapRowToClass = React.useCallback((row: Record<string, unknown>): AcademyTrainingClass => {
+    const r = row as Record<string, any>;
     return {
-      id: String(row.id),
-      title: String(row.title ?? ''),
-      description: String(row.description ?? ''),
-      track: String(row.pathway_label ?? ''),
-      modality: (row.modality ?? 'online') as AcademyTrainingClass['modality'],
-      instructorType: (row.instructor_type ?? 'dispatcher') as AcademyTrainingClass['instructorType'],
-      durationHours: Number(row.duration_hours ?? 0),
-      sessionsScheduled: Number(row.sessions_scheduled ?? 0),
-      nextSession: row.next_session ?? undefined,
-      status: (row.status ?? 'draft') as AcademyTrainingClass['status'],
+      id: String(r.id),
+      title: String((r.title ?? '') as string),
+      description: String((r.description ?? '') as string),
+      track: String((r.pathway_label ?? '') as string),
+      modality: (r.modality as AcademyTrainingClass['modality']) ?? 'online',
+      instructorType: (r.instructor_type as AcademyTrainingClass['instructorType']) ?? 'dispatcher',
+      durationHours: Number(r.duration_hours ?? 0),
+      sessionsScheduled: Number(r.sessions_scheduled ?? 0),
+      nextSession: typeof r.next_session === 'string' ? r.next_session : undefined,
+      status: (r.status as AcademyTrainingClass['status']) ?? 'draft',
     };
-  }
+  }, []);
 
-  async function fetchClassesFromDatabase(): Promise<void> {
+  const fetchClassesFromDatabase = React.useCallback(async (): Promise<void> => {
     try {
       const client = getSupabaseBrowserClient();
       const { data, error } = await client.from('academy_classes').select('*').order('updated_at', { ascending: false });
@@ -318,10 +314,16 @@ function AcademyDashboardContent({
       const mapped = (data ?? []).map(mapRowToClass);
       supabaseSetClasses(mapped);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('[AcademyDashboard] supabase fetch classes error', e);
     }
-  }
+  }, [mapRowToClass, supabaseSetClasses]);
+
+  // Hydrate from Supabase once callbacks are ready
+  useEffect(() => {
+    fetchSessionsFromDatabase();
+    fetchInstructorsFromDatabase();
+    fetchClassesFromDatabase();
+  }, [fetchSessionsFromDatabase, fetchInstructorsFromDatabase, fetchClassesFromDatabase]);
 
   const storeStats = usePodAcademyDashboardStore((state) => state.stats);
   const storeCourseGroups = usePodAcademyDashboardStore((state) => state.courseGroups);
@@ -349,7 +351,6 @@ function AcademyDashboardContent({
           const client = getSupabaseBrowserClient();
           await client.from('academy_sessions').update({ status }).eq('id', sessionId);
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.info('[AcademyDashboard] status update local-only (no supabase)', e);
         }
       }}
@@ -373,7 +374,6 @@ function AcademyDashboardContent({
           const { error } = await client.from('academy_instructors').upsert(payload);
           if (error) throw error;
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.warn('[AcademyDashboard] supabase upsert instructor failed', e);
         }
       }}
@@ -399,7 +399,6 @@ function AcademyDashboardContent({
             if (error) throw error;
           }
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.warn('[AcademyDashboard] supabase update instructor failed', e);
         }
       }}
@@ -411,7 +410,6 @@ function AcademyDashboardContent({
           const { error } = await client.from('academy_instructors').delete().eq('id', instructorId);
           if (error) throw error;
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.warn('[AcademyDashboard] supabase delete instructor failed', e);
         }
       }}
@@ -446,7 +444,6 @@ function AcademyDashboardContent({
           const client = getSupabaseBrowserClient();
           await client.from('academy_sessions').delete().eq('id', sessionId); // cascade deletes participants
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.info('[AcademyDashboard] delete session local-only (no supabase)', e);
         }
       }}

@@ -353,7 +353,7 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [id, updateSubmission, addSubmission]);
+  }, [id, updateSubmission, addSubmission, storeSubmission]);
 
   const submission = storeSubmission;
 

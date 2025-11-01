@@ -6,7 +6,8 @@ import type { Profile } from '@workspace/store/types/global.ts';
 import type { ProfileAdapter } from '@workspace/store/types/profile.ts';
 
 function isUuid(value: string): boolean {
-  return /^(\{)?[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[1-5][0-9a-fA-F]{3}\-[89abAB][0-9a-fA-F]{3}\-[0-9a-fA-F]{12}(\})?$/.test(
+  // Allow optional surrounding braces and standard UUID hyphenation
+  return /^(\{)?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(\})?$/.test(
     value,
   );
 }
@@ -49,7 +50,7 @@ export const supabaseProfileAdapter: ProfileAdapter = {
   async deleteProfile(userOrProfileId: string): Promise<void> {
     const client = getSupabaseBrowserClient();
     // Be flexible: try delete by id OR user_id
-    const target = isUuid(userOrProfileId) ? userOrProfileId : userOrProfileId;
+    const target = userOrProfileId;
     const { error: byIdErr } = await client.from('profiles').delete().or(`id.eq.${target},user_id.eq.${target}`);
     if (byIdErr) {
       throw new Error(byIdErr.message);

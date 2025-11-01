@@ -112,7 +112,7 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
     return () => {
       cancelled = true;
     };
-  }, [classId, updateAcademyClass, addAcademyClass]);
+  }, [classId, academyClass, updateAcademyClass, addAcademyClass]);
 
   // Live instructor options from DB, with pods as a fallback
   const [instructorOptions, setInstructorOptions] = React.useState<InstructorOption[]>([]);
@@ -234,7 +234,6 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
         const { error } = await client.from("academy_classes").upsert(row);
         if (error) {
           // Non-blocking; local store already updated
-          // eslint-disable-next-line no-console
           console.warn("Failed to persist academy class", error);
         }
 
@@ -246,7 +245,6 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
             .select("id")
             .eq("class_id", updatedClass.id);
           if (fetchSessionsErr) {
-            // eslint-disable-next-line no-console
             console.warn("Failed to read existing sessions", fetchSessionsErr);
           }
 
@@ -259,7 +257,6 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           if (toDelete.length > 0) {
             const { error: delErr } = await client.from("academy_sessions").delete().in("id", toDelete);
             if (delErr) {
-              // eslint-disable-next-line no-console
               console.warn("Failed to delete removed sessions", delErr);
             }
           }
@@ -289,7 +286,6 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           if (sessionRows.length > 0) {
             const { error: upsertErr } = await client.from("academy_sessions").upsert(sessionRows);
             if (upsertErr) {
-              // eslint-disable-next-line no-console
               console.warn("Failed to upsert sessions", upsertErr);
             }
           }
@@ -303,7 +299,6 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
                 .select("id, session_id")
                 .in("session_id", sessionIds);
               if (fetchPartsErr) {
-                // eslint-disable-next-line no-console
                 console.warn("Failed to read existing participants", fetchPartsErr);
               }
 
@@ -352,7 +347,6 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
                   .delete()
                   .in("id", toDeleteParticipantIds);
                 if (delPartErr) {
-                  // eslint-disable-next-line no-console
                   console.warn("Failed to delete removed participants", delPartErr);
                 }
               }
@@ -362,27 +356,23 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
                   .from("academy_participants")
                   .upsert(participantRows);
                 if (upsertPartErr) {
-                  // eslint-disable-next-line no-console
                   console.warn("Failed to upsert participants", upsertPartErr);
                 }
               }
             }
           } catch (pErr) {
-            // eslint-disable-next-line no-console
             console.warn("Error persisting participants", pErr);
           }
         } catch (sessErr) {
-          // eslint-disable-next-line no-console
           console.warn("Error persisting sessions", sessErr);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("Error saving academy class", e);
       }
 
       // Stay on the page after save (no redirect)
     },
-    [academyClass, router, updateAcademyClass],
+    [academyClass, updateAcademyClass],
   );
 
   const handleDelete = React.useCallback(
@@ -393,11 +383,9 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
         const client = getSupabaseBrowserClient();
         const { error } = await client.from("academy_classes").delete().eq("id", id);
         if (error) {
-          // eslint-disable-next-line no-console
           console.warn("Failed to delete academy class", error);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("Error deleting academy class", e);
       }
       router.push("/academy");
@@ -460,8 +448,8 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
             .from("academy_participants")
             .select("*")
             .in("session_id", sessionIds);
-          if (!partsErr) {
-            const rosterByName = new Map((academyClass.members ?? []).map((m) => [m.name, m.id] as const));
+        if (!partsErr) {
+          const rosterByName = new Map((academyClass.members ?? []).map((m) => [m.name, m.id] as const));
             const toMemberId = (rowId: string, name: string | null): string | null => {
               // Prefer deriving memberId from our synthetic id format
               const m = rowId.match(/^par_(.+)__mem_(.+)$/);
@@ -546,14 +534,13 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           updateAcademyClass(classId, patch);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("Failed to hydrate sessions", e);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [classId, updateAcademyClass, !!academyClass]);
+  }, [classId, updateAcademyClass, academyClass]);
 
   if (!academyClass && hydrating) {
     return null;

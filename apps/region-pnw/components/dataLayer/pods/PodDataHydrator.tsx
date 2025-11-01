@@ -51,8 +51,7 @@ export default function PodDataHydrator() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pods, setPods]);
 
   return null;
 }
-

@@ -84,7 +84,7 @@ function AdminDispatchBridge() {
     }
     load();
     return () => { cancelled = true; };
-  }, [replaceSubmissions]);
+  }, [replaceSubmissions, submissions]);
 
   return (
     <DispatchClient

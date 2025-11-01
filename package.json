@@ -24,6 +24,7 @@
     "@workspace/store": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "@workspace/ui": "workspace:*",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "gray-matter": "^4.0.3",
     "prettier": "^3.6.2",
     "turbo": "^2.5.5",

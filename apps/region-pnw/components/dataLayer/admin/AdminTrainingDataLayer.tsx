@@ -44,7 +44,7 @@ export default async function AdminTrainingDataLayer() {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch { }
+          } catch { /* ignore cookie set errors */ void 0; }
         },
       },
     });

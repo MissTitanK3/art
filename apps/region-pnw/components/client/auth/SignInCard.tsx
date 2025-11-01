@@ -21,7 +21,7 @@ const FALLBACK_REDIRECT = "/";
 export function SignInCard({ redirectTo }: SignInCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { providerId, signInWithPassword, setSession, refresh } = useAuth();
+  const { signInWithPassword, setSession, refresh } = useAuth();
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -58,7 +58,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
               }),
               keepalive: true,
             });
-          } catch { }
+          } catch { /* ignore session sync errors */ void 0; }
           await refresh();
           router.push(target);
           return;
@@ -69,7 +69,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
         setPending(false);
       }
     },
-    [email, password, providerId, setSession, signInWithPassword, refresh, router, target]
+    [email, password, setSession, signInWithPassword, refresh, router, target]
   );
 
   const isLoading = pending;

@@ -119,7 +119,7 @@ function ProfilePageContent() {
         <div className="mt-6 rounded-lg border p-6">
           <h2 className="text-lg font-semibold">No profile found</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            You don't have a profile yet. After signing in, create your profile to continue.
+            You don&apos;t have a profile yet. After signing in, create your profile to continue.
           </p>
         </div>
       ) : (

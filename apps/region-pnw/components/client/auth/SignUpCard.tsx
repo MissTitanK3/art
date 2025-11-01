@@ -181,7 +181,7 @@ export function SignUpCard() {
         setPending(false);
       }
     },
-    [email, password, providerId, signUpWithPassword, router, displayName, affiliation, city, state, contactSignal, coordinationZone, fieldRoles, passwordRules, profileAdapter, refresh, setSession]
+    [email, password, providerId, signUpWithPassword, router, displayName, affiliation, city, state, contactSignal, coordinationZone, fieldRoles, passwordRules, profileAdapter, refresh, setSession, contactSignalValid, coordinationZoneValid, displayNameValid]
   );
 
   return (
@@ -303,7 +303,7 @@ export function SignUpCard() {
                     <Checkbox
                       checked={checked}
                       onCheckedChange={(v) => {
-                        const next = Boolean(v)
+                        const next = v === true
                           ? [...new Set([...fieldRoles, role])]
                           : fieldRoles.filter((r) => r !== role);
                         setFieldRoles(next);

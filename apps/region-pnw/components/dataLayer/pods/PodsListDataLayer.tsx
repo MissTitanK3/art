@@ -120,7 +120,7 @@ export default function PodsListDataLayer() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [setPods]);
 
   const podsToDisplay = remotePods && remotePods.length > 0 ? remotePods : pods;
   const normalizedPods = podsToDisplay.map(normalizePod);

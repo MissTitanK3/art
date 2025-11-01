@@ -22,13 +22,20 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   // Primary gate: session role includes region-level admins
-  const role = ((user as any)?.user_metadata?.role ?? (user as any)?.role ?? "guest") as any;
+  const meta = (user as unknown as { user_metadata?: Record<string, unknown> }).user_metadata;
+  const metaRole = (meta?.role);
+  const fallbackRole = (user as unknown as { role?: unknown }).role;
+  const role = typeof metaRole === 'string'
+    ? metaRole
+    : typeof fallbackRole === 'string'
+      ? fallbackRole
+      : 'guest';
   const allowed: string[] = ['dispatcher_admin', ...regionAdmins];
   if (!allowed.includes(role)) {
     // Fallback check via DAL in case session role is stale or missing
     const profile = await getProfileByUserId(user!.id);
-    const profileRole = profile?.access_role as any;
-    if (!profileRole || !allowed.includes(profileRole)) {
+    const profileRole = profile?.access_role ?? null;
+    if (!profileRole || (typeof profileRole === 'string' && !allowed.includes(profileRole))) {
       redirect("/my-profile?reason=forbidden-admin");
     }
   }

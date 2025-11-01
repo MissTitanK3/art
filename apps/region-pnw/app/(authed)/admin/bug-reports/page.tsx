@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card';
 import { Badge } from '@workspace/ui/components/badge';
 import { PageHeader } from '@workspace/ui/components/page-header';
@@ -27,7 +27,7 @@ export default function AdminBugReportsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async (signal?: AbortSignal) => {
+  const load = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
     try {
@@ -38,19 +38,20 @@ export default function AdminBugReportsPage() {
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       const j = (await res.json()) as { reports?: ReportRow[] };
       setRows(Array.isArray(j.reports) ? j.reports : []);
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return;
-      setError(e?.message || 'Failed to load reports');
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && 'name' in e && (e as any).name === 'AbortError') return;
+      const message = e instanceof Error ? e.message : 'Failed to load reports';
+      setError(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [status, area]);
 
   useEffect(() => {
     const controller = new AbortController();
     load(controller.signal);
     return () => controller.abort();
-  }, [status, area]);
+  }, [status, area, load]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, ReportRow[]>();

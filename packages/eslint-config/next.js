@@ -3,6 +3,7 @@ import pluginNext from "@next/eslint-plugin-next"
 import eslintConfigPrettier from "eslint-config-prettier"
 import pluginReact from "eslint-plugin-react"
 import pluginReactHooks from "eslint-plugin-react-hooks"
+import pluginJsxA11y from "eslint-plugin-jsx-a11y"
 import globals from "globals"
 import tseslint from "typescript-eslint"
 
@@ -34,6 +35,21 @@ export const nextJsConfig = [
     rules: {
       ...pluginNext.configs.recommended.rules,
       ...pluginNext.configs["core-web-vitals"].rules,
+    },
+  },
+  {
+    plugins: {
+      "jsx-a11y": pluginJsxA11y,
+    },
+    rules: {
+      ...pluginJsxA11y.configs.recommended.rules,
+    },
+  },
+  // Ensure TS rule preferences from base remain enforced
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   {
