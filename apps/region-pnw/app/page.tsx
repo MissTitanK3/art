@@ -6,11 +6,21 @@ import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/al
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Terminal, Info, DatabaseZap, LogIn } from "lucide-react"
+import { Terminal, Info, DatabaseZap, LogIn, MapPin, ClipboardList, Users, Megaphone, Truck, MessagesSquare, FileText, GraduationCap, Shield, BookOpen, User, Calendar, Settings as SettingsIcon, LifeBuoy, Search, Eye, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@workspace/ui/lib/utils"
 import { STATUS_META } from "@workspace/ui/lib/constants/dispatch"
 import { DISPATCH_TYPE_LABELS, DispatchStatus } from "@workspace/store/types/dispatch.ts"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerTrigger,
+  DrawerClose,
+} from "@workspace/ui/components/drawer"
 
 import { navConfig } from "@/nav.config"
 import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider"
@@ -35,11 +45,23 @@ export default function Page() {
   return (
     <div className="flex min-h-svh w-full flex-col items-center gap-6 px-4 py-12">
       <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">🌎 {brandHeadline}</h1>
+        <h1 className="text-4xl font-bold tracking-tight">{brandHeadline}</h1>
         <p className="mt-2 max-w-2xl text-balance text-muted-foreground">
-          This is a demonstration region for the ART platform—showing how navigation, data layers,
-          and coverage dashboards stitch together once you connect a real data source.
+          Welcome to your region’s centralized platform for collaboration and response coordination.
         </p>
+        <p className="mt-2 max-w-2xl text-balance text-muted-foreground">
+          Use the tools below to manage your region’s operations and support your community effectively.
+        </p>
+        <div className="mt-4 flex justify-center">
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant="outline">Quick Start Understanding</Button>
+            </DrawerTrigger>
+            <DrawerContent className="bg-card text-card-foreground">
+              <QuickStartDrawerContent />
+            </DrawerContent>
+          </Drawer>
+        </div>
       </header>
 
       {showToggle ? (
@@ -598,4 +620,125 @@ function formatTimeRange(start: string, end: string) {
   }
 
   return `${dateFormatter.format(startDate)} ${timeFormatter.format(startDate)} – ${dateFormatter.format(endDate)} ${timeFormatter.format(endDate)}`
+}
+
+function QuickStartDrawerContent() {
+  const Item = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+    <div className="flex gap-3">
+      <div className="mt-0.5 text-muted-foreground">{icon}</div>
+      <div>
+        <h3 className="font-semibold leading-6">{title}</h3>
+        <div className="text-sm text-muted-foreground mt-1">{children}</div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex h-full flex-col">
+      <DrawerHeader>
+        <DrawerTitle>Quick Start Understanding</DrawerTitle>
+        <DrawerDescription>
+          Short explainers for the main sections of your region.
+        </DrawerDescription>
+      </DrawerHeader>
+      <div className="max-h-[50dvh] overflow-y-auto px-4 pb-4 space-y-5">
+        <Item icon={<GraduationCap className="h-5 w-5" />} title="Academy">
+          The Academy is your training hub for learning how this platform and your region operate.
+          Courses are self‑paced and cover both fundamentals and role‑specific practices so you can onboard quickly.
+          As you complete modules, you earn credentials that unlock permissions and responsibilities in other areas of the app.
+          Returning users can use the Academy for refreshers or to track progress toward advanced qualifications.
+        </Item>
+
+        <Item icon={<Shield className="h-5 w-5" />} title="Admin">
+          The Admin area provides region‑level oversight and configuration tools for authorized administrators.
+          Use it to review activity, access audit trails, manage reports, and keep operations compliant with local policies.
+          From here you can tune integrations, branding, and feature availability so the platform matches your needs.
+          Access is restricted to protect sensitive settings while preserving transparency for coordinators.
+        </Item>
+
+        <Item icon={<Eye className="h-5 w-5" />} title="Watch">
+          Watch is a live map for situational awareness across your region.
+          Layers and filters help you focus on relevant reports, signals, and activity as conditions change.
+          It’s useful for real‑time monitoring, early triage, and spotting patterns before they turn into dispatches.
+          Teams can use Watch during operations briefings to align on what’s happening right now.
+        </Item>
+
+        <Item icon={<CheckCircle2 className="h-5 w-5" />} title="Confirmed Watch">
+          Confirmed Watch highlights reports that coordinators have reviewed and verified for accuracy.
+          This view reduces noise and uncertainty so on‑the‑ground teams can act with confidence.
+          It lives inside Watch as a filter or dedicated layer rather than a separate tool.
+          Use it when you need a trusted baseline for decisions or public communication.
+        </Item>
+
+        <Item icon={<ClipboardList className="h-5 w-5" />} title="Dispatches">
+          Dispatches is the intake‑to‑action pipeline that moves a report from first contact to resolution.
+          Coordinators triage submissions, set status, and record intended actions so everyone sees the current plan.
+          Roles and staffing needs are tracked here, and updates form the running incident log for handoffs.
+          Use Dispatches to keep decisions visible, responsibilities clear, and progress easy to audit.
+        </Item>
+
+        <Item icon={<BookOpen className="h-5 w-5" />} title="How to Use">
+          The How‑to guide is a built‑in reference for new and experienced users.
+          It explains common workflows step by step and links concepts across the platform so you can learn in context.
+          Short sections are designed for quick reading during live operations when time is limited.
+          Use it to discover features, clarify terminology, and share consistent practices across teams.
+        </Item>
+
+        <Item icon={<LifeBuoy className="h-5 w-5" />} title="Meet a Need">
+          Meet a Need is a guided intake for community requests that feeds directly into Dispatches.
+          The form collects the essential context up front so coordinators can prioritize quickly and respond appropriately.
+          It is suitable for demos and training, but it also supports real‑world requests when enabled.
+          Clear intake reduces back‑and‑forth and helps volunteers show up prepared.
+        </Item>
+
+        <Item icon={<Search className="h-5 w-5" />} title="Missing Persons">
+          Missing Persons provides structured intake and case tracking when someone is unaccounted for.
+          It captures critical details, contact information, and consent, then centralizes updates in one timeline.
+          The module supports coordination among pods and external partners while protecting sensitive data.
+          Use it to keep search efforts organized and to avoid duplicating work.
+        </Item>
+
+        <Item icon={<User className="h-5 w-5" />} title="My Profile">
+          My Profile is where you keep your information accurate and discoverable.
+          Update contact details, languages, and skills so coordinators can match you to the right roles.
+          You control map visibility and availability preferences to respect your boundaries.
+          Keeping this current improves response speed and reduces coordination overhead.
+        </Item>
+
+        <Item icon={<Users className="h-5 w-5" />} title="Pods">
+          Pods are teams organized around people, skills, and geography.
+          Use them to maintain rosters, define communication channels, and assign responsibilities to specific areas.
+          Pods make it easier to see who is available and how coverage changes over time.
+          Well‑structured pods reduce confusion during incidents and improve handoffs.
+        </Item>
+
+        <Item icon={<Calendar className="h-5 w-5" />} title="Schedules">
+          Schedules help you plan shifts, roles, and coverage windows across pods.
+          Coordinators can align staffing with expected demand and adjust as conditions change.
+          Clear schedules reduce gaps, prevent burnout, and make accountability visible.
+          Combined with Dispatches, they provide a day‑to‑day rhythm for operations.
+        </Item>
+
+        {/* <Item icon={<SettingsIcon className="h-5 w-5" />} title="Settings">
+          Settings is where you control your notifications and personal preferences.
+          Choose which events you want alerts for, like new dispatches, status changes, and shift reminders, and how you prefer to receive them.
+          You can adjust frequency, mute channels temporarily, and review what you’re currently subscribed to.
+          Keeping these preferences up to date ensures you get the right information at the right time without noise.
+          As new features roll out, additional options may appear here, but notifications are the core focus for now.
+        </Item> */}
+
+        <Item icon={<MessagesSquare className="h-5 w-5" />} title="Team Request">
+          Team Request is a structured way to ask for help from specific teams or roles.
+          You can specify what skills are needed, where support is required, and any time constraints.
+          Clear requests make routing and staffing faster because coordinators have the key details up front.
+          It also creates a record that can be tracked to completion or handed off between shifts.
+        </Item>
+      </div>
+      <DrawerFooter>
+        <DrawerClose asChild>
+          <Button size="sm">Close</Button>
+        </DrawerClose>
+      </DrawerFooter>
+    </div>
+  )
 }

@@ -14,6 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import { Input } from "@workspace/ui/components/input";
+import { Checkbox } from "@workspace/ui/components/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerTrigger,
+  DrawerClose,
+} from "@workspace/ui/components/drawer";
 
 
 type ActionMode = 'create' | 'view' | 'none'
@@ -28,6 +40,25 @@ interface WatchMapProps {
   actionMode?: ActionMode;
   focusPoint?: MapFocus | null;
   className?: string;
+  // Optional external filter controls (when provided, render inside Map Options)
+  filterQuery?: string;
+  onFilterQueryChange?: (value: string) => void;
+  filterTimeWindow?: string; // 'any' | '2' | '6' | '12' | '24' | '72'
+  onFilterTimeWindowChange?: (value: string) => void;
+  availableAgencies?: string[];
+  selectedAgencies?: Set<string>;
+  onToggleAgency?: (agency: string, checked: boolean) => void;
+  hideTest?: boolean;
+  onHideTestChange?: (value: boolean) => void;
+  withMediaOnly?: boolean;
+  onWithMediaOnlyChange?: (value: boolean) => void;
+  lightsOnly?: boolean;
+  onLightsOnlyChange?: (value: boolean) => void;
+  sirensOnly?: boolean;
+  onSirensOnlyChange?: (value: boolean) => void;
+  movingOnly?: boolean;
+  onMovingOnlyChange?: (value: boolean) => void;
+  onResetFilters?: () => void;
 }
 
 interface MapFocus {
@@ -105,7 +136,7 @@ const TILE_PROVIDERS: TileProvider[] = [
 const DEFAULT_TILE_PROVIDER = TILE_PROVIDERS[0]!;
 const TILE_PROVIDER_STORAGE_KEY = "watch-map-tile-provider";
 
-// custom icon so all markers are consistent
+// default icon for unconfirmed reports
 const reportIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -113,6 +144,25 @@ const reportIcon = new L.Icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
+});
+
+// distinct icon for confirmed watch reports (high-contrast green pin)
+const confirmedIcon = L.divIcon({
+  className: "confirmed-watch-pin",
+  iconSize: [26, 38],
+  iconAnchor: [13, 38],
+  popupAnchor: [0, -32],
+  html: `
+    <svg width="26" height="38" viewBox="0 0 26 38" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity=".35"/>
+        </filter>
+      </defs>
+      <path d="M13 0C6 0 0.8 5.2 0.8 12.1c0 8.7 10.5 16.7 11.0 17.1.3.2.7.2 1 0 .5-.4 11.0-8.4 11.0-17.1C23.2 5.2 18 0 13 0z" fill="#16a34a" filter="url(#dropShadow)"/>
+      <circle cx="13" cy="12" r="5.5" fill="#ffffff"/>
+    </svg>
+  `,
 });
 
 export default function WatchMap({
@@ -125,6 +175,24 @@ export default function WatchMap({
   actionMode,
   focusPoint,
   className,
+  filterQuery,
+  onFilterQueryChange,
+  filterTimeWindow,
+  onFilterTimeWindowChange,
+  availableAgencies,
+  selectedAgencies,
+  onToggleAgency,
+  hideTest,
+  onHideTestChange,
+  withMediaOnly,
+  onWithMediaOnlyChange,
+  lightsOnly,
+  onLightsOnlyChange,
+  sirensOnly,
+  onSirensOnlyChange,
+  movingOnly,
+  onMovingOnlyChange,
+  onResetFilters,
 }: WatchMapProps) {
   const [tileProviderId, setTileProviderId] = useState<string>(() => {
     if (typeof window === "undefined") return DEFAULT_TILE_PROVIDER.id;
@@ -148,24 +216,128 @@ export default function WatchMap({
   const effectiveMode: ActionMode = actionMode
     ? actionMode
     : onCreateDispatch
-    ? 'create'
-    : 'none'
+      ? 'create'
+      : 'none'
 
   return (
     <div className={cn("relative w-full h-[600px] lg:h-[90vh] rounded-2xl border", className)}>
-      <div className="absolute right-4 top-4 z-10">
-        <Select value={tileProviderId} onValueChange={setTileProviderId}>
-          <SelectTrigger className="w-[220px] bg-background/80 backdrop-blur border">
-            <SelectValue placeholder="Select map style" />
-          </SelectTrigger>
-          <SelectContent align="end">
-            {TILE_PROVIDERS.map((provider) => (
-              <SelectItem key={provider.id} value={provider.id}>
-                {provider.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="absolute right-4 top-4 flex flex-col z-50 items-end gap-2">
+        <Drawer direction="right">
+          <DrawerTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-white text-black border-gray-300 shadow-sm hover:bg-white/90 dark:bg-white dark:text-black dark:border-gray-300"
+            >
+              Map Options
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="bg-card text-card-foreground z-[99999]">
+            <DrawerHeader>
+              <DrawerTitle>Map Options</DrawerTitle>
+              <DrawerDescription>Choose a base layer and view preferences.</DrawerDescription>
+            </DrawerHeader>
+            <div className="px-4 pb-4 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Map style</label>
+                <Select value={tileProviderId} onValueChange={setTileProviderId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select map style" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100000]">
+                    {TILE_PROVIDERS.map((provider) => (
+                      <SelectItem key={provider.id} value={provider.id}>
+                        {provider.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(typeof filterQuery !== 'undefined' || typeof filterTimeWindow !== 'undefined') ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-xs text-muted-foreground">Search</label>
+                    <Input
+                      value={filterQuery ?? ''}
+                      onChange={(e) => onFilterQueryChange?.(e.target.value)}
+                      placeholder="Search agency, submitter, direction…"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-muted-foreground">Time window</label>
+                    <Select value={filterTimeWindow} onValueChange={onFilterTimeWindowChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Last 24h" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[100000]">
+                        <SelectItem value="2">Last 2 hours</SelectItem>
+                        <SelectItem value="6">Last 6 hours</SelectItem>
+                        <SelectItem value="12">Last 12 hours</SelectItem>
+                        <SelectItem value="24">Last 24 hours</SelectItem>
+                        <SelectItem value="72">Last 72 hours</SelectItem>
+                        <SelectItem value="any">All time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-muted-foreground">Agencies</label>
+                    <div className="flex max-h-40 overflow-y-auto flex-wrap gap-3 p-2 rounded-md border bg-background">
+                      {(availableAgencies && availableAgencies.length > 0) ? (
+                        availableAgencies.map((a) => {
+                          const checked = selectedAgencies?.has(a) ?? false;
+                          return (
+                            <label key={a} className="inline-flex items-center gap-2 text-xs">
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(v) => onToggleAgency?.(a, Boolean(v))}
+                              />
+                              <span>{a}</span>
+                            </label>
+                          );
+                        })
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No agency labels</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 text-xs">
+                    <label className="inline-flex items-center gap-2">
+                      <Checkbox checked={!!hideTest} onCheckedChange={(v) => onHideTestChange?.(Boolean(v))} />
+                      <span>Hide test</span>
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <Checkbox checked={!!withMediaOnly} onCheckedChange={(v) => onWithMediaOnlyChange?.(Boolean(v))} />
+                      <span>Media only</span>
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <Checkbox checked={!!lightsOnly} onCheckedChange={(v) => onLightsOnlyChange?.(Boolean(v))} />
+                      <span>Lights on</span>
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <Checkbox checked={!!sirensOnly} onCheckedChange={(v) => onSirensOnlyChange?.(Boolean(v))} />
+                      <span>Sirens on</span>
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <Checkbox checked={!!movingOnly} onCheckedChange={(v) => onMovingOnlyChange?.(Boolean(v))} />
+                      <span>Officer moving</span>
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button size="sm" variant="outline" onClick={onResetFilters}>Reset</Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button size="sm">Close</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
 
       <MapContainer
@@ -262,16 +434,18 @@ export default function WatchMap({
               return null;
             }
 
+            const isConfirmed = Boolean((r as any)?.vet_method || (r as any)?.vet_notes);
+            const markerIcon = isConfirmed ? confirmedIcon : reportIcon;
             return (
-              <Marker key={r.id} position={[lat, lng]} icon={reportIcon}>
+              <Marker key={r.id} position={[lat, lng]} icon={markerIcon}>
                 <Popup maxWidth={220}>
                   <div className="space-y-2">
                     <div className="font-semibold text-sm">
                       {Array.isArray(r.agency_type) && r.agency_type.length > 0
                         ? r.agency_type.map(humanize).join(", ")
                         : r.agency_other
-                        ? humanize(r.agency_other)
-                        : "Unknown presence"}
+                          ? humanize(r.agency_other)
+                          : "Unknown presence"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(r.timestamp).toLocaleString()}

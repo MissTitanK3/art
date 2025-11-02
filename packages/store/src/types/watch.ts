@@ -11,6 +11,9 @@ export interface WizardReport {
   sirens_on: boolean | null;
   submitted_by: string | null;
   test: boolean | null;
+  // Optional vetting fields present on confirmed watch entries
+  vet_method?: string | null;
+  vet_notes?: string | null;
 }
 
 export type MapFocus = {
