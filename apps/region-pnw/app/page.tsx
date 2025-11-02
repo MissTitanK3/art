@@ -57,7 +57,7 @@ export default function Page() {
             <DrawerTrigger asChild>
               <Button variant="outline">Quick Start Understanding</Button>
             </DrawerTrigger>
-            <DrawerContent className="bg-card text-card-foreground">
+            <DrawerContent className="bg-card text-card-foreground max-w-xl m-auto">
               <QuickStartDrawerContent />
             </DrawerContent>
           </Drawer>
