@@ -32,6 +32,10 @@ export default function HowToBugTracker({ quickReport }: HowToBugTrackerProps) {
         Tip: Include your browser, OS, steps to reproduce, what you expected to happen, and what actually happened.
       </Callout>
 
+      <Callout type="success">
+        Note: Admins are notified when you submit a bug report.
+      </Callout>
+
       <h3>Quick Bug Report</h3>
       {quickReport ?? null}
     </section>

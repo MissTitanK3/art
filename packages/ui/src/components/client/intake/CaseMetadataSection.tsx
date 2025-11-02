@@ -23,6 +23,7 @@ interface BaseProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   sectionName?: string;
+  region?: string;
 }
 
 interface CaseIdExamples {
@@ -35,8 +36,9 @@ interface EditProps extends BaseProps {
   control: Control<any>;
   onSave?: () => void;
   saveButtonProps?: ButtonProps;
-  onGenerateCaseId?: () => void;
+  onGenerateCaseId?: () => void; // legacy: used when region is not provided
   caseIdExamples?: CaseIdExamples;
+  existingCaseIds?: string[]; // optional: used to suggest next sequence
 }
 
 interface ViewProps extends BaseProps {
@@ -71,7 +73,46 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
     saveButtonProps,
     onGenerateCaseId,
     caseIdExamples,
+    region,
+    existingCaseIds,
   } = props;
+
+  const [zoneInput, setZoneInput] = React.useState("");
+  const [sequenceInput, setSequenceInput] = React.useState<number | "">("");
+
+  const now = React.useMemo(() => new Date(), []);
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+
+  const normalise = (s: string) => s.trim().toUpperCase();
+
+  const suggestNextSequence = React.useCallback(() => {
+    if (!region || !existingCaseIds || !zoneInput) return 1;
+    const prefix = `${normalise(region)}-${normalise(zoneInput)}-${year}-${month}`;
+    let max = 0;
+    for (const id of existingCaseIds) {
+      const n = normalise(id);
+      if (n.startsWith(prefix + "-")) {
+        const tail = n.slice(prefix.length + 1);
+        const m = tail.match(/^(\d{1,4})$/);
+        if (m && m[1]) {
+          const num = Number.parseInt(m[1], 10);
+          if (!Number.isNaN(num) && num > max) max = num;
+        }
+      }
+    }
+    return max + 1;
+  }, [region, existingCaseIds, zoneInput, year, month]);
+
+  const buildCaseId = React.useCallback(
+    (seq: number) => {
+      const padded = String(Math.max(1, seq)).padStart(4, "0");
+      const r = normalise(region ?? "REGION");
+      const z = normalise(zoneInput || "ZONE");
+      return `${r}-${z}-${year}-${month}-${padded}`;
+    },
+    [region, zoneInput, year, month]
+  );
 
   return (
     <FormSectionCard
@@ -105,7 +146,16 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Case ID</FormLabel>
-              {caseIdExamples ? (
+              {region ? (
+                <FormDescription>
+                  Use the format {" "}
+                  <span className="font-mono text-xs">REGION-ZONE-YYYY-MM-NNNN</span>. Suggested ID:{" "}
+                  <span className="font-mono text-xs">
+                    {buildCaseId(typeof sequenceInput === "number" && sequenceInput > 0 ? sequenceInput : 1)}
+                  </span>
+                  .
+                </FormDescription>
+              ) : caseIdExamples ? (
                 <FormDescription>
                   Use the format <span className="font-mono text-xs">ZONE-YYYY-NNN</span>. Suggested ID:{" "}
                   <span className="font-mono text-xs">{caseIdExamples.primary}</span>
@@ -120,20 +170,100 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                 </FormDescription>
               ) : null}
               <FormControl>
-                <div className="flex gap-2">
-                  <Input {...field} placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`} />
-                  {onGenerateCaseId ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={onGenerateCaseId}
-                    >
-                      Generate
-                    </Button>
-                  ) : null}
-                </div>
+                {region ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 flex-col md:flex-row md:items-end">
+                      <div className="flex flex-col gap-2">
+                        <FormLabel>The Zone this is in:</FormLabel>
+                        <Input
+                          value={zoneInput}
+                          onChange={(e) => setZoneInput(e.target.value.toUpperCase())}
+                          placeholder="ZONE"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <FormLabel>Case Number:</FormLabel>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={sequenceInput === "" ? "" : sequenceInput}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setSequenceInput(v === "" ? "" : Math.max(1, Number(v)));
+                          }}
+                          placeholder="0001"
+                        />
+                      </div>
+                      <div className="flex items-end gap-2">
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const next = suggestNextSequence();
+                            setSequenceInput(next);
+                          }}
+                        >
+                          Suggest Next Number
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const seq = typeof sequenceInput === "number" && sequenceInput > 0
+                              ? sequenceInput
+                              : suggestNextSequence();
+                            const candidate = buildCaseId(seq);
+                            field.onChange(candidate);
+                          }}
+                        >
+                          Generate ID
+                        </Button>
+                      </div>
+                    </div>
+                    <Input
+                      {...field}
+                      placeholder={`e.g. ${buildCaseId(1)}`}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input {...field} placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`} />
+                    {onGenerateCaseId ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onGenerateCaseId}
+                      >
+                        Generate ID
+                      </Button>
+                    ) : null}
+                  </div>
+                )}
               </FormControl>
-              <FormMessage />
+              <div className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
+                <div className="flex-grow">
+
+                  <FormMessage />
+                </div>
+                <div className="flex-shrink-0">
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      const text = String(field.value ?? "");
+                      if (!text) return;
+                      try {
+                        await navigator.clipboard.writeText(text);
+                      } catch {
+                        // ignore clipboard errors
+                      }
+                    }}
+                  >
+                    Copy Case ID
+                  </Button>
+                </div>
+              </div>
             </FormItem>
           )}
         />

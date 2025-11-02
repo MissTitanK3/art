@@ -5,6 +5,7 @@ import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createClient } from '@supabase/supabase-js';
+import { notifyUsers } from '@/lib/server/notify';
 
 type PatchBody = Partial<{
   access_role: string;
@@ -51,11 +52,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     } catch {
       client = await createSupabaseServerClient();
     }
-    console.log('Updating profile id:', id, 'with:', allowed);
-    console.log('Caller user id:', userData.user.id);
+    // Load current profile before update
+    const { data: beforeRows } = await client
+      .from('profiles')
+      .select('*')
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .limit(1);
+    const before = Array.isArray(beforeRows) ? beforeRows[0] : (beforeRows as any);
 
-    // Support both schema shapes: some regions use profiles.id === auth user id,
-    // others store auth id in profiles.user_id with a separate profiles.id.
+    // Perform update (support both schema shapes: id or user_id key)
     const { data, error } = await client
       .from('profiles')
       .update(allowed)
@@ -68,6 +73,38 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     const row = Array.isArray(data) ? data[0] : (data as any);
+
+    // Fire-and-forget notifications to the affected user on key changes
+    (async () => {
+      try {
+        if (!row) return;
+        const targetUserId: string | undefined = row.user_id || row.id;
+        if (!targetUserId) return;
+        if (before && allowed.access_role && before.access_role !== row.access_role) {
+          await notifyUsers({
+            title: 'Your Access Role Changed',
+            body: `New role: ${row.access_role}`,
+            level: 'info',
+            channel: 'system',
+            link: '/profile',
+            recipients: [targetUserId],
+          });
+        }
+        if (before && allowed.verified_by && before.verified_by !== row.verified_by) {
+          await notifyUsers({
+            title: 'Verification Status Updated',
+            body: `Verified by: ${row.verified_by}`,
+            level: 'success',
+            channel: 'system',
+            link: '/profile',
+            recipients: [targetUserId],
+          });
+        }
+      } catch (e) {
+        console.warn('[admin/profiles] PATCH notify exception:', e);
+      }
+    })();
+
     return NextResponse.json({ profile: row ?? null });
   } catch (e: any) {
     return jsonError(e);

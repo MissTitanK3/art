@@ -6,6 +6,7 @@ import { regionAdmins } from '@workspace/store/utils/nav';
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
+import { notifyUsers, resolveUserIdsFromProfileOrUserIds } from '@/lib/server/notify';
 
 type PatchBody = Partial<{
   status: string; // 'active' | 'inactive'
@@ -58,6 +59,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ subjec
     if (Object.keys(patch).length === 0) return NextResponse.json({ error: 'No valid fields' }, { status: 400 });
 
     const client = await clientFromCookies();
+    // Load current before update
+    const { data: beforeRows } = await client
+      .from('trust_signatures')
+      .select('*')
+      .eq('subject_id', subjectId)
+      .eq('signer_id', signerId)
+      .limit(1);
+    const before = Array.isArray(beforeRows) ? beforeRows[0] : (beforeRows as any);
+
     const { data, error } = await client
       .from('trust_signatures')
       .update(patch)
@@ -80,6 +90,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ subjec
           }
         : null,
     });
+
+    // Fire-and-forget notifications on status changes
+    (async () => {
+      try {
+        if (!out) return;
+        if (before && typeof patch.status === 'string' && before.status !== out.status) {
+          const recipients = await resolveUserIdsFromProfileOrUserIds([subjectId]);
+          if (recipients.length) {
+            await notifyUsers({
+              title: 'Trust Signature Status Updated',
+              body: `${before.status} → ${out.status}`,
+              level: out.status === 'inactive' ? 'warning' : 'info',
+              channel: 'system',
+              link: '/admin/trust',
+              recipients,
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('[admin/trust] PATCH notify exception:', e);
+      }
+    })();
   } catch (e: any) {
     return jsonError(e);
   }

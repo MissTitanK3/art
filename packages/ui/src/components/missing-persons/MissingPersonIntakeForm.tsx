@@ -39,6 +39,7 @@ export interface MissingPersonIntakeFormProps {
   defaultCaseZone?: string;
   onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
   onPersistRecord?: (record: DetaineeIntake) => Promise<void> | void;
+  region?: string; // optional region code to enable REGION-ZONE-YYYY-MM-NNNN
 }
 
 type DetaineeIntakeFormValues = z.infer<typeof DetaineeIntakeSchema>;
@@ -89,6 +90,7 @@ export function MissingPersonIntakeForm({
   defaultCaseZone = DEFAULT_CASE_ZONE,
   onExportRecord,
   onPersistRecord,
+  region,
 }: MissingPersonIntakeFormProps) {
   const [lastJson, setLastJson] = React.useState<string>("");
   const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
@@ -319,6 +321,8 @@ export function MissingPersonIntakeForm({
       <form className="grid gap-6" onSubmit={form.handleSubmit(handleSubmit)}>
         <CaseMetadataSection
           control={form.control}
+          region={region}
+          existingCaseIds={allCaseIds}
           onSave={() => form.handleSubmit(handleSubmit)()}
           onGenerateCaseId={generateNewCaseId}
           caseIdExamples={{

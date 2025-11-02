@@ -400,6 +400,7 @@ export function MissingPersonDetail({
           <form className="grid gap-6" onSubmit={submit}>
             <CaseMetadataSection
               mode="edit"
+              region='Demo'
               control={form.control}
               onSave={submit}
               caseIdExamples={{ primary: currentRecord.caseId || "ZONE-2024-001" }}
@@ -420,7 +421,7 @@ export function MissingPersonDetail({
         </Form>
       ) : (
         <div className="grid gap-6">
-          <CaseMetadataSection mode="view" data={currentRecord} />
+          <CaseMetadataSection mode="view" data={currentRecord} region='Demo' />
           <ContactsSection mode="view" data={currentRecord} />
           <IdentificationSection mode="view" data={currentRecord} />
           <DetentionDetailsSection mode="view" data={currentRecord} />

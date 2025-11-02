@@ -59,8 +59,36 @@ export function MissingPersonIntakeDataLayer() {
     }
   }, []);
 
+  // Load existing case IDs from Supabase to help suggest next sequence
+  const [remoteSeedRecords, setRemoteSeedRecords] = React.useState<DetaineeIntake[] | undefined>(undefined);
+  React.useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const client = getSupabaseBrowserClient();
+        const { data, error } = await client
+          .from("missing_person_records")
+          .select("case_id");
+        if (error) throw error;
+        if (!active) return;
+        const mapped: DetaineeIntake[] = (data ?? [])
+          .map((row: any) => ({ caseId: row?.case_id }))
+          .filter((r: DetaineeIntake) => typeof r.caseId === "string" && r.caseId.length > 0);
+        setRemoteSeedRecords(mapped);
+      } catch (err) {
+        console.warn("[MissingPersonIntakeDataLayer] failed to load existing case IDs", err);
+        setRemoteSeedRecords(undefined);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <MissingPersonIntakeForm
+      region={"PNW"}
+      seedRecords={remoteSeedRecords}
       onExportRecord={handleExport}
       onPersistRecord={handlePersistRemote}
     />
