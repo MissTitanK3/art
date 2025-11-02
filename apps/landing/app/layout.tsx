@@ -20,9 +20,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased px-3`}
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased px-3 snap-y snap-mandatory overflow-x-hidden`}
       >
         <Providers>
           <div className="px-3 pt-2">

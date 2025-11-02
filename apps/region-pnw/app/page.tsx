@@ -719,6 +719,13 @@ function QuickStartDrawerContent() {
           Combined with Dispatches, they provide a day‑to‑day rhythm for operations.
         </Item>
 
+        <Item icon={<MessagesSquare className="h-5 w-5" />} title="Team Request">
+          Team Request is a structured way to ask for help from specific teams or roles.
+          You can specify what skills are needed, where support is required, and any time constraints.
+          Clear requests make routing and staffing faster because coordinators have the key details up front.
+          It also creates a record that can be tracked to completion or handed off between shifts.
+        </Item>
+
         {/* <Item icon={<SettingsIcon className="h-5 w-5" />} title="Settings">
           Settings is where you control your notifications and personal preferences.
           Choose which events you want alerts for, like new dispatches, status changes, and shift reminders, and how you prefer to receive them.
@@ -726,13 +733,6 @@ function QuickStartDrawerContent() {
           Keeping these preferences up to date ensures you get the right information at the right time without noise.
           As new features roll out, additional options may appear here, but notifications are the core focus for now.
         </Item> */}
-
-        <Item icon={<MessagesSquare className="h-5 w-5" />} title="Team Request">
-          Team Request is a structured way to ask for help from specific teams or roles.
-          You can specify what skills are needed, where support is required, and any time constraints.
-          Clear requests make routing and staffing faster because coordinators have the key details up front.
-          It also creates a record that can be tracked to completion or handed off between shifts.
-        </Item>
       </div>
       <DrawerFooter>
         <DrawerClose asChild>

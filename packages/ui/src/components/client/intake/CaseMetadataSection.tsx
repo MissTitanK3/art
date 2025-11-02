@@ -194,7 +194,7 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                           placeholder="0001"
                         />
                       </div>
-                      <div className="flex items-end gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
 
                         <Button
                           type="button"
@@ -203,6 +203,7 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                             const next = suggestNextSequence();
                             setSequenceInput(next);
                           }}
+                          className="w-full sm:w-auto"
                         >
                           Suggest Next Number
                         </Button>
@@ -215,6 +216,7 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                             const candidate = buildCaseId(seq);
                             field.onChange(candidate);
                           }}
+                          className="w-full sm:w-auto"
                         >
                           Generate ID
                         </Button>

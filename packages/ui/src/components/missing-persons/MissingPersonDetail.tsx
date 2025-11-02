@@ -317,7 +317,7 @@ export function MissingPersonDetail({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-col md:flex-row items-center gap-2 text-sm text-muted-foreground">
               <Button variant="ghost" size="sm" asChild className="px-2">
                 {renderDirectoryLink(
                   directoryHref,
@@ -339,7 +339,7 @@ export function MissingPersonDetail({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-2">
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
             {!isEditing ? (
               <>
                 {onExportRecord ? (
@@ -349,6 +349,7 @@ export function MissingPersonDetail({
                       variant="outline"
                       onClick={() => handleExport("pdf")}
                       disabled={exporting === "pdf"}
+                      className="w-full sm:w-auto"
                     >
                       <Download className="mr-2 h-4 w-4" />
                       {exporting === "pdf" ? "Generating…" : "Download PDF"}
@@ -358,13 +359,14 @@ export function MissingPersonDetail({
                       variant="secondary"
                       onClick={() => handleExport("json")}
                       disabled={exporting === "json"}
+                      className="w-full sm:w-auto"
                     >
                       <FileJson className="mr-2 h-4 w-4" />
                       {exporting === "json" ? "Copying…" : "Copy JSON"}
                     </Button>
                   </>
                 ) : null}
-                <Button type="button" onClick={startEditing}>
+                <Button type="button" onClick={startEditing} className="w-full sm:w-auto">
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
               </>
@@ -372,11 +374,11 @@ export function MissingPersonDetail({
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button type="button" variant="destructive" disabled={!isDeletable || deleting}>
+                <Button type="button" variant="destructive" disabled={deleting} className="w-full sm:w-auto">
                   <Trash2 className="mr-2 h-4 w-4" /> Delete
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className='bg-accent text-accent-foreground'>
+              <AlertDialogContent className='bg-accent text-accent-foreground max-w-xs'>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this intake?</AlertDialogTitle>
                   <AlertDialogDescription>
