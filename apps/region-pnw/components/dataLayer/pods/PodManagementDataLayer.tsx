@@ -3,12 +3,13 @@
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useController } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Channel, Pod } from "@workspace/store/types/pod.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import { toast } from "sonner";
 import {
   PodManagementLayout,
   PodManagementLayoutErrors,
@@ -58,30 +59,42 @@ async function fetchPodFromDatabase(slug: string): Promise<Pod | null> {
   }
 }
 
-async function persistPodToDatabase(pod: Pod): Promise<void> {
-  try {
-    const client = getSupabaseBrowserClient();
-    const payload = {
-      id: pod.id,
-      slug: pod.slug,
-      name: pod.name,
-      area: pod.area,
-      channels: pod.channels,
-    };
-    const { error } = await client.from("pods").upsert(payload);
-    if (error) throw error;
-  } catch (e: any) {
-    throw new Error(e?.message ?? "Failed to save pod");
+// Save via Next.js API so requests show in app logs
+async function savePodViaApi(pod: Pod, isExisting: boolean): Promise<Pod> {
+  const payload = {
+    name: pod.name,
+    area: pod.area,
+    channels: pod.channels,
+  };
+
+  const url = isExisting ? `/api/admin/pods/${encodeURIComponent(pod.id)}` : `/api/admin/pods`;
+  const method = isExisting ? "PATCH" : "POST";
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    cache: "no-store",
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({} as any));
+  if (!res.ok) {
+    const message = json?.error || `Failed to ${isExisting ? "update" : "create"} pod`;
+    throw new Error(message);
   }
+  const row = (json as any)?.pod as Pod | null;
+  if (!row) throw new Error("Server did not return a pod row");
+  return row;
 }
 
-async function archivePodInDatabase(podId: string): Promise<void> {
-  try {
-    const client = getSupabaseBrowserClient();
-    const { error } = await client.from("pods").delete().eq("id", podId);
-    if (error) throw error;
-  } catch (e: any) {
-    throw new Error(e?.message ?? "Failed to archive pod");
+async function archivePodViaApi(podId: string): Promise<void> {
+  const res = await fetch(`/api/admin/pods/${encodeURIComponent(podId)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({} as any));
+    const message = (json as any)?.error || "Failed to archive pod";
+    throw new Error(message);
   }
 }
 
@@ -117,6 +130,7 @@ export default function PodManagementDataLayer() {
     reset,
     setValue,
     watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -132,6 +146,8 @@ export default function PodManagementDataLayer() {
 
   const [remotePod, setRemotePod] = React.useState<Pod | null>(null);
   const [loadingRemotePod, setLoadingRemotePod] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = React.useState<string | null>(null);
 
   const slug = watch("slug");
   React.useEffect(() => {
@@ -185,7 +201,8 @@ export default function PodManagementDataLayer() {
 
   const activePod = remotePod ?? storePod ?? fallbackPod;
 
-  const onSubmit = async (data: FormValues) => {
+  // RHF valid-submit handler (runs after values are captured)
+  const onValidSubmit = async (data: FormValues) => {
     const updatedChannels: Channel[] = [
       {
         type: data.channelType,
@@ -193,31 +210,75 @@ export default function PodManagementDataLayer() {
       },
     ];
 
-    const patch = { ...data, channels: updatedChannels };
+    const patch = { ...data, area: data.area?.trim(), channels: updatedChannels };
     delete (patch as any).channelType;
     delete (patch as any).channelLink;
 
     const nextPod = { ...activePod, ...patch };
+    const isExisting = Boolean(remotePod);
 
     try {
-      await persistPodToDatabase(nextPod);
-    } catch (error) {
-      console.warn("PodManagementDataLayer: failed to persist pod", error);
-    }
+      const savedRow = await savePodViaApi(nextPod, isExisting);
+      // Clear any previous error state and toast success
+      setErrorMessage(null);
+      setErrorDetails(null);
+      toast.success("Pod saved");
 
-    if (pods.find((p) => p.id === activePod.id)) {
-      updatePod(activePod.id, patch);
-    } else {
-      addPod(nextPod);
+      // Sync local store with saved row
+      if (pods.find((p) => p.id === savedRow.id)) {
+        updatePod(savedRow.id, savedRow);
+      } else {
+        addPod(savedRow);
+      }
+
+      // If slug changed server-side (e.g., name changed), navigate to new URL
+      if (savedRow.slug && savedRow.slug !== slug) {
+        router.push(`/pods/${encodeURIComponent(savedRow.slug)}`);
+      } else {
+        router.refresh();
+      }
+      return;
+    } catch (error: any) {
+      console.warn("PodManagementDataLayer: failed to save via API", error);
+      const msg = error?.message || "Failed to save pod";
+      setErrorMessage(msg);
+      setErrorDetails(
+        JSON.stringify(
+          {
+            context: "savePodViaApi",
+            submittedInput: data,
+            payload: { name: nextPod.name, area: nextPod.area, channels: nextPod.channels },
+            message: msg,
+          },
+          null,
+          2,
+        ),
+      );
+      toast.error(msg);
     }
-    router.refresh();
+  };
+
+  // Wrapper that blurs the active element BEFORE RHF captures values
+  const submitWithBlur: React.FormEventHandler<HTMLFormElement> = (e) => {
+    try {
+      if (typeof document !== "undefined") {
+        const el = document.activeElement as HTMLElement | null;
+        el?.blur?.();
+      }
+    } catch {}
+    return handleSubmit(onValidSubmit)(e);
   };
 
   const archive = async () => {
     try {
-      await archivePodInDatabase(activePod.id);
-    } catch (error) {
+      await archivePodViaApi(activePod.id);
+      toast.success("Pod archived");
+    } catch (error: any) {
       console.warn("PodManagementDataLayer: failed to archive pod", error);
+      const msg = error?.message || "Failed to archive pod";
+      setErrorMessage(msg);
+      setErrorDetails(JSON.stringify({ context: "archivePodViaApi", podId: activePod.id, message: msg }, null, 2));
+      toast.error(msg);
     }
     removePod(activePod.id);
     router.push("/pods");
@@ -241,15 +302,11 @@ export default function PodManagementDataLayer() {
     );
   }, [activePod, currentValues]);
 
-  const fieldBindings = React.useMemo(
-    () => ({
-      name: register("name"),
-      area: register("area"),
-      slug: register("slug"),
-      channelLink: register("channelLink"),
-    }),
-    [register]
-  );
+  const nameField = register("name");
+  const slugField = register("slug");
+  const channelLinkField = register("channelLink");
+  const { field: areaField } = useController({ name: "area", control });
+  const fieldBindings = { name: nameField, area: areaField, slug: slugField, channelLink: channelLinkField } as const;
 
   const formErrors: PodManagementLayoutErrors = {
     name: errors.name?.message,
@@ -280,11 +337,13 @@ export default function PodManagementDataLayer() {
       disableSave={isSubmitting}
       isSubmitting={isSubmitting}
       onBack={() => router.push("/pods")}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={submitWithBlur}
       onArchive={archive}
       rosterHref={rosterHref}
       shiftsHref={shiftsHref}
       LinkComponent={Link}
+      errorMessage={errorMessage ?? undefined}
+      errorDetails={errorDetails ?? undefined}
       loadingMessage={
         loadingRemotePod ? "Loading pod from database..." : undefined
       }

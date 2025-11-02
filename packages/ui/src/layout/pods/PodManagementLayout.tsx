@@ -65,6 +65,8 @@ type PodManagementLayoutProps = {
   description?: ReactNode;
   archiveDisabled?: boolean;
   loadingMessage?: ReactNode;
+  errorMessage?: ReactNode;
+  errorDetails?: ReactNode;
 };
 
 const DefaultLinkComponent: React.FC<LinkComponentProps> = ({
@@ -94,8 +96,11 @@ export function PodManagementLayout({
   ),
   archiveDisabled,
   loadingMessage,
+  errorMessage,
+  errorDetails,
 }: PodManagementLayoutProps) {
   const channelLinkError = errors?.channelLink;
+  const [showDebug, setShowDebug] = React.useState(false);
 
   return (
     <section className="mx-auto w-full max-w-4xl sm:px-4">
@@ -112,6 +117,31 @@ export function PodManagementLayout({
       </div>
 
       {description}
+
+      {errorMessage ? (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <div className="flex items-start justify-between gap-3">
+            <p className="font-medium">{errorMessage}</p>
+            {errorDetails ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDebug((v) => !v)}
+              >
+                {showDebug ? "Hide details" : "Show details"}
+              </Button>
+            ) : null}
+          </div>
+          {showDebug && errorDetails ? (
+            <pre className="mt-2 max-h-56 overflow-auto rounded bg-background p-2 text-xs text-foreground/80">
+{String(errorDetails)}
+            </pre>
+          ) : null}
+        </div>
+      ) : null}
+
+      
 
       <form
         id="pod-management-form"
