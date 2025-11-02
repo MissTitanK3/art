@@ -1,5 +1,8 @@
 export type NeedUrgency = 'low' | 'normal' | 'urgent';
-export type NeedVisibility = 'public' | 'region' | 'pod';
+import type { AccessRole } from './roles.ts';
+// Visibility is scoped to authenticated users within a region.
+// Support legacy values plus role-based minimum access gates.
+export type NeedVisibility = 'public' | 'region' | 'pod' | `role:${AccessRole}`;
 export type NeedStatus = 'open' | 'matched' | 'fulfilled' | 'closed';
 
 export interface NeedLocation {
@@ -32,4 +35,3 @@ export interface MeetANeed {
   fulfilled_at?: string | null;
   created_at: string;
 }
-

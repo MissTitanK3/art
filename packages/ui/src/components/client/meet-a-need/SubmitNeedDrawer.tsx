@@ -8,6 +8,8 @@ import { Label } from "@workspace/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@workspace/ui/components/drawer";
 import type { NeedUrgency, NeedVisibility } from "@workspace/store/types/meet-a-need";
+import { AccessRoles, roleLabel } from "@workspace/store/types/roles.ts";
+import { NEED_CATEGORIES, humanizeNeedCategory } from "@workspace/ui/lib/constants/meet-a-need";
 
 export type SubmitNeedFormData = {
   category: string;
@@ -30,7 +32,7 @@ export default function SubmitNeedDrawer({ open, onOpenChange, onSubmit }: Props
   const [category, setCategory] = React.useState("other");
   const [description, setDescription] = React.useState("");
   const [urgency, setUrgency] = React.useState<NeedUrgency>("normal");
-  const [visibility, setVisibility] = React.useState<NeedVisibility>("region");
+  const [visibility, setVisibility] = React.useState<NeedVisibility>("role:team_member");
   const [locationLabel, setLocationLabel] = React.useState("");
   const [contact, setContact] = React.useState("");
   const [files, setFiles] = React.useState<File[]>([]);
@@ -76,20 +78,25 @@ export default function SubmitNeedDrawer({ open, onOpenChange, onSubmit }: Props
 
         <div className="mt-2 overflow-auto">
           <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="space-y-1">
-              <Label className="text-xs">Category</Label>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="food, shelter, transport, legal, etc." />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Description</Label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the need in plain language" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">Category</Label>
+                <Select value={category} onValueChange={(v) => setCategory(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64 overflow-auto">
+                    {NEED_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>{humanizeNeedCategory(c)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-1">
                 <Label className="text-xs">Urgency</Label>
                 <Select value={urgency} onValueChange={(v) => setUrgency(v as NeedUrgency)}>
                   <SelectTrigger><SelectValue placeholder="Urgency" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-64 overflow-auto">
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="normal">Normal</SelectItem>
                     <SelectItem value="urgent">Urgent</SelectItem>
@@ -97,16 +104,20 @@ export default function SubmitNeedDrawer({ open, onOpenChange, onSubmit }: Props
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Visibility</Label>
+                <Label className="text-xs">Minimum Role to View</Label>
                 <Select value={visibility} onValueChange={(v) => setVisibility(v as NeedVisibility)}>
-                  <SelectTrigger><SelectValue placeholder="Visibility" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="region">Region only</SelectItem>
-                    <SelectItem value="pod">Pod/dispatchers</SelectItem>
+                  <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent className="max-h-64 overflow-auto">
+                    {AccessRoles.map((r) => (
+                      <SelectItem key={r} value={`role:${r}`}>{roleLabel(r)}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Description</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the need in plain language" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Location (optional)</Label>
@@ -137,4 +148,3 @@ export default function SubmitNeedDrawer({ open, onOpenChange, onSubmit }: Props
     </Drawer>
   );
 }
-

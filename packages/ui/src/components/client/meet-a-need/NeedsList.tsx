@@ -9,6 +9,7 @@ import { Label } from "@workspace/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@workspace/ui/components/drawer";
 import type { MeetANeed, NeedStatus, NeedUrgency, NeedVisibility } from "@workspace/store/types/meet-a-need";
+import { AccessRoles, roleLabel } from "@workspace/store/types/roles.ts";
 
 type OfferPayload = { resource_type: "time" | "transport" | "supplies" | "funding" | "other"; notes?: string };
 
@@ -62,7 +63,12 @@ export default function NeedsList({ needs, onOfferHelp, onUpdateStatus, onUpdate
             ) : null}
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span>Visibility: {n.visibility}</span>
+                <span>
+                  Visibility:
+                  {String(n.visibility).startsWith('role:')
+                    ? ` ${roleLabel(n.visibility.replace('role:', '') as any)}`
+                    : ` ${n.visibility}`}
+                </span>
                 {n.location?.label ? (
                   <>
                     <span>•</span>
@@ -238,13 +244,13 @@ function EditNeedDrawer({
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Visibility</Label>
+                  <Label className="text-xs">Minimum Role to View</Label>
                   <Select value={visibility} onValueChange={(v) => setVisibility(v as NeedVisibility)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="region">Region only</SelectItem>
-                      <SelectItem value="pod">Pod/dispatchers</SelectItem>
+                    <SelectContent className="max-h-64 overflow-auto">
+                      {AccessRoles.map((r) => (
+                        <SelectItem key={r} value={`role:${r}`}>{roleLabel(r)}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

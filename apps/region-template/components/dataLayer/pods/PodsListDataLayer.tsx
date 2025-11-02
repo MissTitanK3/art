@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PodsListLayout } from "@workspace/ui/layout/pods/PodsListLayout";
 import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/PodsListLayout";
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -61,6 +62,8 @@ export default function PodsListDataLayer() {
   const pods = usePodStore((state) => state.pods);
   const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(null);
   const [loadingRemotePods, setLoadingRemotePods] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
@@ -95,6 +98,9 @@ export default function PodsListDataLayer() {
   return (
     <PodsListLayout
       pods={normalizedPods}
+      initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
+      onUrlChange={(url) => router.replace(url)}
+      persistKey="podsList.filters"
       emptyState={
         loadingRemotePods ? (
           <p className="text-sm text-muted-foreground">Loading pods from database...</p>

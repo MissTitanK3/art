@@ -412,6 +412,8 @@ function ActiveDispatchesPreview() {
   const items = useMemo(
     () =>
       [...submissions]
+        // Filter out non-actionable dispatches
+        .filter((entry) => !["cancelled", "expired", "archived"].includes(entry.status))
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 4),
     [submissions],

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchListLayout } from "@workspace/ui/layout/dispatch/DispatchListLayout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
@@ -44,13 +45,37 @@ function mapRowToSubmission(row: any): DispatchSubmission {
   } as DispatchSubmission;
 }
 
-async function fetchDispatchesFromDatabase(): Promise<DispatchSubmission[] | null> {
+type ListFilters = {
+  q?: string;
+  status?: string;
+  type?: string;
+  from?: string; // YYYY-MM-DD
+  to?: string;   // YYYY-MM-DD
+};
+
+async function fetchDispatchesFromDatabase(filters?: ListFilters): Promise<DispatchSubmission[] | null> {
   try {
     const client = getSupabaseBrowserClient();
-    const { data, error } = await client
+    let query = client
       .from("dispatch_submissions")
       .select("*")
       .order("timestamp", { ascending: false });
+
+    if (filters) {
+      const { status, type, from, to, q } = filters;
+      if (status && status !== "all") query = query.eq("status", status);
+      if (type && type !== "all") query = query.eq("type", type);
+      if (from) query = query.gte("timestamp", `${from}T00:00:00.000Z`);
+      if (to) query = query.lte("timestamp", `${to}T23:59:59.999Z`);
+      if (q && q.trim().length > 0) {
+        const like = `%${q}%`;
+        query = query.or(
+          `location_label.ilike.${like},state.ilike.${like},intended_action_preset.ilike.${like},intended_action_notes.ilike.${like}`
+        );
+      }
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     const mapped = rows.map(mapRowToSubmission);
@@ -68,6 +93,8 @@ export default function DispatchListDataLayer() {
   const submissions = useDispatchStore((s) => s.submissions);
   const [remoteSubmissions, setRemoteSubmissions] = React.useState<typeof submissions | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   React.useEffect(() => {
     let cancelled = false;
@@ -75,7 +102,15 @@ export default function DispatchListDataLayer() {
     async function hydrate() {
       setLoading(true);
       try {
-        const result = await fetchDispatchesFromDatabase();
+        const paramsRecord = Object.fromEntries((searchParams ?? new URLSearchParams()).entries());
+        const filters: ListFilters = {
+          q: paramsRecord.q,
+          status: paramsRecord.status,
+          type: paramsRecord.type,
+          from: paramsRecord.from,
+          to: paramsRecord.to,
+        };
+        const result = await fetchDispatchesFromDatabase(filters);
         if (!cancelled && Array.isArray(result) && result.length > 0) {
           setRemoteSubmissions(result);
         }
@@ -94,7 +129,7 @@ export default function DispatchListDataLayer() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [searchParams]);
 
   const data = React.useMemo(() => {
     const source = remoteSubmissions ?? submissions;
@@ -108,6 +143,9 @@ export default function DispatchListDataLayer() {
   return (
     <DispatchListLayout
       submissions={data}
+      initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
+      onUrlChange={(url) => router.replace(url)}
+      persistKey="dispatchList.filters"
       LinkComponent={({ href, children }) => (
         <Link href={href} className="block hover:no-underline">
           {children}

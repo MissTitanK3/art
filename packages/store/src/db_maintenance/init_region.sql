@@ -316,7 +316,7 @@
     category TEXT NOT NULL,
     description TEXT NOT NULL,
     urgency TEXT CHECK (urgency IN ('low','normal','urgent')) DEFAULT 'normal',
-    visibility TEXT CHECK (visibility IN ('public','region','pod')) DEFAULT 'region',
+    visibility TEXT DEFAULT 'role:team_member',
     location JSONB,
     contact_preference TEXT,
     status TEXT CHECK (status IN ('open','matched','fulfilled','closed')) DEFAULT 'open',
@@ -325,6 +325,24 @@
     fulfilled_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now()
   );
+
+  -- Ensure visibility constraint allows role-based thresholds (idempotent)
+  DO $$ BEGIN
+    BEGIN
+      ALTER TABLE public.meet_a_need DROP CONSTRAINT IF EXISTS meet_a_need_visibility_check;
+    EXCEPTION WHEN undefined_object THEN
+      NULL;
+    END;
+    ALTER TABLE public.meet_a_need
+      ADD CONSTRAINT meet_a_need_visibility_check CHECK (
+        visibility IS NULL OR visibility IN (
+          'public','region','pod',
+          'role:team_member','role:pod_leader','role:trainer',
+          'role:dispatcher_basic','role:dispatcher_verified','role:dispatcher_admin',
+          'role:admin','role:regional_admin','role:national_admin'
+        )
+      );
+  END $$;
 
   -- Confirmed Watch Wizard submissions (lightweight event reports)
   CREATE TABLE IF NOT EXISTS public.wizard (

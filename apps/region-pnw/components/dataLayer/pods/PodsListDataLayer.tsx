@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PodsListLayout } from "@workspace/ui/layout/pods/PodsListLayout";
 import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/PodsListLayout";
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -63,13 +64,38 @@ function mapRowToPod(row: any): PodsListLayoutPod {
   } as PodsListLayoutPod;
 }
 
-async function fetchPodsFromDatabase(): Promise<PodsListLayoutPod[]> {
+type ListFilters = {
+  q?: string;
+  area?: string;
+  channel?: string;
+};
+
+async function fetchPodsFromDatabase(filters?: ListFilters): Promise<PodsListLayoutPod[]> {
   try {
     const client = getSupabaseBrowserClient();
-    const { data, error } = await client
+    let query = client
       .from("pods")
       .select("id, slug, name, area, channels")
       .order("name", { ascending: true });
+
+    if (filters) {
+      const { q, area, channel } = filters;
+      if (area && area !== "all") query = query.eq("area", area);
+      if (channel && channel !== "all") {
+        // channels is likely jsonb array of { type, link }
+        try {
+          query = query.contains("channels", [{ type: channel }]);
+        } catch {
+          // fallback: no-op if backend doesn't support jsonb contains
+        }
+      }
+      if (q && q.trim().length > 0) {
+        const like = `%${q}%`;
+        query = query.or(`name.ilike.${like},slug.ilike.${like},area.ilike.${like}`);
+      }
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     return rows.map(mapRowToPod);
@@ -84,6 +110,8 @@ export default function PodsListDataLayer() {
   const setPods = usePodStore((state) => state.setPods);
   const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(null);
   const [loadingRemotePods, setLoadingRemotePods] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
@@ -91,7 +119,13 @@ export default function PodsListDataLayer() {
     async function hydrateFromDatabase() {
       setLoadingRemotePods(true);
       try {
-        const result = await fetchPodsFromDatabase();
+        const paramsRecord = Object.fromEntries((searchParams ?? new URLSearchParams()).entries());
+        const filters: ListFilters = {
+          q: paramsRecord.q,
+          area: paramsRecord.area,
+          channel: paramsRecord.channel,
+        };
+        const result = await fetchPodsFromDatabase(filters);
 
         if (mounted && result.length > 0) {
           setRemotePods(result);
@@ -120,7 +154,7 @@ export default function PodsListDataLayer() {
     return () => {
       mounted = false;
     };
-  }, [setPods]);
+  }, [setPods, searchParams]);
 
   const podsToDisplay = remotePods && remotePods.length > 0 ? remotePods : pods;
   const normalizedPods = podsToDisplay.map(normalizePod);
@@ -128,6 +162,9 @@ export default function PodsListDataLayer() {
   return (
     <PodsListLayout
       pods={normalizedPods}
+      initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
+      onUrlChange={(url) => router.replace(url)}
+      persistKey="podsList.filters"
       emptyState={
         loadingRemotePods ? (
           <p className="text-sm text-muted-foreground">Loading pods from database...</p>
