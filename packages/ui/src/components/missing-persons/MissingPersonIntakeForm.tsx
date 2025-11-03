@@ -40,6 +40,8 @@ export interface MissingPersonIntakeFormProps {
   onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
   onPersistRecord?: (record: DetaineeIntake) => Promise<void> | void;
   region?: string; // optional region code to enable REGION-ZONE-YYYY-MM-NNNN
+  // Optional: fetch last submitted case's caseId from backend ordered by auto-increment id
+  loadLastCaseId?: () => Promise<string | null>;
 }
 
 type DetaineeIntakeFormValues = z.infer<typeof DetaineeIntakeSchema>;
@@ -91,6 +93,7 @@ export function MissingPersonIntakeForm({
   onExportRecord,
   onPersistRecord,
   region,
+  loadLastCaseId,
 }: MissingPersonIntakeFormProps) {
   const [lastJson, setLastJson] = React.useState<string>("");
   const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
@@ -323,6 +326,7 @@ export function MissingPersonIntakeForm({
           control={form.control}
           region={region}
           existingCaseIds={allCaseIds}
+          loadLastCaseId={loadLastCaseId}
           onSave={() => form.handleSubmit(handleSubmit)()}
           onGenerateCaseId={generateNewCaseId}
           caseIdExamples={{

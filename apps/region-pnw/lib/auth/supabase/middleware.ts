@@ -5,6 +5,8 @@ import { ensureSupabaseEnv } from './utils';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+  const isApi = pathname.startsWith('/api/');
 
   // If env vars are missing, skip to avoid throwing during local/tutorial flows
   let env: ReturnType<typeof ensureSupabaseEnv>;
@@ -34,17 +36,20 @@ export async function updateSession(request: NextRequest) {
 
   // Example gate: redirect if not authenticated and not on public routes
   if (
-    request.nextUrl.pathname !== '/' &&
+    pathname !== '/' &&
     !user &&
-    !request.nextUrl.pathname.startsWith('/sign-in') &&
+    !pathname.startsWith('/sign-in') &&
     // Allow unauthenticated access to sign-up as a public route
-    !request.nextUrl.pathname.startsWith('/sign-up') &&
-    !request.nextUrl.pathname.startsWith('/intents') &&
-    !request.nextUrl.pathname.startsWith('/roles') &&
-    !request.nextUrl.pathname.startsWith('/impact') &&
-    !request.nextUrl.pathname.startsWith('/forgot-password') &&
-    !request.nextUrl.pathname.startsWith('/auth')
+    !pathname.startsWith('/sign-up') &&
+    !pathname.startsWith('/intents') &&
+    !pathname.startsWith('/roles') &&
+    !pathname.startsWith('/impact') &&
+    !pathname.startsWith('/forgot-password') &&
+    !pathname.startsWith('/auth')
   ) {
+    if (isApi) {
+      return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = '/sign-in';
     return NextResponse.redirect(url);

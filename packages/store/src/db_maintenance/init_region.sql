@@ -589,6 +589,103 @@
     version INTEGER
   );
 
+  -- Regional advocacy groups (per region app)
+  -- Stores trusted orgs that should receive missing-person reports when finalized.
+  CREATE TABLE IF NOT EXISTS public.advocacy_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    -- e.g., 'legal_aid','civil_rights','immigrant_justice','media_advocacy','public_defender'
+    type TEXT,
+    jurisdiction TEXT,
+    contact_emails TEXT[],
+    contact_signal TEXT,
+    -- preferred report delivery format: 'pdf', 'web', or 'feed'
+    preferred_format TEXT,
+    active_status BOOLEAN DEFAULT TRUE,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+  );
+
+  -- Delivery logs for auditing where reports were sent upon finalization
+  CREATE TABLE IF NOT EXISTS public.advocacy_delivery_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id UUID REFERENCES public.advocacy_groups(id) ON DELETE SET NULL,
+    case_id TEXT REFERENCES public.missing_person_records(case_id) ON DELETE CASCADE,
+    format TEXT,
+    status TEXT,
+    details JSONB,
+    attempted_at TIMESTAMPTZ DEFAULT now()
+  );
+
+  -- Enable RLS for advocacy tables
+  ALTER TABLE public.advocacy_groups ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.advocacy_delivery_logs ENABLE ROW LEVEL SECURITY;
+
+  -- Policies: region admins manage groups and delivery logs
+  DROP POLICY IF EXISTS adv_groups_admin_manage ON public.advocacy_groups;
+  CREATE POLICY adv_groups_admin_manage
+  ON public.advocacy_groups
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
+    )
+  );
+
+  DROP POLICY IF EXISTS adv_delivery_admin_manage ON public.advocacy_delivery_logs;
+  CREATE POLICY adv_delivery_admin_manage
+  ON public.advocacy_delivery_logs
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
+    )
+  );
+
+  -- Dispatcher read access (includes admins) to both tables
+  DROP POLICY IF EXISTS adv_groups_dispatcher_select ON public.advocacy_groups;
+  CREATE POLICY adv_groups_dispatcher_select
+  ON public.advocacy_groups
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+    )
+  );
+
+  DROP POLICY IF EXISTS adv_delivery_dispatcher_select ON public.advocacy_delivery_logs;
+  CREATE POLICY adv_delivery_dispatcher_select
+  ON public.advocacy_delivery_logs
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = (auth.uid())::text
+        AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+    )
+  );
+
   -- Trust signatures
   CREATE TABLE IF NOT EXISTS public.trust_signatures (
     subject_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -644,6 +741,21 @@
       WHERE c.relkind = 'i' AND c.relname = 'idx_dispatch_timestamp'
     ) THEN
       EXECUTE 'CREATE INDEX idx_dispatch_timestamp ON public.dispatch_submissions (timestamp)';
+    END IF;
+
+    -- advocacy tables indexes
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE c.relkind = 'i' AND c.relname = 'idx_advocacy_groups_active'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_advocacy_groups_active ON public.advocacy_groups (active_status)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE c.relkind = 'i' AND c.relname = 'idx_advocacy_delivery_logs_case_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_advocacy_delivery_logs_case_id ON public.advocacy_delivery_logs (case_id)';
     END IF;
 
     IF NOT EXISTS (

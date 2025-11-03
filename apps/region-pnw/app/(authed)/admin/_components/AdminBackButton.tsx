@@ -8,6 +8,8 @@ import { ArrowLeft } from "lucide-react";
 export default function AdminBackButton() {
   const pathname = usePathname();
   if (!pathname || pathname === "/admin") return null;
+  // Hide on advocacy groups admin page which has its own navigation
+  if (pathname.startsWith("/admin/advocacy-groups")) return null;
 
   return (
     <div className="mb-4">
@@ -20,4 +22,3 @@ export default function AdminBackButton() {
     </div>
   );
 }
-

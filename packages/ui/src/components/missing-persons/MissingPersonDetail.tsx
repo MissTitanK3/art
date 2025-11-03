@@ -54,6 +54,7 @@ export interface MissingPersonDetailProps {
   record: DetaineeIntake;
   slug: string;
   onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
+  onFinalizeRecord?: (record: DetaineeIntake) => Promise<void> | void;
   directoryHref?: string;
   renderDirectoryLink?: (href: string, label: React.ReactNode) => React.ReactNode;
   onDeleteSuccess?: (details: { caseId: string; record: DetaineeIntake; directoryHref: string }) => void;
@@ -65,6 +66,7 @@ export function MissingPersonDetail({
   record,
   slug,
   onExportRecord,
+  onFinalizeRecord,
   directoryHref = DEFAULT_DIRECTORY_HREF,
   renderDirectoryLink = defaultRenderDirectoryLink,
   onDeleteSuccess,
@@ -80,6 +82,7 @@ export function MissingPersonDetail({
   const [isEditing, setIsEditing] = React.useState(false);
   const [exporting, setExporting] = React.useState<ExportFormat | null>(null);
   const [deleting, setDeleting] = React.useState(false);
+  const [finalizing, setFinalizing] = React.useState(false);
 
   const form = useForm<DetaineeIntakeFormValues>({
     defaultValues: toFormValues(record),
@@ -365,10 +368,31 @@ export function MissingPersonDetail({
                       {exporting === "json" ? "Copying…" : "Copy JSON"}
                     </Button>
                   </>
-                ) : null}
-                <Button type="button" onClick={startEditing} className="w-full sm:w-auto">
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
-                </Button>
+            ) : null}
+            {onFinalizeRecord ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={async () => {
+                  try {
+                    setFinalizing(true);
+                    await onFinalizeRecord(currentRecord);
+                    toast.success('Finalized and notifications queued');
+                  } catch (e) {
+                    toast.error('Failed to finalize');
+                  } finally {
+                    setFinalizing(false);
+                  }
+                }}
+                disabled={finalizing}
+                className="w-full sm:w-auto"
+              >
+                {finalizing ? 'Finalizing…' : 'Finalize & Notify'}
+              </Button>
+            ) : null}
+            <Button type="button" onClick={startEditing} className="w-full sm:w-auto">
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
               </>
             ) : null}
 

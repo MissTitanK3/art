@@ -7,6 +7,9 @@ import {
   verifiedAdmins,
 } from '@workspace/store/utils/nav';
 
+// Externalize region-specific links to environment where possible
+const SIGNAL_GROUP_URL = process.env.NEXT_PUBLIC_SIGNAL_GROUP_URL || undefined;
+
 export const navConfig: GlobalNavConfigInput = {
   brand: {
     name: 'ART Region PNW',
@@ -37,6 +40,7 @@ export const navConfig: GlobalNavConfigInput = {
       href: '/missing-persons',
       roles: completeOnboarding,
     },
+    { label: 'Advocacy Network', href: '/admin/advocacy-groups', icon: 'link', roles: regionAdmins },
     {
       label: 'Dispatch',
       icon: 'radio',
@@ -82,10 +86,14 @@ export const navConfig: GlobalNavConfigInput = {
       roles: completeOnboarding,
       children: [
         { label: 'My Profile', href: '/my-profile' },
-        {
-          label: 'Signal Onboarding Group',
-          href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
-        },
+        ...(SIGNAL_GROUP_URL
+          ? [
+              {
+                label: 'Signal Onboarding Group',
+                href: SIGNAL_GROUP_URL,
+              } as const,
+            ]
+          : []),
         { label: 'Settings', href: '/settings' },
         { label: 'Admin', href: '/admin', roles: ['dispatcher_admin', 'admin', 'regional_admin', 'national_admin'] },
         { label: 'How To Use Platform', href: '/how-to-use', roles: completeOnboarding },

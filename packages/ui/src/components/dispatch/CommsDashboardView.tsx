@@ -89,24 +89,30 @@ export function CommsDashboardView({
             <CardTitle className="w-full">Check In's</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="grid flex-1 gap-1">
-                <Label htmlFor="global-checkin">Default check-in (minutes)</Label>
+            <div className="mb-3 space-y-3">
+              <div className="text-center">
+                <Label htmlFor="global-checkin" className="text-sm">Default check-in (minutes)</Label>
+              </div>
+              <div className="flex items-end justify-center gap-2">
                 <Input
                   id="global-checkin"
                   type="number"
                   min={5}
                   value={checkInInput}
                   onChange={(e) => setCheckInInput(e.target.value)}
+                  className="h-8 w-24 text-center text-sm"
                 />
+                <Button onClick={applyGlobalInterval} size="sm" variant="outline">
+                  Apply
+                </Button>
               </div>
-              <Button onClick={applyGlobalInterval} variant="outline" className="w-full sm:w-auto">
-                Apply
-              </Button>
             </div>
             <CommsTeamCheckInList
               teams={teams}
               defaultCheckInMinutes={globalCheckInMinutes ?? 60}
+              checkInInput={checkInInput}
+              setCheckInInput={setCheckInInput}
+              setGlobalCheckInMinutes={setGlobalCheckInMinutes}
               onCheckIn={checkInTeam}
             />
           </CardContent>
@@ -115,7 +121,7 @@ export function CommsDashboardView({
 
       <div className="flex w-full flex-col gap-3 xl:w-2/3">
         <Tabs defaultValue="log" className="flex h-full flex-col">
-          <TabsList className="mb-2 w-full overflow-x-auto flex flex-wrap gap-2">
+          <TabsList className="mb-2 w-full overflow-x-auto flex flex-nowrap whitespace-nowrap gap-2">
             <TabsTrigger value="briefing">Briefing</TabsTrigger>
             <TabsTrigger value="alerts">Alerts</TabsTrigger>
             <TabsTrigger value="log">Logs</TabsTrigger>

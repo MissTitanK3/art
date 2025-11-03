@@ -256,6 +256,19 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         slug={slug}
         directoryHref="/missing-persons"
         onExportRecord={exportLegalAidReport}
+        onFinalizeRecord={async (rec) => {
+          try {
+            await fetch('/api/missing-persons/finalize', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ record: { caseId: rec.caseId, fullName: rec.fullName ?? null }, slug }),
+            });
+          } catch (e) {
+            console.warn('Finalize notify failed', e);
+            throw e;
+          }
+        }}
         renderDirectoryLink={renderDirectoryLink}
         onDeleteSuccess={handleDeleteSuccess}
         onSaveRecord={handleSaveRemote}

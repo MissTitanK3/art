@@ -1,13 +1,10 @@
 'use client'
 
-// apps/region-pnw/app/(authed)/my-profile/page.tsx
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProfileDataLayer } from "@/components/dataLayer/profile/ProfileDataLayer";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { Button } from "@workspace/ui/components/button";
-import { useRegionAdapters } from "@/providers/RegionProvider";
 
 function ReasonBanner() {
   const searchParams = useSearchParams();

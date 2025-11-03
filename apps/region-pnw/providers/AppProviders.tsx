@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { Toaster } from "sonner";
+import { Toaster } from "@workspace/ui/components/sonner";
 import { AuthProvider } from "@/providers/AuthProvider";
 import type { AuthSession } from "@/lib/auth/types";
 import { RegionProvider } from "@/providers/RegionProvider";

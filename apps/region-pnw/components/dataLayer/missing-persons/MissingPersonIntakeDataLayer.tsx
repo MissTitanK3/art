@@ -85,10 +85,28 @@ export function MissingPersonIntakeDataLayer() {
     };
   }, []);
 
+  const loadLastCaseId = React.useCallback(async (): Promise<string | null> => {
+    try {
+      const client = getSupabaseBrowserClient();
+      const { data, error } = await client
+        .from("missing_person_records")
+        .select("case_id, id")
+        .order("id", { ascending: false, nullsFirst: false })
+        .limit(1);
+      if (error) throw error;
+      const row = Array.isArray(data) && data.length > 0 ? data[0] : null;
+      return row?.case_id ?? null;
+    } catch (e) {
+      console.warn("[MissingPersonIntakeDataLayer] failed to load last case id", e);
+      return null;
+    }
+  }, []);
+
   return (
     <MissingPersonIntakeForm
       region={"PNW"}
       seedRecords={remoteSeedRecords}
+      loadLastCaseId={loadLastCaseId}
       onExportRecord={handleExport}
       onPersistRecord={handlePersistRemote}
     />

@@ -8,7 +8,7 @@ type Props = {
   eventId: string;
 };
 
-export function CommsDashboard({ eventId }: Props) {
+export default function CommsDashboardDataLayer({ eventId }: Props) {
   const data = useCommsData({ eventId });
   return (
     <CommsDashboardView
@@ -32,4 +32,3 @@ export function CommsDashboard({ eventId }: Props) {
   );
 }
 
-export default CommsDashboard;

@@ -21,6 +21,7 @@ import {
   MessagesSquare,
   Github,
   ChevronDown,
+  Coffee,
 } from "lucide-react";
 
 type FeatureVariant = "card" | "inline" | "section" | "tile";
@@ -169,7 +170,7 @@ const FeatureItem: FC<FeatureItemProps> = ({
                 <div
                   className={
                     imageVariant === 'phone'
-                      ? 'relative mx-auto aspect-[9/19] w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] overflow-hidden rounded-2xl border border-input bg-muted'
+                      ? 'relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-muted'
                       : 'relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-muted'
                   }
                 >
@@ -179,7 +180,7 @@ const FeatureItem: FC<FeatureItemProps> = ({
                 <div
                   className={
                     imageVariant === 'phone'
-                      ? 'relative mx-auto aspect-[9/19] w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] overflow-hidden rounded-2xl border border-input bg-muted'
+                      ? 'relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-muted'
                       : 'relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-muted'
                   }
                 >
@@ -200,7 +201,7 @@ const FeatureItem: FC<FeatureItemProps> = ({
                 <div
                   className={
                     imageVariant === 'phone'
-                      ? 'relative mx-auto aspect-[9/19] w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10'
+                      ? 'relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10'
                       : 'relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10'
                   }
                 />
@@ -275,8 +276,23 @@ export default function LandingPage() {
             Decentralized dispatch, training, and incident reporting. Secure. Volunteer-run.
           </p>
           <p className="text-base sm:text-lg text-muted-foreground">
-            Always Ready Tools should look like tomorrow’s emergency system built by the people. No marketing gloss, no corporate blue gradients (for the most part, lol) — just clarity, security, and confidence. The goal is to make a donor say, “This is what real infrastructure looks like,” and make an organizer say, “We can use this today.”
+            Always Ready Tools should look like tomorrow’s emergency system built by the people. No marketing gloss—just clarity, security, and confidence. The goal is to make a donor say, “This is what real infrastructure looks like,” and make an organizer say, “We can use this today.”
           </p>
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <Link
+              href="https://ko-fi.com/techwitch"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Donate on Ko-fi"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-base sm:text-lg font-semibold shadow-lg hover:opacity-90"
+            >
+              <Coffee className="h-5 w-5" aria-hidden />
+              Donate on Ko-fi
+            </Link>
+            <p className="text-sm text-muted-foreground">
+              Help fund hosting, existence, and training resources.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -330,89 +346,89 @@ export default function LandingPage() {
 
       {/* Core Platforms (Showcase) */}
       <section className="w-full">
-        <FeatureItem imageSrc="/academy.png" imageVariant="phone" imageAlt="academy screenshot" id="feature-academy" nextId="feature-admin" variant="section" icon={<GraduationCap className="h-6 w-6" />} title="Academy Hub">
-          The Academy Hub is your training hub for learning how this platform and your region operate.
-          Courses are self‑paced and cover both fundamentals and role‑specific practices so you can onboard quickly.
-          As you complete modules, you earn credentials that unlock permissions and responsibilities in other areas of the app.
-          Returning users can use the Academy Hub for refreshers or to track progress toward advanced qualifications.
-        </FeatureItem>
-
-        <FeatureItem imageSrc="/admin.png" imageAlt="admin screenshot" imageVariant="phone" id="feature-admin" nextId="feature-watch" variant="section" reverse icon={<Shield className="h-6 w-6" />} title="Admin">
-          The Admin area provides region‑level oversight and configuration tools for authorized administrators.
-          Use it to review activity, access audit trails, manage reports, and keep operations compliant with local policies.
-          From here you can tune integrations, branding, and feature availability so the platform matches your needs.
-          Access is restricted to protect sensitive settings while preserving transparency for coordinators.
-        </FeatureItem>
-
-        <FeatureItem imageSrc="/watch.png" imageAlt="watch screenshot" imageVariant="phone" id="feature-watch" nextId="feature-confirmed-watch" variant="section" icon={<Eye className="h-6 w-6" />} title="Watch">
-          Watch is a live map for situational awareness across your region.
-          Layers and filters help you focus on relevant reports, signals, and activity as conditions change.
-          It’s useful for real‑time monitoring, early triage, and spotting patterns before they turn into dispatches.
-          Teams can use Watch during operations briefings to align on what’s happening right now.
-        </FeatureItem>
-
-        <FeatureItem imageSrc="/confirmed-watch.png" imageAlt="confirmed watch screenshot" imageVariant="phone" id="feature-confirmed-watch" nextId="feature-dispatches" variant="section" reverse icon={<CheckCircle2 className="h-6 w-6" />} title="Confirmed Watch">
-          Confirmed Watch highlights reports that coordinators have reviewed and verified for accuracy.
-          This view reduces noise and uncertainty so on‑the‑ground teams can act with confidence.
-          It lives inside Watch as a filter or dedicated layer rather than a separate tool.
-          Use it when you need a trusted baseline for decisions or public communication.
-        </FeatureItem>
-
-        <FeatureItem imageSrc="/dispatch.png" imageAlt="dispatches screenshot" imageVariant="phone" id="feature-dispatches" nextId="feature-howto" variant="section" icon={<ClipboardList className="h-6 w-6" />} title="Dispatches">
-          Dispatches is the intake‑to‑action pipeline that moves a report from first contact to resolution.
-          Coordinators triage submissions, set status, and record intended actions so everyone sees the current plan.
-          Roles and staffing needs are tracked here, and updates form the running incident log for handoffs.
-          Use Dispatches to keep decisions visible, responsibilities clear, and progress easy to audit.
-        </FeatureItem>
-
-        <FeatureItem imageSrc="/how-to-use.png" imageAlt="how to use screenshot" imageVariant="phone" id="feature-howto" nextId="feature-need" variant="section" reverse icon={<BookOpen className="h-6 w-6" />} title="How to Use">
+        <FeatureItem imageSrc="/how-to-use.png" imageAlt="how to use screenshot" imageVariant="phone" imageFit="contain" id="feature-howto" nextId="feature-need" variant="section" icon={<BookOpen className="h-6 w-6" />} title="How to Use">
           The How‑to guide is a built‑in reference for new and experienced users.
           It explains common workflows step by step and links concepts across the platform so you can learn in context.
           Short sections are designed for quick reading during live operations when time is limited.
           Use it to discover features, clarify terminology, and share consistent practices across teams.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/meet-a-need.png" imageAlt="meet a need screenshot" imageVariant="phone" id="feature-need" nextId="feature-missing" variant="section" icon={<LifeBuoy className="h-6 w-6" />} title="Meet a Need">
-          Meet a Need is a guided intake for community requests that feeds directly into Dispatches.
-          The form collects the essential context up front so coordinators can prioritize quickly and respond appropriately.
-          It is suitable for demos and training, but it also supports real‑world requests when enabled.
-          Clear intake reduces back‑and‑forth and helps volunteers show up prepared.
+        <FeatureItem imageSrc="/watch.png" imageAlt="watch screenshot" imageVariant="phone" imageFit="contain" id="feature-watch" nextId="feature-confirmed-watch" variant="section" reverse icon={<Eye className="h-6 w-6" />} title="Watch">
+          Watch is a live map for situational awareness across your region.
+          Layers and filters help you focus on relevant reports, signals, and activity as conditions change.
+          It’s useful for real‑time monitoring, early triage, and spotting patterns before they turn into dispatches.
+          Teams can use Watch during operations briefings to align on what’s happening right now.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/missing-persons.png" imageAlt="missing persons screenshot" imageVariant="phone" id="feature-missing" nextId="feature-profile" variant="section" reverse icon={<Search className="h-6 w-6" />} title="Missing Persons">
-          Missing Persons provides structured intake and case tracking when someone is unaccounted for.
-          It captures critical details, contact information, and consent, then centralizes updates in one timeline.
-          The module supports coordination among pods and external partners while protecting sensitive data.
-          Use it to keep search efforts organized and to avoid duplicating work.
+        <FeatureItem imageSrc="/confirmed-watch.png" imageAlt="confirmed watch screenshot" imageVariant="phone" imageFit="contain" id="feature-confirmed-watch" nextId="feature-dispatches" variant="section" icon={<CheckCircle2 className="h-6 w-6" />} title="Confirmed Watch">
+          Confirmed Watch highlights reports that coordinators have reviewed and verified for accuracy.
+          This view reduces noise and uncertainty so on‑the‑ground teams can act with confidence.
+          It lives inside Watch as a filter or dedicated layer rather than a separate tool.
+          Use it when you need a trusted baseline for decisions or public communication.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/my-profile.png" imageAlt="my profile screenshot" imageVariant="phone" id="feature-profile" nextId="feature-pods" variant="section" icon={<User className="h-6 w-6" />} title="My Profile">
-          My Profile is where you keep your information accurate and discoverable.
-          Update contact details, languages, and skills so coordinators can match you to the right roles.
-          You control map visibility and availability preferences to respect your boundaries.
-          Keeping this current improves response speed and reduces coordination overhead.
-        </FeatureItem>
-
-        <FeatureItem imageSrc="/pods.png" imageAlt="pods screenshot" imageVariant="phone" id="feature-pods" nextId="feature-schedules" variant="section" reverse icon={<Users className="h-6 w-6" />} title="Pods">
+        <FeatureItem imageSrc="/pods.png" imageAlt="pods screenshot" imageVariant="phone" imageFit="contain" id="feature-pods" nextId="feature-schedules" variant="section" reverse icon={<Users className="h-6 w-6" />} title="Pods">
           Pods are teams organized around people, skills, and geography.
           Use them to maintain rosters, define communication channels, and assign responsibilities to specific areas.
           Pods make it easier to see who is available and how coverage changes over time.
           Well‑structured pods reduce confusion during incidents and improve handoffs.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/schedules.png" imageAlt="schedules screenshot" imageVariant="phone" id="feature-schedules" nextId="feature-team-request" variant="section" icon={<Calendar className="h-6 w-6" />} title="Schedules">
+        <FeatureItem imageSrc="/dispatch.png" imageAlt="dispatches screenshot" imageVariant="phone" imageFit="contain" id="feature-dispatches" nextId="feature-howto" variant="section" icon={<ClipboardList className="h-6 w-6" />} title="Dispatches">
+          Dispatches is the intake‑to‑action pipeline that moves a report from first contact to resolution.
+          Coordinators triage submissions, set status, and record intended actions so everyone sees the current plan.
+          Roles and staffing needs are tracked here, and updates form the running incident log for handoffs.
+          Use Dispatches to keep decisions visible, responsibilities clear, and progress easy to audit.
+        </FeatureItem>
+
+        <FeatureItem imageSrc="/meet-a-need.png" imageAlt="meet a need screenshot" imageVariant="phone" imageFit="contain" id="feature-need" nextId="feature-missing" variant="section" reverse icon={<LifeBuoy className="h-6 w-6" />} title="Meet a Need">
+          Meet a Need is a guided intake for community requests that feeds directly into Dispatches.
+          The form collects the essential context up front so coordinators can prioritize quickly and respond appropriately.
+          It is suitable for demos and training, but it also supports real‑world requests when enabled.
+          Clear intake reduces back‑and‑forth and helps volunteers show up prepared.
+        </FeatureItem>
+
+        <FeatureItem imageSrc="/missing-persons.png" imageAlt="missing persons screenshot" imageVariant="phone" imageFit="contain" id="feature-missing" nextId="feature-profile" variant="section" icon={<Search className="h-6 w-6" />} title="Missing Persons">
+          Missing Persons provides structured intake and case tracking when someone is unaccounted for.
+          It captures critical details, contact information, and consent, then centralizes updates in one timeline.
+          The module supports coordination among pods and external partners while protecting sensitive data.
+          Use it to keep search efforts organized and to avoid duplicating work.
+        </FeatureItem>
+
+        <FeatureItem imageSrc="/academy.png" imageVariant="phone" imageAlt="academy screenshot" imageFit="contain" id="feature-academy" nextId="feature-admin" variant="section" reverse icon={<GraduationCap className="h-6 w-6" />} title="Academy Hub">
+          The Academy Hub is your training hub for learning how this platform and your region operate.
+          Courses are self‑paced and cover both fundamentals and role‑specific practices so you can onboard quickly.
+          As you complete modules, you earn credentials that unlock permissions and responsibilities in other areas of the app.
+          Returning users can use the Academy Hub for refreshers or to track progress toward advanced qualifications.
+        </FeatureItem>
+
+        <FeatureItem imageSrc="/my-profile.png" imageAlt="my profile screenshot" imageVariant="phone" imageFit="contain" id="feature-profile" nextId="feature-pods" variant="section" icon={<User className="h-6 w-6" />} title="My Profile">
+          My Profile is where you keep your information accurate and discoverable.
+          Update contact details, languages, and skills so coordinators can match you to the right roles.
+          You control map visibility and availability preferences to respect your boundaries.
+          Keeping this current improves response speed and reduces coordination overhead.
+        </FeatureItem>
+
+        {/* <FeatureItem imageSrc="/admin.png" imageAlt="admin screenshot" imageVariant="phone" id="feature-admin" nextId="feature-watch" variant="section" reverse icon={<Shield className="h-6 w-6" />} title="Admin">
+          The Admin area provides region‑level oversight and configuration tools for authorized administrators.
+          Use it to review activity, access audit trails, manage reports, and keep operations compliant with local policies.
+          From here you can tune integrations, branding, and feature availability so the platform matches your needs.
+          Access is restricted to protect sensitive settings while preserving transparency for coordinators.
+        </FeatureItem> */}
+
+        {/* <FeatureItem imageSrc="/schedules.png" imageAlt="schedules screenshot" imageVariant="phone" id="feature-schedules" nextId="feature-team-request" variant="section" icon={<Calendar className="h-6 w-6" />} title="Schedules">
           Schedules help you plan shifts, roles, and coverage windows across pods.
           Coordinators can align staffing with expected demand and adjust as conditions change.
           Clear schedules reduce gaps, prevent burnout, and make accountability visible.
           Combined with Dispatches, they provide a day‑to‑day rhythm for operations.
-        </FeatureItem>
+        </FeatureItem> */}
 
-        <FeatureItem imageSrc="/team-req.png" imageAlt="team request screenshot" imageVariant="phone" id="feature-team-request" variant="section" reverse icon={<MessagesSquare className="h-6 w-6" />} title="Team Request">
+        {/* <FeatureItem imageSrc="/team-req.png" imageAlt="team request screenshot" imageVariant="phone" id="feature-team-request" variant="section" reverse icon={<MessagesSquare className="h-6 w-6" />} title="Team Request">
           Team Request is a structured way to ask for help from specific teams or roles.
           You can specify what skills are needed, where support is required, and any time constraints.
           Clear requests make routing and staffing faster because coordinators have the key details up front.
           It also creates a record that can be tracked to completion or handed off between shifts.
-        </FeatureItem>
+        </FeatureItem> */}
       </section>
 
       {/* Trust & Privacy */}

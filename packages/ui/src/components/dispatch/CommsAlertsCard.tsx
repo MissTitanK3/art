@@ -89,11 +89,15 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
       </CardHeader>
       <CardContent className="grid gap-4 text-sm">
         <div className="grid gap-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-medium">Custom alerts</p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={resetExamples}>Reset to examples</Button>
-              <Button size="sm" onClick={addAlert}>Add alert</Button>
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+              <Button size="sm" variant="outline" onClick={resetExamples} className="w-full sm:w-auto">
+                Reset to examples
+              </Button>
+              <Button size="sm" onClick={addAlert} className="w-full sm:w-auto">
+                Add alert
+              </Button>
             </div>
           </div>
 
@@ -110,8 +114,8 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
                     <Textarea placeholder="e.g., Consolidate, Consolidate, Consolidate — {location}." value={a.description} onChange={(e) => void updateAlert(a.id, { description: e.target.value })} rows={2} />
                   </div>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Button size="sm" variant="ghost" onClick={() => void removeAlert(a.id)}>Delete</Button>
+                <div className="mt-2 flex flex-wrap gap-2 justify-end sm:justify-start">
+                  <Button size="sm" variant="ghost" onClick={() => void removeAlert(a.id)} className="w-full sm:w-auto">Delete</Button>
                 </div>
               </div>
             ))}
@@ -169,4 +173,3 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
 }
 
 export default CommsAlertsCard;
-

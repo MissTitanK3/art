@@ -89,6 +89,16 @@ export function AutoCreateProfile() {
         const profile: Profile = { ...base, ...(pending ?? {}) };
 
         await profileAdapter.saveProfile(profile);
+        // Best-effort: notify dispatcher_admin+ that onboarding outreach may be needed
+        try {
+          await fetch('/api/onboarding/notify-admins', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            credentials: 'include',
+          });
+        } catch {
+          // ignore notification errors
+        }
         createdForUserId.current = userId;
 
         // Clear used pending profile

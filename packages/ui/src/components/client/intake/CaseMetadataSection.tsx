@@ -37,8 +37,11 @@ interface EditProps extends BaseProps {
   onSave?: () => void;
   saveButtonProps?: ButtonProps;
   onGenerateCaseId?: () => void; // legacy: used when region is not provided
+  // Optional: fetch the last submitted case's ID from backend (ordered by auto-increment id)
+  // Return the last case's `caseId` string or null if none.
+  loadLastCaseId?: () => Promise<string | null>;
   caseIdExamples?: CaseIdExamples;
-  existingCaseIds?: string[]; // optional: used to suggest next sequence
+  existingCaseIds?: string[]; // Deprecated: old suggest logic; retained for compatibility
 }
 
 interface ViewProps extends BaseProps {
@@ -72,37 +75,30 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
     onSave,
     saveButtonProps,
     onGenerateCaseId,
+    loadLastCaseId,
     caseIdExamples,
     region,
     existingCaseIds,
   } = props;
 
   const [zoneInput, setZoneInput] = React.useState("");
-  const [sequenceInput, setSequenceInput] = React.useState<number | "">("");
+  const [generating, setGenerating] = React.useState(false);
 
   const now = React.useMemo(() => new Date(), []);
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
 
-  const normalise = (s: string) => s.trim().toUpperCase();
+  const normalise = (s: string) => s.trim().replace(/\s+/g, "-").toUpperCase();
 
-  const suggestNextSequence = React.useCallback(() => {
-    if (!region || !existingCaseIds || !zoneInput) return 1;
-    const prefix = `${normalise(region)}-${normalise(zoneInput)}-${year}-${month}`;
-    let max = 0;
-    for (const id of existingCaseIds) {
-      const n = normalise(id);
-      if (n.startsWith(prefix + "-")) {
-        const tail = n.slice(prefix.length + 1);
-        const m = tail.match(/^(\d{1,4})$/);
-        if (m && m[1]) {
-          const num = Number.parseInt(m[1], 10);
-          if (!Number.isNaN(num) && num > max) max = num;
-        }
-      }
-    }
-    return max + 1;
-  }, [region, existingCaseIds, zoneInput, year, month]);
+  // Extract trailing numeric sequence from an existing caseId
+  const parseSequenceFromCaseId = React.useCallback((caseId: string | null | undefined) => {
+    if (!caseId) return 0;
+    const text = normalise(caseId);
+    const m = text.match(/(\d+)$/);
+    if (!m || !m[1]) return 0;
+    const n = Number.parseInt(m[1], 10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }, []);
 
   const buildCaseId = React.useCallback(
     (seq: number) => {
@@ -148,25 +144,11 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
               <FormLabel>Case ID</FormLabel>
               {region ? (
                 <FormDescription>
-                  Use the format {" "}
-                  <span className="font-mono text-xs">REGION-ZONE-YYYY-MM-NNNN</span>. Suggested ID:{" "}
-                  <span className="font-mono text-xs">
-                    {buildCaseId(typeof sequenceInput === "number" && sequenceInput > 0 ? sequenceInput : 1)}
-                  </span>
-                  .
+                  Format <span className="font-mono text-xs">REGION-ZONE-YYYY-MM-NNNN</span>. Generate from last submitted case.
                 </FormDescription>
               ) : caseIdExamples ? (
                 <FormDescription>
-                  Use the format <span className="font-mono text-xs">ZONE-YYYY-NNN</span>. Suggested ID:{" "}
-                  <span className="font-mono text-xs">{caseIdExamples.primary}</span>
-                  {caseIdExamples.secondary ? (
-                    <>
-                      . Another valid example:{" "}
-                      <span className="font-mono text-xs">{caseIdExamples.secondary}</span>.
-                    </>
-                  ) : (
-                    "."
-                  )}
+                  Format <span className="font-mono text-xs">ZONE-YYYY-NNN</span>. Use Generate to set ID.
                 </FormDescription>
               ) : null}
               <FormControl>
@@ -177,66 +159,87 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                         <FormLabel>The Zone this is in:</FormLabel>
                         <Input
                           value={zoneInput}
-                          onChange={(e) => setZoneInput(e.target.value.toUpperCase())}
+                          onChange={(e) => {
+                            const raw = e.target.value ?? "";
+                            // Replace any whitespace with dashes and uppercase the zone
+                            const sanitised = raw.replace(/\s+/g, "-").toUpperCase();
+                            setZoneInput(sanitised);
+                          }}
                           placeholder="ZONE"
                         />
                       </div>
-                      <div className="flex flex-col gap-2">
-                        <FormLabel>Case Number:</FormLabel>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={sequenceInput === "" ? "" : sequenceInput}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setSequenceInput(v === "" ? "" : Math.max(1, Number(v)));
-                          }}
-                          placeholder="0001"
-                        />
-                      </div>
                       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
-
                         <Button
                           type="button"
-                          variant="outline"
-                          onClick={() => {
-                            const next = suggestNextSequence();
-                            setSequenceInput(next);
+                          disabled={!zoneInput || generating}
+                          onClick={async () => {
+                            if (!zoneInput) return;
+                            setGenerating(true);
+                            try {
+                              let last: string | null = null;
+                              if (typeof loadLastCaseId === "function") {
+                                try {
+                                  last = await loadLastCaseId();
+                                } catch {
+                                  // ignore backend errors; fallback to local
+                                  last = null;
+                                }
+                              }
+                              let seq = 0;
+                              if (last) {
+                                seq = parseSequenceFromCaseId(last);
+                              } else if (existingCaseIds && existingCaseIds.length) {
+                                // fallback: best-effort from provided IDs
+                                const prefix = `${normalise(region ?? "REGION")}-${normalise(zoneInput)}-${year}-${month}-`;
+                                for (const id of existingCaseIds) {
+                                  const n = normalise(id);
+                                  if (n.startsWith(prefix)) {
+                                    const s = parseSequenceFromCaseId(n);
+                                    if (s > seq) seq = s;
+                                  }
+                                }
+                              }
+                              const candidate = buildCaseId(seq + 1);
+                              field.onChange(candidate);
+                            } finally {
+                              setGenerating(false);
+                            }
                           }}
                           className="w-full sm:w-auto"
                         >
-                          Suggest Next Number
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            const seq = typeof sequenceInput === "number" && sequenceInput > 0
-                              ? sequenceInput
-                              : suggestNextSequence();
-                            const candidate = buildCaseId(seq);
-                            field.onChange(candidate);
-                          }}
-                          className="w-full sm:w-auto"
-                        >
-                          Generate ID
+                          {generating ? "Generating..." : "Generate ID"}
                         </Button>
                       </div>
                     </div>
-                    <Input
-                      {...field}
-                      placeholder={`e.g. ${buildCaseId(1)}`}
-                    />
+                    {/* Display the generated Case ID (read-only) */}
+                    <Input value={field.value ?? ""} readOnly placeholder={`e.g. ${buildCaseId(1)}`} />
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <Input {...field} placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`} />
-                    {onGenerateCaseId ? (
+                    {/* No region: only allow generation via callback if provided */}
+                    <Input value={field.value ?? ""} readOnly placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`} />
+                    {onGenerateCaseId || loadLastCaseId ? (
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={onGenerateCaseId}
+                        onClick={async () => {
+                          if (typeof loadLastCaseId === "function") {
+                            setGenerating(true);
+                            try {
+                              const last = await loadLastCaseId();
+                              const nextSeq = parseSequenceFromCaseId(last) + 1;
+                              const candidate = buildCaseId(nextSeq);
+                              field.onChange(candidate);
+                            } finally {
+                              setGenerating(false);
+                            }
+                          } else if (typeof onGenerateCaseId === "function") {
+                            onGenerateCaseId();
+                          }
+                        }}
+                        disabled={generating}
                       >
-                        Generate ID
+                        {generating ? "Generating..." : "Generate ID"}
                       </Button>
                     ) : null}
                   </div>
@@ -244,7 +247,6 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
               </FormControl>
               <div className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
                 <div className="flex-grow">
-
                   <FormMessage />
                 </div>
                 <div className="flex-shrink-0">

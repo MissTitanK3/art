@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
-import { Toaster } from "@workspace/ui/components/sonner";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "@/components/client/global-nav";
 import { NavRole } from "@workspace/store/utils/nav";

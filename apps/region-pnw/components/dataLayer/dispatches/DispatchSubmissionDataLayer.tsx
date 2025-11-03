@@ -9,7 +9,7 @@ import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/Dispatch
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchUpdate, LogisticsItem } from "@workspace/store/types/dispatch";
-import CommsDashboard from "@/components/comms/CommsDashboard";
+import CommsDashboardDataLayer from "@/components/dataLayer/dispatches/CommsDashboardDataLayer";
 
 type Props = {
   id: string;
@@ -439,7 +439,7 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
       onEditUpdate={handleEditUpdate}
       onRemoveUpdate={handleRemoveUpdate}
       roster={roster}
-      commsTabContent={<CommsDashboard eventId={submission.id} />}
+      commsTabContent={<CommsDashboardDataLayer eventId={submission.id} />}
       commsTabLabel="Radio Comms"
     />
   );

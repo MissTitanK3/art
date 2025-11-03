@@ -30,9 +30,13 @@ export function CommsLogView({ logs, onAddLog }: Props) {
           <CardTitle>New Entry</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <CommsTypeSelect value={type} onChange={setType} className="w-[160px]" />
-            <CommsImportanceSelect value={importance} onChange={setImportance} className="w-[160px]" />
+          <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:gap-4">
+            <span>
+              Importance:
+            </span>
+            <CommsTypeSelect value={type} onChange={setType} className="w-full md:w-[160px]" />
+            <span>Priority:</span>
+            <CommsImportanceSelect value={importance} onChange={setImportance} className="w-full md:w-[160px]" />
           </div>
           <div className="mt-2 grid gap-2">
             <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Log message..." />
