@@ -9,7 +9,7 @@ export type AppNotification = {
   title: string;
   body?: string;
   level: NotificationLevel;
-  channel?: string; // e.g., 'dispatch' | 'academy' | 'system'
+  channel?: import('./types/notifications').NotificationChannel; // centralized channel type
   link?: string;
   icon?: string;
   createdAt: string; // ISO string
@@ -22,9 +22,7 @@ export type AppNotification = {
 export type NotificationsStoreState = {
   items: AppNotification[];
   mutedChannels: Record<string, boolean>;
-  add: (
-    n: Omit<AppNotification, 'id' | 'createdAt' | 'readAt'> & { id?: string }
-  ) => string;
+  add: (n: Omit<AppNotification, 'id' | 'createdAt' | 'readAt'> & { id?: string }) => string;
   markRead: (id: string) => void;
   markAllRead: () => void;
   remove: (id: string) => void;
@@ -45,10 +43,8 @@ const genId = () =>
     ? (crypto as any).randomUUID()
     : Math.random().toString(36).slice(2);
 
-const createNotificationsInitializer = (
-  initialItems: AppNotification[],
-  initialMuted: Record<string, boolean>,
-): StateCreator<NotificationsStoreState> =>
+const createNotificationsInitializer =
+  (initialItems: AppNotification[], initialMuted: Record<string, boolean>): StateCreator<NotificationsStoreState> =>
   (set, get) => ({
     items: initialItems,
     mutedChannels: initialMuted,
@@ -62,9 +58,7 @@ const createNotificationsInitializer = (
     },
     markRead: (id) =>
       set((s) => ({
-        items: s.items.map((i) =>
-          i.id === id ? { ...i, readAt: i.readAt ?? new Date().toISOString() } : i,
-        ),
+        items: s.items.map((i) => (i.id === id ? { ...i, readAt: i.readAt ?? new Date().toISOString() } : i)),
       })),
     markAllRead: () =>
       set((s) => ({
@@ -90,10 +84,7 @@ const createNotificationsInitializer = (
       }),
   });
 
-function withPersistence(
-  initializer: StateCreator<NotificationsStoreState>,
-  storageKey: string,
-) {
+function withPersistence(initializer: StateCreator<NotificationsStoreState>, storageKey: string) {
   return persist(initializer, {
     name: storageKey,
     version: 1,
@@ -104,9 +95,7 @@ function withPersistence(
 
 export type NotificationsStore = StoreApi<NotificationsStoreState>;
 
-export function createNotificationsStore(
-  options?: CreateNotificationsStoreOptions,
-): NotificationsStore {
+export function createNotificationsStore(options?: CreateNotificationsStoreOptions): NotificationsStore {
   const {
     initialItems = [],
     initialMuted = {},
@@ -127,4 +116,3 @@ export function useNotificationsStore<T>(
 ) {
   return useStore(singletonNotificationsStore, selector, equalityFn);
 }
-

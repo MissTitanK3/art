@@ -88,6 +88,7 @@
     type TEXT,
     location JSONB,
     timestamp TIMESTAMPTZ NOT NULL,
+    date_of_event TIMESTAMPTZ,
     required_roles JSONB,
     encrypted_payload TEXT,
     auto_delete_after TIMESTAMPTZ,

@@ -17,6 +17,7 @@ function mapRowToSubmission(row: any): DispatchSubmission {
     type: row?.type ?? undefined,
     location,
     timestamp: String(row?.timestamp ?? new Date().toISOString()),
+    date_of_event: typeof row?.date_of_event === "string" ? row.date_of_event : row?.date_of_event ?? undefined,
     flagged: Boolean(row?.flagged ?? false),
     required_roles: Array.isArray(row?.required_roles) ? row.required_roles : undefined,
     encrypted_payload: typeof row?.encrypted_payload === "string" ? row.encrypted_payload : undefined,
@@ -59,14 +60,14 @@ async function fetchDispatchesFromDatabase(filters?: ListFilters): Promise<Dispa
     let query = client
       .from("dispatch_submissions")
       .select("*")
-      .order("timestamp", { ascending: false });
+      .order("date_of_event", { ascending: true, nullsFirst: false });
 
     if (filters) {
       const { status, type, from, to, q } = filters;
       if (status && status !== "all") query = query.eq("status", status);
       if (type && type !== "all") query = query.eq("type", type);
-      if (from) query = query.gte("timestamp", `${from}T00:00:00.000Z`);
-      if (to) query = query.lte("timestamp", `${to}T23:59:59.999Z`);
+      if (from) query = query.gte("date_of_event", `${from}T00:00:00.000Z`);
+      if (to) query = query.lte("date_of_event", `${to}T23:59:59.999Z`);
       if (q && q.trim().length > 0) {
         const like = `%${q}%`;
         query = query.or(
@@ -141,7 +142,9 @@ export default function DispatchListDataLayer() {
     const map = new Map<string, DispatchSubmission>();
     for (const r of base) map.set(r.id, r);
     const unique = Array.from(map.values());
-    return unique.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return unique.sort(
+      (a, b) => new Date(a.date_of_event ?? a.timestamp).getTime() - new Date(b.date_of_event ?? b.timestamp).getTime()
+    );
   }, [remoteSubmissions, submissions]);
 
   return (

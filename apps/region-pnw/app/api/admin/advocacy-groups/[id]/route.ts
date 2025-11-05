@@ -5,6 +5,7 @@ import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
 import { createClient } from '@supabase/supabase-js';
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
+import { ADMIN_GROUP_ROLES, notifyUsers, resolveRecipientsByRoles } from '@/lib/server/notify';
 
 async function authorize() {
   const supabase = await createSupabaseServerClient();
@@ -46,13 +47,33 @@ export async function PATCH(_req: Request, { params }: { params: Promise<{ id: s
     }
 
     const client = adminClient();
-    const { data, error } = await client
-      .from('advocacy_groups')
-      .update(patch)
-      .eq('id', id)
-      .select('*');
+    const { data, error } = await client.from('advocacy_groups').update(patch).eq('id', id).select('*');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const updated = Array.isArray(data) ? data[0] : data;
+    // Fire-and-forget: notify admins about important changes
+    (async () => {
+      try {
+        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        if (!recipients.length) return;
+        const parts: string[] = [];
+        if ('name' in patch) parts.push(`name → ${updated?.name ?? ''}`);
+        if ('active_status' in patch) parts.push(`active → ${updated?.active_status ? 'true' : 'false'}`);
+        if ('preferred_format' in patch) parts.push(`format → ${updated?.preferred_format ?? ''}`);
+        if ('contact_emails' in patch) parts.push('contacts updated');
+        if (parts.length) {
+          await notifyUsers({
+            title: 'Advocacy Group Updated',
+            body: `${updated?.name ?? id}: ${parts.join(' · ')}`,
+            level: 'info',
+            channel: 'system',
+            link: null,
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn('[admin/advocacy-groups] PATCH notify exception:', e);
+      }
+    })();
     return NextResponse.json({ group: updated });
   } catch (e: any) {
     return jsonError(e);
@@ -67,6 +88,24 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const client = adminClient();
     const { error } = await client.from('advocacy_groups').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Fire-and-forget: notify admins about deletion
+    (async () => {
+      try {
+        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        if (recipients.length) {
+          await notifyUsers({
+            title: 'Advocacy Group Deleted',
+            body: `ID: ${id}`,
+            level: 'warning',
+            channel: 'system',
+            link: null,
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn('[admin/advocacy-groups] DELETE notify exception:', e);
+      }
+    })();
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return jsonError(e);

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
 import { toast } from 'sonner';
 import NotificationPrefsForm from '@workspace/ui/components/settings/NotificationPrefsForm';
+import { NOTIFICATION_CHANNELS } from '@workspace/store/types/notifications';
 
 type PrefsRow = {
   user_id: string;
@@ -11,7 +12,7 @@ type PrefsRow = {
   muted_channels: string[];
 };
 
-const ALL_CHANNELS = ['system', 'dispatch', 'academy'] as const;
+const ALL_CHANNELS = NOTIFICATION_CHANNELS;
 
 export default function NotificationSettingsDataLayer() {
   const [loading, setLoading] = React.useState(true);
@@ -39,7 +40,7 @@ export default function NotificationSettingsDataLayer() {
           setGlobalOptOut(Boolean(row?.global_opt_out));
           const mset: Record<string, boolean> = {};
           const mutedChannels = Array.isArray(row?.muted_channels) ? row!.muted_channels : [];
-          (ALL_CHANNELS as readonly string[]).forEach((c) => (mset[c] = mutedChannels.includes(c)));
+          (ALL_CHANNELS as readonly string[]).forEach((c) => (mset[c] = mutedChannels.includes(c as string)));
           setMuted(mset);
         }
       } catch (e) {

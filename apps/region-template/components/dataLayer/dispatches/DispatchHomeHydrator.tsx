@@ -15,6 +15,7 @@ function mapRowToSubmission(row: any): DispatchSubmission {
     type: row?.type ?? undefined,
     location,
     timestamp: String(row?.timestamp ?? new Date().toISOString()),
+    date_of_event: typeof row?.date_of_event === "string" ? row.date_of_event : undefined,
     flagged: Boolean(row?.flagged ?? false),
     required_roles: Array.isArray(row?.required_roles) ? row.required_roles : undefined,
     encrypted_payload: typeof row?.encrypted_payload === "string" ? row.encrypted_payload : undefined,

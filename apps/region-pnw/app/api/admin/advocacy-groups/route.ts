@@ -5,6 +5,7 @@ import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins, podAdmins } from '@workspace/store/utils/nav';
 import { createClient } from '@supabase/supabase-js';
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
+import { ADMIN_GROUP_ROLES, notifyUsers, resolveRecipientsByRoles } from '@/lib/server/notify';
 
 export async function GET(req: Request) {
   try {
@@ -68,6 +69,24 @@ export async function POST(req: Request) {
     const { data, error } = await adminClient.from('advocacy_groups').upsert(row).select('*');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const saved = Array.isArray(data) ? data[0] : data;
+    // Fire-and-forget: notify admins about creation/upsert
+    (async () => {
+      try {
+        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        if (recipients.length) {
+          await notifyUsers({
+            title: 'Advocacy Group Saved',
+            body: `${saved?.name ?? 'Untitled'} · Active: ${saved?.active_status ? 'true' : 'false'}`,
+            level: 'success',
+            channel: 'system',
+            link: null,
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn('[admin/advocacy-groups] POST notify exception:', e);
+      }
+    })();
     return NextResponse.json({ group: saved });
   } catch (e: any) {
     return jsonError(e);

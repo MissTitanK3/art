@@ -1,6 +1,7 @@
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
 import { createClient } from '@supabase/supabase-js';
 import { regionAdmins } from '@workspace/store/utils/nav';
+import type { NotificationChannel } from '@workspace/store/types/notifications';
 
 export type NotifyLevel = 'info' | 'success' | 'warning' | 'error';
 
@@ -8,7 +9,7 @@ export async function notifyUsers(args: {
   title: string;
   body?: string;
   level?: NotifyLevel;
-  channel?: string;
+  channel?: NotificationChannel;
   link?: string | null;
   sticky?: boolean;
   expiresAt?: string | null;
@@ -16,7 +17,8 @@ export async function notifyUsers(args: {
 }) {
   const env = ensureSupabaseEnv('server');
   if (!env.serviceRoleKey) return { ok: false, reason: 'NO_SERVICE_KEY' } as const;
-  if (!Array.isArray(args.recipients) || args.recipients.length === 0) return { ok: false, reason: 'NO_RECIPIENTS' } as const;
+  if (!Array.isArray(args.recipients) || args.recipients.length === 0)
+    return { ok: false, reason: 'NO_RECIPIENTS' } as const;
   const admin = createClient(env.url, env.serviceRoleKey);
   const { error } = await admin.rpc('create_notification_for_users', {
     p_title: args.title,
@@ -37,7 +39,7 @@ export async function resolveRecipientsByRoles(args: {
   roles?: string[];
   groups?: ('dispatchers' | 'admins' | 'leaders')[];
   respectPrefs?: boolean;
-  channel?: string;
+  channel?: NotificationChannel;
 }): Promise<string[]> {
   const env = ensureSupabaseEnv('server');
   if (!env.serviceRoleKey) return [];
@@ -101,14 +103,20 @@ export async function resolveUserIdsFromProfileOrUserIds(ids: string[]): Promise
   if (ids.length === 0) return [];
   // Try by profiles.id
   try {
-    const { data } = await admin.from('profiles').select('user_id').in('id', ids as any);
+    const { data } = await admin
+      .from('profiles')
+      .select('user_id')
+      .in('id', ids as any);
     for (const r of data ?? []) if (r.user_id) set.add(r.user_id);
   } catch (e) {
     console.warn('[notify] resolveUserIds: lookup by profiles.id failed', e);
   }
   // Try by profiles.user_id directly
   try {
-    const { data } = await admin.from('profiles').select('user_id').in('user_id', ids as any);
+    const { data } = await admin
+      .from('profiles')
+      .select('user_id')
+      .in('user_id', ids as any);
     for (const r of data ?? []) if (r.user_id) set.add(r.user_id);
   } catch (e) {
     console.warn('[notify] resolveUserIds: lookup by profiles.user_id failed', e);

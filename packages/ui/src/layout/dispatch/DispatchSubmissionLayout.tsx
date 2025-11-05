@@ -20,6 +20,7 @@ import DispatchPublicSignalLinkUpdater from "@workspace/ui/components/client/ext
 import DispatchNotesUpdater from "@workspace/ui/components/client/notes/DispatchNotesUpdater";
 import DispatchLocationUpdater from "@workspace/ui/components/client/location/DispatchLocationUpdater";
 import DispatchLocationPinSelector from "@workspace/ui/components/client/location/DispatchLocationPinSelector";
+import DispatchDateOfEventUpdater from "@workspace/ui/components/client/event/DispatchDateOfEventUpdater";
 import DispatchRolesManager from "@workspace/ui/components/client/roles/DispatchRolesManager";
 import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpdates";
 import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
@@ -59,6 +60,7 @@ export function DispatchSubmissionLayout({
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
+  const eventDate = submission.date_of_event ? new Date(submission.date_of_event).toLocaleString() : undefined;
 
 
   const handleShare = () => {
@@ -80,7 +82,7 @@ export function DispatchSubmissionLayout({
   const handleCopySummary = () => {
     const summary = [
       `📍 Location: ${submission.location_label ?? "Unknown"}${submission.state ? `, ${submission.state}` : ""}`,
-      `📅 Time: ${new Date(submission.timestamp).toLocaleString()}`,
+      `📅 Time: ${submission.date_of_event ? new Date(submission.date_of_event).toLocaleString() : new Date(submission.timestamp).toLocaleString()}`,
       `⚡ Status: ${submission.status}`,
       submission.intended_action_preset
         ? `🎯 Action: ${submission.intended_action_preset}`
@@ -111,6 +113,11 @@ export function DispatchSubmissionLayout({
     {
       id: "location",
       content: <DispatchLocationUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+    },
+    {
+      id: "date-of-event",
+      // label: "Event Date/Time",
+      content: <DispatchDateOfEventUpdater submission={submission} onUpdate={onUpdateSubmission} />,
     },
     {
       id: "location-pin",
@@ -154,7 +161,7 @@ export function DispatchSubmissionLayout({
           ) : null}
           {timestamp ? (
             <p className="text-xs text-muted-foreground" suppressHydrationWarning>
-              {timestamp}
+              {eventDate ? `Event: ${eventDate}` : timestamp}
             </p>
           ) : null}
           {submission.flagged ? (

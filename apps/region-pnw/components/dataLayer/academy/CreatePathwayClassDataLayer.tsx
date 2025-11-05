@@ -7,7 +7,7 @@ import { usePodStore } from "@/providers/PodStoreProvider";
 import { CreatePathwayClassContent } from "@workspace/ui/components/academy/CreatePathwayClassContent";
 import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
 import type { AcademyClass } from "@workspace/store/usePodStore";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import { toast } from "sonner";
 
 type CreatePathwayClassDataLayerProps = {
   pathway: CourseBlueprint;
@@ -22,37 +22,42 @@ export function CreatePathwayClassDataLayer({ pathway }: CreatePathwayClassDataL
       // Optimistically add to local store
       addAcademyClass(academyClass);
 
-      // Persist to Supabase
+      // Persist via API (SSR + notifications)
       try {
-        const client = getSupabaseBrowserClient();
-        const row = {
-          id: academyClass.id,
-          pathway_id: academyClass.pathwayId,
-          pathway_label: academyClass.pathwayLabel,
-          track_label: academyClass.trackLabel,
-          variant: academyClass.variant,
-          title: academyClass.title,
-          description: academyClass.description,
-          modality: academyClass.modality,
-          instructor_type: academyClass.instructorType,
-          duration_hours: academyClass.durationHours,
-          capacity: academyClass.capacity,
-          start_date: academyClass.startDate,
-          start_time: academyClass.startTime,
-          location: academyClass.location,
-          meeting_url: academyClass.meetingUrl,
-          notes: academyClass.notes,
-          instructor_name: academyClass.instructorName,
-          sessions_scheduled: academyClass.sessionsScheduled,
-          next_session: academyClass.nextSession,
-          status: academyClass.status,
-        } as const;
-        const { error } = await client.from("academy_classes").upsert(row);
-        if (error) {
-          console.warn("Failed to create academy class in Supabase", error);
+        const res = await fetch("/api/academy/classes", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            id: academyClass.id,
+            pathway_id: academyClass.pathwayId,
+            pathway_label: academyClass.pathwayLabel,
+            track_label: academyClass.trackLabel,
+            variant: academyClass.variant,
+            title: academyClass.title,
+            description: academyClass.description,
+            modality: academyClass.modality,
+            instructor_type: academyClass.instructorType,
+            duration_hours: academyClass.durationHours,
+            capacity: academyClass.capacity,
+            start_date: academyClass.startDate,
+            start_time: academyClass.startTime,
+            location: academyClass.location,
+            meeting_url: academyClass.meetingUrl,
+            notes: academyClass.notes,
+            instructor_name: academyClass.instructorName,
+            sessions_scheduled: academyClass.sessionsScheduled,
+            next_session: academyClass.nextSession,
+            status: academyClass.status,
+          }),
+        });
+        if (!res.ok) {
+          const txt = await res.text().catch(() => "");
+          throw new Error(txt || `HTTP ${res.status}`);
         }
+        toast.success("Class created");
       } catch (e) {
-        console.warn("Error creating academy class in Supabase", e);
+        console.warn("Error creating academy class via API", e);
       }
 
       router.push(`/academy/class/${academyClass.id}`);

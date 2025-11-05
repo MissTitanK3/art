@@ -54,6 +54,9 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
           <p>{data.basicInfo?.location_label} ({data.basicInfo?.state})</p>
           <p>Response type: {data.basicInfo?.type ? humanize(data.basicInfo.type) : "Rapid Response"}</p>
           <p>Visibility radius: {data.basicInfo?.visibility_radius_km} km</p>
+          {data.basicInfo?.date_of_event && (
+            <p>Event time: {new Date(data.basicInfo.date_of_event).toLocaleString()}</p>
+          )}
           {data.basicInfo?.location && (
             <p className="text-sm text-muted-foreground">
               Coordinates: {data.basicInfo.location.lat.toFixed(4)}, {data.basicInfo.location.lng.toFixed(4)}

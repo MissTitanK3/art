@@ -8,6 +8,7 @@ export function makeDispatchSubmission(overrides: Partial<DispatchSubmission> = 
   return {
     id: crypto.randomUUID(), // or fakeUUID if you prefer
     timestamp: new Date().toISOString(),
+    date_of_event: new Date().toISOString(),
     source: 'dispatch',
     flagged: false,
     visibility_radius_km: 10,
@@ -35,7 +36,7 @@ export const makeProfile = (
   const slug = display.toLowerCase().replace(/\s+/g, '_');
   const base: Profile = {
     id,
-    user_id: registered ? userId ?? `user-${id}` : '',
+    user_id: registered ? (userId ?? `user-${id}`) : '',
     display_name: display,
     access_role: 'team_member',
     field_roles: role,
@@ -72,16 +73,10 @@ export const makeProfile = (
 
 function toDispatchProfile(profile: Profile | DispatchProfile): DispatchProfile {
   const coverageZones = Array.isArray(profile.coverage_zones)
-    ? profile.coverage_zones.map((zone: any) =>
-        typeof zone === 'string'
-          ? { id: zone, label: zone }
-          : zone,
-      )
+    ? profile.coverage_zones.map((zone: any) => (typeof zone === 'string' ? { id: zone, label: zone } : zone))
     : [];
 
-  const operatingCounties = Array.isArray(profile.operating_counties)
-    ? profile.operating_counties
-    : [];
+  const operatingCounties = Array.isArray(profile.operating_counties) ? profile.operating_counties : [];
 
   const selfStatusFlags = (profile as any).self_status_flags;
 

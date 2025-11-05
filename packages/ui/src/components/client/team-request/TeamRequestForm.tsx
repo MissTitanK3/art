@@ -17,6 +17,7 @@ type StepData = {
     state?: string;
     type?: DispatchType;
     visibility_radius_km?: number;
+    date_of_event?: string;
   };
   eventType?: keyof typeof TEAM_CONFIG_PRESETS;
   actions?: {

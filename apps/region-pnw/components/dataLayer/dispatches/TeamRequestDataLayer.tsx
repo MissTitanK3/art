@@ -12,39 +12,18 @@ import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/al
 
 async function createSubmissionInDatabase(submission: DispatchSubmission): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const payload = {
-      id: submission.id,
-      type: submission.type,
-      location: submission.location,
-      timestamp: submission.timestamp,
-      required_roles: submission.required_roles,
-      encrypted_payload: submission.encrypted_payload,
-      auto_delete_after: submission.auto_delete_after,
-      integrity_hash: submission.integrity_hash,
-      submitted_by: submission.submitted_by,
-      source: submission.source,
-      visibility_radius_km: submission.visibility_radius_km,
-      status: submission.status,
-      assigned_volunteers: submission.assigned_volunteers,
-      required_roles_by_type: submission.required_roles_by_type,
-      location_label: submission.location_label,
-      point_of_contact: submission.point_of_contact,
-      state: submission.state,
-      intended_action_preset: submission.intended_action_preset,
-      intended_action_notes: submission.intended_action_notes,
-      intended_actions: submission.intended_actions,
-      intended_actions_custom: submission.intended_actions_custom,
-      signal_link: submission.signal_link,
-      training: submission.training,
-      flagged: submission.flagged,
-    } as const;
-
-    const { error } = await client.from("dispatch_submissions").insert(payload);
-    if (error) throw error;
+    // Use server API to insert and trigger notifications
+    const resp = await fetch('/api/dispatches', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(submission),
+    });
+    if (!resp.ok) {
+      const t = await resp.text();
+      throw new Error(t || 'Failed to create dispatch submission');
+    }
   } catch (e: any) {
-    // Bubble an error that the caller can handle/log
-    throw new Error(e?.message ?? "Failed to create dispatch submission");
+    throw new Error(e?.message ?? 'Failed to create dispatch submission');
   }
 }
 

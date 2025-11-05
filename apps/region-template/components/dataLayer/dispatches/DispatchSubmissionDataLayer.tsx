@@ -22,6 +22,7 @@ function mapRowToSubmission(row: any): DispatchSubmission {
     type: row?.type ?? undefined,
     location,
     timestamp: String(row?.timestamp ?? new Date().toISOString()),
+    date_of_event: typeof row?.date_of_event === "string" ? row.date_of_event : row?.date_of_event ?? undefined,
     flagged: Boolean(row?.flagged ?? false),
     required_roles: Array.isArray(row?.required_roles) ? row.required_roles : undefined,
     encrypted_payload: typeof row?.encrypted_payload === "string" ? row.encrypted_payload : undefined,
@@ -132,6 +133,7 @@ async function persistSubmissionPatchToDatabase(id: string, patch: Partial<Dispa
   const keys: (keyof DispatchSubmission)[] = [
     "type",
     "location",
+    "date_of_event",
     "required_roles",
     "encrypted_payload",
     "auto_delete_after",

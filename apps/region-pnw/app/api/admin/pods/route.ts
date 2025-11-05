@@ -4,6 +4,7 @@ import { getProfileByUserId, getPods } from '@/lib/dal/admin';
 import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { regionAdmins } from '@workspace/store/utils/nav';
 import { slugify } from '@workspace/store/types/pod.ts';
+import { ADMIN_GROUP_ROLES, notifyUsers, resolveRecipientsByRoles } from '@/lib/server/notify';
 
 type PostBody = Partial<{
   name: string;
@@ -46,6 +47,25 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const row = Array.isArray(data) ? data[0] : (data as any);
+
+    // Fire-and-forget: let admins know a pod was created
+    (async () => {
+      try {
+        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        if (recipients.length) {
+          await notifyUsers({
+            title: 'New Pod Created',
+            body: `${row?.name ?? 'Unnamed'} · Area: ${row?.area ?? 'Unassigned'}`,
+            level: 'success',
+            channel: 'system',
+            link: null,
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn('[admin/pods] POST notify exception:', e);
+      }
+    })();
     return NextResponse.json({ pod: row });
   } catch (e: any) {
     return jsonError(e);

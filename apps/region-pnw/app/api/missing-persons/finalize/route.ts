@@ -5,6 +5,7 @@ import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
 import { createClient } from '@supabase/supabase-js';
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
+import { notifyUsers, resolveRecipientsByRoles } from '@/lib/server/notify';
 
 type Intake = {
   caseId: string;
@@ -18,7 +19,10 @@ export async function POST(req: Request) {
     if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
     const callerProfile = await getProfileByUserId(userData.user.id);
     const callerAccessRole = callerProfile?.access_role as any | undefined;
-    const authorized = !!callerAccessRole && (regionAdmins.includes(callerAccessRole) || ['dispatcher_admin', 'dispatcher_verified'].includes(callerAccessRole));
+    const authorized =
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        ['dispatcher_admin', 'dispatcher_verified'].includes(callerAccessRole));
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const payload = (await req.json()) as { record?: Intake; slug?: string };
@@ -80,9 +84,31 @@ export async function POST(req: Request) {
       }
     }
 
+    // Fire-and-forget: notify all users (respecting prefs) that a case was finalized
+    // Do not block the response on notification creation
+    setTimeout(async () => {
+      try {
+        const recipients = await resolveRecipientsByRoles({ respectPrefs: true, channel: 'advocacy' });
+        if (recipients.length > 0) {
+          await notifyUsers({
+            title: 'Missing Persons Update',
+            body: record.fullName
+              ? `Case finalized for ${record.fullName}.`
+              : 'A missing persons case has been finalized.',
+            level: 'info',
+            channel: 'advocacy',
+            link: webUrl,
+            sticky: false,
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn('[missing-persons/finalize] notify-all failed', e);
+      }
+    }, 0);
+
     return NextResponse.json({ ok: true, deliveries: results });
   } catch (e: any) {
     return jsonError(e);
   }
 }
-

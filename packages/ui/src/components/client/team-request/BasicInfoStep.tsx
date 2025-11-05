@@ -10,6 +10,7 @@ import { US_STATES } from "@workspace/ui/lib/constants/states";
 import { humanize } from "@workspace/ui/lib/utils";
 import { DispatchType } from "@workspace/store/types/dispatch.ts";
 import { resolveLocationInfo } from "@workspace/ui/lib/location-resolver";
+import { DateTimePicker } from "@workspace/ui/components/DateTimePicker";
 
 interface BasicInfoStepProps {
   initial?: {
@@ -18,6 +19,7 @@ interface BasicInfoStepProps {
     state?: string;
     visibility_radius_km?: number;
     location?: { lat: number; lng: number };
+    date_of_event?: string;
   };
   onNext: (data: BasicInfoStepProps["initial"]) => void;
 }
@@ -28,6 +30,7 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
   const [type, setType] = useState<DispatchType>(initial?.type ?? "rapid_response");
   const [radius, setRadius] = useState(initial?.visibility_radius_km ?? 10);
   const [location] = useState(initial?.location);
+  const [dateOfEvent, setDateOfEvent] = useState<string | undefined>(initial?.date_of_event ?? new Date().toISOString());
   const [resolvedOnce, setResolvedOnce] = useState(false);
 
   const stateLookup = useMemo(() => {
@@ -52,8 +55,8 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
         info.stateCode && info.stateCode.length === 2
           ? info.stateCode.toUpperCase()
           : info.state
-              ? stateLookup.get(info.state.toLowerCase())
-              : undefined;
+            ? stateLookup.get(info.state.toLowerCase())
+            : undefined;
       const stateDisplay = resolvedStateCode ?? info.state ?? "";
       const resolvedLabel =
         info.city && stateDisplay
@@ -118,6 +121,13 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
             </SelectContent>
           </Select>
         </div>
+        <div>
+          <Label>Event Date/Time</Label>
+          <div className="mt-1">
+            <DateTimePicker label="Date of Event" value={dateOfEvent} onChange={setDateOfEvent} />
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">For Planned Events, set in the future. Defaults to now.</p>
+        </div>
 
         <div>
           <Label>State</Label>
@@ -153,6 +163,7 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
               state,
               visibility_radius_km: radius,
               location,
+              date_of_event: dateOfEvent,
             })
           }
         >

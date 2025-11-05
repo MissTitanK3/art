@@ -79,19 +79,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ subjec
       .limit(1);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const out = Array.isArray(data) ? data[0] : (data as any);
-    return NextResponse.json({
-      entry: out
-        ? {
-            subjectId: out.subject_id,
-            signerId: out.signer_id,
-            signer_role: out.signer_role,
-            signer_rot: out.signer_rot,
-            signed_at: out.signed_at,
-            signed_entry_hash: out.signed_entry_hash,
-            status: out.status,
-          }
-        : null,
-    });
 
     // Fire-and-forget notifications on status changes
     (async () => {
@@ -114,6 +101,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ subjec
         console.warn('[admin/trust] PATCH notify exception:', e);
       }
     })();
+
+    return NextResponse.json({
+      entry: out
+        ? {
+            subjectId: out.subject_id,
+            signerId: out.signer_id,
+            signer_role: out.signer_role,
+            signer_rot: out.signer_rot,
+            signed_at: out.signed_at,
+            signed_entry_hash: out.signed_entry_hash,
+            status: out.status,
+          }
+        : null,
+    });
   } catch (e: any) {
     return jsonError(e);
   }

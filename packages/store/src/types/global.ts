@@ -39,6 +39,8 @@ export interface DispatchSubmission {
   type?: DispatchType;
   location?: { lat: number; lng: number; [key: string]: any };
   timestamp: string;
+  /** When the event is scheduled to occur or occurred; defaults to now for rapid responses */
+  date_of_event?: string | null;
   /** Mark for coordinator review (non-blocking) */
   flagged?: boolean;
   required_roles?: string[];

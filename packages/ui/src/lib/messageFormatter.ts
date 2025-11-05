@@ -14,9 +14,12 @@ export function urgencyEmoji(urgency: string): string {
       return '🚨';
     case 'Later Today':
     case 'Within A Day':
+    case 'Within 3 Days':
       return '⚠️';
     case 'Within the Week':
       return '🪴';
+    case 'Beyond Next Week':
+      return '🌱';
     default:
       return '🚨';
   }

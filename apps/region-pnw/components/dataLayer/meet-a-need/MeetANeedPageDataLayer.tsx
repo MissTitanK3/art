@@ -75,7 +75,7 @@ function NeedsListWrapper() {
         if (typeof saved?.pageSize === 'number') setPageSize(saved.pageSize);
         if (typeof saved?.page === 'number') setPage(saved.page);
       }
-    } catch {}
+    } catch { }
 
     const params = Object.fromEntries((searchParams ?? new URLSearchParams()).entries());
     if (typeof params.q === 'string') setQuery(params.q);
@@ -116,7 +116,7 @@ function NeedsListWrapper() {
         page,
       };
       window.localStorage.setItem('meetANeed.filters', JSON.stringify(payload));
-    } catch {}
+    } catch { }
   }, [query, category, urgency, visibility, status, dateRange.from, dateRange.to, pageSize, page]);
 
   const categories = React.useMemo(() => NEED_CATEGORIES, []);
@@ -348,20 +348,23 @@ function SubmitNeedDrawerWrapper() {
     files: File[];
   }) => {
     const client = getSupabaseBrowserClient();
-    const profileRes = await client.from('profiles').select('id').eq('user_id', (await client.auth.getUser()).data.user?.id ?? '').single();
-    const created_by = profileRes.data?.id ?? null;
-
-    const insert = {
-      created_by,
-      category: data.category,
-      description: data.description,
-      urgency: data.urgency,
-      visibility: data.visibility,
-      location: data.locationLabel ? { label: data.locationLabel } : null,
-      contact_preference: data.contact || null,
-    } as any;
-    const res = await client.from('meet_a_need').insert(insert).select('*').single();
-    if (res.error || !res.data) return;
+    // Create via server API so notifications can be sent preference-aware
+    const resp = await fetch('/api/meet-a-need', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category: data.category,
+        description: data.description,
+        urgency: data.urgency,
+        visibility: data.visibility,
+        locationLabel: data.locationLabel,
+        contact: data.contact,
+      }),
+    });
+    if (!resp.ok) return;
+    const json = await resp.json();
+    const res = { data: json?.need ?? null, error: null as any };
+    if (!res.data) return;
 
     // Upload optional photos
     if (data.files?.length) {

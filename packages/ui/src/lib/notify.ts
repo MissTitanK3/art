@@ -1,4 +1,5 @@
 import { notificationsStore } from '@workspace/store/useNotificationsStore';
+import { NOTIFICATION_CHANNELS, type NotificationChannel } from '@workspace/store/types/notifications';
 import { toast } from 'sonner';
 
 export type NotifyOpts = {
@@ -6,7 +7,7 @@ export type NotifyOpts = {
   title: string;
   body?: string;
   level?: 'info' | 'success' | 'warning' | 'error';
-  channel?: string;
+  channel?: NotificationChannel | string;
   link?: string;
   sticky?: boolean;
   ttlMs?: number;
@@ -14,9 +15,22 @@ export type NotifyOpts = {
 };
 
 export function notify(opts: NotifyOpts) {
+  // Narrow channel to a known, centralized union to satisfy store typings
+  const channel: NotificationChannel | undefined =
+    opts.channel && (NOTIFICATION_CHANNELS as readonly string[]).includes(opts.channel as string)
+      ? (opts.channel as NotificationChannel)
+      : undefined;
+
   const id = notificationsStore.getState().add({
-    ...opts,
+    id: opts.id,
+    title: opts.title,
+    body: opts.body,
     level: opts.level ?? 'info',
+    channel,
+    link: opts.link,
+    sticky: opts.sticky,
+    ttlMs: opts.ttlMs,
+    icon: opts.icon,
   });
   // Visual toast via Sonner (already used in apps)
   if (typeof window !== 'undefined') {
@@ -24,10 +38,10 @@ export function notify(opts: NotifyOpts) {
       opts.level === 'success'
         ? toast.success
         : opts.level === 'warning'
-        ? (toast as any).warning ?? toast
-        : opts.level === 'error'
-        ? toast.error
-        : toast; // info/default
+          ? ((toast as any).warning ?? toast)
+          : opts.level === 'error'
+            ? toast.error
+            : toast; // info/default
     method(opts.title, { description: opts.body });
   }
   void maybeBrowserNotify({ id, title: opts.title, body: opts.body, link: opts.link, icon: opts.icon });
@@ -46,9 +60,8 @@ export async function maybeBrowserNotify(opts: {
   if (!('Notification' in window)) return;
 
   const perm: NotificationPermission =
-    (Notification.permission === 'default'
-      ? await Notification.requestPermission()
-      : Notification.permission) ?? 'default';
+    (Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission) ??
+    'default';
 
   if (perm !== 'granted') return;
 
