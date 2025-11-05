@@ -64,7 +64,6 @@ export const REGIONS: Region[] = [
     subdomain: 'socal',
     coverage: 'LA, San Diego, Inland Empire',
     notes: 'High volunteer density. Will eventually split LA vs SD.',
-    disabled: true,
     signals: [
       {
         name: 'SoCal Region Signal Group',

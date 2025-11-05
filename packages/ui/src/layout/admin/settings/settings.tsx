@@ -8,6 +8,8 @@ import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { toast } from "sonner";
 import { RegionSettings } from "@workspace/store/types/global";
+import { usePreferencesStore } from "@workspace/store/usePreferencesStore";
+import { kmToMi, miToKm } from "@workspace/ui/lib/distance";
 
 type Props = {
   initialSettings: RegionSettings;
@@ -15,6 +17,7 @@ type Props = {
 
 export default function SettingsClient({ initialSettings }: Props) {
   const [values, setValues] = React.useState<RegionSettings>(initialSettings);
+  const unit = usePreferencesStore((s) => s.distanceUnit);
 
   function onChange<K extends keyof RegionSettings>(key: K, value: RegionSettings[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -52,8 +55,21 @@ export default function SettingsClient({ initialSettings }: Props) {
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Default dispatch radius (km)">
-              <Input type="number" value={values.defaultDispatchRadiusKm} onChange={(e) => onChange('defaultDispatchRadiusKm', Number(e.target.value) || 0)} />
+            <Field label={`Default dispatch radius (${unit})`}>
+              <Input
+                type="number"
+                min={0}
+                step={0.1}
+                value={(() => {
+                  const km = values.defaultDispatchRadiusKm ?? 10;
+                  return unit === 'mi' ? kmToMi(km) : km;
+                })()}
+                onChange={(e) => {
+                  const raw = Number(e.target.value);
+                  const km = unit === 'mi' ? miToKm(raw) : raw;
+                  onChange("defaultDispatchRadiusKm", km);
+                }}
+              />
             </Field>
             <Field label="Cleanup interval (days)">
               <Input type="number" value={values.cleanupIntervalsDays} onChange={(e) => onChange('cleanupIntervalsDays', Number(e.target.value) || 0)} />

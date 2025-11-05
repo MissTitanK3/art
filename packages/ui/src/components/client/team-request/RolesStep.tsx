@@ -20,11 +20,7 @@ interface RolesStepProps {
 }
 
 export function RolesStep({ initial, onBack, onNext, suggestedRoles }: RolesStepProps) {
-  const [roles, setRoles] = useState<string[]>(() => {
-    const base = initial?.required_roles ?? [];
-    const suggestions = suggestedRoles ?? [];
-    return Array.from(new Set([...base, ...suggestions]));
-  });
+  const [roles, setRoles] = useState<string[]>(() => initial?.required_roles ?? []);
 
   const [rolesByType, setRolesByType] = useState<Record<string, number>>(
     initial?.required_roles_by_type ?? {}

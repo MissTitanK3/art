@@ -7,6 +7,8 @@ import { Label } from "@workspace/ui/components/label";
 import { makeDispatchSubmission } from "@workspace/store/utils/generator";
 import { toast } from "sonner";
 import { humanize } from "@workspace/ui/lib/utils";
+import { usePreferencesStore } from "@workspace/store/usePreferencesStore";
+import { formatDistance } from "@workspace/ui/lib/distance";
 import { useState } from "react";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
@@ -21,6 +23,7 @@ interface ReviewStepProps {
 export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmission }: ReviewStepProps) {
   // local state for toggle
   const [training, setTraining] = useState<boolean>(data.contact?.training ?? false);
+  const unit = usePreferencesStore((s) => s.distanceUnit);
 
   const handleSubmit = () => {
     const draft = makeDispatchSubmission({
@@ -53,7 +56,11 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
           <h4 className="font-semibold">Basic Info</h4>
           <p>{data.basicInfo?.location_label} ({data.basicInfo?.state})</p>
           <p>Response type: {data.basicInfo?.type ? humanize(data.basicInfo.type) : "Rapid Response"}</p>
-          <p>Visibility radius: {data.basicInfo?.visibility_radius_km} km</p>
+          <p>
+            Visibility radius: {typeof data.basicInfo?.visibility_radius_km === 'number'
+              ? formatDistance(data.basicInfo.visibility_radius_km, unit, 1)
+              : '—'}
+          </p>
           {data.basicInfo?.date_of_event && (
             <p>Event time: {new Date(data.basicInfo.date_of_event).toLocaleString()}</p>
           )}

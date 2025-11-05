@@ -101,10 +101,6 @@ export default function RegionsPage() {
             </Card>
           ))}
         </div>
-
-        <p className="mt-8 text-sm text-muted-foreground">
-          To add or update a region, edit the array in <code>apps/landing/app/regions/regions.ts</code>.
-        </p>
       </section>
     </main>
   );

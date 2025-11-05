@@ -73,7 +73,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
             <SelectTrigger className="w-[80px]">
               <SelectValue placeholder="Hour" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-60 overflow-y-auto">
               {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map((h) => (
                 <SelectItem key={h} value={h}>
                   {h}
@@ -87,7 +87,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
             <SelectTrigger className="w-[80px]">
               <SelectValue placeholder="Min" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-60 overflow-y-auto">
               {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0")).map(
                 (m) => (
                   <SelectItem key={m} value={m}>

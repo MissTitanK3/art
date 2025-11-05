@@ -30,6 +30,7 @@ import ThemeToggle from "./ThemeToggle.tsx";
 import { Bell } from "@workspace/ui/components/Bell";
 import { LinkLike } from "@workspace/store/types/global.ts";
 import { canSee, GlobalNavConfig, isActive, NavItem, NavRole } from "@workspace/store/utils/nav";
+import DistanceUnitToggle from "../DistanceUnitToggle";
 
 // Keep the top bar compact on small screens
 const MOBILE_TOP_BAR_HEIGHT = 56;
@@ -183,6 +184,7 @@ function MobileTopBar({
       <div className="flex items-center gap-1">
         <Bell popoverSide="bottom" popoverAlign="end" />
         <ThemeToggle />
+        <DistanceUnitToggle />
       </div>
     </div>
   );
@@ -245,6 +247,7 @@ function DesktopSideNav({
         <div className={cn("mt-1 flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-start")}>
           <ThemeToggle />
           <Bell popoverSide="right" popoverAlign="start" />
+          <DistanceUnitToggle />
           {!isAuthenticated ? (
             <a href="/sign-in">
               <Button variant="secondary" size="sm">
@@ -582,7 +585,10 @@ function MobileNav({
           </SheetTitle>
         </SheetHeader>
         <div className={cn("mt-1 flex justify-center")}>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <DistanceUnitToggle />
+          </div>
         </div>
         <nav className="px-2 py-4">
           <div className="space-y-1">

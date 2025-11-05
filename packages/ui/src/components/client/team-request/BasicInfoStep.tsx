@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
@@ -11,6 +11,9 @@ import { humanize } from "@workspace/ui/lib/utils";
 import { DispatchType } from "@workspace/store/types/dispatch.ts";
 import { resolveLocationInfo } from "@workspace/ui/lib/location-resolver";
 import { DateTimePicker } from "@workspace/ui/components/DateTimePicker";
+import { usePreferencesStore } from "@workspace/store/usePreferencesStore";
+import { kmToMi, miToKm } from "@workspace/ui/lib/distance";
+import DistanceUnitToggle from "@workspace/ui/components/DistanceUnitToggle";
 
 interface BasicInfoStepProps {
   initial?: {
@@ -25,10 +28,29 @@ interface BasicInfoStepProps {
 }
 
 export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
+  const round2 = (n: number) => Math.round(n * 100) / 100;
   const [locationLabel, setLocationLabel] = useState(initial?.location_label ?? "");
   const [state, setState] = useState(initial?.state ?? "");
   const [type, setType] = useState<DispatchType>(initial?.type ?? "rapid_response");
-  const [radius, setRadius] = useState(initial?.visibility_radius_km ?? 10);
+  // Distance unit preference (persisted)
+  const unit = usePreferencesStore((s) => s.distanceUnit);
+  const [radiusInput, setRadiusInput] = useState<number>(() => {
+    const baseKm = initial?.visibility_radius_km != null ? initial.visibility_radius_km : 9.66;
+    const v = unit === 'mi' ? kmToMi(baseKm) : baseKm;
+    return round2(v);
+  });
+  const lastUnitRef = useRef(unit);
+  useEffect(() => {
+    if (unit !== lastUnitRef.current) {
+      setRadiusInput((prev) => {
+        // Convert previous value to km based on previous unit, then to the new unit
+        const km = lastUnitRef.current === 'mi' ? miToKm(prev) : prev;
+        const converted = unit === 'mi' ? kmToMi(km) : km;
+        return Math.round(converted * 100) / 100;
+      });
+      lastUnitRef.current = unit;
+    }
+  }, [unit]);
   const [location] = useState(initial?.location);
   const [dateOfEvent, setDateOfEvent] = useState<string | undefined>(initial?.date_of_event ?? new Date().toISOString());
   const [resolvedOnce, setResolvedOnce] = useState(false);
@@ -146,12 +168,24 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
         </div>
 
         <div>
-          <Label>Visibility Radius (km)</Label>
+          <div className="flex items-center justify-between">
+            <Label>Visibility Radius ({unit})</Label>
+            <DistanceUnitToggle />
+          </div>
           <Input
             type="number"
-            value={radius}
-            onChange={(e) => setRadius(parseInt(e.target.value, 10))}
+            min={0}
+            step={0.1}
+            value={radiusInput}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              // Ensure we pass a number to the state setter (toFixed returns a string)
+              setRadiusInput(Number.isNaN(val) ? 0 : Math.round(val * 100) / 100);
+            }}
           />
+          <p className="text-xs text-muted-foreground mt-1">
+            This will be used to send notifications to users within that radius.
+          </p>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end">
@@ -161,7 +195,7 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
               location_label: locationLabel,
               type,
               state,
-              visibility_radius_km: radius,
+              visibility_radius_km: unit === 'mi' ? miToKm(radiusInput) : radiusInput,
               location,
               date_of_event: dateOfEvent,
             })

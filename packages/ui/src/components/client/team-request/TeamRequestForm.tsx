@@ -100,7 +100,7 @@ export default function TeamRequestForm({
       {currentStep === 3 && (
         <RolesStep
           initial={formData.rolesNeeded}
-          suggestedRoles={formData.actions?.intended_actions ?? []}
+          suggestedRoles={formData.eventType ? Object.keys(TEAM_CONFIG_PRESETS[formData.eventType].roles) : []}
           onBack={goBack}
           onNext={(data) => goNext({ rolesNeeded: data })}
         />

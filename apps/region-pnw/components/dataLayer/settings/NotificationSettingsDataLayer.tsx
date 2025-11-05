@@ -4,6 +4,7 @@ import * as React from 'react';
 import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
 import { toast } from 'sonner';
 import NotificationPrefsForm from '@workspace/ui/components/settings/NotificationPrefsForm';
+import PreferencesSection from '@workspace/ui/components/settings/PreferencesSection';
 import { NOTIFICATION_CHANNELS } from '@workspace/store/types/notifications';
 
 type PrefsRow = {
@@ -83,6 +84,7 @@ export default function NotificationSettingsDataLayer() {
   return (
     <section className="max-w-3xl space-y-6">
       <h1 className="text-2xl font-bold">Settings</h1>
+      <PreferencesSection />
       <NotificationPrefsForm
         loading={loading}
         saving={saving}
