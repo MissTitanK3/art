@@ -1,4 +1,3 @@
-// apps/region-pnw/app/api/reverse-geocode/route.ts
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -27,16 +26,14 @@ export async function GET(req: Request) {
   }
 
   const contact = process.env.REVERSE_GEOCODE_CONTACT || process.env.NEXT_PUBLIC_CONTACT_EMAIL || '';
-  const userAgent = contact
-    ? `AlwaysReadyTools/1.0 (+${contact})`
-    : 'AlwaysReadyTools/1.0';
+  const userAgent = contact ? `AlwaysReadyTools/1.0 (+${contact})` : 'AlwaysReadyTools/1.0';
 
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`;
 
   const res = await fetch(url, {
     headers: {
       'User-Agent': userAgent, // required by OSM usage policy
-      'Accept': 'application/json',
+      Accept: 'application/json',
     },
     // best-effort caching at the fetch layer is not guaranteed; rely on response headers below
     cache: 'no-store',
@@ -59,7 +56,7 @@ export async function GET(req: Request) {
   return NextResponse.json(data, {
     headers: {
       'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-      'vary': 'Accept',
+      vary: 'Accept',
     },
   });
 }

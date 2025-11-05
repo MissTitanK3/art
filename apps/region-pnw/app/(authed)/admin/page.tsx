@@ -8,7 +8,7 @@ import DonutChart from "@workspace/ui/components/charts/DonutChart";
 import StatCard from "@workspace/ui/components/stat-card";
 import NavTile from "@workspace/ui/components/nav-tile";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
-import { FileChartLine, MapPin, Settings, ShieldCheck, Users2, Users, Package, GraduationCap, Handshake, Database, Bug } from "lucide-react";
+import { FileChartLine, MapPin, Settings, ShieldCheck, Users2, Users, Package, GraduationCap, Handshake, Database, Bug, CalendarDays } from "lucide-react";
 
 import AdminNotificationsDataLayer from "@/components/dataLayer/admin/notifications/AdminNotificationsDataLayer";
 
@@ -149,6 +149,7 @@ export default function AdminPage() {
             <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
             <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
             <NavTile href="/admin/advocacy-groups" icon={<Database className="h-5 w-5" />} label="Advocacy Network" description="Trusted orgs for report delivery" />
+            <NavTile href="/admin/campaigns" icon={<CalendarDays className="h-5 w-5" />} label="Campaigns" description="Create Seasons for Frontiers" />
             <NavTile href="/admin/bug-reports" icon={<Bug className="h-5 w-5" />} label="Bug Reports" description="User-submitted platform issues" />
           </div>
         </CardContent>
@@ -211,5 +212,4 @@ export default function AdminPage() {
     </section>
   );
 }
-
 

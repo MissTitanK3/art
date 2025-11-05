@@ -8,6 +8,7 @@ import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
+import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
 
 async function createSubmissionInDatabase(submission: DispatchSubmission): Promise<void> {
   try {
@@ -51,6 +52,9 @@ function TeamRequestContent() {
   const addSubmission = useDispatchStore((s) => s.addSubmission);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const cameFromWatch = (searchParams?.get("source") ?? "") === "watch-map";
+  const labelFromWatch = searchParams?.get("label") ?? undefined;
+  const agencyFromWatch = searchParams?.get("agency") ?? undefined;
 
   const initialFormData = useMemo(() => {
     if (!searchParams) return undefined;
@@ -83,16 +87,19 @@ function TeamRequestContent() {
       return undefined;
     }
 
-    const preset = TEAM_CONFIG_PRESETS.scout_check;
+    // Optional: allow explicit eventType preset from QS
+    const qsEventType = (searchParams.get("eventType") ?? undefined) as keyof typeof TEAM_CONFIG_PRESETS | undefined;
+    const presetKey: keyof typeof TEAM_CONFIG_PRESETS = qsEventType && TEAM_CONFIG_PRESETS[qsEventType] ? qsEventType : "scout_check";
+    const preset = TEAM_CONFIG_PRESETS[presetKey];
 
     return {
       basicInfo: {
         location,
         location_label: locationLabel,
       },
-      eventType: "scout_check" as const,
+      eventType: presetKey as keyof typeof TEAM_CONFIG_PRESETS,
       actions: {
-        intended_action_preset: "scout_check",
+        intended_action_preset: presetKey,
         intended_actions: preset.actions,
         intended_action_notes: agency ? `Reported agency presence: ${agency}` : undefined,
       },
@@ -107,6 +114,22 @@ function TeamRequestContent() {
     <section className="max-w-7xl">
       <h1 className="text-2xl font-bold">Team Request</h1>
       <p className="text-muted-foreground mb-4">Submit a request for support.</p>
+      {cameFromWatch ? (
+        <div className="mb-4">
+          <Alert>
+            <AlertTitle>Prefilled from Watch</AlertTitle>
+            <AlertDescription>
+              This request was started from a Watch report{labelFromWatch ? (
+                <> at <span className="font-medium">{labelFromWatch}</span></>
+              ) : null}
+              {agencyFromWatch ? (
+                <>. Reported agency: <span className="font-medium">{agencyFromWatch}</span></>
+              ) : null}
+              . Review location and notes before submitting.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : null}
       <div className="grid gap-3">
         <TeamRequestForm
           onCreateSubmission={async (draft) => {

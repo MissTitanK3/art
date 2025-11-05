@@ -1,5 +1,3 @@
-// apps/region-pnw/lib/adapters/demoProfileAdapter.ts
-
 import { ProfileAdapter } from '@workspace/store/types/profile.ts';
 
 let DEMO_PROFILE: any | null = {

@@ -1,4 +1,3 @@
-// apps/region-pnw/components/client/global-nav.tsx
 "use client";
 
 import NextLink from "next/link";

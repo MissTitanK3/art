@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
+import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
@@ -170,6 +171,35 @@ export function DispatchSubmissionLayout({
           </Button>
         </div>
       </div>
+
+      {/* Contextual CTA: suggest Missing Persons intake if this looks like a detention */}
+      {(() => {
+        const preset = (submission.intended_action_preset || "").toLowerCase();
+        const notes = (submission.intended_action_notes || "").toLowerCase();
+        const looksLikeDetention =
+          preset.includes("detention") ||
+          preset.includes("scout") ||
+          notes.includes("detention") ||
+          notes.includes("arrest");
+        return looksLikeDetention ? (
+          <div className="px-4">
+            <Alert>
+              <AlertTitle>Confirm and document detention details</AlertTitle>
+              <AlertDescription>
+                If this incident involves a detention or arrest, capture identifiers and facility details so advocates can act fast.
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button size="sm" asChild>
+                    <a href="/missing-persons/intake">Open Missing Persons Intake</a>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href="/missing-persons">View Directory</a>
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : null;
+      })()}
 
       {loadingMessage ? (
         <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>

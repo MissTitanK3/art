@@ -1,4 +1,3 @@
-// apps/region-pnw/app/(authed)/confirmed-watch/page.tsx
 import { requireVerifiedAdminAccess } from "@/lib/guards";
 import ConfirmedWatchForm from "@/components/client/ConfirmedWatchForm";
 

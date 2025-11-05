@@ -1,4 +1,3 @@
-// apps/region-pnw/components/dataLayer/admin/AdminProfilesDataLayer.tsx
 import ProfilesClient from "@workspace/ui/layout/admin/profiles/profiles";
 import { getProfiles } from "@/lib/dal/admin";
 import type { Profile } from "@workspace/store/types/global.ts";

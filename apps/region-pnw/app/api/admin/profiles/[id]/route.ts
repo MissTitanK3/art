@@ -41,6 +41,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     // Prefer service-role client for admin updates if available to bypass RLS
+    // Prefer service-role client for admin updates if available to bypass RLS
     let client: any;
     try {
       const env = ensureSupabaseEnv('server');

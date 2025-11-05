@@ -1,12 +1,11 @@
-// apps/region-pnw/lib/dal/admin.ts
 import 'server-only';
 import type { Profile, RegionSettings } from '@workspace/store/types/global.ts';
 import type { Pod, RosterEntry } from '@workspace/store/types/pod.ts';
 import type { DispatchSubmission } from '@workspace/store/types/global.ts';
 import { AccessRole, VerifiedBy } from '@workspace/store/types/roles.ts';
-import type { TrustEntry, TrustRole } from '@workspace/store/types/trust.ts';
+import type { TrustEntry } from '@workspace/store/types/trust.ts';
 import { createClient } from '@supabase/supabase-js';
-import { regionAdmins, podAdmins } from '@workspace/store/utils/nav';
+import { regionAdmins } from '@workspace/store/utils/nav';
 import { ensureSupabaseEnv } from '../auth/supabase/utils';
 import { createSupabaseServerClient } from '../auth/supabase/server';
 
@@ -61,17 +60,17 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
         const user = userData?.user;
         let authorized = false;
         if (user) {
-          // Allow pod admins (dispatcher_basic/verified/admin + region/national admins)
-          const ALLOW = new Set<AccessRole>([...(podAdmins as unknown as AccessRole[])]);
+          // Align allowlist with /api/admin/profiles route (regionAdmins + dispatcher_admin)
+          const ADMIN_ALLOW = new Set<AccessRole>(['dispatcher_admin', ...(regionAdmins as unknown as AccessRole[])]);
 
           // Some deployments may store a nav role on the user; trust it if in allowlist.
           const navRole = (user as any)?.role as AccessRole | undefined;
-          authorized = !!navRole && ALLOW.has(navRole);
+          authorized = !!navRole && ADMIN_ALLOW.has(navRole);
 
           // Fall back to profile role check if needed
           if (!authorized) {
             const callerProfile = await getProfileByUserId(user.id);
-            authorized = !!callerProfile && ALLOW.has(callerProfile.access_role as AccessRole);
+            authorized = !!callerProfile && ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
           }
         }
 

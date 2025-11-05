@@ -35,9 +35,7 @@
     "lucide-react": "^0.475.0",
     "mermaid": "^11.12.0",
     "next-themes": "^0.4.6",
-    "react": "^19.1.1",
     "react-day-picker": "^9.9.0",
-    "react-dom": "^19.1.1",
     "recharts": "2.15.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
@@ -47,6 +45,8 @@
     "zod": "^3.25.76"
   },
   "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-hook-form": "^7.62.0"
   },
   "devDependencies": {
@@ -56,6 +56,8 @@
     "@types/node": "^20.19.9",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "tailwindcss": "^4.1.11",
@@ -65,8 +67,24 @@
     "./globals.css": "./src/styles/globals.css",
     "./postcss.config": "./postcss.config.mjs",
     "./lib/*": "./src/lib/*.ts",
+    "./lib/teleprompter": "./src/lib/teleprompter.ts",
     "./components/*": "./src/components/*.tsx",
+    "./components/teleprompter-demo": "./src/components/teleprompter-demo.tsx",
+    "./components/teleprompter-viewer": "./src/components/teleprompter-viewer.tsx",
+    "./components/teleprompter-controls": "./src/components/teleprompter-controls.tsx",
+    "./components/TeleprompterShell": "./src/components/TeleprompterShell.tsx",
+    "./components/KeyboardHint": "./src/components/KeyboardHint.tsx",
+    "./components/OrientationHint": "./src/components/OrientationHint.tsx",
+    "./components/TeleprompterSettings": "./src/components/TeleprompterSettings.tsx",
+    "./components/TeleprompterImportContent": "./src/components/TeleprompterImportContent.tsx",
+    "./components/teleprompter-script-builder": "./src/components/teleprompter-script-builder.tsx",
+    "./components/QuickActionsCard": "./src/components/QuickActionsCard.tsx",
     "./data/*": "./src/data/*",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./hooks/*": "./src/hooks/*.ts",
+    "./hooks/use-fullscreen-element": "./src/hooks/use-fullscreen-element.ts",
+    "./hooks/use-auto-hide": "./src/hooks/use-auto-hide.ts",
+    "./hooks/use-viewport-info": "./src/hooks/use-viewport-info.ts",
+    "./hooks/use-teleprompter-engine": "./src/hooks/use-teleprompter-engine.ts",
+    "./hooks/use-teleprompter-hotkeys": "./src/hooks/use-teleprompter-hotkeys.ts"
   }
 }

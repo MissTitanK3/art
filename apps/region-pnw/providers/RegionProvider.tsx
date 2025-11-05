@@ -1,4 +1,3 @@
-// apps/region-pnw/providers/RegionProvider.tsx
 "use client";
 import { createContext, useContext } from "react";
 import { supabaseProfileAdapter } from "../lib/adapters/profile/supabaseProfileAdapter";

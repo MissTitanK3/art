@@ -1,4 +1,3 @@
-// apps/region-pnw/components/dataLayer/admin/AdminTrainingDataLayer.tsx
 import TrainingClient from "@workspace/ui/layout/admin/training/training";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";

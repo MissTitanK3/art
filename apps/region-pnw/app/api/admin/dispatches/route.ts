@@ -34,11 +34,18 @@ export async function GET() {
         const rows = Array.isArray(data) ? data : [];
         return NextResponse.json({ submissions: rows });
       }
-      // If no service role is present, we can't list all dispatches safely
-      return NextResponse.json({ error: 'Service role not configured' }, { status: 501 });
     } catch (e: any) {
-      return NextResponse.json({ error: e?.message ?? 'Supabase not configured' }, { status: 500 });
+      // ignore and fall back to session-scoped client
     }
+
+    // Fallback: use regional session client (RLS may limit rows)
+    const { data, error } = await supabase
+      .from('dispatch_submissions')
+      .select('*')
+      .order('timestamp', { ascending: false });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const rows = Array.isArray(data) ? data : [];
+    return NextResponse.json({ submissions: rows });
   } catch (e: any) {
     return jsonError(e);
   }

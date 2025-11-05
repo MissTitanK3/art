@@ -11,6 +11,7 @@ import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import { toast } from "sonner";
 
 function mapRowToDetaineeIntake(row: any): DetaineeIntake {
   return {
@@ -258,14 +259,20 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         onExportRecord={exportLegalAidReport}
         onFinalizeRecord={async (rec) => {
           try {
-            await fetch('/api/missing-persons/finalize', {
+            const res = await fetch('/api/missing-persons/finalize', {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ record: { caseId: rec.caseId, fullName: rec.fullName ?? null }, slug }),
             });
+            if (!res.ok) {
+              toast.error('Finalize failed');
+            } else {
+              toast.success('Shared with active advocacy groups');
+            }
           } catch (e) {
             console.warn('Finalize notify failed', e);
+            toast.error('Finalize failed');
             throw e;
           }
         }}

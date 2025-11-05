@@ -70,6 +70,7 @@ export const navConfig: GlobalNavConfigInput = {
         { label: 'Intents', href: '/intents' },
         { label: 'Roles', href: '/roles' },
         { label: 'Impact', href: '/impact' },
+        { label: 'Present', href: '/present', roles: verifiedAdmins },
       ],
     },
     // {
@@ -86,17 +87,21 @@ export const navConfig: GlobalNavConfigInput = {
       roles: completeOnboarding,
       children: [
         { label: 'My Profile', href: '/my-profile' },
+        { label: 'Settings', href: '/settings' },
+        { label: 'Admin', href: '/admin', roles: ['dispatcher_admin', 'admin', 'regional_admin', 'national_admin'] },
+        { label: 'How To Use Platform', href: '/how-to-use', roles: completeOnboarding },
         ...(SIGNAL_GROUP_URL
           ? [
               {
-                label: 'Signal Onboarding Group',
+                label: 'Region Onboarding Signal',
                 href: SIGNAL_GROUP_URL,
               } as const,
             ]
           : []),
-        { label: 'Settings', href: '/settings' },
-        { label: 'Admin', href: '/admin', roles: ['dispatcher_admin', 'admin', 'regional_admin', 'national_admin'] },
-        { label: 'How To Use Platform', href: '/how-to-use', roles: completeOnboarding },
+        {
+          label: 'New Region Setup Signal',
+          href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
+        },
         { label: 'Log out', href: '/sign-out', icon: 'log-out', roles: completeOnboarding },
         // { label: 'Credential Card', href: '/credentials' },
       ],

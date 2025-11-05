@@ -1,4 +1,3 @@
-// apps/region-pnw/components/dataLayer/admin/AdminTrustDataLayer.tsx
 import TrustClient from "@workspace/ui/layout/admin/trust/trust";
 import { getTrustEntries, getProfiles } from "@/lib/dal/admin";
 

@@ -42,7 +42,6 @@ export async function POST(req: Request) {
     };
 
     const client = await createSupabaseServerClient();
-
     const { data, error } = await client.from('pods').insert(payload).select('id, slug, name, area, channels').limit(1);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

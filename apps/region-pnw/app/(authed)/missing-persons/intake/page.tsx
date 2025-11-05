@@ -1,5 +1,6 @@
 import { MissingPersonIntakeDataLayer } from "@/components/dataLayer/missing-persons/MissingPersonIntakeDataLayer";
 import Link from "next/link";
+import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
 
 export default function MissingPersonsIntakePage() {
   return (
@@ -13,6 +14,12 @@ export default function MissingPersonsIntakePage() {
           Capture all available details about a detention so legal aid partners can mobilize quickly.
         </p>
       </div>
+      <Alert>
+        <AlertTitle>Collect only what’s needed</AlertTitle>
+        <AlertDescription>
+          Prioritize identifiers (name, DOB, pronouns, A‑Number), where/when it happened, agency/facility, transfers, interpreter needs, and a contact. Avoid sensitive extras you don’t need.
+        </AlertDescription>
+      </Alert>
       <MissingPersonIntakeDataLayer />
     </div>
   );

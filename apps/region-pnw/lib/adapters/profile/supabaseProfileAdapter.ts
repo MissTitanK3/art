@@ -1,4 +1,3 @@
-// apps/region-pnw/lib/adapters/profile/supabaseProfileAdapter.ts
 'use client';
 
 import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
