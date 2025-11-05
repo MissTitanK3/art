@@ -26,7 +26,6 @@ export const REGIONS: Region[] = [
     subdomain: 'pnw',
     coverage: 'Washington, Oregon, Idaho panhandle',
     notes: 'Existing Olympia hub. Seattle, Tacoma, Portland next anchors.',
-    disabled: true,
     signals: [
       {
         name: 'PNW Region Signal Group',
@@ -34,14 +33,23 @@ export const REGIONS: Region[] = [
       },
     ],
   },
-
-  // Planned / coming soon
+  {
+    name: 'We Are Pierce',
+    subdomain: 'wap',
+    coverage: 'Pierce County, Washington',
+    notes: 'Local mutual-aid and disaster response network centered on Tacoma.',
+    signals: [
+      {
+        name: 'We Are Pierce Signal Group',
+        url: 'https://signal.group/#CjQKIC4jrO0uh1BSRFFRmu2Z-VZgxR2XtXjMYmMNrFjORhPdEhBHmKTuxZXPrOIq3W4jp1Qg',
+      },
+    ],
+  },
   {
     name: 'Northern California',
     subdomain: 'norcal',
     coverage: 'Bay Area, Sacramento, Humboldt',
     notes: 'Distinct tech+activist density. Split from SoCal for autonomy.',
-    disabled: true,
     signals: [
       {
         name: 'NorCal Region Signal Group',
@@ -49,6 +57,8 @@ export const REGIONS: Region[] = [
       },
     ],
   },
+
+  // Planned / coming soon
   {
     name: 'Southern California',
     subdomain: 'socal',

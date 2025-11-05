@@ -145,7 +145,7 @@ export default function DispatchListDataLayer() {
       submissions={data}
       initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
       onUrlChange={(url) => router.replace(url)}
-      persistKey="dispatchList.filters"
+      persistKey="dispatchList.filters:region-template"
       LinkComponent={({ href, children }) => (
         <Link href={href} className="block hover:no-underline">
           {children}

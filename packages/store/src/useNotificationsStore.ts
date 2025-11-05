@@ -107,7 +107,17 @@ export function createNotificationsStore(options?: CreateNotificationsStoreOptio
   return createStore<NotificationsStoreState>(creator as any);
 }
 
-const singletonNotificationsStore = createNotificationsStore();
+// Allow apps to override the persisted storage key (or provide a prebuilt store) via a global
+// This helps isolate notifications per region/app when multiple Next.js apps share the same origin.
+// If a global store instance is provided, prefer it; else, use a storageKey override when available.
+const GLOBAL_STORE: NotificationsStore | undefined =
+  (typeof globalThis !== 'undefined' && (globalThis as any).__ART_NOTIFICATIONS_STORE) || undefined;
+
+const GLOBAL_STORAGE_KEY: string | undefined =
+  (typeof globalThis !== 'undefined' && (globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY) || undefined;
+
+const singletonNotificationsStore =
+  GLOBAL_STORE ?? createNotificationsStore({ storageKey: GLOBAL_STORAGE_KEY ?? 'notifications-store-v1' });
 export const notificationsStore = singletonNotificationsStore;
 
 export function useNotificationsStore<T>(

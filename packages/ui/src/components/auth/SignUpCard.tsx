@@ -6,6 +6,8 @@ import { Input } from "../input";
 import { Label } from "../label";
 import { Checkbox } from "../checkbox";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../card";
+import { humanize } from "@workspace/ui/lib/utils";
+import { cn } from "@workspace/ui/lib/utils";
 
 export interface SignUpValues {
   email: string;
@@ -145,14 +147,32 @@ export function SignUpCard({ onSubmit, pendingText = "Creating account…", titl
           </div>
           {roleOptions && roleOptions.length > 0 ? (
             <div className="grid gap-2">
-              <Label>Field roles</Label>
+              <Label>
+                Field roles
+                <span className="ml-2 text-xs text-muted-foreground">(choose all that apply)</span>
+              </Label>
               <div className="grid grid-cols-2 gap-2">
-                {roleOptions.map((r) => (
-                  <label key={r} className="flex items-center gap-2 text-sm">
-                    <Checkbox checked={fieldRoles.includes(r)} onCheckedChange={() => toggleRole(r)} />
-                    <span>{r}</span>
-                  </label>
-                ))}
+                {roleOptions.map((r) => {
+                  const selected = fieldRoles.includes(r);
+                  return (
+                    <label
+                      key={r}
+                      className={cn(
+                        "flex items-center gap-2 rounded-md border p-2 text-sm transition focus-within:ring-2 focus-within:ring-[rebeccapurple]",
+                        selected ? "bg-accent/60" : "hover:bg-accent/50"
+                      )}
+                      style={{ borderColor: selected ? "hsl(var(--accent))" : "rebeccapurple" }}
+                    >
+                      <Checkbox
+                        className="size-5 focus-visible:ring-[rebeccapurple] focus-visible:ring-opacity-40 data-[state=checked]:bg-[hsl(var(--accent))] data-[state=checked]:border-[hsl(var(--accent))] data-[state=checked]:text-[hsl(var(--accent-foreground))]"
+                        style={{ borderColor: selected ? "hsl(var(--accent))" : "rebeccapurple" }}
+                        checked={selected}
+                        onCheckedChange={() => toggleRole(r)}
+                      />
+                      <span className={cn("truncate", selected ? "font-medium" : undefined)}>{humanize(r)}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
           ) : null}

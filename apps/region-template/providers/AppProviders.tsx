@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react";
+import "@/providers/NotificationsStoreBootstrap"; // side-effect: set notifications storage key
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/providers/AuthProvider";

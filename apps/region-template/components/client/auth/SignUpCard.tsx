@@ -25,6 +25,7 @@ import {
   ONE_WEEK_SECONDS,
   encodeSession,
 } from "@/lib/auth/providers/demo/common";
+import { humanize } from "@workspace/ui/lib/utils";
 
 const PENDING_PROFILE_KEY = "pending-profile";
 
@@ -94,12 +95,12 @@ export function SignUpCard() {
           // Persist lightweight app session cookie for client/server harmony
           try {
             document.cookie = `${SESSION_COOKIE}=${encodeSession(session)}; path=/; max-age=${ONE_WEEK_SECONDS}; SameSite=Lax`;
-          } catch {}
+          } catch { }
 
           try {
             setSession(session);
             await refresh();
-          } catch {}
+          } catch { }
 
           // Save profile immediately if session is available
           const profile: Profile = {
@@ -126,7 +127,7 @@ export function SignUpCard() {
               const map = raw ? (JSON.parse(raw) as Record<string, Partial<Profile>>) : {};
               map[email] = { ...baseProfile };
               localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(map));
-            } catch {}
+            } catch { }
           }
           router.push("/");
         } else {
@@ -136,7 +137,7 @@ export function SignUpCard() {
             const map = raw ? (JSON.parse(raw) as Record<string, Partial<Profile>>) : {};
             map[email] = baseProfile;
             localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(map));
-          } catch {}
+          } catch { }
           setInfo(
             "Check your email to confirm your account. We will finish creating your profile after you sign in."
           );
@@ -266,7 +267,7 @@ export function SignUpCard() {
                         setFieldRoles(next);
                       }}
                     />
-                    <span className="capitalize">{role.replaceAll('_', ' ')}</span>
+                    <span className="capitalize">{humanize(role)}</span>
                   </label>
                 );
               })}

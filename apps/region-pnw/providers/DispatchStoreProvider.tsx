@@ -25,7 +25,7 @@ export function DispatchStoreProvider({
   initialSubmissions = [],
   initialShifts = [],
   persist = true,
-  storageKey = 'dispatch-store',
+  storageKey = 'dispatch-store:region-pnw',
 }: DispatchStoreProviderProps) {
   const storeRef = useRef<StoreApi<DispatchStoreState> | null>(null);
 

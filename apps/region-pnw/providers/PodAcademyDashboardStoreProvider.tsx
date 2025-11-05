@@ -19,7 +19,7 @@ export const PodAcademyDashboardStoreContext =
 export function PodAcademyDashboardStoreProvider({
   children,
   persist = false,
-  storageKey = 'pod-academy-dashboard-store',
+  storageKey = 'pod-academy-dashboard-store:region-pnw',
   initialStats,
   initialCourseGroups,
   initialMembers,

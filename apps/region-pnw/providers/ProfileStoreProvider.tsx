@@ -19,7 +19,7 @@ export function ProfileStoreProvider({
   children,
   initialProfile = null,
   persist = true,
-  storageKey = 'profile-store',
+  storageKey = 'profile-store:region-pnw',
 }: ProfileStoreProviderProps) {
   const storeRef = useRef<ProfileStore | null>(null);
 

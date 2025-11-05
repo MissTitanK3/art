@@ -455,7 +455,7 @@ function ActiveDispatchesPreview() {
       <CardContent className="space-y-4">
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No dispatches yet. Connect a data source or submit a demo intake to populate this view.
+            No dispatches yet.
           </p>
         ) : (
           items.map((submission) => {

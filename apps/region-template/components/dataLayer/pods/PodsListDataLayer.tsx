@@ -100,7 +100,7 @@ export default function PodsListDataLayer() {
       pods={normalizedPods}
       initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
       onUrlChange={(url) => router.replace(url)}
-      persistKey="podsList.filters"
+      persistKey="podsList.filters:region-template"
       emptyState={
         loadingRemotePods ? (
           <p className="text-sm text-muted-foreground">Loading pods from database...</p>

@@ -26,7 +26,7 @@ export function PodStoreProvider({
   initialShifts = [],
   initialRoster,
   persist = false,
-  storageKey = 'pod-store',
+  storageKey = 'pod-store:region-pnw',
 }: PodStoreProviderProps) {
   const storeRef = useRef<StoreApi<PodStoreState> | null>(null);
 

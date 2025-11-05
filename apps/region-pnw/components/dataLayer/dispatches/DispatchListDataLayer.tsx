@@ -118,6 +118,9 @@ export default function DispatchListDataLayer() {
 
           // Replace local persisted store with latest from DB
           replaceSubmissions(unique);
+        } else if (!cancelled && Array.isArray(result) && result.length === 0) {
+          setRemoteSubmissions([]);
+          replaceSubmissions([]);
         }
       } catch (error) {
         if (!cancelled) {
@@ -152,7 +155,7 @@ export default function DispatchListDataLayer() {
       submissions={data}
       initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
       onUrlChange={(url) => router.replace(url)}
-      persistKey="dispatchList.filters"
+      persistKey="dispatchList.filters:region-pnw"
       LinkComponent={({ href, children }) => (
         <Link href={href} className="block hover:no-underline">
           {children}
