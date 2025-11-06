@@ -96,14 +96,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' , 'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
 
@@ -130,14 +130,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' ,'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' ,'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
 
