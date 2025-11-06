@@ -12,27 +12,55 @@ type PatchBody = Partial<{
   channels: any[];
 }>;
 
-async function authz() {
+async function authz(podId?: string) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data?.user) return false;
   const callerProfile = await getProfileByUserId(data.user.id);
   const callerAccessRole = callerProfile?.access_role as any | undefined;
-  return (
-    !!callerAccessRole &&
-    (regionAdmins.includes(callerAccessRole) ||
-      callerAccessRole === 'dispatcher_admin' ||
-      callerAccessRole === 'dispatcher_verified' ||
-      callerAccessRole === 'dispatcher_basic')
+  // Global admins and dispatcher_* keep full access
+  const isGlobalAdmin = !!callerAccessRole && (
+    regionAdmins.includes(callerAccessRole) ||
+    callerAccessRole === 'dispatcher_admin' ||
+    callerAccessRole === 'dispatcher_verified' ||
+    callerAccessRole === 'dispatcher_basic'
   );
+  if (isGlobalAdmin) return true;
+
+  // Scoped: allow if caller is a lead of this pod OR the creator
+  if (!podId || !callerProfile?.id) return false;
+
+  try {
+    // Lead check via roster_entries (RLS allows selecting own roster row)
+    const { data: leadRows, error: leadErr } = await supabase
+      .from('roster_entries')
+      .select('id')
+      .eq('pod_id', podId)
+      .eq('profile_id', callerProfile.id)
+      .eq('role', 'lead')
+      .limit(1);
+    if (!leadErr && Array.isArray(leadRows) && leadRows.length > 0) return true;
+
+    // Creator check via pods.created_by
+    const { data: podRow, error: podErr } = await supabase
+      .from('pods')
+      .select('created_by')
+      .eq('id', podId)
+      .maybeSingle();
+    if (!podErr && podRow && podRow.created_by && String(podRow.created_by) === String(callerProfile.id)) return true;
+  } catch {
+    // fall through to deny
+  }
+
+  return false;
 }
 
 // Use the shared server-side Supabase client that correctly wires Next.js cookies.
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    if (!(await authz())) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const { id } = await params;
+    if (!(await authz(id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const body = (await req.json()) as PatchBody;
     const patch: any = {};
     if (typeof body.name === 'string' && body.name.trim()) {
@@ -83,8 +111,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    if (!(await authz())) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const { id } = await params;
+    if (!(await authz(id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const client = await createSupabaseServerClient();
     const { error } = await client.from('pods').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

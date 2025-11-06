@@ -27,3 +27,5 @@ COMMIT;
 
 -- wap
 -- pnw
+-- norcal
+-- socal

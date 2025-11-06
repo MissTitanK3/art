@@ -61,7 +61,8 @@
     slug TEXT UNIQUE,
     name TEXT NOT NULL,
     area TEXT,
-    channels JSONB DEFAULT '[]'
+    channels JSONB DEFAULT '[]',
+    created_by TEXT REFERENCES public.profiles(id) ON DELETE SET NULL
   );
 
   -- Roster
@@ -735,6 +736,13 @@
       WHERE c.relkind = 'i' AND c.relname = 'idx_pods_slug'
     ) THEN
       EXECUTE 'CREATE INDEX idx_pods_slug ON public.pods (slug)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE c.relkind = 'i' AND c.relname = 'idx_pods_created_by'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_pods_created_by ON public.pods (created_by)';
     END IF;
 
     IF NOT EXISTS (

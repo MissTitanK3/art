@@ -22,11 +22,18 @@ export async function POST(req: Request) {
   try {
     const session = await requireServerSession();
     const callerRole = session.user.role;
+    const callerProfile = await getProfileByUserId(session.user.id);
 
     let authorized = regionAdmins.includes(callerRole);
     if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
-      authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
+      const access = callerProfile?.access_role;
+      authorized = !!access && (
+        access === 'dispatcher_admin' ||
+        access === 'dispatcher_verified' ||
+        access === 'dispatcher_basic' ||
+        access === 'pod_leader' ||
+        access === 'trainer'
+      );
     }
     if (!authorized) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -42,6 +49,7 @@ export async function POST(req: Request) {
       slug: slugify(name),
       area: body.area ?? 'Unassigned',
       channels: Array.isArray(body.channels) ? body.channels : [],
+      created_by: callerProfile?.id ?? null,
     };
 
     if (isDemoProvider()) {
@@ -71,6 +79,21 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const row = Array.isArray(data) ? data[0] : (data as any);
+    try {
+      if (callerProfile?.access_role === 'pod_leader' || callerProfile?.access_role === 'trainer') {
+        const rosterId = `r-${crypto.randomUUID()}`;
+        await client.from('roster_entries').upsert({
+          id: rosterId,
+          pod_id: row.id,
+          profile_id: callerProfile.id,
+          role: 'lead',
+          status: 'active',
+          joined_at: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.warn('[region-template admin/pods] POST add-creator-as-lead exception:', e);
+    }
     return NextResponse.json({ pod: row });
   } catch (e: any) {
     return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });

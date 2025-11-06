@@ -25,7 +25,9 @@ export async function POST(req: Request) {
       (regionAdmins.includes(callerAccessRole) ||
         callerAccessRole === 'dispatcher_admin' ||
         callerAccessRole === 'dispatcher_verified' ||
-        callerAccessRole === 'dispatcher_basic');
+        callerAccessRole === 'dispatcher_basic' ||
+        callerAccessRole === 'pod_leader' ||
+        callerAccessRole === 'trainer');
     if (!authorized) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -40,6 +42,7 @@ export async function POST(req: Request) {
       slug: slugify(name),
       area: body.area ?? 'Unassigned',
       channels: Array.isArray(body.channels) ? body.channels : [],
+      created_by: callerProfile?.id ?? null,
     };
 
     const client = await createSupabaseServerClient();
@@ -47,6 +50,23 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const row = Array.isArray(data) ? data[0] : (data as any);
+
+    // If a Pod Leader or Trainer created the pod, register them as a lead on this pod
+    try {
+      if (callerAccessRole === 'pod_leader' || callerAccessRole === 'trainer') {
+        const rosterId = `r-${crypto.randomUUID()}`;
+        await client.from('roster_entries').upsert({
+          id: rosterId,
+          pod_id: row.id,
+          profile_id: callerProfile?.id,
+          role: 'lead',
+          status: 'active',
+          joined_at: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.warn('[admin/pods] POST add-creator-as-lead exception:', e);
+    }
 
     // Fire-and-forget: let admins know a pod was created
     (async () => {

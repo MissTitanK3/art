@@ -88,7 +88,8 @@ USING (
   )
 );
 
--- Pod/admin roles can read and modify all pods
+-- Dispatch/admin roles can read and modify all pods (broad)
+DROP POLICY IF EXISTS dispatchers_manage_pods ON public.pods;
 CREATE POLICY dispatchers_manage_pods
 ON public.pods
 FOR ALL
@@ -96,14 +97,93 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['pod_leader','trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' , 'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Pod leaders/trainers can manage only pods they lead or created
+-- Insert: require that created_by matches the caller's profile id
+DROP POLICY IF EXISTS pod_leaders_create_pods ON public.pods;
+DROP POLICY IF EXISTS leaders_insert_own_pods ON public.pods;
+CREATE POLICY leaders_insert_own_pods
+ON public.pods
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+      AND p.id = public.pods.created_by
+  )
+);
+
+-- Select/Update/Delete: allow if caller is a lead of the pod OR the creator
+DROP POLICY IF EXISTS leaders_manage_own_pods ON public.pods;
+CREATE POLICY leaders_manage_own_pods
+ON public.pods
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+      AND (
+        EXISTS (
+          SELECT 1 FROM public.roster_entries r
+          WHERE r.pod_id = public.pods.id
+            AND r.profile_id = p.id
+            AND r.role = 'lead'
+        )
+        OR public.pods.created_by = p.id
+      )
+  )
+);
+
+CREATE POLICY leaders_update_own_pods
+ON public.pods
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+      AND (
+        EXISTS (
+          SELECT 1 FROM public.roster_entries r
+          WHERE r.pod_id = public.pods.id
+            AND r.profile_id = p.id
+            AND r.role = 'lead'
+        )
+        OR public.pods.created_by = p.id
+      )
+  )
+);
+
+CREATE POLICY leaders_delete_own_pods
+ON public.pods
+FOR DELETE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+      AND (
+        EXISTS (
+          SELECT 1 FROM public.roster_entries r
+          WHERE r.pod_id = public.pods.id
+            AND r.profile_id = p.id
+            AND r.role = 'lead'
+        )
+        OR public.pods.created_by = p.id
+      )
   )
 );
 
