@@ -8,7 +8,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Input } from "@workspace/ui/components/input";
-import { Switch } from "@workspace/ui/components/switch";
 import { toast } from "sonner";
 import { Map, Table2, Archive, Flag, FlagOff } from "lucide-react";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
@@ -202,35 +201,36 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
                   {filtered.map((d) => {
                     const flagged = Boolean((d as any).flagged);
                     return (
-                    <TableRow key={d.id}>
-                      <TableCell className="whitespace-nowrap">{new Date(d.timestamp).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{d.type ? DISPATCH_TYPE_LABELS[d.type] : 'Other'}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span>{d.status}</span>
-                          {flagged ? <Badge variant="secondary">Flagged</Badge> : null}
-                        </div>
-                      </TableCell>
-                      <TableCell className="max-w-[240px] truncate">{d.location_label ?? ''}</TableCell>
-                      <TableCell>{d.state ?? ''}</TableCell>
-                      <TableCell>{d.training ? <Badge variant="outline">Training</Badge> : ''}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="inline-flex gap-2">
-                          <Button asChild variant="outline" size="sm">
-                            <a target="_blank" href={`/dispatches/submission/${d.id}`}>View</a>
-                          </Button>
-                          <Button size="sm" variant={flagged ? "outline" : "secondary"} onClick={() => toggleFlag(d.id)}>
-                            {flagged ? <><FlagOff className="h-4 w-4 mr-2" /> Unflag</> : <><Flag className="h-4 w-4 mr-2" /> Flag</>}
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => archive(d.id)}>
-                            <Archive className="h-4 w-4 mr-2" /> Archive
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )})}
+                      <TableRow key={d.id}>
+                        <TableCell className="whitespace-nowrap">{new Date(d.timestamp).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{d.type ? DISPATCH_TYPE_LABELS[d.type] : 'Other'}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span>{d.status}</span>
+                            {flagged ? <Badge variant="secondary">Flagged</Badge> : null}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[240px] truncate">{d.location_label ?? ''}</TableCell>
+                        <TableCell>{d.state ?? ''}</TableCell>
+                        <TableCell>{d.training ? <Badge variant="outline">Training</Badge> : ''}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="inline-flex gap-2">
+                            <Button asChild variant="outline" size="sm">
+                              <a target="_blank" href={`/dispatches/submission/${d.id}`}>View</a>
+                            </Button>
+                            <Button size="sm" variant={flagged ? "outline" : "secondary"} onClick={() => toggleFlag(d.id)}>
+                              {flagged ? <><FlagOff className="h-4 w-4 mr-2" /> Unflag</> : <><Flag className="h-4 w-4 mr-2" /> Flag</>}
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => archive(d.id)}>
+                              <Archive className="h-4 w-4 mr-2" /> Archive
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </div>

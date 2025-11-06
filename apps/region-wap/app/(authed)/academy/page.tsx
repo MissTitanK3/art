@@ -332,7 +332,8 @@ function AcademyDashboardContent({
   const storeTrainingClasses = usePodAcademyDashboardStore((state) => state.trainingClasses);
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
   const profile = useProfileStore((s) => s.profile);
-  const canManageInstructors = profile?.access_role === 'dispatcher_admin' || profile?.access_role === 'admin' || profile?.access_role === 'regional_admin' || profile?.access_role === 'national_admin';
+  const isTrainer = profile?.access_role === 'trainer';
+  const canManageInstructors = isTrainer;
 
   return (
     <PodAcademyDashboardLayout
@@ -344,8 +345,8 @@ function AcademyDashboardContent({
       trainingClasses={storeTrainingClasses}
       sessions={storeSessions}
       canManageInstructors={canManageInstructors}
-      onScheduleClass={onScheduleClass}
-      onUpdateSessionStatus={async (sessionId, status) => {
+      onScheduleClass={isTrainer ? onScheduleClass : undefined}
+      onUpdateSessionStatus={isTrainer ? (async (sessionId, status) => {
         updateTrainingSessionStatus(sessionId, status);
         try {
           const client = getSupabaseBrowserClient();
@@ -353,8 +354,8 @@ function AcademyDashboardContent({
         } catch (e) {
           console.info('[AcademyDashboard] status update local-only (no supabase)', e);
         }
-      }}
-      onCreateInstructor={async (draft) => {
+      }) : undefined}
+      onCreateInstructor={isTrainer ? (async (draft) => {
         // Optimistic create in local store, then persist
         const instructor = addInstructor(draft);
         console.info('Added instructor', instructor.id);
@@ -376,8 +377,8 @@ function AcademyDashboardContent({
         } catch (e) {
           console.warn('[AcademyDashboard] supabase upsert instructor failed', e);
         }
-      }}
-      onUpdateInstructor={async (instructorId, patch) => {
+      }) : undefined}
+      onUpdateInstructor={isTrainer ? (async (instructorId, patch) => {
         updateInstructor(instructorId, patch);
         console.info('Updated instructor', instructorId, patch);
         try {
@@ -401,8 +402,8 @@ function AcademyDashboardContent({
         } catch (e) {
           console.warn('[AcademyDashboard] supabase update instructor failed', e);
         }
-      }}
-      onDeleteInstructor={async (instructorId) => {
+      }) : undefined}
+      onDeleteInstructor={isTrainer ? (async (instructorId) => {
         removeInstructor(instructorId);
         console.info('Removed instructor', instructorId);
         try {
@@ -412,15 +413,15 @@ function AcademyDashboardContent({
         } catch (e) {
           console.warn('[AcademyDashboard] supabase delete instructor failed', e);
         }
-      }}
-      onCreatePathwayClass={onCreatePathwayClass}
-      onCreateTrainingSession={async (draft) => {
+      }) : undefined}
+      onCreatePathwayClass={isTrainer ? onCreatePathwayClass : undefined}
+      onCreateTrainingSession={isTrainer ? (async (draft) => {
         const session = addTrainingSession(draft);
         console.info('Created training session', session.id);
         await persistSessionToDatabase(session);
         await persistParticipantsForSession(session.id, session.participants ?? []);
-      }}
-      onUpdateTrainingSession={async (sessionId, patch) => {
+      }) : undefined}
+      onUpdateTrainingSession={isTrainer ? (async (sessionId, patch) => {
         patchTrainingSession(sessionId, patch);
         console.info('Updated training session', sessionId, patch);
         const current = storeSessions.find((s) => s.id === sessionId);
@@ -436,8 +437,8 @@ function AcademyDashboardContent({
             await persistParticipantsForSession(sessionId, next.participants ?? []);
           }
         }
-      }}
-      onDeleteTrainingSession={async (sessionId) => {
+      }) : undefined}
+      onDeleteTrainingSession={isTrainer ? (async (sessionId) => {
         removeTrainingSession(sessionId);
         console.info('Deleted training session', sessionId);
         try {
@@ -446,7 +447,7 @@ function AcademyDashboardContent({
         } catch (e) {
           console.info('[AcademyDashboard] delete session local-only (no supabase)', e);
         }
-      }}
+      }) : undefined}
     />
   );
 }

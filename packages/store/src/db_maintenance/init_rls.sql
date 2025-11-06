@@ -88,6 +88,19 @@ USING (
   )
 );
 
+-- Pod leaders/trainers can view all pods in the region
+DROP POLICY IF EXISTS leaders_view_pods_in_area ON public.pods;
+CREATE POLICY leaders_view_all_pods
+ON public.pods
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+  )
+);
+
 -- Dispatch/admin roles can read and modify all pods (broad)
 DROP POLICY IF EXISTS dispatchers_manage_pods ON public.pods;
 CREATE POLICY dispatchers_manage_pods
@@ -317,6 +330,19 @@ USING (
   status IN ('confirmed','in_progress','completed')
 );
 
+-- Pod leaders/trainers can also view mobilizing and debriefing dispatches
+CREATE POLICY leaders_view_extra_dispatches
+ON dispatch_submissions
+FOR SELECT
+USING (
+  status IN ('mobilizing','debriefing')
+  AND EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+  )
+);
+
 -- =========================================================
 -- Comms policies
 
@@ -514,6 +540,22 @@ USING (
   )
 );
 
+-- Leaders/trainers inherit visibility for mobilizing/debriefing related logs
+CREATE POLICY leaders_view_extra_com_logs
+ON com_logs
+FOR SELECT
+USING (
+  event_id IN (
+    SELECT id FROM dispatch_submissions
+    WHERE status IN ('mobilizing','debriefing')
+  )
+  AND EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+  )
+);
+
 CREATE POLICY "dispatchers_manage_com_logs"
 ON com_logs
 FOR ALL
@@ -540,6 +582,22 @@ USING (
   event_id IN (
     SELECT id FROM dispatch_submissions
     WHERE status IN ('confirmed','in_progress','completed')
+  )
+);
+
+-- Leaders/trainers inherit visibility for mobilizing/debriefing related briefings
+CREATE POLICY leaders_view_extra_com_briefings
+ON com_briefings
+FOR SELECT
+USING (
+  event_id IN (
+    SELECT id FROM dispatch_submissions
+    WHERE status IN ('mobilizing','debriefing')
+  )
+  AND EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
 
@@ -589,6 +647,22 @@ USING (
   )
 );
 
+-- Leaders/trainers can view updates for mobilizing/debriefing dispatches
+CREATE POLICY leaders_view_extra_dispatch_updates
+ON dispatch_updates
+FOR SELECT
+USING (
+  dispatch_id IN (
+    SELECT id FROM dispatch_submissions
+    WHERE status IN ('mobilizing','debriefing')
+  )
+  AND EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
+  )
+);
+
 CREATE POLICY "dispatchers_manage_dispatch_updates"
 ON dispatch_updates
 FOR ALL
@@ -615,6 +689,22 @@ USING (
   dispatch_id IN (
     SELECT id FROM dispatch_submissions
     WHERE status IN ('confirmed','in_progress','completed')
+  )
+);
+
+-- Leaders/trainers can view logistics for mobilizing/debriefing dispatches
+CREATE POLICY leaders_view_extra_dispatch_logistics
+ON dispatch_logistics
+FOR SELECT
+USING (
+  dispatch_id IN (
+    SELECT id FROM dispatch_submissions
+    WHERE status IN ('mobilizing','debriefing')
+  )
+  AND EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
 
@@ -677,6 +767,7 @@ WITH CHECK (
 CREATE POLICY "public_view_academy_classes"
 ON academy_classes
 FOR SELECT
+TO authenticated
 USING (TRUE);
 
 -- Dispatchers can manage classes and sessions
@@ -687,14 +778,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -702,6 +793,7 @@ WITH CHECK (
 CREATE POLICY "public_view_academy_sessions"
 ON academy_sessions
 FOR SELECT
+TO authenticated
 USING (TRUE);
 
 -- Dispatchers can manage sessions
@@ -712,14 +804,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -727,6 +819,7 @@ WITH CHECK (
 CREATE POLICY "public_view_academy_instructors"
 ON academy_instructors
 FOR SELECT
+TO authenticated
 USING (TRUE);
 
 -- Dispatchers can manage instructors
@@ -737,14 +830,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -756,7 +849,7 @@ WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -768,14 +861,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -783,6 +876,7 @@ WITH CHECK (
 CREATE POLICY "public_view_academy_participants"
 ON academy_participants
 FOR SELECT
+TO authenticated
 USING (TRUE);
 
 -- Dispatchers can manage participants
@@ -793,14 +887,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -812,7 +906,7 @@ WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 
@@ -824,14 +918,14 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+      AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
 

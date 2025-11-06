@@ -130,7 +130,8 @@ function AcademyDashboardContent({
   onCreatePathwayClass,
 }: AcademyDashboardContentProps) {
   const profile = useProfileStore((s) => s.profile);
-  const canManageInstructors = profile?.access_role === 'dispatcher_admin';
+  const isTrainer = profile?.access_role === 'trainer';
+  const canManageInstructors = isTrainer;
   const setStats = usePodAcademyDashboardStore((state) => state.setStats);
   const setCourseGroups = usePodAcademyDashboardStore((state) => state.setCourseGroups);
   const setMembers = usePodAcademyDashboardStore((state) => state.setMembers);
@@ -186,33 +187,33 @@ function AcademyDashboardContent({
       trainingClasses={storeTrainingClasses}
       sessions={storeSessions}
       canManageInstructors={canManageInstructors}
-      onScheduleClass={onScheduleClass}
-      onUpdateSessionStatus={updateTrainingSessionStatus}
-      onCreateInstructor={(draft) => {
+      onScheduleClass={isTrainer ? onScheduleClass : undefined}
+      onUpdateSessionStatus={isTrainer ? updateTrainingSessionStatus : undefined}
+      onCreateInstructor={isTrainer ? ((draft) => {
         const instructor = addInstructor(draft);
         console.info('Added instructor', instructor.id);
-      }}
-      onUpdateInstructor={(instructorId, patch) => {
+      }) : undefined}
+      onUpdateInstructor={isTrainer ? ((instructorId, patch) => {
         updateInstructor(instructorId, patch);
         console.info('Updated instructor', instructorId, patch);
-      }}
-      onDeleteInstructor={(instructorId) => {
+      }) : undefined}
+      onDeleteInstructor={isTrainer ? ((instructorId) => {
         removeInstructor(instructorId);
         console.info('Removed instructor', instructorId);
-      }}
-      onCreatePathwayClass={onCreatePathwayClass}
-      onCreateTrainingSession={(draft) => {
+      }) : undefined}
+      onCreatePathwayClass={isTrainer ? onCreatePathwayClass : undefined}
+      onCreateTrainingSession={isTrainer ? ((draft) => {
         const session = addTrainingSession(draft);
         console.info('Created training session', session.id);
-      }}
-      onUpdateTrainingSession={(sessionId, patch) => {
+      }) : undefined}
+      onUpdateTrainingSession={isTrainer ? ((sessionId, patch) => {
         patchTrainingSession(sessionId, patch);
         console.info('Updated training session', sessionId, patch);
-      }}
-      onDeleteTrainingSession={(sessionId) => {
+      }) : undefined}
+      onDeleteTrainingSession={isTrainer ? ((sessionId) => {
         removeTrainingSession(sessionId);
         console.info('Deleted training session', sessionId);
-      }}
+      }) : undefined}
     />
   );
 }
