@@ -1,9 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google"
 import type { Metadata } from 'next'
 
-// @ts-expect-error: no types for side-effect CSS import from the workspace package
 import "@workspace/ui/globals.css"
-// @ts-expect-error: no types for side-effect CSS import from this local file
 import "./print.css"
 import { Providers } from "@/components/providers"
 import { Toaster } from "@workspace/ui/components/sonner"
