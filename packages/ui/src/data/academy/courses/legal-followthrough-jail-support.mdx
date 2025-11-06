@@ -1,12 +1,13 @@
 ---
 title: Legal Follow-Through & Jail Support
 slug: legal-followthrough-jail-support
-description: Learn how to coordinate bail, liaise with legal teams, and provide structured post-arrest support without exposing pods to risk.
+description: >-
+  Learn how to coordinate bail, liaise with legal teams, and provide structured
+  post-arrest support without exposing pods to risk.
 type: qualified
-version: 1.1
+version: '1.3'
 readingTime: 20
 ---
-
 # ⚖️ Legal Follow-Through & Jail Support
 <TrackBadge variant="court-support" />
 <TrackBadge variant="observation-legal" />
@@ -14,6 +15,10 @@ readingTime: 20
 <Callout type="info">
 This course is in **Level 4: Zone Lead (Admin Dispatcher)**.  
 It teaches **how to manage bail coordination, legal liaison work, and structured post-arrest support** while protecting pods from legal and operational risks.  
+</Callout>
+
+<Callout type="hint">
+Language access matters. When liaising with families or impacted people, coordinate with volunteers who hold the <a href="/academy/translator-micro-badge">Translator Micro‑badge</a> or <a href="/academy/asl-interpreter-micro-badge">ASL Interpreter Micro‑badge</a>. Keep communications consent‑based and privacy‑preserving; see <a href="/academy/community-consent">Community Consent</a>.
 </Callout>
 
 ---
@@ -34,6 +39,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 5. **Jail System Navigation** – Understanding **processing times, system searches, visitation rules, and medication policies**.  
 6. **Burnout Prevention** – Rotation systems, buddy pairs, and hard stop policies.
 
+<Callout type="info">
+For legal grounding and street scripts, see <a href="/academy/kyr-basics">Know Your Rights (KYR) Basics</a>, <a href="/academy/fourth-amendment-rights">Fourth Amendment Rights</a>, and <a href="/academy/interacting-with-law-enforcement">Interacting with Law Enforcement</a>.
+</Callout>
+
 ---
 
 ## Quick Action Steps
@@ -44,6 +53,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 4. Create a **basic post-release kit** (water, snacks, clean clothes, blanket, list of resources).  
 5. Rotate volunteers — **no more than 6 consecutive hours** per shift.
 
+<Callout type="hint">
+Keep case notes minimal and time‑bound. Follow <a href="/academy/documentation-safety">Documentation & Safety</a> and <a href="/academy/after-action-data-hygiene">After‑Action Data Hygiene</a>. Align with the <a href="/academy/data-ethics-pledge">Data Ethics Pledge</a>.
+</Callout>
+
 ---
 
 ## Bail Coordination Essentials
@@ -51,6 +64,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 - **Vet Bail Funds:** Only work with **trusted, registered funds** or those vouched by 2+ pods.  
 - **Secure Payments:** Use bonded bail agents or encrypted payment systems (never personal accounts).  
 - **Tracking Custody:** Use **secure spreadsheets** (offline copies) to track who is still detained, without unnecessary details.
+
+<Callout type="info">
+Compartmentalize sensitive data and avoid centralizing cross‑pod PII. Practice device and metadata hygiene per <a href="/academy/digital-security-basics">Digital Security Basics</a>.
+</Callout>
 
 ---
 
@@ -62,6 +79,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 **For Families:**  
 *"We can confirm your loved one is safe and in custody. We’ll update you once we have verified details. Here’s a legal contact number you can call."*
 
+<Callout type="info">
+If interpretation is needed, bring a trusted interpreter into the call and confirm consent for them to be present. Keep updates minimal; do not discuss case facts over unencrypted channels.
+</Callout>
+
 ---
 
 ## Trauma-Informed Post-Release Support
@@ -70,6 +91,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 - **Consent First:** Always ask before touching, hugging, or photographing.  
 - **Psychological First Aid:** Listen, don’t press for details, and avoid legal advice.  
 - **Follow-Up:** Connect them to medical care, counseling, or housing as needed.
+
+<Callout type="hint">
+Plan for transport and handoffs. See <a href="/academy/runners-and-rides">Runners & Rides</a>, and ensure care pathways via <a href="/academy/care-support">Care & Emotional Support</a> and <a href="/academy/crisis-debrief-care">Crisis Debriefing & Mutual Care</a>.
+</Callout>
 
 ---
 
@@ -80,6 +105,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 - **Visitation:** Know local policies for visits and phone calls.  
 - **Medication:** Be ready to advocate for prescribed medication access.
 
+<Callout type="warning">
+Do not post updates or identifying details to social media. Protect confidentiality and consent at every step.
+</Callout>
+
 ---
 
 ## When to Escalate
@@ -87,6 +116,10 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
 - **Contact the National Lawyers Guild** if local counsel is unavailable.  
 - **Activate missing person protocols** if someone disappears from custody tracking.  
 - **Request medical intervention** if injuries or medical neglect are suspected.
+
+<Callout type="info">
+Coordinate with legal/court pathways: <a href="/academy/court-support">Court Support</a> and <a href="/academy/interacting-with-law-enforcement">Interacting with Law Enforcement</a>. If this occurs during a live dispatch, escalate via <a href="/academy/dispatch-coordination">Dispatch Coordination</a> and align with <a href="/academy/responding-to-dispatch-calls">Responding to Dispatch Calls</a>.
+</Callout>
 
 ---
 
@@ -100,25 +133,22 @@ Handled poorly, these efforts can **burn out volunteers, breach confidentiality,
   2. Secure all related communications,  
   3. Activate pod security protocols.
 
+<Callout type="important">
+Retain only what’s necessary, for as long as necessary. Use encrypted channels, avoid shared drives with broad access, and keep a minimal, offline backup when required.
+</Callout>
+
 ---
 
 ## Decision Flow (Visual Guide)
 
 <Mermaid chart={`
 graph TD
-    A[Arrest Reported]:::nodeStyle --> B{Lawyer Already Contacted?}:::nodeStyle
-    B -->|Yes| C[Initiate Attorney Protocol]:::nodeStyle
-    B -->|No| D[Activate Jail Support Team]:::nodeStyle
-    C --> E[Monitor Case Securely]:::nodeStyle
-    D --> F[Track Through Jail System]:::nodeStyle
-    F --> G[Arrange Bail & Post-Release Care]:::nodeStyle
-
-    %% Node styling
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-
-    %% Link colors
-    linkStyle 0,2,4 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
-    linkStyle 1,3 stroke:#22c55e,stroke-width:2px,color:#1e293b,font-weight:bold;
+    A[Arrest Reported] --> B{Lawyer Already Contacted?}
+    B -->|Yes| C[Initiate Attorney Protocol]
+    B -->|No| D[Activate Jail Support Team]
+    C --> E[Monitor Case Securely]
+    D --> F[Track Through Jail System]
+    F --> G[Arrange Bail & Post-Release Care]
 `} />
 
 ---
@@ -132,6 +162,10 @@ graph TD
 - [ ] Can act as a **secure legal liaison** without breaching privilege.  
 - [ ] Can coordinate **post-release care and transport**.  
 
+<Callout type="success">
+Jail support is a relay, not a solo sprint. Protect consent, minimize data, and share the load.
+</Callout>
+
 ---
 
 ## Resource Appendix
@@ -139,3 +173,23 @@ graph TD
 - **Local Jail Support Cheat Sheet** (processing times, contact numbers)  
 - **Template Case Tracking Sheet** (secure, minimal data)  
 - **Scripts for Jail & Lawyer Calls** (sample provided in course packet)
+
+---
+
+## Related courses
+
+- [Court Support](/academy/court-support)
+- [Know Your Rights (KYR) Basics](/academy/kyr-basics)
+- [Fourth Amendment Rights](/academy/fourth-amendment-rights)
+- [Interacting with Law Enforcement](/academy/interacting-with-law-enforcement)
+- [Documentation & Safety](/academy/documentation-safety)
+- [After‑Action Data Hygiene](/academy/after-action-data-hygiene)
+- [Data Ethics Pledge](/academy/data-ethics-pledge)
+- [Digital Security Basics](/academy/digital-security-basics)
+- [Care & Emotional Support](/academy/care-support)
+- [Crisis Debriefing & Mutual Care](/academy/crisis-debrief-care)
+- [Runners & Rides](/academy/runners-and-rides)
+- [Dispatch Coordination](/academy/dispatch-coordination)
+- [Responding to Dispatch Calls](/academy/responding-to-dispatch-calls)
+- [Translator Micro‑badge](/academy/translator-micro-badge)
+- [ASL Interpreter Micro‑badge](/academy/asl-interpreter-micro-badge)

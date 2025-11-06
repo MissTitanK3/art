@@ -1,12 +1,13 @@
 ---
 title: Understanding State & Corporate Suppression Tactics
 slug: state-corporate-suppression-tactics
-description: Learn how to recognize state and corporate tactics like infiltration, surveillance, and disinformation, and how to build resilience against them.
+description: >-
+  Learn how to recognize state and corporate tactics like infiltration,
+  surveillance, and disinformation, and how to build resilience against them.
 type: qualified
-version: 1.1
+version: '1.2'
 readingTime: 20
 ---
-
 # 🕵️ Understanding State & Corporate Suppression Tactics
 <TrackBadge variant="movement-strategy" />
 <TrackBadge variant="observation-legal" />
@@ -96,15 +97,12 @@ Recognizing and responding effectively is essential to **long-term survival and 
 
 <Mermaid chart={`
 graph TB
-    A[Suspicious Presence Noticed]:::nodeStyle --> B{Physical or Digital?}:::nodeStyle
-    B -->|Physical| C[Document Patterns & Plates]:::nodeStyle
-    B -->|Digital| D[Preserve Screenshots & Metadata]:::nodeStyle
-    C --> E[Review with Security Lead/Pod Council]:::nodeStyle
-    D --> F[Isolate from Sensitive Comms]:::nodeStyle
-    E --> G[Determine Escalation Level]:::nodeStyle
-
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+    A[Suspicious Presence Noticed] --> B{Physical or Digital?}
+    B -->|Physical| C[Document Patterns & Plates]
+    B -->|Digital| D[Preserve Screenshots & Metadata]
+    C --> E[Review with Security Lead/Pod Council]
+    D --> F[Isolate from Sensitive Comms]
+    E --> G[Determine Escalation Level]
 `} />
 
 ---

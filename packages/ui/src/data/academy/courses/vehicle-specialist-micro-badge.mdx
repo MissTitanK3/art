@@ -1,12 +1,13 @@
 ---
 title: Vehicle Specialist Micro-Badge
 slug: vehicle-specialist-micro-badge
-description: Certification for volunteers responsible for driving, staging, and supporting pod operations with reliable vehicles during actions and mutual aid efforts.
+description: >-
+  Certification for volunteers responsible for driving, staging, and supporting
+  pod operations with reliable vehicles during actions and mutual aid efforts.
 type: qualified
-version: 1.1
+version: '1.2'
 readingTime: 12
 ---
-
 # 🚙 Vehicle Specialist Micro-Badge
 <TrackBadge variant="logistics" />
 <TrackBadge variant="field-safety" />
@@ -103,14 +104,12 @@ Trained Vehicle Specialists **reduce risks, prevent delays, and keep people and 
 
 <Mermaid chart={`
 graph TB
-    A[Route Blocked]:::nodeStyle --> B{Threat Level?}:::nodeStyle
-    B -->|High Visible Risk| C[Execute Pre-Planned Alt Route]:::nodeStyle
-    B -->|Unclear| D[Contact Dispatch for Guidance]:::nodeStyle
-    C --> E[Confirm Safe Arrival at Staging or Drop Point]:::nodeStyle
-    D --> F[Receive New Secure Coordinates]:::nodeStyle
+    A[Route Blocked] --> B{Threat Level?}
+    B -->|High Visible Risk| C[Execute Pre-Planned Alt Route]
+    B -->|Unclear| D[Contact Dispatch for Guidance]
+    C --> E[Confirm Safe Arrival at Staging or Drop Point]
+    D --> F[Receive New Secure Coordinates]
 
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
 `} />
 
 ---

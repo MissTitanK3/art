@@ -10,6 +10,13 @@ export type TOCHeading = {
   depth: number;
 };
 
+const FRONTMATTER_KEYS = ['title:', 'slug:', 'description:', 'type:', 'readingtime:', 'version:'] as const;
+function looksLikeFrontmatter(text: string, minMatches = 2): boolean {
+  const lc = text.toLowerCase();
+  const matches = FRONTMATTER_KEYS.filter((k) => lc.includes(k)).length;
+  return matches >= minMatches;
+}
+
 export type NestedTOCHeading = {
   value: string;
   id: string;
@@ -24,6 +31,10 @@ export function extractToc(markdown: string): NestedTOCHeading[] {
 
   visit(tree, 'heading', (node: Heading) => {
     const value = toString(node);
+    // Skip headings that look like leaked frontmatter
+    if (looksLikeFrontmatter(value, 2)) {
+      return;
+    }
     let id = value
       .toLowerCase()
       .replace(/[^\w]+/g, '-')

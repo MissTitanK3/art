@@ -4,7 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "predev": "node ../../scripts/generate-academy-mdx-manifest.mjs",
     "dev": "next dev --turbopack",
+    "prebuild": "node ../../scripts/generate-academy-mdx-manifest.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

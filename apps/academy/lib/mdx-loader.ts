@@ -1,42 +1,28 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
-import { compile } from '@mdx-js/mdx';
-import * as runtime from 'react/jsx-runtime';
+// Frontmatter is provided by the generated manifest; no runtime parsing needed
 import rehypeSlug from 'rehype-slug';
 import { extractToc } from './mdx.toc';
 import remarkGfm from 'remark-gfm';
 import { ACADEMY_COURSES_DIR } from '@workspace/ui/data/academy/paths';
-
-export type CourseFrontmatter = {
-  title: string;
-  slug: string;
-  description: string;
-  type: 'qualified' | 'certified';
-  readingTime?: string;
-  version?: number;
-};
+import type { AcademyCourseFrontmatter as CourseFrontmatter } from '@workspace/ui/data/academy/types';
+import { MDX_COURSE_FRONTMATTER } from './mdx-manifest.generated';
 
 export async function getCourseBySlug(slug: string) {
   const filepath = path.join(ACADEMY_COURSES_DIR, `${slug}.mdx`);
-  const raw = fs.readFileSync(filepath, 'utf8');
-  const { content, data: frontmatter } = matter(raw);
-
-  const compiled = await compile(content, {
-    outputFormat: 'function-body',
-    jsxImportSource: 'react',
-    remarkPlugins: [remarkGfm],
-    rehypePlugins: [rehypeSlug],
-  });
-
-  const MDXContent = new Function(String(compiled))(runtime).default;
+  if (!fs.existsSync(filepath)) {
+    console.error('[academy] getCourseBySlug:file-missing', { slug, filepath });
+  }
+  const rawFull = fs.readFileSync(filepath, 'utf8');
+  const content = rawFull.replace(/^---[\s\S]*?---\n/, '');
+  const fmMap = MDX_COURSE_FRONTMATTER;
+  const frontmatter = fmMap[slug as keyof typeof fmMap] as CourseFrontmatter | undefined;
   const toc = extractToc(content); // ✅ Extract at build time
 
   return {
     frontmatter: frontmatter as CourseFrontmatter,
-    Content: MDXContent,
     toc, // ✅ Include directly
-    raw,
+    raw: content,
     slug,
   };
 }
@@ -47,17 +33,8 @@ export function getAllCourseSlugs(): string[] {
 }
 
 export function getAllCourses() {
-  const files = fs.readdirSync(ACADEMY_COURSES_DIR);
-
-  return files
-    .filter((file) => file.endsWith('.mdx'))
-    .map((file) => {
-      const filePath = path.join(ACADEMY_COURSES_DIR, file);
-      const raw = fs.readFileSync(filePath, 'utf8');
-      const { data: frontmatter } = matter(raw);
-      return {
-        slug: file.replace(/\.mdx$/, ''),
-        frontmatter: frontmatter as CourseFrontmatter,
-      };
-    });
+  return Object.entries(MDX_COURSE_FRONTMATTER).map(([slug, frontmatter]) => ({
+    slug,
+    frontmatter: frontmatter as CourseFrontmatter,
+  }));
 }

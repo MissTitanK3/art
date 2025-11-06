@@ -243,6 +243,7 @@ export function SignUpCard() {
           </div>
           <div className="grid gap-1">
             <Label htmlFor="coordinationZone">Coordination zone (optional)</Label>
+            <p className="text-xs text-muted-foreground">e.g. City, county or region</p>
             <Input
               id="coordinationZone"
               type="text"

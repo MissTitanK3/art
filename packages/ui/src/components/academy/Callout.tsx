@@ -79,7 +79,7 @@ export function Callout({
   const style = CALLOUT_STYLES[type] ?? CALLOUT_STYLES.info
 
   return (
-    <div className={`flex rounded p-4 ${style.border} ${style.bg}`}>
+    <div className={`flex rounded my-3 p-4 ${style.border} ${style.bg}`}>
       <div className="-ml-[66px] mr-3 mt-1 flex w-11 items-center justify-center">
         {style.icon}
       </div>

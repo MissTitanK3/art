@@ -1,12 +1,14 @@
 ---
 title: Inter-Pod & Regional Coordination
 slug: inter-pod-regional-coordination
-description: Learn how to link pods across counties and regions, build fallback mutual aid networks, and coordinate communications during large-scale or multi-day actions.
+description: >-
+  Learn how to link pods across counties and regions, build fallback mutual aid
+  networks, and coordinate communications during large-scale or multi-day
+  actions.
 type: qualified
-version: 1.1
+version: '1.3'
 readingTime: 18
 ---
-
 # 🌐 Inter-Pod & Regional Coordination
 <TrackBadge variant="pod-leadership" />
 <TrackBadge variant="logistics" />
@@ -16,12 +18,20 @@ This course is in **Level 4: Zone Lead (Admin Dispatcher)**.
 It focuses on **linking multiple pods across counties and regions**, setting up **fallback systems**, and maintaining mutual aid coordination during **large-scale or prolonged events**.  
 </Callout>
 
+<Callout type="hint">
+Ensure you understand access roles and trust signatures for cross‑pod collaboration. See <a href="/academy/admin-tools">Admin Tools & Access Roles</a> and align with <a href="/academy/data-ethics-pledge">Data Ethics Pledge</a> for inter‑pod data handling.
+</Callout>
+
 ---
 
 ## Why It Matters
 
 No single pod can handle **large-scale raids, multi-day protests, or natural disasters** alone.  
 Linking pods with **trusted communications, shared resources, and fallback agreements** ensures the network stays operational and resilient.
+
+<Callout type="info">
+Plan comms fallbacks across pods: <a href="/academy/dealing-with-chaos">Dealing With Chaos</a>, <a href="/academy/comms-collapse">Comms Collapse</a>, and <a href="/academy/app-free-tactics">App‑Free Tactics</a>. For runners and handoffs, see <a href="/academy/runners-and-rides">Runners & Rides</a>. Coordinate activation via <a href="/academy/dispatch-coordination">Dispatch Coordination</a> and <a href="/academy/responding-to-dispatch-calls">Responding to Dispatch Calls</a>.
+</Callout>
 
 ---
 
@@ -42,6 +52,10 @@ Linking pods with **trusted communications, shared resources, and fallback agree
 - **Verify contacts:** Cross-check new pods via **two trusted references** before adding to secure networks.  
 - **Balance power:** Avoid extractive dynamics by tracking **resource and labor flows** between large and small pods.
 
+<Callout type="info">
+Language access matters for cross‑pod trust. Include volunteers holding the <a href="/academy/translator-micro-badge">Translator Micro‑badge</a> or <a href="/academy/asl-interpreter-micro-badge">ASL Interpreter Micro‑badge</a> in planning and MOUs.
+</Callout>
+
 ---
 
 ## Quick Action Steps
@@ -51,6 +65,10 @@ Linking pods with **trusted communications, shared resources, and fallback agree
 3. Use **multi-channel comms** (Signal, LoRa, radios) with **clear protocols for backups**.  
 4. Draft **Reciprocal Agreements (MOUs)** so everyone knows expectations and limits in advance.  
 5. **Run at least one regional drill** per year (communications, staging, load balancing).
+
+<Callout type="hint">
+Keep shared docs minimal and time‑bound. Follow <a href="/academy/documentation-safety">Documentation & Safety</a> and <a href="/academy/after-action-data-hygiene">After‑Action Data Hygiene</a> for inter‑pod retention.
+</Callout>
 
 ---
 
@@ -95,6 +113,10 @@ Linking pods with **trusted communications, shared resources, and fallback agree
 - Poor planning can cause **resource depletion or burnout**.  
 - Trust takes time — **do not shortcut verification**, even during crises.
 
+<Callout type="warning">
+Never centralize PII from multiple pods. Use compartmentalization and device hygiene from <a href="/academy/digital-security-basics">Digital Security Basics</a>.
+</Callout>
+
 ---
 
 ## How This Connects
@@ -102,6 +124,10 @@ Linking pods with **trusted communications, shared resources, and fallback agree
 - Required for **Pod Leadership & Organizing Track**.  
 - Required for **Logistics & Mutual Aid Operations Track**.  
 - Complements **Advanced Logistics & Resource Planning** and **Training the Trainers**.
+
+<Callout type="info">
+Confirm expectations about notification/audit access vary by region. Logs exist server‑side; in‑app viewers may be limited. Align escalation paths through <a href="/academy/dispatch-coordination">Dispatch Coordination</a>.
+</Callout>
 
 ---
 
@@ -119,19 +145,10 @@ Linking pods with **trusted communications, shared resources, and fallback agree
 
 <Mermaid chart={`
 graph TD
-    A[City Pod A]:::nodeStyle -->|Encrypted Signal| B[Rural Pod B]:::nodeStyle
-    A -->|Shared Medic Training| C[Suburb Pod C]:::nodeStyle
-    C <--> |Radio Link| X[Mutual Aid Hub X]:::nodeStyle
+    A[City Pod A] -->|Encrypted Signal| B[Rural Pod B]
+    A -->|Shared Medic Training| C[Suburb Pod C]
+    C <--> |Radio Link| X[Mutual Aid Hub X]
     B -->|Fallback Supplies| X
-
-    %% Node styling (rounded corners & padding effect)
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-
-    %% Style comms links (blue for encrypted, green for training, orange for fallback)
-    linkStyle 0 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
-    linkStyle 1 stroke:#22c55e,stroke-width:2px,color:#1e293b,font-weight:bold;
-    linkStyle 2 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
-    linkStyle 3 stroke:#f97316,stroke-width:2px,color:#1e293b,font-weight:bold;
 `} />
 
 
@@ -139,4 +156,24 @@ graph TD
 - Blue = Encrypted Communications
 - Green = Shared Training
 - Orange = Fallback Supplies
+
+---
+
+## Related courses
+
+- [Admin Tools & Access Roles](/academy/admin-tools)
+- [Data Ethics Pledge](/academy/data-ethics-pledge)
+- [Documentation & Safety](/academy/documentation-safety)
+- [After‑Action Data Hygiene](/academy/after-action-data-hygiene)
+- [Digital Security Basics](/academy/digital-security-basics)
+- [Dealing With Chaos](/academy/dealing-with-chaos)
+- [Comms Collapse](/academy/comms-collapse)
+- [App‑Free Tactics](/academy/app-free-tactics)
+- [Runners & Rides](/academy/runners-and-rides)
+- [Dispatch Coordination](/academy/dispatch-coordination)
+- [Responding to Dispatch Calls](/academy/responding-to-dispatch-calls)
+- [Translator Micro‑badge](/academy/translator-micro-badge)
+- [ASL Interpreter Micro‑badge](/academy/asl-interpreter-micro-badge)
+- [Risk and Responsibility](/academy/risk-and-responsibility)
+- [Training the Trainers](/academy/training-the-trainers)
 

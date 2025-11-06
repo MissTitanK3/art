@@ -1,12 +1,13 @@
 ---
 title: Solidarity Economics & Resource Ethics
 slug: solidarity-economics-resource-ethics
-description: Learn how to fund and sustain pods without compromising autonomy, avoid exploitative funding traps, and build transparent resource-sharing systems.
+description: >-
+  Learn how to fund and sustain pods without compromising autonomy, avoid
+  exploitative funding traps, and build transparent resource-sharing systems.
 type: qualified
-version: 1.1
+version: '1.2'
 readingTime: 18
 ---
-
 # 💰 Solidarity Economics & Resource Ethics
 <TrackBadge variant="movement-strategy" />
 <TrackBadge variant="logistics" />
@@ -86,16 +87,13 @@ Catalog existing resources:
 
 <Mermaid chart={`
 graph TB
-    A[Funding Opportunity]:::nodeStyle --> B{Source Type?}:::nodeStyle
-    B -->|Corporate| C[Reject Immediately]:::nodeStyle
-    B -->|Grassroots| D[Evaluate Impact]:::nodeStyle
-    B -->|Government/Foundation| E[High-Caution Review]:::nodeStyle
-    D --> F{Strings Attached?}:::nodeStyle
-    F -->|No| G[Accept With Transparency]:::nodeStyle
-    F -->|Yes| H[Pod Discussion & Vote]:::nodeStyle
-
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4,5 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+    A[Funding Opportunity] --> B{Source Type?}
+    B -->|Corporate| C[Reject Immediately]
+    B -->|Grassroots| D[Evaluate Impact]
+    B -->|Government/Foundation| E[High-Caution Review]
+    D --> F{Strings Attached?}
+    F -->|No| G[Accept With Transparency]
+    F -->|Yes| H[Pod Discussion & Vote]
 `} />
 
 ---

@@ -13,8 +13,12 @@ const OUT_FILE = path.resolve(__dirname, '../packages/ui/src/data/academy/course
 function pickFrontmatter(data) {
   const fields = ['title', 'description', 'icon', 'version', 'durationHours', 'type', 'modality', 'instructorType', 'certId']
   const out = {}
+  const coerceNum = (v) => (typeof v === 'string' && v.trim() !== '' && !Number.isNaN(Number(v)) ? Number(v) : v)
   for (const k of fields) {
-    if (data[k] !== undefined) out[k] = data[k]
+    if (data[k] !== undefined) {
+      const val = k === 'version' || k === 'durationHours' ? coerceNum(data[k]) : data[k]
+      out[k] = val
+    }
   }
   return out
 }

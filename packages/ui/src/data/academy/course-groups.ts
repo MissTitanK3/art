@@ -425,7 +425,7 @@ export const ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       { slug: 'advanced-logistics-resource-planning', icon: '📦' },
       { slug: 'deploying-community-defense-center', icon: '🛠️' },
       { slug: '60-day-preparedness', icon: '🧭' },
-      { slug: 'weekly-community-readiness-plan', icon: '📆' },
+      { slug: '60-day-checklist', icon: '📆' },
       { slug: 'solidarity-economics-resource-ethics', icon: '💰' },
       { slug: 'resource-drop', icon: '📥' },
       { slug: 'mutual-aid-history', icon: '🤲' },

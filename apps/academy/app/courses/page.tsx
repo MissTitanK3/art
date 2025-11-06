@@ -1,17 +1,20 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllCourses } from '@/lib/mdx-loader';
 import { COURSE_GROUPS } from '@/lib/course-index';
 import ThemeToggle from '@workspace/ui/components/client/ThemeToggle';
 import { Callout } from '@workspace/ui/components/academy/Callout';
+import PrintButton from '@/components/client/PrintButton';
 
 export default async function AcademyHome() {
   const allCourses = await getAllCourses();
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto py-12 px-2">
       <div className="flex justify-between w-full items-center">
         <h1 className="text-3xl font-bold mb-6">🎓 ART Academy</h1>
-        <div className="flex gap-3">
+        <div className="flex gap-3 no-print">
+          <PrintButton />
           <ThemeToggle />
         </div>
       </div>
@@ -80,3 +83,16 @@ export default async function AcademyHome() {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Courses · ART Academy',
+  description: 'Explore qualified and certified courses in the ART Academy.',
+  openGraph: {
+    title: 'Courses · ART Academy',
+    description: 'Explore qualified and certified courses in the ART Academy.',
+  },
+  twitter: {
+    title: 'Courses · ART Academy',
+    description: 'Explore qualified and certified courses in the ART Academy.',
+  },
+};

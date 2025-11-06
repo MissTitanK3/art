@@ -1,18 +1,23 @@
 ---
 title: After-Action Reviews & Data Hygiene
 slug: after-action-data-hygiene
-description: Learn how to run structured debriefs after actions, capture lessons without compromising security, and securely store or destroy sensitive data.
+description: >-
+  Learn how to run structured debriefs after actions, capture lessons without
+  compromising security, and securely store or destroy sensitive data.
 type: qualified
-version: 1.1
+version: '1.3'
 readingTime: 15
 ---
-
 # 🗃️ After-Action Reviews & Data Hygiene
 <TrackBadge variant="observation-legal" />
 <TrackBadge variant="court-support" />
 
 <Callout type="important">
 **24-Hour Rule:** Debriefs and data triage should start **within 24 hours** of an action. Lingering files = lingering risk.
+</Callout>
+
+<Callout type="hint">
+Pair this with <strong><a href="/academy/court-support">Court Support</a></strong> (for evidence handling and chain of custody) and <strong><a href="/academy/documentation-safety">Documentation Safety</a></strong> (for anonymization and storage).
 </Callout>
 
 ---
@@ -48,23 +53,11 @@ Hold a debrief **within 24–48 hours** using this structure:
 
 <Mermaid chart={`
 graph TD
-    A[Raw Data Collected]:::nodeStyle --> B{Needed for Legal?}:::nodeStyle
-    B -->|Yes| C[Encrypt & Transfer to Legal Team]:::nodeStyle
-    B -->|No| D{Training Value?}:::nodeStyle
-    D -->|Yes| E[Anonymize & Store Securely]:::nodeStyle
-    D -->|No| F[Securely Delete<br/>Wipe or Physical Destroy]:::nodeStyle
-
-    %% Node styling (rounded corners & padding-like effect)
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-
-    %% Style Yes links (green)
-    linkStyle 1 stroke:#22c55e,stroke-width:2px,color:#434343,font-weight:bold;
-    linkStyle 3 stroke:#22c55e,stroke-width:2px,color:#434343,font-weight:bold;
-
-    %% Style No links (red)
-    linkStyle 0 stroke:#ef4444,stroke-width:2px,color:#434343,font-weight:bold;
-    linkStyle 2 stroke:#ef4444,stroke-width:2px,color:#434343,font-weight:bold;
-    linkStyle 4 stroke:#ef4444,stroke-width:2px,color:#434343,font-weight:bold;
+    A[Raw Data Collected] --> B{Needed for Legal?}
+    B -->|Yes| C[Encrypt & Transfer to Legal Team]
+    B -->|No| D{Training Value?}
+    D -->|Yes| E[Anonymize & Store Securely]
+    D -->|No| F[Securely Delete<br/>Wipe or Physical Destroy]
 `} />
 
 
@@ -72,22 +65,24 @@ graph TD
 
 ### 3. Secure Storage Guidelines
 
-    | Data Type           | Storage Method                            | Retention Period |
-    |---------------------|-------------------------------------------|------------------|
-    | Bodycam / video     | VeraCrypt USB drive + 1 encrypted backup  | 90 days (max)    |
-    | Comms logs (Signal) | Export to encrypted local drive (no cloud)| 30 days          |
-    | Medical records     | Paper in locked safe, no digital copies   | 1 year (or legal req.) |
+| Data Type           | Storage Method                            | Retention Period |
+|---------------------|-------------------------------------------|------------------|
+| Bodycam / video     | VeraCrypt USB drive + 1 encrypted backup  | 90 days (max)    |
+| Comms logs (Signal) | Export to encrypted local drive (no cloud)| 30 days          |
+| Medical records     | Paper in locked safe, no digital copies   | 1 year (or legal req.) |
 
 ---
 
 ### Risk Mitigation
 
-    | Risk                                | Solution                                                        |
-    |-------------------------------------|-----------------------------------------------------------------|
-    | Device seizure during action        | Use burner phones and auto-wipe apps (ObscuraCam for photos)    |
-    | Subpoena for chat logs              | Avoid cloud services (iCloud/Google). Use Matrix or Signal only |
-    | Debrief leaks                       | Hold reviews in person or on encrypted voice (Signal/Jitsi)     |
-    | Over-collection of footage          | Film only when needed for legal proof, not documentation habit  |
+| Risk                                | Solution                                                        |
+|-------------------------------------|-----------------------------------------------------------------|
+| Device seizure during action        | Use burner phones and auto-wipe apps (ObscuraCam for photos)    |
+| Subpoena for chat logs              | Avoid cloud services (iCloud/Google). Use Matrix or Signal only |
+| Debrief leaks                       | Hold reviews in person or on encrypted voice (Signal/Jitsi)     |
+| Over-collection of footage          | Film only when needed for legal proof, not documentation habit  |
+
+Related: <a href="/academy/bystander-support">Bystander Support</a> (filming ethics and safety)
 
 <Callout type="warning">
 The safest data is **data you never collect**. Only keep what is legally or tactically essential.
@@ -99,24 +94,26 @@ The safest data is **data you never collect**. Only keep what is legally or tact
 
 #### Debrief One-Pager
 
-    - Timeline Review (15 min)  
-    - 3 Wins / 3 Gaps (15 min)  
-    - Next Steps (owner + deadline)  
+- Timeline Review (15 min)  
+- 3 Wins / 3 Gaps (15 min)  
+- Next Steps (owner + deadline)  
 
 #### Data Hygiene Cheat Sheet
 
-    - Day 0: Move all files off phones to encrypted storage  
-    - Day 1: Anonymize faces and scrub personal details  
-    - Day 3: Legal review completed, purge all non-essential data  
+- Day 0: Move all files off phones to encrypted storage  
+- Day 1: Anonymize faces and scrub personal details  
+- Day 3: Legal review completed, purge all non-essential data  
 
 #### Chain of Custody Form
 
-    [Description]____________________  
-    [Collected By]___________________  
-    [Time/Location]__________________  
-    [Storage Method]_________________  
-    [Accessed By]____________________  
-    [Purpose]________________________  
+[Description]____________________  
+[Collected By]___________________  
+[Time/Location]__________________  
+[Storage Method]_________________  
+[Accessed By]____________________  
+[Purpose]________________________  
+
+See also: <a href="/academy/court-support">Court Support</a> and <a href="/academy/legal-followthrough-jail-support">Legal Followthrough / Jail Support</a>
 
 ---
 
@@ -138,14 +135,24 @@ Your task:
 
 ### Final Checklist
 
-    - [ ] Ran a structured debrief within 48 hours of the action  
-    - [ ] Encrypted or destroyed all raw footage and logs within 3 days  
-    - [ ] Completed chain-of-custody forms for any evidence retained  
-    - [ ] Implemented at least one tactical improvement from lessons learned  
-    - [ ] Ensured no personal devices stored sensitive logs long-term  
+- [ ] Ran a structured debrief within 48 hours of the action  
+- [ ] Encrypted or destroyed all raw footage and logs within 3 days  
+- [ ] Completed chain-of-custody forms for any evidence retained  
+- [ ] Implemented at least one tactical improvement from lessons learned  
+- [ ] Ensured no personal devices stored sensitive logs long-term  
 
 <Callout type="success">
 The most secure pod is one that **learns fast and leaves no unnecessary data behind**.
 </Callout>
+
+---
+
+## Related courses
+
+- Documentation Safety → <a href="/academy/documentation-safety">/academy/documentation-safety</a>
+- Digital Security Basics → <a href="/academy/digital-security-basics">/academy/digital-security-basics</a>
+- Court Support → <a href="/academy/court-support">/academy/court-support</a>
+- Legal Followthrough / Jail Support → <a href="/academy/legal-followthrough-jail-support">/academy/legal-followthrough-jail-support</a>
+- Bystander Support → <a href="/academy/bystander-support">/academy/bystander-support</a>
 
 

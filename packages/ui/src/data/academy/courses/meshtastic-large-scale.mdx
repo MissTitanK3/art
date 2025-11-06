@@ -1,12 +1,13 @@
 ---
 title: Meshtastic for Large-Scale Actions
 slug: meshtastic-large-scale
-description: Learn to design, scale, and sustain Meshtastic networks for multi-day or multi-pod actions (15–100+ nodes).
+description: >-
+  Learn to design, scale, and sustain Meshtastic networks for multi-day or
+  multi-pod actions (15–100+ nodes).
 type: qualified
-version: 1.2
+version: '1.4'
 readingTime: 28
 ---
-
 # 🌐 Meshtastic for Large-Scale Actions
 <TrackBadge variant="tech-comms" />
 <TrackBadge variant="pod-leadership" />
@@ -14,6 +15,12 @@ readingTime: 28
 <Callout type="info">
 This is a **Level 4: Zone Lead (Admin Dispatcher)** course.  
 It teaches you to **design, coordinate, and sustain multi-pod Meshtastic networks** that can run for days, cover multiple neighborhoods, and resist surveillance or shutdown.
+</Callout>
+
+<Callout type="info">
+Language access: For inclusive comms and deployment, pair this course with the Translator and ASL Interpreter micro‑badges. Use interpreters or visual summaries as needed, and ensure all pod members know how to request support in their preferred language.
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 </Callout>
 
 ---
@@ -70,17 +77,13 @@ When scaling past a single pod, **organization is key**:
 
 <Mermaid chart={`
 graph TD
-    A[Pod 1 HQ]:::nodeStyle --> B[Relay 1 - Rooftop]:::nodeStyle
-    A --> C[Pod 1 Field Team]:::nodeStyle
-    B --> D[Relay 2 - Vehicle]:::nodeStyle
-    D --> E[Pod 2 HQ]:::nodeStyle
-    E --> F[Pod 2 Field Team]:::nodeStyle
-    B --> G[Leadership Gateway- Internet Optional]:::nodeStyle
-    G --> H[Backup Relay - Rooftop]:::nodeStyle
-
-    %% Styling
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4,5 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+    A[Pod 1 HQ] --> B[Relay 1 - Rooftop]
+    A --> C[Pod 1 Field Team]
+    B --> D[Relay 2 - Vehicle]
+    D --> E[Pod 2 HQ]
+    E --> F[Pod 2 Field Team]
+    B --> G[Leadership Gateway- Internet Optional]
+    G --> H[Backup Relay - Rooftop]
 `} />
 
 ---
@@ -138,6 +141,10 @@ When multiple pods must connect:
 - Maintain at least **one backup relay per zone** in storage, ready to deploy.  
 - Train **three layers of operators**: primary, secondary, and tertiary, so no single person is critical.
 
+<Callout type="hint">
+Documentation hygiene: Use minimal, time-bound retention. Avoid storing raw device logs or chat histories in shared apps. Prefer encrypted, access-controlled notes and delete temporary files after review. ART does not support in-app mesh message archiving; use secure external tools if needed and always get explicit consent before sharing device or deployment details.
+</Callout>
+
 ---
 
 ## Large-Scale Drill (Certification)
@@ -147,4 +154,25 @@ When multiple pods must connect:
 3. Simulate a **relay seizure or failure**, and restore the network within 15 minutes using backups.  
 4. Operate **multi-channel encrypted traffic** for at least 3 pod teams without cross-channel interference.  
 5. Submit a **network plan and post-operation report** to your Zone Lead for review.
+
+<Callout type="important">
+Consent & legal: Always ask before sharing device, location, or deployment details. Pair this course with Documentation Safety, Data Ethics Pledge, Legal Observer, and After‑Action Data Hygiene for best practices.
+</Callout>
+
+---
+
+## Related courses
+
+- Documentation Safety → /academy/documentation-safety
+- After‑Action Data Hygiene → /academy/after-action-data-hygiene
+- Digital Security Basics → /academy/digital-security-basics
+- Data Ethics Pledge → /academy/data-ethics-pledge
+- Legal Observer → /academy/legal-observer
+- Interacting with Law Enforcement → /academy/interacting-with-law-enforcement
+- KYR Basics → /academy/kyr-basics
+- Fourth Amendment Rights → /academy/fourth-amendment-rights
+- Dispatch Coordination → /academy/dispatch-coordination
+- Responding to Dispatch Calls → /academy/responding-to-dispatch-calls
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 

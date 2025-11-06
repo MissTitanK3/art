@@ -58,7 +58,7 @@ export const navConfig: GlobalNavConfigInput = {
       roles: completeOnboarding,
       children: [
         { label: 'Directory', href: '/pods', roles: completeOnboarding },
-        { label: 'Create Pod', href: '/pods/new', roles: localAdmins },
+        { label: 'Create Pod', href: '/pods/new', roles: elevatedRoles },
       ],
     },
     {
@@ -70,7 +70,7 @@ export const navConfig: GlobalNavConfigInput = {
         { label: 'Intents', href: '/intents' },
         { label: 'Roles', href: '/roles' },
         { label: 'Impact', href: '/impact' },
-        { label: 'Present', href: '/present', roles: verifiedAdmins },
+        { label: 'Present', href: '/present', roles: elevatedRoles },
       ],
     },
     // {

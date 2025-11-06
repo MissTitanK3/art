@@ -1,29 +1,37 @@
 ---
 title: Admin Tools and Oversight
 slug: admin-tools
-description: Learn how to manage dispatch creation, trust levels, and zone coverage in ART Dispatch.
+description: >-
+  Learn how to manage dispatch creation, access roles, and trust signatures in
+  ART Dispatch — with clear boundaries on what the tools can (and can’t) do
+  today.
 type: qualified
 readingTime: 22
-version: 1.1
+version: '1.3'
 ---
-
 # 🔐 Admin Tools and Oversight
 <TrackBadge variant="pod-leadership" />
 
-Admin-level dispatchers are trusted with sensitive tools and major responsibilities. This module covers managing dispatches, adjusting trust levels, setting coverage zones, and maintaining accountability through logs and audits.
+Admin-level dispatchers are trusted with sensitive tools and major responsibilities. This module covers managing dispatches, adjusting access roles, recording trust signatures, coordinating coverage, and maintaining accountability through activity reviews.
 
 ---
 
-## Core Admin Permissions
+## Core Admin Permissions (today)
 
 Level 4 (Admin) users can:
 
 - ✅ **Create and edit dispatches**
-- 🔐 **View and adjust user trust levels**
-- 📈 **Export data and review audit logs**
-- 🗺️ **Set and manage zone coverage**
-- 📋 **Approve or remove reports**
-- 🧑‍🏫 **Assign or revoke user roles and permissions**
+- 🔐 **Adjust user access roles** (e.g., promote to Verified/Admin Dispatcher)
+- 🤝 **Record trust signatures** (document who vouched for whom and when)
+- �️ **Review recent activity** (dispatch updates, approvals)
+- 🧭 **Coordinate coverage** (assign leads/areas; label a coordinator’s zone)
+- 📋 **Approve or remove reports** (if your region enables admin moderation)
+
+What you cannot do in-app yet (use policy or server-side workflows instead):
+
+- ⛔ A full, in-app **audit log viewer** for every action (server logs only)
+- ⛔ One-click **CSV export** of all records (use Supabase admin or request a limited export)
+- ⛔ Map-drawn **geofence radii** as “zones” (use coordination labels/shifts instead)
 
 ---
 
@@ -48,19 +56,20 @@ Always follow up with the responding dispatcher to confirm closure, updates, and
 
 ---
 
-## Trust Level Management
+## Access Roles and Trust Signatures
 
-Each user has a tiered trust level:
+Dispatch access is controlled by an access role set on a user’s profile (region-specific). Common roles include:
 
-| Trust Level | Access                                  |
-|-------------|------------------------------------------|
-| Level 0     | Viewer only                              |
-| Level 1     | Can respond to dispatch calls            |
-| Level 2     | Can view maps and accept calls           |
-| Level 3     | Verified dispatcher (filter, assign roles) |
-| Level 4     | Admin dispatcher (full tools access)     |
+- Dispatcher (basic)
+- Verified Dispatcher (can coordinate and assign)
+- Admin Dispatcher (full coordination + admin tools)
 
-Promotions must meet prerequisites:
+In addition to access roles, Admins can record “trust signatures” that document a vouch (who vouched, for whom, in what capacity). A trust signature:
+
+- Does not automatically change someone’s access role
+- Creates a transparent trail of endorsements for accountability
+
+Promotions should meet prerequisites agreed by your region:
 
 - **Level 1+**: Completed Response Training  
 - **Level 3**: At least 3 months of activity, Dispatch Certification, 2 peer referrals  
@@ -68,24 +77,24 @@ Promotions must meet prerequisites:
 
 <Callout type="warning">
 Never promote someone as a favor or without full review.  
-**Always log promotion reasons** (e.g., “Certified + crisis leadership experience”).
+Record a trust signature and **log the promotion reason** (e.g., “Certified + crisis leadership experience”).
 </Callout>
 
 ---
 
-## Setting and Managing Coverage Zones
+## Coordinating Coverage (labels, not geofences)
 
-Zone Leads manage regional coverage through:
+Coverage is coordinated through assignments and labels, not map-drawn geofences. Today you can:
 
-- 🗺️ **Zone radii** (map click → set distance)  
-- 🌐 **Assigned counties, cities, or neighborhoods**  
-- 📍 **Dynamic zones** for marches, vigils, or emergency deployments  
+- 🌐 Label a dispatcher’s “coordination zone” (e.g., Neighborhood/City)
+- 📍 Assign temporary coverage for marches, vigils, or emergency deployments
+- 🧭 Track shifts/coverage windows in scheduling tools (if your region enables them)
 
 Best practices:
 
-- Avoid overlapping zones without coordination — designate a **primary lead and backup**  
-- Tag zones for **language capacity** (e.g., "Spanish-speaking leads available")  
-- Adjust **alert radius** during off-hours (reduce after 10 PM unless critical)
+- Avoid overlapping coverage without coordination — designate a **primary lead and backup**  
+- Tag coverage for **language capacity** (e.g., "Spanish-speaking leads available")  
+- Reduce late-night paging unless critical; pre-plan quiet hours and escalation paths
 
 ---
 
@@ -105,16 +114,16 @@ Always:
 
 ---
 
-## Logs, Exports, and Audits
+## Activity Review, Exports, and Audits
 
-From the Admin Dashboard, you can:
+From the Admin Dashboard and server logs, you can:
 
-- 📊 **Export CSV logs** for dispatch stats (avoid storing sensitive personal data)  
-- 🕓 **Review timestamped logs** for edits, approvals, and trust changes  
-- 🔍 **Conduct audits** to review major responses and identify gaps  
+- 🕓 Review recent activity (dispatch updates, approvals, role changes recorded by admins)
+- 🔍 Conduct periodic audits of major responses to identify gaps
+- 📊 Request limited exports via a server-side workflow (no in-app CSV export yet)
 
 <Callout type="warning">
-Exports can be subpoenaed. Do not include names, addresses, or sensitive identifiers in exported notes.
+Exports can be subpoenaed. Do not include names, addresses, or sensitive identifiers in exported notes. Prefer aggregated stats and redact PII.
 </Callout>
 
 ---
@@ -150,5 +159,15 @@ Admins hold the keys to critical infrastructure. Use this access to **support yo
 Admins aren’t bosses — they’re anchors.  
 Lead with clarity, transparency, and care.
 </Callout>
+
+---
+
+## Related courses
+
+- Trust & Ethics in Dispatch → [/academy/trust-and-ethics-in-dispatch](/academy/trust-and-ethics-in-dispatch)
+- Dispatch Training Pathway → [/academy/dispatch-training-pathway](/academy/dispatch-training-pathway)
+- Dispatch Coordination → [/academy/dispatch-coordination](/academy/dispatch-coordination)
+- Documentation Safety → [/academy/documentation-safety](/academy/documentation-safety)
+- Digital Security Basics → [/academy/digital-security-basics](/academy/digital-security-basics)
 
 

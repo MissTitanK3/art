@@ -1,20 +1,34 @@
 import { getCourseBySlug } from '@/lib/mdx-loader';
+import type { Metadata } from 'next';
 import DocsLayout from '@/components/layout/DocsLayout';
 import { notFound } from 'next/navigation';
 import { estimateReadingTime } from '@/lib/reading-time';
 import { getPrevNextWithMetadata } from '@/lib/course-index';
-import { MDXWrapper, mdxComponents } from '@/components/mdx/MDXWrapper';
-import { Callout } from '@workspace/ui/components/academy/Callout';
-import { Photo } from '@workspace/ui/components/academy/Photo';
-import { TrackBadge } from '@workspace/ui/components/academy/TrackBadge';
-import { QRCodeImage } from '@workspace/ui/components/academy/QRCodeImage';
-import { PodCard } from '@workspace/ui/components/academy/PodCard';
-import { DownloadFile } from '@workspace/ui/components/academy/DownloadFile';
-import { Mermaid } from '@workspace/ui/components/academy/Mermaid';
+import { MDXWrapper } from '@/components/mdx/MDXWrapper';
 import { GENERATED_COURSE_DETAILS } from '@workspace/ui/data/academy/course-details.generated';
+import { MDXRender } from '@/components/mdx/MDXRender';
 
 export async function generateStaticParams() {
   return Object.keys(GENERATED_COURSE_DETAILS).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const { frontmatter } = await getCourseBySlug(slug);
+    const title = `${frontmatter.title ?? slug} · ART Academy`;
+    const description = frontmatter.description ?? 'ART Academy course';
+    return {
+      title,
+      description,
+      openGraph: { title, description },
+      twitter: { title, description },
+    };
+  } catch {
+    return { title: 'ART Academy', description: 'Course' };
+  }
 }
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -23,12 +37,16 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
     if (!slug) return notFound();
 
-    const { frontmatter, Content, toc, raw } = await getCourseBySlug(slug);
-    const readingTime = frontmatter.readingTime ?? estimateReadingTime(raw);
+    const { frontmatter, toc, raw } = await getCourseBySlug(slug);
+    const readingTime =
+      (frontmatter.readingTime as number | undefined) ??
+      (frontmatter.estimatedReadingTime as number | undefined) ??
+      estimateReadingTime(raw);
     const { prev, next } = getPrevNextWithMetadata(slug);
 
+    const pageTitle = frontmatter.title ?? slug;
     return (
-      <DocsLayout toc={toc} title={frontmatter.title}>
+      <DocsLayout toc={toc} title={pageTitle}>
         <span id="top" className="block h-0" />
 
         <article className="prose dark:prose-invert max-w-none">
@@ -49,27 +67,18 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           </div>
           <hr />
 
-          <MDXWrapper className="max-w-none">
-            <Content components={{
-              ...mdxComponents,
-              Callout,
-              Photo,
-              TrackBadge,
-              QRCodeImage,
-              PodCard,
-              DownloadFile,
-              Mermaid
-            }} />
+          <MDXWrapper>
+            <MDXRender slug={slug} />
           </MDXWrapper>
 
           <hr className="my-12 border-muted" />
 
-          <div className="flex flex-wrap justify-between text-sm mt-4 gap-4">
+          <div className="flex flex-wrap justify-between text-sm mt-4 gap-4 no-print">
             <a href="#top" className="text-blue-400 hover:underline">
               ↑ Back to top
             </a>
 
-            <div className="flex gap-4 ml-auto">
+            <div className="flex ml-auto">
               {prev && (
                 <a href={`/courses/${prev.slug}`} className="text-blue-400 hover:underline">
                   ← Previous: {prev.title}

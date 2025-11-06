@@ -1,12 +1,13 @@
 ---
 title: Translator Micro-Badge
 slug: translator-micro-badge
-description: Certification for bilingual or multilingual volunteers providing live translation during field actions, court support, or pod coordination.
+description: >-
+  Certification for bilingual or multilingual volunteers providing live
+  translation during field actions, court support, or pod coordination.
 type: qualified
-version: 1.1
+version: '1.2'
 readingTime: 12
 ---
-
 # 🗣️ Translator Micro-Badge
 <TrackBadge variant="community-care" />
 <TrackBadge variant="field-safety" />
@@ -88,16 +89,14 @@ A skilled translator keeps **pods coordinated, vulnerable people informed, and s
 
 <Mermaid chart={`
 graph TB
-    A[Translation Request Received]:::nodeStyle --> B{What Setting?}:::nodeStyle
-    B -->|Field Action| C[Confirm Safety and Proximity]:::nodeStyle
-    B -->|Legal/Court| D[Confirm Confidentiality Boundaries]:::nodeStyle
-    C --> E[Translate Briefly & Neutrally]:::nodeStyle
-    D --> F[Provide Accurate, Nuanced Translation]:::nodeStyle
-    E --> G[Report Needs to Dispatch or Field Lead]:::nodeStyle
-    F --> H[Document for Legal Follow-Up]:::nodeStyle
+    A[Translation Request Received] --> B{What Setting?}
+    B -->|Field Action| C[Confirm Safety and Proximity]
+    B -->|Legal/Court| D[Confirm Confidentiality Boundaries]
+    C --> E[Translate Briefly & Neutrally]
+    D --> F[Provide Accurate, Nuanced Translation]
+    E --> G[Report Needs to Dispatch or Field Lead]
+    F --> H[Document for Legal Follow-Up]
 
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4,5 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
 `} />
 
 ---

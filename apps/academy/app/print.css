@@ -1,0 +1,79 @@
+/* Academy-specific print overrides */
+@media print {
+  /* Confine these rules to academy app only */
+  body.academy-print {
+    background: white !important;
+    color: black !important;
+  }
+  body.academy-print header,
+  body.academy-print nav,
+  body.academy-print aside,
+  body.academy-print footer,
+  body.academy-print .sticky,
+  body.academy-print .fixed,
+  body.academy-print .no-print {
+    display: none !important;
+  }
+
+  body.academy-print main,
+  body.academy-print #main-content,
+  body.academy-print article,
+  body.academy-print .prose {
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+    max-width: none !important;
+  }
+
+  /* Neutralize full-viewport and overflow utilities that can clip print */
+  body.academy-print .h-screen,
+  body.academy-print .min-h-screen,
+  body.academy-print .max-h-screen {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+  }
+  body.academy-print .overflow-hidden,
+  body.academy-print .overflow-x-hidden,
+  body.academy-print .overflow-y-hidden,
+  body.academy-print .overflow-y-auto,
+  body.academy-print .overflow-x-auto,
+  body.academy-print .overflow-auto {
+    overflow: visible !important;
+  }
+
+  /* Ensure side gutters don't waste space */
+  @page {
+    margin: 0.75in;
+  }
+
+  /* Avoid splitting important blocks */
+  body.academy-print .card,
+  body.academy-print .print-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Tables: allow spanning multiple pages and keep rows intact */
+  body.academy-print table {
+    page-break-inside: auto;
+    break-inside: auto;
+    width: 100% !important;
+  }
+  body.academy-print thead {
+    display: table-header-group; /* repeat header on each printed page */
+  }
+  body.academy-print tfoot {
+    display: table-footer-group;
+  }
+  body.academy-print tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  body.academy-print td,
+  body.academy-print th {
+    vertical-align: top;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+}

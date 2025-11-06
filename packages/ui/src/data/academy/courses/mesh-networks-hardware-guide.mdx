@@ -1,18 +1,25 @@
 ---
 title: Mesh Network Hardware & Power Guide
 slug: mesh-networks-hardware-guide
-description: Recommended hardware, antennas, power systems, and accessories for Meshtastic pod and multi-pod operations.
+description: >-
+  Recommended hardware, antennas, power systems, and accessories for Meshtastic
+  pod and multi-pod operations.
 type: appendix
-version: 1.0
+version: '1.2'
 readingTime: 14
 ---
-
 # 🔌 Mesh Network Hardware & Power Guide
 <TrackBadge variant="tech-comms" />
 
 <Callout type="info">
 This appendix lists **recommended gear** for running Meshtastic networks from small pods (3–15 nodes) up to **large, multi-day deployments (15–100+ nodes)**.  
 Prices are typical as of 2025 and may vary by supplier.
+</Callout>
+
+<Callout type="info">
+Language access: For inclusive comms and deployment, pair this guide with the Translator and ASL Interpreter micro‑badges. Use interpreters or visual summaries as needed, and ensure all pod members know how to request support in their preferred language.
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 </Callout>
 
 ---
@@ -63,11 +70,10 @@ Keeping nodes powered is critical, especially for multi-day ops.
 
 <Mermaid chart={`
 graph LR
-    A[Relay Node]:::nodeStyle --> B[Battery Bank 50,000mAh]:::nodeStyle
-    B --> C[20–40W Solar Panel]:::nodeStyle
-    A --> D[Backup Battery Rotation]:::nodeStyle
+    A[Relay Node] --> B[Battery Bank 50,000mAh]
+    B --> C[20–40W Solar Panel]
+    A --> D[Backup Battery Rotation]
 
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
 `} />
 
 ---
@@ -80,6 +86,10 @@ Every pod should budget for:
 - **Quick-disconnect mounts** (tripods or magnetic bases) – $20–$40.  
 - **Coded labels and inventory tags** (avoid real names).  
 - **Spare USB-C cables** (braided or reinforced) – $10–$15 each.
+
+<Callout type="hint">
+Documentation hygiene: Use minimal, time-bound retention. Avoid storing raw device logs or inventory lists in shared apps. Prefer encrypted, access-controlled notes and delete temporary files after review. ART does not support in-app hardware inventory; use secure external tools if needed and always get explicit consent before sharing device or deployment details.
+</Callout>
 
 ---
 
@@ -120,4 +130,25 @@ Every pod should budget for:
 - [ ] Solar panels positioned for **6+ hrs/day sun exposure**.  
 - [ ] All devices labeled with **code names, not real names**.  
 - [ ] At least **1 spare relay and 2 spare power banks** per pod.
+
+<Callout type="important">
+Consent & legal: Always ask before sharing device, location, or deployment details. Pair this guide with Documentation Safety, Data Ethics Pledge, Legal Observer, and After‑Action Data Hygiene for best practices.
+</Callout>
+
+---
+
+## Related courses
+
+- Documentation Safety → /academy/documentation-safety
+- After‑Action Data Hygiene → /academy/after-action-data-hygiene
+- Digital Security Basics → /academy/digital-security-basics
+- Data Ethics Pledge → /academy/data-ethics-pledge
+- Legal Observer → /academy/legal-observer
+- Interacting with Law Enforcement → /academy/interacting-with-law-enforcement
+- KYR Basics → /academy/kyr-basics
+- Fourth Amendment Rights → /academy/fourth-amendment-rights
+- Dispatch Coordination → /academy/dispatch-coordination
+- Responding to Dispatch Calls → /academy/responding-to-dispatch-calls
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 

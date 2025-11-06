@@ -1,12 +1,13 @@
 ---
 title: Movement Strategy & Escalation Logic
 slug: movement-strategy-escalation-logic
-description: Learn how to make collective decisions about escalation, de-escalation, and tactics to keep actions aligned with community goals and safety.
+description: >-
+  Learn how to make collective decisions about escalation, de-escalation, and
+  tactics to keep actions aligned with community goals and safety.
 type: qualified
-version: 1.1
+version: '1.3'
 readingTime: 20
 ---
-
 # 🗺️ Movement Strategy & Escalation Logic
 <TrackBadge variant="movement-strategy" />
 <TrackBadge variant="direct-action" />
@@ -14,6 +15,12 @@ readingTime: 20
 <Callout type="info">
 This course is in **Theory & Ethics**.  
 It teaches pods **how to collectively decide when to escalate, de-escalate, or withdraw** so actions stay aligned with strategy, community safety, and consent — not just adrenaline.
+</Callout>
+
+<Callout type="info">
+Language access: For inclusive strategy and decision-making, pair this course with the Translator and ASL Interpreter micro‑badges. Use interpreters or visual summaries as needed, and ensure all pod members know how to request support in their preferred language.
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 </Callout>
 
 ---
@@ -99,15 +106,12 @@ Examples:
 
 <Mermaid chart={`
 graph TB
-    A[Action Progressing]:::nodeStyle --> B{Are Goals Being Met?}:::nodeStyle
-    B -->|Yes| C[Continue or Consolidate]:::nodeStyle
-    B -->|No| D{Can We Escalate Safely?}:::nodeStyle
-    D -->|Yes| E[Activate Contingency Plan]:::nodeStyle
-    D -->|No| F[Strategic Withdrawal]:::nodeStyle
-    E --> G[Reassess Every 15 Minutes]:::nodeStyle
-
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
+    A[Action Progressing] --> B{Are Goals Being Met?}
+    B -->|Yes| C[Continue or Consolidate]
+    B -->|No| D{Can We Escalate Safely?}
+    D -->|Yes| E[Activate Contingency Plan]
+    D -->|No| F[Strategic Withdrawal]
+    E --> G[Reassess Every 15 Minutes]
 `} />
 
 ---
@@ -119,6 +123,10 @@ graph TB
 3. Practice the **3-step escalation logic** (defensive → disruptive → withdrawal).  
 4. Use **15-minute reassessments** during unpredictable actions.
 
+<Callout type="hint">
+Documentation hygiene: Use minimal, time-bound retention. Avoid storing raw chat logs or sensitive strategy notes in shared apps. Prefer encrypted, access-controlled notes and delete temporary files after review. ART does not support in-app strategy archiving; use secure external tools if needed and always get explicit consent before sharing plans or debriefs.
+</Callout>
+
 ---
 
 ## Risks & Red Lines
@@ -126,6 +134,10 @@ graph TB
 - Never escalate without **clear consent** from everyone involved.  
 - Never pressure people into risk they didn’t agree to.  
 - Always follow with **debrief, legal coordination, and emotional check-ins** after escalated actions.
+
+<Callout type="important">
+Consent & legal: Always ask before sharing plans, feedback, or debriefs. Pair this course with Documentation Safety, Data Ethics Pledge, Legal Observer, and After‑Action Data Hygiene for best practices.
+</Callout>
 
 ---
 
@@ -146,3 +158,20 @@ graph TB
 - **Signal Posters & Cue Cards** (for field teams).  
 - **Case Study Library** (successful and failed escalations for lessons).  
 - **Tactical Decision Cards** for scenarios (police contact, media surge, opportunity strikes).
+
+---
+
+## Related courses
+
+- Documentation Safety → /academy/documentation-safety
+- After‑Action Data Hygiene → /academy/after-action-data-hygiene
+- Digital Security Basics → /academy/digital-security-basics
+- Data Ethics Pledge → /academy/data-ethics-pledge
+- Legal Observer → /academy/legal-observer
+- Interacting with Law Enforcement → /academy/interacting-with-law-enforcement
+- KYR Basics → /academy/kyr-basics
+- Fourth Amendment Rights → /academy/fourth-amendment-rights
+- Dispatch Coordination → /academy/dispatch-coordination
+- Responding to Dispatch Calls → /academy/responding-to-dispatch-calls
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge

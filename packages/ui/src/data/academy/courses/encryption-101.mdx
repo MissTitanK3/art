@@ -4,15 +4,18 @@ slug: encryption-101
 description: Understand how data is protected and how to use end-to-end encryption.
 type: qualified
 readingTime: 12
-version: 2.0
+version: '2.2'
 ---
-
 # Encryption 101
 
 End-to-end encryption (E2EE) is a foundational safety layer in ART. This guide breaks it down into practical, real-world terms for anyone—no tech degree required.
 
 <Callout type="info">
 📊 Encryption prevents over 99% of unauthorized mass surveillance attempts when used correctly.
+</Callout>
+
+<Callout type="hint">
+Use encryption alongside good data ethics and retention hygiene. See <a href="/academy/data-ethics-pledge">Data Ethics Pledge</a>, <a href="/academy/digital-security-basics">Digital Security Basics</a>, and <a href="/academy/after-action-data-hygiene">After‑Action Data Hygiene</a>.
 </Callout>
 
 ---
@@ -41,6 +44,10 @@ Think of it like putting a letter in a locked metal box. Even if someone steals 
 
 <Callout type="important">
 ⚠️ Encryption protects content, but not **metadata**—who sent it, when, and from where may still be visible.
+</Callout>
+
+<Callout type="info">
+Do not put sensitive details in titles, labels, or unencrypted fields. Keep sensitive content only in the encrypted body and minimize metadata.
 </Callout>
 
 ---
@@ -74,7 +81,7 @@ Think of it like putting a letter in a locked metal box. Even if someone steals 
 You can optionally encrypt sensitive dispatches with a **passphrase**. ART will:
 
 - **Never store the passphrase**
-- Encrypt the message using secure libraries (e.g. AES-256, libsodium)
+ - Encrypt the message using modern, audited cryptography
 - Only allow access to users with the correct passphrase
 
 <Callout type="warning">
@@ -87,7 +94,7 @@ You can optionally encrypt sensitive dispatches with a **passphrase**. ART will:
 
 ✅ Best Practices:
 
-- Use 4–6 random words: `crane-mango-cloud-echo`
+- Use 5+ random words: `crane-mango-cloud-echo-harbor`
 - Avoid reused or personal info
 - Use forward secrecy: new phrase per report
 
@@ -128,7 +135,7 @@ Skip encryption if:
 - The info is already public
 - It’s time-sensitive and not sensitive
 
-<Callout type="tip">
+<Callout type="hint">
 Partial encryption is OK — redact sensitive parts, encrypt those, and leave general context unencrypted.
 </Callout>
 
@@ -147,6 +154,10 @@ What if you mess up and email the passphrase by mistake?
 - Assume it's compromised.
 - Notify the dispatcher.
 - Submit a fresh report with a new passphrase.
+
+<Callout type="info">
+Share passphrases only over end‑to‑end encrypted channels (e.g., Signal voice) or in person. Rotate passphrases after sensitive use.
+</Callout>
 
 ---
 <Callout type="rabbit-hole">
@@ -171,4 +182,17 @@ Try implementing a simple chat system using NaCl or libsodium.
 <Callout type="success">
 You are the keyholder. Protect the people in your reports like they’re in your care—because they are.
 </Callout>
+
+---
+
+## Related courses
+
+- [Digital Security Basics](/academy/digital-security-basics)
+- [Documentation & Safety](/academy/documentation-safety)
+- [After‑Action Data Hygiene](/academy/after-action-data-hygiene)
+- [Data Ethics Pledge](/academy/data-ethics-pledge)
+- [Community Consent](/academy/community-consent)
+- [Dispatch Coordination](/academy/dispatch-coordination)
+- [Responding to Dispatch Calls](/academy/responding-to-dispatch-calls)
+- [Burner Phones & Security Culture](/academy/burner-phones-security-culture)
 

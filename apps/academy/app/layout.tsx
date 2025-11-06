@@ -1,6 +1,10 @@
 import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata } from 'next'
 
+// @ts-expect-error: no types for side-effect CSS import from the workspace package
 import "@workspace/ui/globals.css"
+// @ts-expect-error: no types for side-effect CSS import from this local file
+import "./print.css"
 import { Providers } from "@/components/providers"
 import { Toaster } from "@workspace/ui/components/sonner"
 
@@ -22,10 +26,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased px-3`}
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased bg-background text-foreground min-h-screen flex flex-col academy-print`}
       >
         <Providers>
-          <div className="px-3 pt-2">
+          <div className="flex-1 flex flex-col">
             {children}
             <Toaster />
           </div>
@@ -34,3 +38,16 @@ export default function RootLayout({
     </html>
   )
 }
+
+export const metadata: Metadata = {
+  title: 'ART Academy',
+  description: 'Learn, train, and certify with the ART Academy.',
+  openGraph: {
+    title: 'ART Academy',
+    description: 'Learn, train, and certify with the ART Academy.',
+  },
+  twitter: {
+    title: 'ART Academy',
+    description: 'Learn, train, and certify with the ART Academy.',
+  },
+};

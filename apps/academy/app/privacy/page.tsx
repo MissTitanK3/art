@@ -1,16 +1,21 @@
+import type { Metadata } from 'next';
 import Link from "next/link";
+import PrintButton from "@/components/client/PrintButton";
 
 export default function PrivacyPage() {
   return (
     <main className="max-w-4xl mx-auto px-4 py-20 space-y-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-        <Link
-          href="/"
-          className="px-6 py-3 rounded-xl border border-input bg-background shadow hover:bg-accent hover:text-accent-foreground"
-        >
-          Home
-        </Link>
+        <div className="flex items-center gap-2">
+          <PrintButton />
+          <Link
+            href="/"
+            className="px-6 py-3 rounded-xl border border-input bg-background shadow hover:bg-accent hover:text-accent-foreground no-print"
+          >
+            Home
+          </Link>
+        </div>
       </div>
 
       <section>
@@ -117,3 +122,16 @@ export default function PrivacyPage() {
     </main>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy · ART Academy',
+  description: 'How ART Academy and regional tools handle data with privacy and minimization.',
+  openGraph: {
+    title: 'Privacy Policy · ART Academy',
+    description: 'How ART Academy and regional tools handle data with privacy and minimization.',
+  },
+  twitter: {
+    title: 'Privacy Policy · ART Academy',
+    description: 'How ART Academy and regional tools handle data with privacy and minimization.',
+  },
+};

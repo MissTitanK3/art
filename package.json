@@ -1,15 +1,17 @@
 {
   "name": "shadcn-ui-monorepo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev --concurrency=20",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky",
     "create:region": "node scripts/create-region.mjs",
     "generate:academy-course-details": "node scripts/generate-academy-course-details.mjs",
-    "prebuild": "pnpm -w run generate:academy-course-details"
+    "prebuild": "pnpm -w run generate:academy-course-details",
+    "validate:academy": "node scripts/validate-academy-content.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
@@ -27,10 +29,11 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "gray-matter": "^4.0.3",
     "prettier": "^3.6.2",
+    "husky": "^9.1.6",
     "turbo": "^2.5.5",
     "typescript": "5.7.3"
   },
-  "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b",
+  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
   "engines": {
     "node": ">=20"
   },

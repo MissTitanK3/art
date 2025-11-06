@@ -1,18 +1,19 @@
 ---
 title: Legal Risk & Tech Use for Activists
 slug: legal-risk-tech
-description: Understand what is protected speech, how digital tools create risk, and how to make informed, collective decisions about app use, organizing, and visibility.
+description: >-
+  Understand what is protected speech, how digital tools create risk, and how to
+  make informed, collective decisions about app use, organizing, and visibility.
 type: qualified
 readingTime: 30
-version: 1.0
+version: '1.3'
 ---
-
 # 🧾 Legal Risk & Tech Use for Activists
 <TrackBadge variant="field-safety" />
 <TrackBadge variant="movement-strategy" />
 <TrackBadge variant="court-support" />
 
-<Callout type="warn">
+<Callout type="warning">
 📌 Using apps, phones, or online tools while organizing can **expose you, your crew, and your contacts** to surveillance or prosecution. This course helps you understand what’s legal, what’s risky, and what questions to ask before taking tech into the field.
 </Callout>
 
@@ -58,6 +59,10 @@ Knowing the legal landscape isn't about fear — it's about building power **wit
 🧠 **Never assume your chat logs, Signal history, or group DMs are private** — even with encryption.
 </Callout>
 
+<Callout type="important">
+This course is for public education and operational awareness. It is not legal advice. For case-specific guidance, consult an attorney or your region’s legal lead (see resources below).
+</Callout>
+
 ---
 
 ## 🧾 Criminal Conspiracy & Digital Organizing
@@ -82,15 +87,24 @@ You may trust ART. But what about the services it relies on?
 
 | Tech Provider        | Logged by default                               | Risk Level |
 |----------------------|--------------------------------------------------|------------|
-| Supabase             | IP addresses, email/SMS, login times, metadata   | 🔥 High    |
-| Stripe               | Payment methods, billing zip, IP logs            | ⚠️ Medium |
-| Expo + OTA           | Device info, usage stats (unless stripped)       | ⚠️ Medium |
+| Supabase             | IP addresses, email/SMS, login times, metadata (typical) | 🔥 High    |
+| Stripe (if used by your region) | Payment methods, billing zip, IP logs            | ⚠️ Medium |
+| Mobile OTA/update services (if used) | Device info, usage stats (unless stripped)       | ⚠️ Medium |
 | Firebase (if used)   | Heavy logging, tied to Google accounts           | 🔥 High    |
 
 Even with encryption, **metadata can be enough** to:
 - Map social networks  
 - Place people at locations  
 - Build timelines for prosecution  
+
+<Callout type="info">
+Capability notes for ART and region apps:
+- Report photos are supported; videos should be shared via secure links rather than direct upload.
+- Logs exist on the server side for safety and abuse response; there is no in‑app CSV export or exhaustive audit viewer.
+- Maps do not support drawing geofences; use labels and proximity notes instead.
+- Notifications are region‑configured; avoid implying generic “location‑based alerts.”
+- Use access roles and trust‑based reviews to limit who can see what.
+</Callout>
 
 ---
 
@@ -115,6 +129,12 @@ Even with encryption, **metadata can be enough** to:
 
 <Callout type="info">
 🎯 Use the **least dangerous tool** that still gets the job done.
+</Callout>
+
+<Callout type="info">
+Language access: Build safety into communication. Pair this course with the Translator and ASL Interpreter micro‑badges for inclusive ops.
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 </Callout>
 
 ---
@@ -155,7 +175,7 @@ Use the **"Need to Know" model**:
 - Field units can operate from flyers, not apps  
 - Alerts can be visual (images, banners) with no interactive data
 
-<Callout type="warn">
+<Callout type="warning">
 🚧 Treat every new system as a **potential future compromise**. Design with that in mind.
 </Callout>
 
@@ -208,5 +228,22 @@ This isn’t about you being “careful.” It’s about us protecting each othe
 
 - 🛡️ **National Lawyers Guild**: [nlg.org](https://www.nlg.org/)
 - 🔐 **Electronic Frontier Foundation**: [eff.org](https://www.eff.org/)
-- 🗂️ Request legal policy support via your pod or the ART backend team
+- 🗂️ Request legal policy support via your pod leadership or your region’s admins/legal lead
+
+---
+
+## Related courses
+
+- Digital Security Basics → /academy/digital-security-basics
+- Documentation Safety → /academy/documentation-safety
+- After‑Action Data Hygiene → /academy/after-action-data-hygiene
+- Data Ethics Pledge → /academy/data-ethics-pledge
+- KYR Basics → /academy/kyr-basics
+- Fourth Amendment Rights → /academy/fourth-amendment-rights
+- Interacting with Law Enforcement → /academy/interacting-with-law-enforcement
+- Dispatch Coordination → /academy/dispatch-coordination
+- Responding to Dispatch Calls → /academy/responding-to-dispatch-calls
+- Runners & Rides → /academy/runners-and-rides
+- Translator Micro‑Badge → /academy/translator-micro-badge
+- ASL Interpreter Micro‑Badge → /academy/asl-interpreter-micro-badge
 

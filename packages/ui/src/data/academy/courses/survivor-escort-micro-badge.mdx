@@ -1,12 +1,13 @@
 ---
 title: Survivor Escort Micro-Badge
 slug: survivor-escort-micro-badge
-description: Certification for volunteers supporting survivors and witnesses as they navigate courthouses, legal processes, or high-stress public spaces.
+description: >-
+  Certification for volunteers supporting survivors and witnesses as they
+  navigate courthouses, legal processes, or high-stress public spaces.
 type: qualified
-version: 1.1
+version: '1.2'
 readingTime: 12
 ---
-
 # 🛡️ Survivor Escort Micro-Badge
 <TrackBadge variant="court-support" />
 <TrackBadge variant="community-care" />
@@ -76,17 +77,15 @@ A trained escort provides **calm navigation, emotional grounding, and discreet s
 
 <Mermaid chart={`
 graph TB
-    A[Pre-Escort Briefing]:::nodeStyle --> B{Survivor Preference?}:::nodeStyle
-    B -->|Close Support| C[Walk Beside, Offer Arm]:::nodeStyle
-    B -->|More Space| D[Maintain 3ft Distance]:::nodeStyle
-    C --> E[Monitor Stress Cues]:::nodeStyle
+    A[Pre-Escort Briefing] --> B{Survivor Preference?}
+    B -->|Close Support| C[Walk Beside, Offer Arm]
+    B -->|More Space| D[Maintain 3ft Distance]
+    C --> E[Monitor Stress Cues]
     D --> E
-    E --> F{Distress Signs Detected?}:::nodeStyle
-    F -->|Yes| G[Grounding + Exit Plan]:::nodeStyle
-    F -->|No| H[Proceed Smoothly to Destination]:::nodeStyle
+    E --> F{Distress Signs Detected?}
+    F -->|Yes| G[Grounding + Exit Plan]
+    F -->|No| H[Proceed Smoothly to Destination]
 
-    classDef nodeStyle fill:#f9fafb,stroke:#374151,stroke-width:1px,rx:10,ry:10;
-    linkStyle 0,1,2,3,4,5 stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:bold;
 `} />
 
 ---
