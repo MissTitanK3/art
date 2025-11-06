@@ -150,12 +150,16 @@ export default function PodRosterDataLayer() {
       console.warn("PodRosterDataLayer: failed to persist roster entry", error);
     }
 
+    const patched: RosterEntry = {
+      ...entry,
+      profile_id: entry.profile_id ?? (entry.profile?.id ? String(entry.profile.id) : undefined),
+    };
     updatePod(pod.id, {
-      team: pod.team.map((r) => (r.id === entry.id ? entry : r)),
+      team: pod.team.map((r) => (r.id === entry.id ? patched : r)),
     });
 
     setRemoteRoster((prev) =>
-      prev ? prev.map((r) => (r.id === entry.id ? entry : r)) : prev
+      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev
     );
 
     setSelectedId(null); // close sheet after save
@@ -170,8 +174,12 @@ export default function PodRosterDataLayer() {
       console.warn("PodRosterDataLayer: failed to add roster entry", error);
     }
 
-    updatePod(pod.id, { team: [...pod.team, entry] });
-    setRemoteRoster((prev) => (prev ? [...prev, entry] : prev));
+    const patched: RosterEntry = {
+      ...entry,
+      profile_id: entry.profile_id ?? (entry.profile?.id ? String(entry.profile.id) : undefined),
+    };
+    updatePod(pod.id, { team: [...pod.team, patched] });
+    setRemoteRoster((prev) => (prev ? [...prev, patched] : prev));
   };
 
   const handleRemoveMember = async (memberId: string) => {

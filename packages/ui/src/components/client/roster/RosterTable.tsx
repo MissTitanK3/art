@@ -29,7 +29,8 @@ export function RosterTable({ rows, onEdit, podName, onRemoveMember }: RosterTab
       </div>
 
       {rows.map((r) => {
-        const registered = Boolean(r.profile?.user_id && r.profile.user_id.trim().length > 0);
+        // Treat as Registered when roster entry links to a profile row
+        const registered = Boolean(r.profile_id && String(r.profile_id).trim().length > 0);
 
         return (
           <div

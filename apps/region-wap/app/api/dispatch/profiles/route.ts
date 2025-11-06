@@ -22,11 +22,18 @@ export async function GET(req: Request) {
     const verified_by = searchParams.get('verified_by');
     const availability = searchParams.get('availability');
     const field_role = searchParams.get('field_role');
+    const id = searchParams.get('id') || searchParams.get('profile_id');
 
     if (access_role) filter.access_role = access_role as any;
     if (verified_by) filter.verified_by = verified_by as any;
     if (availability === 'true' || availability === 'false') {
       filter.availability = availability === 'true';
+    }
+
+    if (id) {
+      const profiles = await getProfiles();
+      const match = (profiles ?? []).find((p: any) => String(p.id) === String(id));
+      return NextResponse.json({ profiles: match ? [match] : [] });
     }
 
     const profiles = await getProfiles(filter);

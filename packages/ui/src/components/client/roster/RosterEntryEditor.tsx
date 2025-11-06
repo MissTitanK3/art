@@ -10,21 +10,19 @@ import {
   rosterEntrySchema,
 } from "@workspace/store/types/pod.ts";
 import { Button } from "@workspace/ui/components/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@workspace/ui/components/select";
-import { AccessRole, AccessRoles, AccessRoleDescriptions, roleLabel } from "@workspace/store/types/roles.ts";
 import LanguagePicker from "../language/LanguagePicker.tsx";
 import LanguageFluencyEditor from "../language/LanguageFluencyEditor.tsx";
 import { RoleSelect } from "../roles/RoleSelect.tsx";
 import { StatusSelect } from "../status/StatusSelect.tsx";
 import CertificationEditor from "../certifications/CertificationsEditor.tsx";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { humanize } from "@workspace/ui/lib/utils";
+import type { FieldRole } from "@workspace/store/types/roles.ts";
 
 const REGISTERED_ID_PREFIX = "registered-profile";
 
-const editorSchema = rosterEntrySchema.extend({
-  dispatch_role: z.enum(AccessRoles).optional(),
-});
+const editorSchema = rosterEntrySchema;
 
 type FormValues = z.input<typeof editorSchema>;
 type FormOutput = z.output<typeof editorSchema>;
@@ -36,21 +34,16 @@ export function EditRosterEntryForm({
   initial: RosterEntry;
   onSave: (v: RosterEntry) => void;
 }) {
+  // Treat an entry as registered when it links to a profile row
   const isRegistered =
-    initial.id.startsWith(REGISTERED_ID_PREFIX) ||
-    (!!initial.profile?.user_id && initial.profile.user_id.trim().length > 0);
+    Boolean((initial as any).profile_id && String((initial as any).profile_id).trim().length > 0) ||
+    initial.id.startsWith(REGISTERED_ID_PREFIX);
 
-  const registeredProfile = isRegistered ? initial.profile : undefined;
-
-  const dispatchRoleOptions = useMemo(
-    () =>
-      AccessRoles.map((value) => ({
-        value,
-        label: roleLabel(value),
-        description: AccessRoleDescriptions[value],
-      })),
-    [],
-  );
+  const [loadedProfile, setLoadedProfile] = useState<any | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState<boolean>(false);
+  const profileId: string | undefined = (initial as any).profile_id
+    ? String((initial as any).profile_id)
+    : (initial.profile?.id ? String(initial.profile.id) : undefined);
 
   const {
     register,
@@ -71,19 +64,48 @@ export function EditRosterEntryForm({
       certs: initial.certs ?? [],
       notes: initial.notes ?? "",
       signal_handle: initial.signal_handle || "",
-      dispatch_role: isRegistered ? (initial.profile?.access_role ?? "team_member") : undefined,
     },
   });
+
+  // If RLS prevented joining the profile on the roster query, fetch it via server route when authorized
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProfile() {
+      if (!isRegistered || !profileId) return;
+      // If we already have a matching profile with fields, skip
+      if (initial.profile && String(initial.profile.id) === profileId) return;
+      try {
+        setLoadingProfile(true);
+        const res = await fetch(`/api/dispatch/profiles?id=${encodeURIComponent(profileId)}`, { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        const p = Array.isArray(json?.profiles) ? json.profiles[0] : null;
+        if (!cancelled && p) {
+          setLoadedProfile(p);
+          // Set signal handle if empty and profile has one
+          const currentSignal = (watch("signal_handle") ?? "").trim();
+          if (!currentSignal && p.contact_signal) {
+            setValue("signal_handle", p.contact_signal);
+          }
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingProfile(false);
+      }
+    }
+    loadProfile();
+    return () => { cancelled = true; };
+  }, [isRegistered, profileId, initial.profile, setValue, watch]);
+
+  const registeredProfile = isRegistered ? (loadedProfile ?? initial.profile) : undefined;
+
+  // Dispatch access removed from this editor; managed in Admin.
 
   const [newCert, setNewCert] = useState("");
 
   const submit: SubmitHandler<FormOutput> = (vals) => {
-    const nextProfile = isRegistered && registeredProfile
-      ? {
-          ...registeredProfile,
-          access_role: vals.dispatch_role ?? registeredProfile.access_role ?? "team_member",
-        }
-      : initial.profile;
+    const nextProfile = isRegistered && registeredProfile ? registeredProfile : initial.profile;
 
     const transformed: RosterEntry = {
       ...initial,
@@ -149,7 +171,7 @@ export function EditRosterEntryForm({
     pushDetail("Coordination Zone", registeredProfile.coordination_zone);
     pushDetail(
       "Field Roles",
-      registeredProfile.field_roles?.map((role) => humanize(role)),
+      (registeredProfile.field_roles as FieldRole[] | undefined)?.map((role: FieldRole) => humanize(role)),
     );
     pushDetail("Coverage Zones", registeredProfile.coverage_zones);
     pushDetail("Operating Counties", registeredProfile.operating_counties);
@@ -169,6 +191,11 @@ export function EditRosterEntryForm({
               This volunteer is synced from their user profile. Details shown below reflect what they chose to share.
             </p>
           </div>
+          {loadingProfile && !registeredProfile ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading profile…
+            </div>
+          ) : null}
           <dl className="grid gap-2 text-xs">
             {sharedDetails.map((detail) => (
               <div key={detail.label} className="grid gap-0.5">
@@ -219,38 +246,7 @@ export function EditRosterEntryForm({
         {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
       </div>
 
-      {isRegistered ? (
-        <div className="grid gap-1">
-          <Label>Dispatch Access</Label>
-          <Controller
-            name="dispatch_role"
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value ?? ""}
-                onValueChange={(value) => field.onChange(value as AccessRole)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select dispatch access" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dispatchRoleOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex flex-col">
-                        <span>{option.label}</span>
-                        <span className="text-xs text-muted-foreground">{option.description}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          <p className="text-xs text-muted-foreground">
-            Choose the level of dispatch responsibility this registered volunteer should hold.
-          </p>
-        </div>
-      ) : null}
+      {/* Dispatch Access removed; now managed in Admin */}
       <div className="grid gap-1">
         <Label>Signal Handle</Label>
         <label htmlFor="signal_handle" className="text-xs text-muted-foreground">

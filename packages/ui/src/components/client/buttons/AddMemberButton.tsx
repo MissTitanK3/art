@@ -140,6 +140,8 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
         id: newId,
         role,
         status: "active",
+        // Ensure profile_id is present for proper Registered detection and persistence
+        profile_id: found.profile_id ?? (found.profile?.id ? String(found.profile.id) : undefined),
       };
     }
 

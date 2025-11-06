@@ -22,7 +22,8 @@ export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props)
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {rows.map((r) => {
-        const registered = Boolean(r.profile?.user_id && r.profile.user_id.trim().length > 0);
+        // Treat as Registered when roster entry links to a profile row
+        const registered = Boolean(r.profile_id && String(r.profile_id).trim().length > 0);
         return (
           <Card key={r.id} className="flex flex-col mt-2 shadow-sm">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
