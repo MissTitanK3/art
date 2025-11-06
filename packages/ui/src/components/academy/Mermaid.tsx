@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import mermaid from "mermaid"
 
 type MermaidProps = {
@@ -9,7 +9,7 @@ type MermaidProps = {
   theme?: "auto" | "light" | "dark"
 }
 
-let initializedTheme: "light" | "dark" | null = null
+let initializedKey: string | null = null
 
 function detectDark(theme: MermaidProps["theme"]): boolean {
   if (theme === "light") return false
@@ -61,6 +61,9 @@ function buildConfig(isDark: boolean) {
   return {
     startOnLoad: false,
     theme: isDark ? "dark" : "default",
+    flowchart: {
+      htmlLabels: false, // use SVG text+rect so we can reliably style/measure labels
+    },
     themeVariables: {
       fontFamily:
         "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, \"Apple Color Emoji\", \"Segoe UI Emoji\"",
@@ -122,6 +125,7 @@ function enhanceFlowchart(chart: string, isDark: boolean) {
 
 export function Mermaid({ chart, className, theme = "auto" }: MermaidProps) {
   const [svg, setSvg] = useState<string>("")
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   const isDark = useMemo(() => detectDark(theme), [theme])
 
@@ -133,9 +137,10 @@ export function Mermaid({ chart, className, theme = "auto" }: MermaidProps) {
     async function render() {
       try {
         const targetTheme: "light" | "dark" = isDark ? "dark" : "light"
-        if (initializedTheme !== targetTheme) {
+        const key = JSON.stringify({ theme: targetTheme, htmlLabels: false })
+        if (initializedKey !== key) {
           mermaid.initialize(buildConfig(isDark))
-          initializedTheme = targetTheme
+          initializedKey = key
         }
         const { svg } = await mermaid.render(`mermaid-${Date.now()}`, preparedChart)
         if (mounted) setSvg(svg)
@@ -151,11 +156,76 @@ export function Mermaid({ chart, className, theme = "auto" }: MermaidProps) {
     }
   }, [preparedChart, isDark])
 
+  // Post-process rendered SVG to enhance Yes/No edge labels with padding and rounded corners
+  useEffect(() => {
+    const root = containerRef.current
+    if (!root) return
+    const svgEl = root.querySelector('svg')
+    if (!svgEl) return
+
+    const padX = 6 // horizontal padding in px
+    const padY = 3 // vertical padding in px
+    const radius = 8 // border radius in px
+    const yesColor = '#22c55e' // green-500
+    const noColor = '#ef4444' // red-500
+
+    const labels = svgEl.querySelectorAll<SVGGElement>('g.edgeLabel')
+    labels.forEach((g) => {
+      // Avoid double-processing
+      if ((g as any).dataset && (g as any).dataset.padded === '1') return
+
+      // Try SVG text-based labels first
+      const textEl = g.querySelector('text')
+      const rectEl = g.querySelector('rect')
+      if (textEl && rectEl) {
+        const raw = (textEl.textContent || '').trim().toLowerCase()
+        if (raw !== 'yes' && raw !== 'no') return
+
+        // Increase background rect size to simulate padding
+        const w = parseFloat(rectEl.getAttribute('width') || '0')
+        const h = parseFloat(rectEl.getAttribute('height') || '0')
+        const x = parseFloat(rectEl.getAttribute('x') || '0')
+        const y = parseFloat(rectEl.getAttribute('y') || '0')
+
+        if (!Number.isNaN(w) && !Number.isNaN(h)) {
+          rectEl.setAttribute('width', String(w + padX * 2))
+          rectEl.setAttribute('height', String(h + padY * 2))
+          rectEl.setAttribute('x', String(x - padX))
+          rectEl.setAttribute('y', String(y - padY))
+        }
+
+        // Rounded corners and a subtle border
+        rectEl.setAttribute('rx', String(radius))
+        rectEl.setAttribute('ry', String(radius))
+        rectEl.setAttribute('stroke-width', '1.5')
+        rectEl.setAttribute('stroke', raw === 'yes' ? yesColor : noColor)
+
+        try { (g as any).dataset.padded = '1' } catch (_) {}
+        return
+      }
+
+      // Fallback: HTML labels via foreignObject
+      const foreign = g.querySelector('foreignObject') as unknown as (SVGForeignObjectElement | null)
+      if (foreign) {
+        const div = foreign.querySelector('div') as HTMLDivElement | null
+        if (!div) return
+        const raw = (div.textContent || '').trim().toLowerCase()
+        if (raw !== 'yes' && raw !== 'no') return
+        div.style.padding = `${padY}px ${padX}px`
+        div.style.borderRadius = `${radius}px`
+        div.style.border = `1.5px solid ${raw === 'yes' ? yesColor : noColor}`
+        div.style.display = 'inline-block'
+        try { (g as any).dataset.padded = '1' } catch (_) {}
+      }
+    })
+  }, [svg])
+
   const base =
     "mermaid rounded-lg border p-4 bg-white/80 shadow-sm ring-1 ring-black/5 dark:bg-zinc-900/60 dark:border-zinc-700"
 
   return (
     <div
+      ref={containerRef}
       className={className ? `${base} ${className}` : base}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
