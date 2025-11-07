@@ -15,15 +15,23 @@ import type { ElementType } from "react"
 
 export const TRACK_VARIANTS = [
   "default",
+  "admin",
   "observation-legal",
   "field-safety",
   "community-care",
   "direct-action",
   "tech-comms",
+  "dispatch",
+  "field-coordination",
   "logistics",
   "court-support",
+  "leadership",
   "pod-leadership",
   "movement-strategy",
+  "security",
+  "legal-support",
+  "media-awareness",
+  "network",
   "translator",
   "asl",
   "faith-support",
@@ -44,6 +52,11 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     label: "Core Module (All Tracks)",
     icon: Compass,
     color: "bg-gray-100 text-gray-700",
+  },
+  admin: {
+    label: "Admin & Systems",
+    icon: Compass,
+    color: "bg-slate-200 text-slate-800",
   },
   "observation-legal": {
     label: "Observation & Legal Track",
@@ -70,6 +83,16 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     icon: Radio,
     color: "bg-green-200 text-green-800",
   },
+  dispatch: {
+    label: "Dispatch",
+    icon: Radio,
+    color: "bg-indigo-200 text-indigo-800",
+  },
+  "field-coordination": {
+    label: "Field Coordination",
+    icon: Users,
+    color: "bg-blue-200 text-blue-800",
+  },
   logistics: {
     label: "Logistics & Mutual Aid Operations",
     icon: Package,
@@ -79,6 +102,11 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     label: "Court & Post-Raid Support",
     icon: Gavel,
     color: "bg-indigo-200 text-indigo-800",
+  },
+  leadership: {
+    label: "Leadership",
+    icon: Users,
+    color: "bg-orange-200 text-orange-800",
   },
   "pod-leadership": {
     label: "Pod Leadership & Organizing",
@@ -90,6 +118,11 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     icon: Compass,
     color: "bg-gray-200 text-gray-800",
   },
+  security: {
+    label: "Security & Protective Roles",
+    icon: ShieldCheck,
+    color: "bg-slate-200 text-slate-800",
+  },
   translator: {
     label: "Translator (Micro-Badge)",
     icon: Languages,
@@ -99,6 +132,21 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     label: "ASL Interpreter (Micro-Badge)",
     icon: Languages,
     color: "bg-teal-200 text-teal-800",
+  },
+  "legal-support": {
+    label: "Legal Support",
+    icon: Gavel,
+    color: "bg-purple-200 text-purple-800",
+  },
+  "media-awareness": {
+    label: "Media Awareness",
+    icon: Radio,
+    color: "bg-slate-200 text-slate-800",
+  },
+  network: {
+    label: "Network Coordination",
+    icon: Radio,
+    color: "bg-slate-200 text-slate-800",
   },
   "faith-support": {
     label: "Faith & Cultural Support (Micro-Badge)",
@@ -124,7 +172,8 @@ export function TrackBadge({
   variant: TrackVariant
   className?: string
 }) {
-  const { label, icon: Icon, color } = trackConfig[variant]
+  const cfg = trackConfig[variant] ?? trackConfig.default
+  const { label, icon: Icon, color } = cfg
 
   return (
     <div className="my-4 flex w-full justify-center">
