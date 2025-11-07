@@ -1,143 +1,195 @@
 ---
 title: Secure Messaging with Signal
 slug: signal-tips
-description: >-
-  Learn how to use Signal for secure communications, with advanced tricks for
-  pods and dispatch operations.
+description: Learn how to use Signal for secure communications, with advanced workflows for pods and dispatch operations.
 type: qualified
 readingTime: 20
-version: '1.1'
+version: '1.3'
 ---
+
 # 🔐 Secure Messaging with Signal
 <TrackBadge variant="tech-comms" />
 <TrackBadge variant="field-safety" />
 
-
 <Callout type="info">
-Signal is the backbone of secure communication for most activist and mutual aid networks. This course will help you get set up, stay safe, and use advanced tools that make Signal work for large teams and dispatch operations.
+Signal is the backbone of encrypted communication for most activist and mutual aid networks.  
+This course shows how to set up Signal securely, use it effectively in pods and dispatch teams, and avoid common mistakes that compromise privacy.
+</Callout>
+
+<Callout type="hint">
+For inclusive comms, pair with  
+[Translator Micro-Badge](/courses/translator-micro-badge) and [ASL Interpreter Micro-Badge](/courses/asl-interpreter-micro-badge).
 </Callout>
 
 ---
 
-## Why Signal?
+## Overview
 
-Signal is **end-to-end encrypted**, free, and open source.  
-Unlike SMS, email, or most chat apps, Signal can:
+Signal is free, open source, and end-to-end encrypted.  
+It replaces SMS, email, and unprotected chats with a **private, auditable, and proven protocol**.  
+Used properly, it protects you from interception — but not from misuse or device seizure.  
+This course focuses on both setup and behavior.
 
-- **Encrypt everything** (messages, calls, attachments)  
-- **Hide your identity** by using a burner number or linked device  
-- **Erase your tracks** with disappearing messages and no cloud backups  
-- **Work offline-first** (messages queue and send later)  
+---
+
+## Learn & Do
+
+### Why Signal Matters
+
+Signal can:
+- **Encrypt everything** (texts, calls, media)
+- **Work offline-first** — messages queue and send later
+- **Erase trails** with disappearing messages
+- **Run without personal accounts** via burner numbers
+- **Authenticate trust** through safety number verification
+
+> Encryption only protects content.  
+> Your phone, name, or timing data can still expose you.  
+> Pair Signal with good **digital hygiene and OPSEC**.
 
 ---
 
 ## Getting Started
 
-1. **Download Signal**  
-   - [Android](https://signal.org/download/)  
-   - [iOS](https://apps.apple.com/us/app/signal-private-messenger/id874139669)  
-   - [Desktop](https://signal.org/download/)
+1. **Install Signal**
+   - [Android / iOS / Desktop](https://signal.org/download/)
 
-2. **Register with a Burner Number (Recommended)**  
-   - Use a VoIP number (like Google Voice or MySudo) or a SIM card not tied to your real identity.  
-   - Keep this SIM in a separate device if possible.
+2. **Register with a Burner Number**
+   - Use a prepaid SIM or VoIP alias (e.g. MySudo).  
+   - Avoid linking to your real identity or long-term number.  
+   - Keep the SIM in a dedicated device if possible.
 
-3. **Lock It Down**  
-   - Turn on **Registration Lock PIN** (Settings → Privacy → Signal PIN).  
-   - Enable **Screen Security** to block screenshots.  
-   - Set **Disappearing Messages** to 1–6 hours for sensitive chats.
+3. **Lock It Down**
+   - Enable **Registration Lock PIN** (Settings → Privacy → Signal PIN).  
+   - Turn on **Screen Security** to block screenshots.  
+   - Set **Disappearing Messages** to 1–6 hours for sensitive chats.  
+   - Disable “Show in recent apps” previews.
 
 ---
 
 ## Core Features
 
-- **1:1 Chats** – fully encrypted  
-- **Groups** – up to 1,000 people (avoid big groups unless needed)  
-- **Voice/Video Calls** – encrypted, can use a VPN for extra cover  
-- **Note to Self** – a private, encrypted scratchpad  
-- **Disappearing Messages** – time-based auto-delete  
+| Function | Use |
+|-----------|------|
+| 1:1 Chats | Secure messaging between two users |
+| Groups | Up to 1,000 members; use sub-groups for ops |
+| Calls | Encrypted voice/video; use VPN for obfuscation |
+| Note to Self | Encrypted private notebook |
+| Disappearing Messages | Automatic cleanup for safety |
 
 ---
 
-## Advanced Tricks for Pods & Dispatch
+## Advanced Use for Pods & Dispatch
 
 ### 🔄 Linked Devices
-You can link Signal to a laptop or tablet for easier typing and file sharing.  
-**Pro tip:** Link multiple devices with the same number (via desktop clients) for team-wide access if using a shared burner number.
+You can connect Signal to desktop clients.  
+Use **one admin burner number** if your pod shares a dispatch account, and link it only to pod-controlled hardware.  
+> Linking personal laptops adds new exposure points — only link trusted, encrypted machines.
 
 ---
 
-### 🗂️ Using Labels & Pinned Chats
-Organize pods by region or role:
-- Use emojis to group chats (e.g., 🌲 Olympia Pod, 🚑 Medic Support).
-- Pin priority chats (up to 4) so urgent channels are always at the top.
+### 🗂️ Organization & Labeling
+- Use emojis to tag pods or functions (🌲 Olympia Pod, 🚑 Medics).  
+- Pin up to four key chats.  
+- Keep “off-record” channels separate from planning groups.  
 
 ---
 
 ### 🕵️‍♀️ Disguised Notifications
-- Change **notification name** in your phone (so "Signal" looks like "Notes" or "Calendar").  
-- On Android, disable preview pop-ups and use generic icons.
-
-
----
-
-## Related courses
-
-- [Digital Security Basics](/courses/digital-security-basics)
-- [Encryption 101](/courses/encryption-101)
-- [Burner Phones & Security Culture](/courses/burner-phones-security-culture)
-- [Mesh Networks Intro](/courses/mesh-networks-intro)
-- [Comms Collapse](/courses/comms-collapse)
+- Rename Signal in phone settings (e.g., “Calendar”).  
+- Disable content previews.  
+- On Android, choose neutral icons and disable badges.  
 
 ---
 
 ### 📦 File & Media Handling
-- Always **strip metadata** before sending photos (use built-in "blur" or export features).  
-- Signal auto-removes EXIF (location) data — but double-check.
+- Signal removes most metadata, but verify before sending.  
+- Use **blur** or external scrubbers like **ScrambledExif**.  
+- Avoid screenshots of chats or shared locations.  
 
 ---
 
-### 🔄 Broadcasting Without a Group
-For alerts that **don’t reveal all recipients**:
-- Use **Signal Broadcast Lists** (create a group, then remove everyone except admins, and forward messages manually).
-- Or pair with **ART Dispatch** tools for mass, secure alerting.
+### 🔄 Broadcasting Securely
+For dispatch alerts that shouldn’t reveal all recipients:
+- Use **Broadcast Lists** (or private forwarding from a dispatcher).  
+- Pair with **ART Dispatch** for region-wide alerts.  
+- Never mass-add volunteers to groups without consent.
 
 ---
 
 ## Security Habits
 
-- **Verify Safety Numbers** with trusted contacts (long press contact → Verify).  
-- Avoid storing chat backups on Google Drive or iCloud (they’re not encrypted).  
-- Restart Signal often; it clears some cached keys.  
-- Rotate burner numbers for high-risk roles every 6–12 months.
+- Verify **Safety Numbers** with trusted contacts (hold → Verify).  
+- Avoid chat backups (iCloud/Drive are unencrypted).  
+- Restart Signal periodically to clear cache.  
+- Rotate burner numbers every 6–12 months.  
+- Power off devices at high-risk actions.
+
+<Callout type="warning">
+Signal is secure — your habits aren’t.  
+Loss, confiscation, or careless sharing can still expose chats.
+</Callout>
+
+<Callout type="hint">
+Documentation hygiene:  
+No ART service stores Signal data or keys.  
+Keep logs only if necessary and with consent.  
+Delete them after debriefs.
+</Callout>
 
 ---
 
-## When Not to Use Signal
+## When *Not* to Use Signal
 
-- If your phone is confiscated or searched. Use a **burner device** or keep your SIM separate.
-- For **permanent records** (Signal is designed for ephemerality). Export securely if you need logs.
+- If your device is at risk of seizure — use a burner.  
+- When actions require deniability — use **offline mesh or radio** instead.  
+- For long-term archives — export encrypted summaries; never rely on backups.
 
 ---
 
 ## Quick Checklist
 
-- [ ] Download Signal on phone & linked device  
-- [ ] Use burner number or SIM  
-- [ ] Enable Registration Lock & Disappearing Messages  
-- [ ] Join your pod & dispatch groups  
-- [ ] Practice sending location and media securely  
-- [ ] Review advanced tricks (linked devices, broadcasts, metadata handling)  
+- [ ] Installed and configured Signal securely  
+- [ ] Using burner or alias number  
+- [ ] Registration Lock and Disappearing Messages enabled  
+- [ ] Joined trusted pod/dispatch groups  
+- [ ] Verified two contacts’ safety numbers  
+- [ ] Tested linked device or broadcast setup  
 
 ---
 
-## Practice Assignment
+## Reflection
 
-1. Create a new Signal group for your pod with disappearing messages set to 1 hour.  
-2. Link a desktop client and test file sharing.  
-3. Verify safety numbers with 2 other members.  
-4. Send a “burner broadcast” to 5 people without making a group visible.
+What’s one change you can make today to reduce Signal risk — less data, fewer devices, or shorter retention?
 
-<Callout type="hint">
-Once you’ve completed this, mark this lesson as **Qualified**. You’ll be expected to use these tools during Dispatch exercises.
+---
+
+## Next Steps
+
+Continue with:
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [Burner Phones & Security Culture](/courses/burner-phones-security-culture)  
+- [Mesh Networks Intro](/courses/mesh-networks-intro)  
+- [Comms Collapse](/courses/comms-collapse)  
+- [Operational Security 101](/courses/opsec-101)
+
+---
+
+## Rabbit Holes
+
+<Callout type="rabbit-hole">
+📱 **Signal Power User Tips**  
+Learn about sealed-sender mode, proxy routing, and hidden contacts.
+</Callout>
+
+<Callout type="rabbit-hole">
+🧩 **Beyond Signal**  
+Compare Session, Briar, and DeltaChat for environments where phone numbers are unsafe.
+</Callout>
+
+---
+
+<Callout type="success">
+Signal is a tool of trust, not invisibility.  
+Use it deliberately, keep it clean, and never assume encryption equals safety.
 </Callout>

@@ -277,14 +277,30 @@
 
   /* Preserve readable Mermaid diagrams when printing */
   /* Force a light theme palette for SVG content to avoid black-on-black text */
-  .mermaid { background: #ffffff !important; }
+  .mermaid {
+    background: #ffffff !important;
+  }
   .mermaid svg .node rect,
   .mermaid svg .node polygon,
   .mermaid svg .node circle,
-  .mermaid svg .node ellipse { fill: #ffffff !important; stroke: #374151 !important; }
-  .mermaid svg .cluster rect { fill: #f3f4f6 !important; stroke: #9ca3af !important; }
-  .mermaid svg .edgeLabel rect { fill: #ffffff !important; }
+  .mermaid svg .node ellipse {
+    fill: #ffffff !important;
+    stroke: #374151 !important;
+  }
+  .mermaid svg .cluster rect {
+    fill: #f3f4f6 !important;
+    stroke: #9ca3af !important;
+  }
+  .mermaid svg .edgeLabel rect {
+    fill: #ffffff !important;
+  }
   .mermaid svg .label,
   .mermaid svg text,
-  .mermaid svg tspan { fill: #111827 !important; }
+  .mermaid svg tspan {
+    fill: #111827 !important;
+  }
+}
+
+html.dim {
+  color-scheme: dark;
 }

@@ -1,63 +1,60 @@
 ---
 title: Logistics & Resource Management
 slug: logistics-resource-management
-description: >-
-  Learn how to plan, stage, and sustain pods with fuel, supplies, and transport,
-  including resupply and fallback staging for field actions.
+description: Learn how to plan, stage, and sustain pods with fuel, supplies, and transport, including resupply and fallback staging for field actions.
 type: qualified
-version: '1.3'
+version: '1.4'
 readingTime: 20
 ---
+
 # 📦 Logistics & Resource Management
 <TrackBadge variant="logistics" />
 <TrackBadge variant="tech-comms" />
 <TrackBadge variant="pod-leadership" />
 
 <Callout type="info">
-This course is in **Level 2: Field Coordination Basics (Basic Dispatcher)**.  
-It focuses on **fuel, supplies, staging, and resupply** so pods can operate effectively during sustained actions or emergencies.  
+Level 2: Field Coordination Basics (Basic Dispatcher).  
+Focus: fuel, supplies, staging, and resupply for sustained operations or emergencies.
 </Callout>
 
 <Callout type="important">
-Language access: Build inclusive logistics. Pair this with the Translator and ASL Interpreter micro‑badges to ensure requests, directions, and safety notices are understood by all.
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+Language access: Build inclusive logistics.  
+Pair this with the [Translator Micro-Badge](/courses/translator-micro-badge) and [ASL Interpreter Micro-Badge](/courses/asl-interpreter-micro-badge).
 </Callout>
 
 ---
 
-## Why It Matters
+## Overview
 
 Actions and community defense centers can **fail or fracture without solid logistics**.  
-Fuel shortages, missing supplies, or no fallback plans can leave pods stranded, vulnerable, or unable to sustain operations.  
-Understanding **how to plan, stage, resupply, and protect your logistics chain** keeps everyone safe and effective.
+Fuel shortages, missing supplies, or lack of fallback plans can leave pods stranded or unsafe.  
+This course teaches how to plan, stage, resupply, and protect logistics chains for sustainable operations.
+
+You will learn:
+- How to select staging areas
+- How to manage rotating supplies
+- How to calculate and store fuel safely
+- How to build fallback caches
+- How to protect logistics from infiltration or surveillance
 
 ---
 
-## What You'll Learn
+## Learn & Do
 
-1. **Staging Area Selection** – How to choose safe and functional supply hubs.  
-2. **Supply Chain Management** – Managing water, food, med supplies, PPE, signage, and donations safely.  
-3. **Fuel Planning & Safety** – Calculating, storing, and replenishing fuel securely.  
-4. **Fallback Logistics** – Pre-staging caches and supply routes for relocation.  
-5. **Logistics Security** – Protecting your operations from surveillance, infiltration, and disruption.  
-6. **Tracking & Templates** – Using **offline tools and paper backups** to avoid data loss.  
+### 🏕 Staging Area Setup
 
----
-
-## Staging Area Criteria
-
-- **Proximity:** Close enough for resupply, far enough to avoid exposure.  
-- **Multiple Exits:** Two or more escape routes for vehicles and people.  
-- **Utilities:** Access to water and electricity if possible.  
-- **Visibility:** Low profile from roads or aerial surveillance.  
-- **Rotation:** Never use the same staging point repeatedly without vetting.
+**Criteria**
+- Proximity: near enough for resupply, far enough for security.  
+- Multiple exits: at least two routes for vehicles and people.  
+- Utilities: access to water and electricity when possible.  
+- Visibility: low profile from roads and drones.  
+- Rotation: avoid reusing the same staging site repeatedly.
 
 <Callout type="important">
-OPSEC: Do not store exact staging addresses, cache coordinates, or refuel points in shared apps. Use code names and offline notes. Share precise locations only on a need‑to‑know basis.
+OPSEC: Never store exact addresses or cache coordinates in shared systems. Use coded names and offline notes.
 </Callout>
 
-### Sample Staging Flow
+**Example Flow**
 
 <Mermaid chart={`
 graph TD
@@ -66,153 +63,156 @@ graph TD
     D[Fallback Cache] --> A
     E[Community Donations] --> A
 `} />
-
 ---
 
-## Supply Chain Management
+### 📦 Supply Chain Management
 
-- **Minimum Stock Lists:**  
-  - Water: 1 gallon per person, per day (double in heat).  
-  - Food: 2 meals per person per 8 hours.  
-  - Medical: 1 full kit per 10 people.  
-  - PPE: Spare gloves, masks, eye protection for each field role.
-
-- **Rotation Protocols:** Cycle perishables every 7–14 days.  
-- **Donation Vetting:** Only accept from **trusted sources**; scan for tampering.
+- **Minimum Stock**
+  - Water: 1 gallon/person/day (double in heat)
+  - Food: 2 meals/person/8 hours
+  - Medical: 1 full kit/10 people
+  - PPE: spare gloves, masks, and eyewear per role
+- Rotate perishables every 7–14 days
+- Vet all donations for tampering
 
 <Callout type="hint">
-Data minimization: Track only what you must (quantities, condition, dates). Avoid collecting donor PII. Use paper logs or offline files; if digitizing, store locally with device encryption and rotate retention.
+Track only quantities and condition. Avoid storing donor data. Use paper or encrypted offline tools.
 </Callout>
 
 ---
 
-## Fuel Planning
+### ⛽ Fuel Planning
 
-- **Estimate Needs:** Track per-generator and per-vehicle burn rates. Example:  
-  - "Gas generator: ~1 gallon/hour at half load"  
-  - "Cargo van: ~12 MPG at idle + load"  
-- **Secure Storage:**  
-  - Store in **approved containers**, split across multiple sites.  
-  - Keep fuel caches at least 50 feet from structures and heat sources.  
-- **Alternatives:** Solar battery banks, biofuel, and EV charging stations as backups.
+**Estimation**
+- Gas generator: ~1 gal/hour @ half load  
+- Cargo van: ~12 MPG with load  
+
+**Storage**
+- Use approved containers, stored across multiple sites  
+- Keep 50+ feet from heat sources  
+- Label clearly and train handlers  
+
+**Alternatives**
+- Solar banks, battery kits, or biofuel backup systems
 
 <Callout type="warning">
-Fuel safety: Follow local codes. Use approved containers, ventilate, keep away from ignition sources, and never store fuel in living spaces or passenger compartments. Label containers clearly and train handlers.
+Fuel = fire risk. Store in ventilated detached areas only.
 </Callout>
 
 ---
 
-## Logistics Security
+### 🔒 Logistics Security
 
-- **OPSEC for Supply Locations:** Share only with those who need to know.  
-- **Counter-Surveillance:**  
-  - Rotate routes and staging points.  
-  - Use **clean vehicles** (no identifiable stickers or plates linked to pods).  
-- **Three Deep System:** Always have **3 people who know key logistics details** to prevent single points of failure.
+- Share site info strictly by role
+- Rotate routes, drivers, and staging points
+- Remove identifiable markings from vehicles
+- Ensure at least three trusted people know all key logistics details
 
 <Callout type="info">
-Capability notes for ART and region apps:
-- Do not add sensitive cache or staging coordinates to ART or any shared app; maintain offline maps with coded labels.
-- Report photos are supported; videos should be shared via secure links rather than direct upload.
-- Logs exist on the server side for safety and abuse response; there is no in‑app CSV export or exhaustive audit viewer.
-- Maps do not support drawing geofences; use labels and proximity notes instead.
-- Notifications are region‑configured; avoid implying generic “location‑based alerts.”
-- Use access roles and trust‑based reviews to limit who can see logistics notes.
+ART + Region App Guidance:
+- No geofences or public map layers for caches.
+- Offline coded maps only.
+- Logs retained server-side for abuse response.
+- Restrict access via trust-based roles.
 </Callout>
 
 ---
 
-## Fallback Logistics
+### 📍 Fallback Logistics
 
-- **Cache Mapping:** Mark caches in **offline maps** and on **encrypted backups**.  
-- **Waterproof & Rodent-Proof Storage:** Use sealed barrels or lockboxes.  
-- **Refresh Schedule:** Check and rotate supplies every 30 days.
+- Mark caches on **offline maps** and **encrypted backups**
+- Store supplies in sealed, waterproof, rodent-proof containers
+- Refresh every 30 days
 
 <Callout type="hint">
-Offline mapping: Export small, encrypted map bundles for cache access on devices in airplane mode. Keep a printed backup in a sealed envelope. Rotate passphrases and revoke access after events.
+Keep printed backups in sealed envelopes with rotating passphrases. Revoke access after events.
 </Callout>
 
 ---
 
-## Common Failure Points
+### ⚠️ Common Failure Points
 
-- Batteries or charging capacity exhausted mid-action.  
-- Over-reliance on one staging area or one vehicle.  
-- Weather ruining supplies (lack of waterproofing).  
-- Volunteer turnover without knowledge transfer.
+| Failure | Prevention |
+|----------|-------------|
+| Power depletion mid-action | Solar/battery redundancy |
+| Overreliance on one site | Two or more fallback hubs |
+| Weather damage | Waterproof all storage |
+| Lost institutional knowledge | Maintain role-based binder |
 
 <Callout type="important">
-Knowledge transfer: Maintain a minimal, role‑based binder (paper + offline file) with staging codes, cache refresh dates, vendor contacts, and radio/runner protocols. Avoid personal accounts and centralize ownership with the pod, not individuals.
+Keep a shared binder (paper + offline file) with cache codes, refresh dates, and runner protocols. Avoid personal accounts.
 </Callout>
 
 ---
 
-## Scenario Drill (Exercise)
+### 🚨 Drill Scenario
 
-*"Your main staging area is compromised. Using your fallback plan:*  
-1. Secure sensitive materials.  
-2. Redirect incoming supply runs to the backup location.  
-3. Notify field teams with **secure comms**.  
-4. Activate **logistics runner rotation** for the new route."
+**Situation:** Primary staging compromised.  
+**Action Plan:**
+1. Secure sensitive materials  
+2. Redirect incoming runs  
+3. Notify teams via secure comms  
+4. Activate runner rotation  
 
 <Callout type="hint">
-Use runners & rides for sensitive moves. Avoid sharing the new location in group chats. If you must send directions, use coded references and time‑boxed messages, then purge according to your retention policy.
+Avoid naming new locations in chat. Use coded messages and clear retention timelines.
 </Callout>
 
 ---
 
-## Quick Action Steps
+### ✅ Checklist
 
-1. **Map staging and fallback areas** in advance.  
-2. **Track supplies** with redundant systems (paper + offline digital).  
-3. Designate **at least one logistics runner** per event.  
-4. **Plan for night/low-visibility runs** when tensions rise.  
-5. Conduct a **logistics drill** at least once every 6 months.
-
-<Callout type="info">
-OPSEC reminder: Don’t put precise coordinates for caches or staging in shared apps. If using digital maps, keep them offline, encrypted, and code‑labeled.
-</Callout>
+- [ ] Safe staging + fallback mapped  
+- [ ] Fuel needs calculated  
+- [ ] Redundant tracking (paper + offline)  
+- [ ] Vendor/donor vetting complete  
+- [ ] Tested LoRa/radio comms  
+- [ ] Logistics drill done within 6 months  
 
 ---
 
-## Checklist
+## Reflection
 
-- [ ] Can map and rotate safe staging and fallback areas.  
-- [ ] Can calculate **fuel needs** for vehicles and generators.  
-- [ ] Maintains **redundant supply tracking** (digital + paper).  
-- [ ] Has vetted vendor and donation contacts.  
-- [ ] Has tested **alternative comms** (LoRa, radios) for logistics.  
-- [ ] Has conducted at least one **logistics drill** with the pod.  
+- Who holds logistics knowledge in your pod?  
+- Could operations continue if one staging point fails?  
+- How will you document and share logistics info securely?
 
 ---
 
-## Resource Appendix
+## Next Steps
 
-- **Supply Tracking Template (Printable + Offline)**  
-- **Staging Area Checklist**  
-- **Fuel Log & Vehicle Maintenance Template**  
-- **Recommended Offline Tools:**  
-  - Spreadsheet apps like *OnlyOffice* (works offline)  
-  - Paper logbooks with waterproof covers  
-- **Disaster Supply Calculators & Weatherproofing Guides**
+- [Runners & Rides](/courses/runners-and-rides)  
+- [Dispatch Coordination](/courses/dispatch-coordination)  
+- [Responding to Dispatch Calls](/courses/responding-to-dispatch-calls)  
+- [Field Safety](/courses/field-safety)  
+- [Escalation & Evacuation Protocols](/courses/escalation-evacuation-protocols)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)  
+- [Digital Security Basics](/courses/digital-security-basics)
+
+---
+
+## External Resources
+
+- Supply Tracking Template (printable/offline)  
+- Staging Area & Fuel Log templates  
+- Paper logbooks (waterproof)  
+- Offline spreadsheet tools (OnlyOffice, LibreOffice)  
+- Disaster Supply Rotation Guides  
 
 <Callout type="hint">
-Templates: Printable logistics templates are being standardized. Until published, use paper logbooks or locally stored offline sheets. Avoid cloud sync for sensitive inventories.
+Templates will be published soon. Use paper or encrypted offline files until then.
 </Callout>
 
 ---
 
-## Related courses
+## Rabbit Holes
 
-- Runners & Rides → /courses/runners-and-rides
-- Dispatch Coordination → /courses/dispatch-coordination
-- Responding to Dispatch Calls → /courses/responding-to-dispatch-calls
-- Inter‑Pod & Regional Coordination → /courses/inter-pod-regional-coordination
-- Field Safety → /courses/field-safety
-- Escalation & Evacuation Protocols → /courses/escalation-evacuation-protocols
-- Documentation Safety → /courses/documentation-safety
-- After‑Action Data Hygiene → /courses/after-action-data-hygiene
-- Digital Security Basics → /courses/digital-security-basics
-- Data Ethics Pledge → /courses/data-ethics-pledge
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+- Off-grid logistics & power generation systems  
+- Civilian fuel storage and safety codes  
+- Supply chain design for mutual aid networks  
+- Role-based trust modeling in decentralized ops  
+
+<Callout type="success">
+Strong logistics turn chaos into continuity.  
+Plan deep, rotate often, and keep your network alive.
+</Callout>

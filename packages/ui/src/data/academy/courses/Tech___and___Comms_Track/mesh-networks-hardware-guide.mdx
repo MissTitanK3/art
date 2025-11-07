@@ -1,154 +1,141 @@
 ---
 title: Mesh Network Hardware & Power Guide
 slug: mesh-networks-hardware-guide
-description: >-
-  Recommended hardware, antennas, power systems, and accessories for Meshtastic
-  pod and multi-pod operations.
-type: appendix
-version: '1.2'
+description: Recommended hardware, antennas, power systems, and accessories for Meshtastic pod and multi-pod operations.
+type: qualified
 readingTime: 14
+version: '1.3'
 ---
+
 # 🔌 Mesh Network Hardware & Power Guide
 <TrackBadge variant="tech-comms" />
 
 <Callout type="info">
-This appendix lists **recommended gear** for running Meshtastic networks from small pods (3–15 nodes) up to **large, multi-day deployments (15–100+ nodes)**.  
-Prices are typical as of 2025 and may vary by supplier.
-</Callout>
-
-<Callout type="info">
-Language access: For inclusive comms and deployment, pair this guide with the Translator and ASL Interpreter micro‑badges. Use interpreters or visual summaries as needed, and ensure all pod members know how to request support in their preferred language.
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+Use clear, approachable language. Keep steps small and predictable.  
+This guide lists **recommended gear** for running Meshtastic networks from small pods (3–15 nodes) up to **large, multi-day deployments (15–100+ nodes)**. Prices are typical as of 2025 and may vary by supplier.
 </Callout>
 
 ---
 
-## Core Meshtastic Devices
+## Overview
+This guide helps pods choose reliable and safe hardware for Meshtastic mesh networks.  
+You’ll learn how to select devices, antennas, and power systems to match the scale of your deployment, from a handful of handheld nodes to large regional coverage networks.
 
-These are the radios your network runs on.
+---
 
-| Device                | Role                  | Typical Price | Notes |
-|-----------------------|-----------------------|---------------|-------|
-| **LilyGO T-Beam V1.1** | Standard handheld node | $60–$80       | Built-in GPS, USB-C, long range (5–10 km with good antenna). Recommended for most pod members. |
-| **Heltec V3 LoRa**     | Compact node/relay     | $35–$50       | Small, no GPS, good for scouts or hidden stationary relays. |
-| **RAK WisBlock / ESP32-based Relay** | Fixed coverage relay | $80–$120 | Needs steady power (AC or solar). Perfect for rooftops or semi-permanent installs. |
+## Learn & Do
+
+### 1. Core Meshtastic Devices
+| Device | Role | Typical Price | Notes |
+|--------|------|---------------|-------|
+| **LilyGO T-Beam V1.1** | Standard handheld node | $60–$80 | Built-in GPS, USB-C, long range (5–10 km). Best for most pod members. |
+| **Heltec V3 LoRa** | Compact node/relay | $35–$50 | No GPS, good for scouts or hidden stationary relays. |
+| **RAK WisBlock / ESP32 Relay** | Fixed coverage relay | $80–$120 | Needs steady power (AC or solar). Ideal for rooftops or permanent installs. |
 
 <Callout type="hint">
-Each pod should have at least **1 relay-capable node** (T-Beam with high-gain antenna or RAK relay) for coverage.
+Each pod should have at least **one relay-capable node** for consistent coverage.
 </Callout>
 
 ---
 
-## Antennas & Range Boosters
+### 2. Antennas & Range Boosters
+| Antenna Type | Use Case | Price Range | Range Impact |
+|---------------|-----------|-------------|---------------|
+| **3–5 dBi whip** | Handheld upgrades | $10–$20 | Balanced for urban pods. |
+| **6–9 dBi directional (Yagi/panel)** | Rooftop relays | $20–$50 | Extends rural range to 15+ km. |
+| **Mag-mount antennas** | Vehicle relays | $25–$40 | Strong mobile performance. |
 
-Stock antennas are weak. Upgrades can **double or triple range**.
-
-| Antenna Type            | Use Case                | Price Range | Range Impact |
-|--------------------------|-------------------------|-------------|--------------|
-| **3–5 dBi whip**         | Handheld upgrades       | $10–$20     | Good balance for urban pods. |
-| **6–9 dBi directional (Yagi or panel)** | Rooftop/relay use         | $20–$50     | Extends rural line-of-sight to 15+ km. |
-| **Mag-mount antennas**   | Vehicle-based relays    | $25–$40     | Improves mobile relay performance. |
-
-Mounting tips:
-- Always keep antennas **vertical and clear of metal obstructions**.  
-- For rooftops, use **tripod mounts or weatherproof housings**.
+**Tips:**
+- Keep antennas vertical and clear of metal.
+- Use tripod mounts or housings for rooftops.
 
 ---
 
-## Battery Packs & Solar
+### 3. Battery Packs & Solar
+**For Pod Members:**
+- 10,000–20,000 mAh USB-C bank ($20–$40) → 12–24 hrs runtime.
+- Carry 2 per active member.
 
-Keeping nodes powered is critical, especially for multi-day ops.
+**For Relays:**
+- 20,000–50,000 mAh banks ($50–$120).
+- 20–40 W solar panels ($60–$150) for daytime charging.
 
-### For Pod Members (Handheld Nodes):
-- **10,000–20,000 mAh USB-C power bank** ($20–$40): Runs a T-Beam for **12–24 hrs**.
-- Carry **2 per active member** during long events.
-
-### For Relays:
-- **20,000–50,000 mAh battery banks** ($50–$120): For stationary relays.  
-- **20–40W solar panels** ($60–$150): Trickle-charge relays during daytime.
-
-<Mermaid chart={`
-graph LR
+<Mermaid chart={`graph LR
     A[Relay Node] --> B[Battery Bank 50,000mAh]
     B --> C[20–40W Solar Panel]
     A --> D[Backup Battery Rotation]
-
 `} />
 
 ---
 
-## Accessories & Spares
-
-Every pod should budget for:
-- **Weatherproof cases** (IP65 or higher) for relays – $20–$60 each.  
-- **USB-C multi-chargers** (5–10 port) – $25–$60.  
-- **Quick-disconnect mounts** (tripods or magnetic bases) – $20–$40.  
-- **Coded labels and inventory tags** (avoid real names).  
-- **Spare USB-C cables** (braided or reinforced) – $10–$15 each.
+### 4. Accessories & Spares
+- Weatherproof cases (IP65+) – $20–$60  
+- USB-C multi-chargers (5–10 port) – $25–$60  
+- Quick-disconnect mounts – $20–$40  
+- Code labels (no real names)  
+- Reinforced USB-C cables – $10–$15  
 
 <Callout type="hint">
-Documentation hygiene: Use minimal, time-bound retention. Avoid storing raw device logs or inventory lists in shared apps. Prefer encrypted, access-controlled notes and delete temporary files after review. ART does not support in-app hardware inventory; use secure external tools if needed and always get explicit consent before sharing device or deployment details.
+Avoid storing raw device logs or inventory in shared apps.  
+Prefer encrypted, access-controlled notes and delete temporary files after review.
 </Callout>
 
 ---
 
-## Typical Costs Per Pod
-
-### Small Pod (5–8 Nodes):
-- **5× T-Beams @ $70** = $350  
-- **1× Relay Node (RAK) + antenna** = $150  
-- **5× Power Banks (20,000 mAh)** = $150  
-- **Misc accessories** = $100  
-**Total: ~$750–$850**
-
-### Medium Pod (10–15 Nodes):
-- **10× T-Beams @ $70** = $700  
-- **2× Relay Nodes (RAK) + high-gain antennas** = $300  
-- **10× Power Banks (20,000 mAh)** = $300  
-- **Solar kits (for relays)** = $300  
-**Total: ~$1,500–$1,700**
-
-### Large Network (30–50 Nodes):
-- Scale linearly, but add **2–4 backup relays**, **extra batteries**, and **dedicated solar arrays** (~$2,500–$4,000).
+### 5. Cost Planning
+**Small Pod (5–8 Nodes)** → ~$750–$850  
+**Medium Pod (10–15 Nodes)** → ~$1,500–$1,700  
+**Large Network (30–50 Nodes)** → ~$2,500–$4,000  
+Include spare relays, extra batteries, and dedicated solar kits for resilience.
 
 ---
 
-## Sourcing Tips
-
-- **Official Meshtastic forums and GitHub** list trusted vendors.  
-- Look for **LoRa devices with 915 MHz support** (for US use).  
-- Avoid unknown resellers on large marketplaces unless verified (counterfeits are common).  
-- Buy **extra cables, antennas, and power banks** – these fail most often.
+### 6. Sourcing & Legal Basics
+- Use **official Meshtastic forums/GitHub** for vendors.  
+- Ensure 915 MHz compatibility (US use).  
+- Avoid unverified resellers.  
+- Always buy extra cables and power banks.  
 
 ---
 
-## Checklist for Deployment
+### 7. Deployment Checklist
+- [ ] Spare battery and tested antenna for each node  
+- [ ] Weatherproof relays with backup power  
+- [ ] Solar panels in 6+ hr sunlight  
+- [ ] Devices labeled with code names only  
+- [ ] At least 1 spare relay and 2 spare power banks per pod  
 
-- [ ] Each node has a **spare battery** and **tested antenna**.  
-- [ ] Relays mounted in **weatherproof containers** with backup batteries.  
-- [ ] Solar panels positioned for **6+ hrs/day sun exposure**.  
-- [ ] All devices labeled with **code names, not real names**.  
-- [ ] At least **1 spare relay and 2 spare power banks** per pod.
-
-<Callout type="important">
-Consent & legal: Always ask before sharing device, location, or deployment details. Pair this guide with Documentation Safety, Data Ethics Pledge, Legal Observer, and After‑Action Data Hygiene for best practices.
+<Callout type="warning">
+Respect safety, consent, and privacy. Always get permission before sharing device or location data. Pair this with Documentation Safety, Data Ethics Pledge, and Legal Observer courses.
 </Callout>
 
 ---
 
-## Related courses
+## Reflection
+How can your pod balance long-range communication with data minimization and operational security?  
+Write or discuss how you would design your network to protect sensitive information while maintaining coverage.
 
-- Documentation Safety → /courses/documentation-safety
-- After‑Action Data Hygiene → /courses/after-action-data-hygiene
-- Digital Security Basics → /courses/digital-security-basics
-- Data Ethics Pledge → /courses/data-ethics-pledge
-- Legal Observer → /courses/legal-observer
-- Interacting with Law Enforcement → /courses/interacting-with-law-enforcement
-- KYR Basics → /courses/kyr-basics
-- Fourth Amendment Rights → /courses/fourth-amendment-rights
-- Dispatch Coordination → /courses/dispatch-coordination
-- Responding to Dispatch Calls → /courses/responding-to-dispatch-calls
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+---
 
+## Next Steps
+- Documentation Safety → /courses/documentation-safety  
+- After-Action Data Hygiene → /courses/after-action-data-hygiene  
+- Digital Security Basics → /courses/digital-security-basics  
+- Data Ethics Pledge → /courses/data-ethics-pledge  
+- Legal Observer → /courses/legal-observer  
+- Translator Micro-Badge → /courses/translator-micro-badge  
+- ASL Interpreter Micro-Badge → /courses/asl-interpreter-micro-badge  
+
+---
+
+## External Resources
+- [Meshtastic Forums](https://meshtastic.org/)  
+- [Meshtastic GitHub Hardware Wiki](https://github.com/meshtastic)  
+- Trusted LoRa vendors list (community maintained)
+
+---
+
+## Rabbit Holes
+- Dive deeper into **antenna theory** and signal propagation.  
+- Explore **off-grid solar system design** for long-term mesh relays.  
+- Learn about **secure firmware flashing** and device verification for anti-tampering.

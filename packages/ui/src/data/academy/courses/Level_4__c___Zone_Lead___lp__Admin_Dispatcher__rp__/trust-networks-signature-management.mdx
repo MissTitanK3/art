@@ -1,0 +1,187 @@
+---
+title: Trust Networks & Signature Management
+slug: trust-networks-signature-management
+description: Learn to verify, rotate, and audit trust signatures across regional nodes securely and transparently.
+type: qualified
+version: '1.4'
+readingTime: 30
+---
+
+# 🛰 Trust Networks & Signature Management
+<TrackBadge variant="admin" />
+<TrackBadge variant="security" />
+
+<Callout type="info">
+Zone Leads are the backbone of trust. This course teaches how to manage digital signatures, verify nodes, and maintain network integrity across distributed systems.
+</Callout>
+
+---
+
+## 🧭 Overview
+In decentralized systems, **trust replaces hierarchy.**  
+Instead of a central authority, each region and node signs each other’s data to confirm authenticity.
+
+This course teaches you how to:
+- Manage Ed25519 trust signatures
+- Rotate and revoke keys
+- Audit network integrity
+- Recover safely from compromise
+
+> A strong trust network means every region can stand alone — and still work together.
+
+---
+
+## 🧩 Learn & Do
+
+### 1. Understanding Trust Signatures
+Each node (e.g., region, PocketServer, admin account) maintains a **public/private key pair**.  
+When one node signs another’s identity or update, it adds a **trust signature** to the ledger.
+
+| Concept | Definition |
+|----------|-------------|
+| Public Key | A node’s visible fingerprint, safe to share |
+| Private Key | Secret signing key, stored securely |
+| Signature | Verification mark proving origin |
+| Roster | The list of nodes, roles, and signatures within a region |
+
+Example:
+```
+region.pnw.node.12.v5
+signature: ed25519:7d8f4a...
+signed_by: admin.node.01
+timestamp: 2025-09-14T03:23Z
+```
+
+
+---
+
+### 2. Verifying Node Signatures
+Before accepting data or a connection:
+1. Compare fingerprint to your stored trust list.  
+2. Validate the signature with your public key database.  
+3. Check expiration or version number (v1 → v2 rotations).  
+4. Log the verification event locally.
+
+<Callout type="hint">
+Use `verifySignature()` or equivalent functions in Supabase or PocketServer CLI for consistent checks.  
+Rotate keys on predictable intervals (e.g., quarterly or after compromise).
+</Callout>
+
+---
+
+### 3. Running Key Rotations
+Rotations prevent stale or exposed credentials from endangering the network.
+
+**Steps:**
+1. Generate new keypair.  
+2. Announce rotation to all trusted peers via encrypted message.  
+3. Re-sign existing nodes with the new key.  
+4. Archive old key metadata and revoke the signature.  
+5. Update trust_roster tables and verify consistency.
+
+**PocketServer format example:**
+```
+{
+"roster_id": "pnw_roster_v6",
+"signer_id": "zonelead_01",
+"signer_rot": "2025q3",
+"signed_entry_hash": "abc123...",
+"revoked": false
+}
+```
+
+
+<Callout type="warning">
+Do not reuse or republish old keys.  
+Compromised or expired signatures must be marked as **revoked**, not deleted.
+</Callout>
+
+---
+
+### 4. Auditing the Trust Network
+Quarterly or post-incident, perform a **trust audit**:
+- Compare node lists between all connected regions.  
+- Confirm signature timestamps and hash integrity.  
+- Detect missing or conflicting entries.  
+- Record a signed audit summary (e.g., `trust_audit_2025q4.sig`).  
+
+| Audit Goal | Check | Tool |
+|-------------|--------|------|
+| Integrity | Hash comparison | PocketServer CLI |
+| Consistency | Cross-region trust lists | Supabase scripts |
+| Transparency | Public audit log | Regional admin dashboard |
+
+<Callout type="info">
+Always include at least one **cross-region peer** in each audit for external verification.
+</Callout>
+
+---
+
+### 5. Responding to Compromise
+If a private key is lost or leaked:
+1. Immediately mark its signature as **revoked**.  
+2. Generate a new keypair and broadcast a revocation message.  
+3. Verify all nodes against updated rosters.  
+4. Alert regional and cross-region admins.  
+5. Review incident to trace exposure vector.
+
+<Callout type="critical">
+Never continue operations under an unverified key.  
+Compromise of a single admin node can spread false trust to the entire mesh.
+</Callout>
+
+---
+
+### 6. Maintaining Roster Integrity
+- Store roster copies **offline** and **signed**.  
+- Hash roster contents for quick tamper checks.  
+- Ensure multiple stewards have encrypted access to the master roster.  
+- Require **two-person authorization** for updates or deletions.
+
+**Recommended files:**
+- `/trust/roster.json` – Active trust table  
+- `/trust/audit_history/` – Encrypted past audits  
+- `/trust/revocations/` – List of revoked keys
+
+---
+
+### 7. Training & Delegation
+Zone Leads should mentor two successors per region:
+- One **technical steward** (handles keys, signatures)  
+- One **ethical steward** (reviews policy & human impact)  
+
+Rotation every 6–12 months ensures continuity even during crisis or travel.
+
+> Trust is infrastructure.  
+> Stewardship is culture.
+
+---
+
+## 🪞 Reflection
+- How often does your region audit signatures or rotate keys?  
+- Who holds secondary access in case of key loss?  
+- How transparent is your revocation process?
+
+---
+
+## 🚀 Next Steps
+- [Admin Tools](/courses/admin-tools)  
+- [Regional Data Stewardship & Privacy Oversight](/courses/regional-data-stewardship)  
+- [Documentation Safety](/courses/documentation-safety)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)
+
+---
+
+## 🌐 External Resources
+- Supabase RLS & Key Rotation Documentation  
+- PocketServer Trust System Spec (Ed25519 Model)  
+- Signal Foundation: *Safety Number Verification Model*  
+- EFF Guide: *Public Key Infrastructure for Organizers*
+
+---
+
+## 🕳 Rabbit Holes
+- PKI for peer-to-peer mesh networks  
+- Transparent audit ledgers (Merkle tree design)  
+- Threshold signatures and multi-party computation  
+- Reputation-based trust scoring in decentralized networks

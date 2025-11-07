@@ -1,0 +1,160 @@
+---
+title: Regional Data Stewardship & Privacy Oversight
+slug: regional-data-stewardship
+description: Learn how to securely manage volunteer, dispatch, and incident data at the regional level with ethical transparency and legal compliance.
+type: qualified
+version: '1.3'
+readingTime: 28
+---
+
+# 🧩 Regional Data Stewardship & Privacy Oversight
+<TrackBadge variant="admin" />
+<TrackBadge variant="security" />
+
+<Callout type="info">
+Admins protect both systems and people. This course defines responsible data governance, retention, and deletion within decentralized networks.
+</Callout>
+
+---
+
+## 🧭 Overview
+Every trusted region holds sensitive data — volunteer records, dispatch logs, and pod rosters.  
+This course outlines how to manage that data safely, respecting **community privacy, informed consent, and legal responsibility**.  
+The goal: make transparency a source of trust, not risk.
+
+> Data is a tool for coordination, not control.
+
+---
+
+## 🧩 Learn & Do
+
+### 1. Principles of Data Stewardship
+- **Minimize collection:** Gather only what is necessary for safety and operations.  
+- **Restrict access:** Limit view/edit privileges to active roles (Dispatcher, Admin, Steward).  
+- **Encrypt and verify:** Use end-to-end encryption and signed access tokens.  
+- **Document purpose:** Every dataset should have a defined use, owner, and expiry.
+
+| Principle | Implementation Example |
+|------------|------------------------|
+| Transparency | Post a public “Data Charter” on your region’s site |
+| Accountability | Keep a changelog for admin actions |
+| Right to Erasure | Volunteers may request full deletion of records |
+| Least Privilege | No shared admin accounts; use per-user credentials |
+
+---
+
+### 2. Retention & Deletion Policy Design
+Build a schedule defining how long data is stored, who reviews it, and how deletion is verified.
+
+| Data Type | Retention | Review Interval | Delete Method |
+|------------|------------|----------------|----------------|
+| Dispatch records | 30 days after close | Monthly | Secure wipe |
+| Volunteer roster | While active | Quarterly | Remove inactive entries |
+| Training logs | Until certification expires | Annually | Archive summary only |
+| Trust signatures | Until rotation or revocation | Ongoing | Replace with new key |
+
+<Callout type="hint">
+Store deletion records as hashes or logs — never the deleted data itself.  
+Deletion proofs can be used in audits to show compliance without revealing contents.
+</Callout>
+
+---
+
+### 3. Privacy Communication & Consent
+Create a simple **Privacy Overview** visible to all volunteers:
+1. What data is collected  
+2. Why it’s collected  
+3. Who can access it  
+4. How long it’s stored  
+5. How to request deletion or correction
+
+Post this as `/privacy.md` or inside your volunteer onboarding materials.  
+
+<Callout type="info">
+Transparency builds consent. Silence or confusion creates distrust and liability.
+</Callout>
+
+---
+
+### 4. Role-Based Access Control (RBAC)
+Implement **tiered permissions** inside Supabase, ART Admin, or other regional systems.
+
+| Role | Access Level | Example Actions |
+|------|---------------|----------------|
+| Field Dispatcher | Incident-level only | Read/update active dispatch |
+| Pod Lead | Pod roster only | Add/remove volunteers |
+| Region Admin | Full logs | Audit and anonymize |
+| Data Steward | Meta only | Manage keys and policies |
+
+> No one should hold more access than needed to fulfill their role.
+
+---
+
+### 5. Audit & Integrity Checks
+Conduct quarterly reviews:
+- Verify all access keys are current.  
+- Test RLS (Row-Level Security) rules for correct enforcement.  
+- Review audit logs for unusual reads/exports.  
+- Confirm offboarding of inactive users.  
+- Re-encrypt any dataset older than one year.
+
+<Callout type="warning">
+Never skip key rotation.  
+Expired or shared tokens are the #1 cause of data leaks in mutual-aid systems.
+</Callout>
+
+---
+
+### 6. Handling Data Breaches or Compromise
+If exposure occurs:
+1. **Contain:** Revoke credentials and rotate keys immediately.  
+2. **Assess:** Identify what was accessed and who is affected.  
+3. **Notify:** Alert affected users clearly and promptly.  
+4. **Remediate:** Delete or replace compromised data.  
+5. **Document:** File an internal incident report and review for future prevention.
+
+<Callout type="critical">
+Do not hide incidents.  
+Transparency and fast mitigation preserve trust more than silence ever will.
+</Callout>
+
+---
+
+### 7. Ethical Oversight & Transparency
+Create a **Data Stewardship Council** or assign a rotating “Privacy Officer” in your region.  
+Responsibilities include:
+- Reviewing new forms or tools for privacy compliance.  
+- Approving new integrations (e.g., Stripe, Supabase, analytics).  
+- Maintaining a plain-language data ethics statement.  
+- Training new admins in safe handling and OPSEC.
+
+---
+
+## 🪞 Reflection
+- What information does your region actually need to store?  
+- Who has access to sensitive data, and why?  
+- How could you demonstrate ethical transparency to volunteers today?
+
+---
+
+## 🚀 Next Steps
+- [Admin Tools](/courses/admin-tools)  
+- [Trust Networks & Signature Management](/courses/trust-networks-signature-management)  
+- [Documentation Safety](/courses/documentation-safety)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)
+
+---
+
+## 🌐 External Resources
+- Supabase security and RLS configuration guides  
+- EFF Digital Privacy and Data Stewardship Handbook  
+- Mozilla Foundation: *Community Data Governance Playbook*  
+- Tactical Tech: *Data Detox Kit for Organizers*
+
+---
+
+## 🕳 Rabbit Holes
+- GDPR and CCPA equivalence in mutual-aid contexts  
+- Zero-knowledge data verification and proof-of-deletion models  
+- Community data trusts and decentralized accountability boards  
+- Legal interoperability for cross-region data exchange

@@ -1,225 +1,249 @@
 ---
 title: Tech Jamming & Signal Defense
 slug: tech-jamming
-description: Use technology to protect communication and disrupt surveillance.
+description: Learn to protect communications, detect surveillance, and defend digital operations without escalation or legal risk.
 type: qualified
-readingTime: 35
-version: '1.1'
+readingTime: 38
+version: '1.2'
 ---
-# Tech Jamming & Signal Defense
+
+# 🛰️ Tech Jamming & Signal Defense
 <TrackBadge variant="direct-action" />
 <TrackBadge variant="tech-comms" />
 
 <Callout type="info">
-This course explores digital protection strategies, anti-surveillance tactics, and signal disruption for frontline and remote defense. It is **intended for trained dispatchers, tech specialists, or trusted support crew.**
+This module trains **trusted technical operators** to defend communications under surveillance pressure.  
+Focus: **detect, shield, and adapt** — not disrupt.
 </Callout>
 
 ---
 
 ## Purpose of This Role
 
-Surveillance and digital interference are growing threats to organizing, mutual aid, and protest safety. The **Tech Jamming role** supports:
+The **Tech Jamming Operator** safeguards network integrity by:
 
-- Preserving communication under surveillance
-- Preventing tracking and monitoring
-- Disrupting hostile tech tools or signals (if needed)
-- Responding rapidly to digital compromise
+- Detecting surveillance and interference  
+- Preserving comms under hostile conditions  
+- Shielding or redirecting traffic safely  
+- Supporting dispatch and field tech response  
 
-This is a **high-risk**, highly technical role requiring deep trust, ethics, and teamwork.
-
----
-
-## Understand the Threat Landscape
-
-| Threat Type       | Description |
-|-------------------|-------------|
-| Cell tower spoofing | Fake towers intercepting calls or SMS |
-| IMSI catchers     | Devices tracking phone numbers or capturing data |
-| Stingrays         | Government-grade surveillance mimicking real towers |
-| WiFi injection    | Forcing connections to capture or modify traffic |
-| Bluetooth sniffing| Passive location tracking via BT devices |
-| Geofencing alerts | Triggers based on entry/exit from zones |
-| Radio scanning    | Intercepts open-band (FRS/GMRS) comms |
+It is a **high-trust**, **high-skill**, **defensive role** — never offensive.
 
 ---
 
-## Jamming vs Shielding vs Redirecting
+## Threat Landscape
 
-| Method       | Purpose | Risk |
-|--------------|---------|------|
-| **Jamming**   | Interrupts wireless signals like WiFi, LTE, radio | 🔥 High (illegal in most areas) |
-| **Shielding** | Physically blocks signals using Faraday gear | ✅ Low |
-| **Redirecting** | Routes traffic through safer channels (e.g. VPNs) | ⚠️ Moderate |
+| Threat | Description |
+|---------|--------------|
+| **Cell tower spoofing** | Fake towers intercept calls or SMS |
+| **IMSI catchers / Stingrays** | Capture device identifiers and metadata |
+| **WiFi injection** | Coerces connections to spy networks |
+| **Bluetooth sniffing** | Tracks presence via active BT signals |
+| **Geofencing** | Alerts when a target enters defined zones |
+| **Radio scanning** | Monitors unencrypted bands (FRS/GMRS) |
 
 <Callout type="warning">
-Jamming RF signals is **illegal in many jurisdictions**. It must be limited to life-threatening surveillance contexts and used only by trained operators.
+Treat all radio, LTE, and WiFi traffic as **observable**.  
+Encryption adds friction, not invisibility.
 </Callout>
 
 ---
 
-## Tools of the Trade
+## Defense Methods: Compare Approaches
 
-| Tool | Purpose | Risk |
-|------|---------|------|
-| Faraday bags | Block signals to/from devices | Low |
-| Mesh radios (Meshtastic/goTenna) | Encrypted local communication | Low |
-| SDR scanners | Detect or analyze signals (e.g. IMSI catchers) | Moderate |
-| Signal-blocking tape | Spot-shielding phones or radios | Low |
-| VPN with kill switch | Prevent IP leaks if disconnected | Low |
-| RF analyzers | Detect frequency spikes or interference | Moderate |
-| Low-power jammers | Disrupt signals (where legal) | Very High |
+| Method | Use | Legal Risk |
+|---------|-----|-------------|
+| **Jamming** | Block signals (radio, WiFi, LTE) | 🔥 Very high – illegal in most areas |
+| **Shielding** | Physically block via Faraday enclosures | ✅ Safe |
+| **Redirecting** | Re-route via mesh or VPN | ⚠️ Moderate |
+| **Detection** | Identify active surveillance | ✅ Safe |
+
+<Callout type="important">
+Never transmit interference beyond your authorized frequencies.  
+Defense ends where disruption begins.
+</Callout>
 
 ---
 
-## Compromised Gear Protocol
+## Core Tools
 
-If your gear is seized, corrupted, or compromised:
+| Tool | Purpose | Risk |
+|------|----------|------|
+| Faraday bags | Signal isolation | Low |
+| Mesh radios | Encrypted fallback comms | Low |
+| SDR scanners | Detect IMSI / RF anomalies | Moderate |
+| Signal-blocking tape | Isolate hotspots | Low |
+| VPN + kill switch | Prevent IP leakage | Low |
+| RF analyzers | Measure interference | Moderate |
+| Low-power jammers | Controlled lab research only | Very high |
 
-- 🧹 **Wipe**: Secure-erase any logs, SIMs, or temp files immediately
-- 🔐 **Lock**: Use passcodes and remote disable tools (e.g. Find My Device kill switch)
-- 📦 **Contain**: Place compromised gear in Faraday bag and isolate
-- ⚠️ **Log**: Record incident details (time, location, type of breach)
-- 🧠 **Escalate**: Inform digital security team or dispatch lead
+---
+
+## Compromised Gear Response
+
+1. 🧹 **Wipe:** Secure-erase logs, SIMs, temp files.  
+2. 🔒 **Lock:** Enable passcodes, remote kill.  
+3. 📦 **Contain:** Seal in Faraday bag.  
+4. 🧠 **Log:** Record time, device, and symptoms.  
+5. 📡 **Escalate:** Notify dispatch / digital ops for audit.  
+
+Never attempt self-repair on-site. Assume full compromise.
 
 ---
 
 ## Deployment Checklist
 
-- 🔲 Devices charged, firmware updated
-- 🔲 VPN active and tested
-- 🔲 SIMs removed or disabled
-- 🔲 Faraday bags ready for fallback
-- 🔲 Mesh radios synced, field-tested
-- 🔲 Emergency comms plan confirmed
+- [ ] Devices charged + updated  
+- [ ] VPN and fallback verified  
+- [ ] Mesh radios paired + tested  
+- [ ] Faraday kits staged  
+- [ ] Signal plans printed or memorized  
+- [ ] Red team/ops aware of handoffs  
 
 ---
 
-## Multi-Layer Communication Strategy
+## Multi-Layer Comms Strategy
 
-Use the **Least Privilege Principle**: Only trusted people should access signal gear.
+Follow **Least Privilege Principle**: only those who must know, do.
 
-| Tier | Method | Use Case |
-|------|--------|----------|
-| 1 | Encrypted apps (Signal, Session) | Primary secure messaging |
-| 2 | Mesh radios | Peer-to-peer fallback |
-| 3 | QR codes, briefings, paper maps | No-signal environments |
+| Tier | Channel | Use |
+|------|----------|-----|
+| 1 | Encrypted apps (Signal, Session) | Primary messaging |
+| 2 | Mesh (Meshtastic, goTenna) | Short-range fallback |
+| 3 | QR, visual codes, paper maps | Last resort |
 
-Always assume cellular and open-band channels are monitored.
+Assume surveillance on all public networks.
 
 ---
 
 ## Counter-Surveillance Habits
 
-- 🔐 Lock devices with passcodes or biometrics
-- 📵 Use airplane mode or power off when idle
-- ❌ Avoid tracking-based apps
-- 🎭 Rotate identities and burner devices
-- 👀 Do not leave devices unattended
+- 🔐 Always use device locks  
+- 📴 Power down when idle  
+- 🎭 Rotate burners and SIMs  
+- 🚫 Avoid GPS-heavy apps  
+- 👁️ Don’t leave gear unattended  
+
+<Callout type="hint">
+Log proximity events. Repeated RF anomalies may indicate a Stingray or rogue access point.
+</Callout>
 
 ---
-
-## Related courses
-
-- [Digital Resilience & Contingency Comms](/courses/digital-resilience-contingency-comms)
-- [Comms Collapse](/courses/comms-collapse)
-- [Encryption 101](/courses/encryption-101)
-- [Mesh Networks Hardware Guide](/courses/mesh-networks-hardware-guide)
-- [Meshtastic at Scale](/courses/meshtastic-large-scale)
 
 ## Situational Response Guide
 
-### 🚨 You detect an IMSI catcher
+### 🚨 IMSI Catcher Detected
+- Alert ops + dispatch  
+- Move devices to Faraday containment  
+- Switch to mesh or offline  
+- Record location and time  
 
-- 🔔 Alert team leads + dispatch immediately
-- 🔁 Switch to fallback comms (mesh, runners)
-- 🛡️ Shield devices with Faraday protection
-- 📝 Log location and time for review
+### 📵 Network Drop
+- Assume tower spoofing or localized jamming  
+- Switch to analog or mesh fallback  
+- Execute regroup signal  
+- Reconnect only via pre-vetted networks  
 
-### 📵 Area suddenly loses reception
-
-- Suspect jamming or tower spoofing
-- Switch to offline or mesh-based fallback
-- Use visual codes if planned
-- Don’t panic—assess, then regroup
-
-### 🎯 Volunteer is being tracked
-
-- Power down device or remove SIM
-- Shield the phone in a Faraday container
-- Refrain from destruction unless safety-critical
-- Flag for digital security follow-up
+### 🎯 Volunteer Being Tracked
+- Power down or isolate device  
+- Place in Faraday bag  
+- Escalate to digital security team  
 
 ---
 
-## Working as a Team
+## Team Coordination
 
-Coordinate closely with:
+Work with:
+- 🧭 **Dispatchers:** confirm handoffs + fallbacks  
+- 👁️ **Legal observers:** log surveillance patterns  
+- 🧑‍💻 **Tech ops:** maintain mesh integrity  
+- 🚶 **Field leads:** manage physical safety of equipment  
 
-- 🧭 **Dispatchers** – fallback protocols and rotation
-- 🚶 **Field leads** – safe placement of devices
-- 👁️ **Legal observers** – document surveillance activity
-- ✋ **De-escalators** – support during tense moments
+Document all anomalies immediately after recovery.
 
 ---
 
-## Legal Risks & Ethical Boundaries
+## Legal & Ethical Boundaries
+
+| ✅ Do | ❌ Don’t |
+|-------|----------|
+| Shield or detect signals | Jam public or emergency frequencies |
+| Operate within legal bands | Deploy interference near hospitals or airfields |
+| Log every tool use | Hide deployments from dispatch |
+| Educate others | Escalate conflict with counter-jamming |
 
 <Callout type="warning">
-**Interfering with emergency or public radio bands is a felony.** Never jam indiscriminately.
+RF interference on public channels is a federal offense.  
+Defense tools must **shield**, not **suppress**.
 </Callout>
-
-✅ Only operate in legal bands or shield locally  
-❌ Never disrupt emergency, hospital, or aid frequencies  
-✅ Log every use of interference or shielding tools  
-❌ Don’t provoke—your job is defense, not attack
 
 ---
 
 ## After an Action
 
-- 🧼 Wipe logs, rotate credentials
-- 🔒 Archive incident notes securely
-- 🧠 Debrief with dispatch and digital ops
-- 📦 Store signal gear offline when not in use
+- 🔄 Rotate credentials + devices  
+- 🧽 Wipe logs & reimage compromised hardware  
+- 🔐 Store tools offline  
+- 🧠 Conduct technical debrief with dispatch  
+- 🪪 Document safe zones and risk zones for future ops  
 
 ---
 
-## Glossary
+## 🧠 Reflection
 
-**Faraday Bag** – A pouch that blocks radio frequencies.  
-**IMSI Catcher** – Device mimicking a cell tower to intercept phones.  
-**Mesh Radio** – Peer-to-peer encrypted comms tool not relying on cell or WiFi.  
-**SDR** – Software-defined radio; scans, analyzes, or fakes signals.  
-**Wardriving** – Mapping WiFi signals using GPS.
+- What defines ethical tech defense vs escalation?  
+- How does your region regulate RF spectrum?  
+- How would you document surveillance safely without revealing field positions?
 
 ---
+
+## 🚀 Next Steps
+
+Continue with:  
+- [Digital Resilience & Contingency Comms](/courses/digital-resilience-contingency-comms)  
+- [Comms Collapse](/courses/comms-collapse)  
+- [Encryption 101](/courses/encryption-101)  
+- [Mesh Networks Hardware Guide](/courses/mesh-networks-hardware-guide)  
+- [Meshtastic at Scale](/courses/meshtastic-large-scale)
+
+---
+
+## 🕳️ Rabbit Holes
+
 <Callout type="rabbit-hole">
-📶 Map Your City’s Stingray Risks
-Use FOIA or published documents to locate known surveillance zones.
-→ Tool: OpenCellID + WiGLE.net
+📶 **Map Your City’s Stingray Risks**  
+Use public records and tools like OpenCellID or WiGLE to spot suspicious tower zones.
 </Callout>
----
+
 <Callout type="rabbit-hole">
-📻 DIY SDR Projects
-Use a $20 USB radio dongle to detect and analyze wireless activity.
-→ Tool: RTL-SDR + GQRX + CubicSDR
+📻 **Build a DIY SDR Scanner**  
+Turn a $20 USB dongle into a live spectrum analyzer.  
+→ Tools: RTL-SDR, GQRX, CubicSDR
 </Callout>
+
+<Callout type="rabbit-hole">
+🧩 **Signal Defense Ethics**  
+Research how digital civil defense movements separate protection from interference.
+</Callout>
+
 ---
 
 ## Summary
 
-**You protect movement safety through digital discretion and tech literacy.**
-
-Keep tools sharp, data clean, and risks low.  
-**Preserve the signal—don’t become the noise.**
+| Principle | Goal |
+|------------|------|
+| Shield, not jam | Stay legal and ethical |
+| Multi-layer fallback | Preserve comms under disruption |
+| Secure wipe + containment | Prevent compromise spread |
+| Documentation | Build verifiable audit trails |
 
 <Callout type="success">
-Stay calm. Stay ethical. Shield what matters.
+Preserve the signal. Don’t become the interference.  
+Defense means control, not chaos.
 </Callout>
 
 ---
 
-## Ready to Certify?
+## ✅ Ready to Certify?
 
-If you understand the risks, tools, and responsibilities of Tech Jamming & Signal Defense, you may now proceed to the certification test.
-
+If you understand the risks, legal limits, and defense tools outlined here, proceed to the **Regional Administrator**.

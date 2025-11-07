@@ -1,178 +1,157 @@
 ---
 title: Meshtastic for Large-Scale Actions
 slug: meshtastic-large-scale
-description: >-
-  Learn to design, scale, and sustain Meshtastic networks for multi-day or
-  multi-pod actions (15–100+ nodes).
+description: Learn to design, scale, and sustain Meshtastic networks for multi-day or multi-pod actions (15–100+ nodes) while maintaining security and operational resilience.
 type: qualified
-version: '1.4'
 readingTime: 28
+version: '1.5'
 ---
+
 # 🌐 Meshtastic for Large-Scale Actions
 <TrackBadge variant="tech-comms" />
 <TrackBadge variant="pod-leadership" />
 
 <Callout type="info">
+Use clear, approachable language. Keep steps small and predictable.  
 This is a **Level 4: Zone Lead (Admin Dispatcher)** course.  
-It teaches you to **design, coordinate, and sustain multi-pod Meshtastic networks** that can run for days, cover multiple neighborhoods, and resist surveillance or shutdown.
-</Callout>
-
-<Callout type="info">
-Language access: For inclusive comms and deployment, pair this course with the Translator and ASL Interpreter micro‑badges. Use interpreters or visual summaries as needed, and ensure all pod members know how to request support in their preferred language.
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+It teaches you to **design, coordinate, and sustain multi-pod Meshtastic networks** that can operate for days, cover multiple neighborhoods, and resist surveillance or shutdown.
 </Callout>
 
 ---
 
-## Why It Matters
+## Overview
+When your pod grows beyond 15 nodes, new risks appear:
+- Network chatter increases and power drains faster.  
+- Surveillance and pattern exposure rise.  
+- Relay or gateway loss can disrupt entire zones.  
 
-Once your pod expands past **15 active nodes**, coordination becomes complex:
-- More devices mean **increased network chatter and battery draw**.  
-- Surveillance risks rise, as more nodes can reveal patterns.  
-- Failure of a relay or gateway can disrupt communications for an entire region.
-
-This course shows how to **build networks that scale up to 100+ devices**, stay resilient for days at a time, and remain secure in hostile conditions.
-
----
-
-## What You'll Learn
-
-1. **Scaling to 100+ Nodes** – Breaking a single network into logical segments with redundancy.  
-2. **Relay & Gateway Infrastructure** – Designing fixed, mobile, and stealth relays, and limiting internet bridges.  
-3. **Power Management for Multi-Day Ops** – Solar arrays, vehicle power, and rotation schedules.  
-4. **Camouflage and Anti-Surveillance Practices** – Hiding, protecting, and rotating equipment.  
-5. **Cross-Pod Coordination** – Linking multiple pods while avoiding single points of failure.
+This course trains you to design and manage **large-scale mesh networks**—100+ devices across neighborhoods or regions. You’ll learn segmentation, redundancy, relay management, and coordination across pods while keeping the system resilient and secure.
 
 ---
 
-## Quick Action Steps
+## Learn & Do
 
-1. Draw a **network map**: pods, relays, channels, gateways, and backup devices.  
-2. Deploy **at least two relays per zone** (one primary, one backup).  
-3. Test a **24-hour operation** with relay rotation and battery swaps.  
-4. Train **two or more backup leads** to run the network if you are compromised.
+### 1. Scaling Tactics
+To handle growth:
+- **Segment channels by role:**  
+  - Separate PSKs for medics, scouts, logistics, and leadership.  
+  - Reduces chatter and isolates sensitive info.  
+- **Relay spacing:**  
+  - Urban: 1–2 km apart for overlapping coverage.  
+  - Rural: 5–8 km apart with high-gain antennas.  
+- **Gateways:**  
+  - Limit to 1–2 leadership nodes.  
+  - Disable cloud sync; use manual push/pull.  
+- **Anonymous relays:**  
+  - Hide inside weatherproof boxes or disguised mounts.  
+  - Rotate locations to avoid pattern tracking.
 
----
-
-## Scaling Tactics
-
-When scaling past a single pod, **organization is key**:
-
-- **Segment channels by role**:  
-  - Medics, scouts, logistics, and leadership each get separate PSKs.  
-  - Reduces chatter and protects sensitive traffic.  
-
-- **Relay placement**:  
-  - Urban areas: **1–2 km apart** for overlapping coverage.  
-  - Rural/open terrain: **5–8 km apart** with high-gain antennas.  
-
-- **Gateways**:  
-  - Only **one or two leadership nodes** bridge to the internet for remote coordination.  
-  - Disable automatic cloud sync; use **manual pull/push** to reduce metadata leaks.  
-
-- **Anonymous relays**:  
-  - Use weatherproof boxes, fake utility enclosures, or camouflaged mounts.  
-  - Rotate their locations every few days to avoid pattern tracking.
-
-<Mermaid chart={`
-graph TD
+<Mermaid chart={`graph TD
     A[Pod 1 HQ] --> B[Relay 1 - Rooftop]
     A --> C[Pod 1 Field Team]
     B --> D[Relay 2 - Vehicle]
     D --> E[Pod 2 HQ]
     E --> F[Pod 2 Field Team]
-    B --> G[Leadership Gateway- Internet Optional]
+    B --> G[Leadership Gateway - Internet Optional]
     G --> H[Backup Relay - Rooftop]
 `} />
 
 ---
 
-## Relay & Gateway Infrastructure
+### 2. Relay & Gateway Infrastructure
+For city-scale networks:
+- **Primary relays:** rooftops, water towers, or tall buildings.  
+- **Secondary mobile relays:** vehicles, bike trailers, or backpacks.  
+- **Gateways:** for leadership only, behind **VPN or Tor**.  
 
-For a city-scale deployment:
-- **Primary relays**: Rooftops, water towers, or tall buildings.  
-- **Secondary (mobile) relays**: Parked vehicles or bike trailers with power banks.  
-- **Gateways**: Use **only for leadership**, and always through a **VPN or Tor bridge** to mask metadata.  
-
-Power planning:
-- Equip each relay with **20,000–50,000 mAh battery packs**.  
-- Use **20–40W solar panels** for stationary units in daylight.  
-- Rotate relays and batteries on a **12-hour schedule** during heavy ops.
+**Power planning**
+- 20,000–50,000 mAh per relay.  
+- 20–40W solar panels for daytime charging.  
+- Rotate relays and batteries every 12 hours.
 
 ---
 
-## Power Management (Multi-Day)
+### 3. Power Management
+- Assign a **Power Officer** per zone.  
+- Keep at least **two charged spares per relay**.  
+- Recharge using **vehicle alternators** or small generators.  
+- Relays can serve as **charging stations** for team devices if capacity allows.
 
-Large networks can burn through power fast:
-- Assign a **power officer** per zone to track battery swaps.  
-- Keep a **pool of pre-charged spares** (at least 2 per relay).  
-- Use **vehicle alternators** or small generators to recharge during downtime.  
+<Callout type="warning">
+Power failures can collapse the network. Always keep replacements and rotation plans ready.
+</Callout>
+
+---
+
+### 4. Camouflage & Anti-Surveillance
+- Hide relays in **locked, weatherproof containers** labeled generically (“Sensor Node”).  
+- Avoid repeating placement patterns; rotate locations.  
+- Use **low-power mode** during inactivity.  
+- If compromised, **rekey all PSKs immediately** and deploy backups.
+
+---
+
+### 5. Cross-Pod Coordination
+- Use **hub-and-spoke design**: local pods connect via a few trusted bridges.  
+- Avoid one massive shared channel.  
+- Assign **trusted liaisons** for bridging.  
+- Sync messages in timed bursts, not constant traffic.
+
+---
+
+### 6. Security & Redundancy
+- Rotate PSKs weekly during operations.  
+- Keep **encrypted offline logs** (paper + VeraCrypt).  
+- Maintain one **backup relay per zone**.  
+- Train three operator layers: primary, secondary, tertiary.
 
 <Callout type="hint">
-During long ops, relays can double as **phone charging stations** for field teams if batteries allow.
+Use minimal, time-limited data storage. Avoid raw logs or chat history in shared apps.  
+Always obtain explicit consent before storing or sharing technical or location data.
 </Callout>
 
 ---
 
-## Camouflage & Anti-Surveillance
+### 7. Large-Scale Drill (Certification)
+1. Deploy a 20-node network across two or more neighborhoods.  
+2. Maintain 24-hour continuous coverage with relay rotation.  
+3. Simulate a relay seizure or failure and restore service within 15 minutes.  
+4. Run multi-channel encrypted traffic for three pod teams simultaneously.  
+5. Produce a network plan and post-op report for review.
 
-- Hide relays in **locked, weatherproof containers** with labels like “Sensor Node” or “Environmental Logger.”  
-- Avoid putting relays in the same spot repeatedly; **rotate locations**.  
-- Use **low-power mode** when traffic is light to reduce RF signature.  
-- If a relay is compromised, **change all PSKs immediately** and redeploy backups.
-
----
-
-## Cross-Pod Coordination
-
-When multiple pods must connect:
-- Use a **hub-and-spoke model**: pods maintain local networks, connected via a **few trusted relay/gateway nodes**.  
-- **Avoid direct linking of all pods** on one massive channel, which invites chaos and surveillance.  
-- Designate **trusted liaisons** to carry or operate the bridging nodes.  
-- Sync traffic in bursts (scheduled message windows) instead of constant chatter.
-
----
-
-## Security & Redundancy Practices
-
-- Rotate **all PSKs weekly** during operations.  
-- Keep **offline, encrypted logs** (paper + VeraCrypt) of device assignments.  
-- Maintain at least **one backup relay per zone** in storage, ready to deploy.  
-- Train **three layers of operators**: primary, secondary, and tertiary, so no single person is critical.
-
-<Callout type="hint">
-Documentation hygiene: Use minimal, time-bound retention. Avoid storing raw device logs or chat histories in shared apps. Prefer encrypted, access-controlled notes and delete temporary files after review. ART does not support in-app mesh message archiving; use secure external tools if needed and always get explicit consent before sharing device or deployment details.
+<Callout type="warning">
+Respect consent, legal boundaries, and privacy when conducting drills or operations.
 </Callout>
 
 ---
 
-## Large-Scale Drill (Certification)
-
-1. Deploy a **20-node network** spanning at least two neighborhoods.  
-2. Maintain **continuous coverage for 24 hours**, rotating batteries and relays.  
-3. Simulate a **relay seizure or failure**, and restore the network within 15 minutes using backups.  
-4. Operate **multi-channel encrypted traffic** for at least 3 pod teams without cross-channel interference.  
-5. Submit a **network plan and post-operation report** to your Zone Lead for review.
-
-<Callout type="important">
-Consent & legal: Always ask before sharing device, location, or deployment details. Pair this course with Documentation Safety, Data Ethics Pledge, Legal Observer, and After‑Action Data Hygiene for best practices.
-</Callout>
+## Reflection
+How can your network balance broad reach with operational security?  
+Sketch a plan for segmenting your pod’s channels and establishing redundancy if leadership nodes go offline.
 
 ---
 
-## Related courses
+## Next Steps
+- Documentation Safety → /courses/documentation-safety  
+- After-Action Data Hygiene → /courses/after-action-data-hygiene  
+- Digital Security Basics → /courses/digital-security-basics  
+- Data Ethics Pledge → /courses/data-ethics-pledge  
+- Legal Observer → /courses/legal-observer  
+- Translator Micro-Badge → /courses/translator-micro-badge  
+- ASL Interpreter Micro-Badge → /courses/asl-interpreter-micro-badge  
 
-- Documentation Safety → /courses/documentation-safety
-- After‑Action Data Hygiene → /courses/after-action-data-hygiene
-- Digital Security Basics → /courses/digital-security-basics
-- Data Ethics Pledge → /courses/data-ethics-pledge
-- Legal Observer → /courses/legal-observer
-- Interacting with Law Enforcement → /courses/interacting-with-law-enforcement
-- KYR Basics → /courses/kyr-basics
-- Fourth Amendment Rights → /courses/fourth-amendment-rights
-- Dispatch Coordination → /courses/dispatch-coordination
-- Responding to Dispatch Calls → /courses/responding-to-dispatch-calls
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+---
 
+## External Resources
+- [Meshtastic GitHub](https://github.com/meshtastic)  
+- [LoRa Alliance Frequency Plan (US 915 MHz)](https://lora-alliance.org/)  
+- [VeraCrypt](https://www.veracrypt.fr/en/Home.html) – for encrypted storage  
+- [Tor Project](https://www.torproject.org/) – for metadata protection  
+
+---
+
+## Rabbit Holes
+- Learn **RF pattern analysis** and how surveillance systems detect signal clusters.  
+- Study **mesh topology optimization** using open-source network simulators.  
+- Explore **LoRaWAN vs Meshtastic bridging models** for multi-region scaling.  
+- Research **autonomous relay drones** and temporary high-elevation nodes.

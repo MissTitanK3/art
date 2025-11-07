@@ -13,7 +13,7 @@ type QualificationPathwaysSectionProps = {
 }
 
 export function QualificationPathwaysSection({ courseGroups, onCreatePathwayClass }: QualificationPathwaysSectionProps) {
-  const handleCreatePathwayClass = onCreatePathwayClass ?? (() => {})
+  const handleCreatePathwayClass = onCreatePathwayClass ?? (() => { })
 
   return (
     <section className="space-y-6">
@@ -24,7 +24,7 @@ export function QualificationPathwaysSection({ courseGroups, onCreatePathwayClas
 
       <div className="grid gap-4 md:grid-cols-2">
         {courseGroups.map((group) => (
-          <Card key={group.id} className="flex flex-col border border-border/70 shadow-none">
+          <Card key={group.id} className="flex flex-col border border-border/70 shadow-none h-[900px]">
             <CardHeader className="space-y-4">
               <div className="flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-3">
@@ -48,7 +48,7 @@ export function QualificationPathwaysSection({ courseGroups, onCreatePathwayClas
               </div>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col">
-              <ScrollArea className="h-[240px]">
+              <ScrollArea className="h-[720px] w-full rounded-md border border-border/60">
                 <ul className="space-y-3 pr-3">
                   {group.courses.map((course) => (
                     <li key={course.slug}>

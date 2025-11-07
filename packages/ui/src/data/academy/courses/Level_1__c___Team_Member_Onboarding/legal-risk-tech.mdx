@@ -1,249 +1,259 @@
 ---
 title: Legal Risk & Tech Use for Activists
 slug: legal-risk-tech
-description: >-
-  Understand what is protected speech, how digital tools create risk, and how to
-  make informed, collective decisions about app use, organizing, and visibility.
+description: Understand what is protected speech, how digital tools create risk, and how to make informed, collective decisions about app use, organizing, and visibility.
 type: qualified
 readingTime: 30
-version: '1.3'
+version: '1.4'
 ---
+
 # 🧾 Legal Risk & Tech Use for Activists
 <TrackBadge variant="field-safety" />
 <TrackBadge variant="movement-strategy" />
 <TrackBadge variant="court-support" />
 
 <Callout type="warning">
-📌 Using apps, phones, or online tools while organizing can **expose you, your crew, and your contacts** to surveillance or prosecution. This course helps you understand what’s legal, what’s risky, and what questions to ask before taking tech into the field.
+📌 Using apps, phones, or online tools while organizing can expose you, your crew, and your contacts to surveillance or prosecution.  
+This course helps you understand what’s legal, what’s risky, and how to make informed, collective decisions before taking tech into the field.
 </Callout>
 
 ---
 
-## 👀 Why This Matters
+## Overview
 
 Activists in the U.S. — especially BIPOC, immigrant, and frontline organizers — have been:
 
 - 📱 Tracked through phones and apps  
 - 🕵️‍♀️ Infiltrated by undercover agents  
-- 💻 Prosecuted using digital logs or group chats  
-- 📁 Targeted with data seized from cloud servers  
+- 💻 Prosecuted using digital logs or chat histories  
+- 📁 Targeted with seized cloud data  
 
-Knowing the legal landscape isn't about fear — it's about building power **with eyes open**.
-
----
-
-## 🧠 What You’ll Learn
-
-- What’s protected speech vs criminalized organizing  
-- What tech services log, and how that’s used in court  
-- How to assess and reduce digital risk for yourself and others  
-- When and how to separate digital roles from field roles  
-- Why legality ≠ safety — and what collective defense looks like  
+The goal is not fear, but awareness. **Legal risk literacy is collective defense.**
 
 ---
 
-## ⚖️ What Is Protected Speech?
+## Learn & Do
 
-🧷 Most protest-related speech is **protected under the First Amendment**, but:
+### Protected vs. Criminalized Speech
 
-| Protected                                | Risky or Criminalized                       |
-|------------------------------------------|---------------------------------------------|
-| Criticizing the government               | Explicit threats or incitement to violence  |
-| Organizing or attending protests         | Coordinated property destruction (RICO)     |
-| Sharing public resources or flyers       | Coordinated plans that cross into “conspiracy” |
-| Encrypted messaging about ideas          | Group chats that name targets + actions     |
+🧷 Most protest-related speech is protected under the First Amendment — but context changes risk.
 
-> ⚠️ Intent, association, and *how* things are said often determine risk — not just what is said.
+| Protected | Risky / Criminalized |
+|------------|---------------------|
+| Criticizing government actions | Explicit threats or calls for violence |
+| Organizing or attending protests | Coordinated property damage (RICO exposure) |
+| Sharing public resources or flyers | Planning or “conspiring” illegal actions |
+| Encrypted chats about ideas | Group chats naming targets or tactics |
+
+> ⚠️ Intent, association, and **context** often determine legal exposure — not just content.
 
 <Callout type="hint">
-🧠 **Never assume your chat logs, Signal history, or group DMs are private** — even with encryption.
+Never assume your chat logs, Signal messages, or DMs are fully private — even with encryption.
 </Callout>
 
 <Callout type="important">
-This course is for public education and operational awareness. It is not legal advice. For case-specific guidance, consult an attorney or your region’s legal lead (see resources below).
+This course provides operational awareness, not legal advice.  
+For case-specific guidance, consult a lawyer or regional legal coordinator.
 </Callout>
 
 ---
 
-## 🧾 Criminal Conspiracy & Digital Organizing
+### Conspiracy and Digital Organizing
 
-“**Conspiracy**” charges are often used to criminalize organizers.
+Authorities often use **conspiracy** or **aiding/abetting** charges to criminalize organizers.
 
-| Charge | What It Means |
-|--------|----------------|
-| Conspiracy | You and others planned or agreed to commit a crime, even if it didn’t happen. |
-| Aiding/abetting | You helped or encouraged a crime — even passively. |
+| Term | Meaning |
+|------|----------|
+| **Conspiracy** | Agreement or planning to commit a crime, even if it never happens |
+| **Aiding / Abetting** | Supporting or encouraging a crime, even indirectly |
 
-Digital risks include:
-- Being in a Signal group where illegal activity is discussed
-- Reposting someone else's plan with no disclaimers
-- Linking dispatch tools to an event that becomes criminalized
+Common risk points:
+- Being in a Signal or Discord group where crimes are discussed  
+- Reposting someone else’s call-to-action without disclaimers  
+- Linking event or dispatch tools to actions later criminalized  
 
 ---
 
-## ☁️ What Do Apps & Backends Actually Log?
+### What Apps and Backends Log
 
-You may trust ART. But what about the services it relies on?
+Even privacy-oriented systems have exposure points.
 
-| Tech Provider        | Logged by default                               | Risk Level |
-|----------------------|--------------------------------------------------|------------|
-| Supabase             | IP addresses, email/SMS, login times, metadata (typical) | 🔥 High    |
-| Stripe (if used by your region) | Payment methods, billing zip, IP logs            | ⚠️ Medium |
-| Mobile OTA/update services (if used) | Device info, usage stats (unless stripped)       | ⚠️ Medium |
-| Firebase (if used)   | Heavy logging, tied to Google accounts           | 🔥 High    |
+| Service | Logs by Default | Risk Level |
+|----------|----------------|-------------|
+| **Supabase** | IPs, device metadata, login times | 🔥 High |
+| **Stripe** | Payment method, billing zip, IP | ⚠️ Medium |
+| **OTA/Update services** | Device usage stats | ⚠️ Medium |
+| **Firebase / Google APIs** | Extensive tracking, analytics | 🔥 High |
 
-Even with encryption, **metadata can be enough** to:
-- Map social networks  
-- Place people at locations  
-- Build timelines for prosecution  
+**Metadata alone** can reveal networks, movements, and timelines.
 
 <Callout type="info">
-Capability notes for ART and region apps:
-- Report photos are supported; videos should be shared via secure links rather than direct upload.
-- Logs exist on the server side for safety and abuse response; there is no in‑app CSV export or exhaustive audit viewer.
-- Maps do not support drawing geofences; use labels and proximity notes instead.
-- Notifications are region‑configured; avoid implying generic “location‑based alerts.”
-- Use access roles and trust‑based reviews to limit who can see what.
+ART-specific notes:
+- Report photos are allowed; videos only via secure links.  
+- Logs exist for abuse prevention, not bulk export.  
+- Maps avoid tracking; use manual notes for direction or proximity.  
+- Role-based access and trust lists protect sensitive info.  
 </Callout>
 
 ---
 
-## 🧰 What You Can Do
+### Risk Reduction at Three Levels
 
-### 🔐 At the Design Level
-- Remove all unnecessary data collection  
-- Avoid real names, phone numbers, or emails  
-- Disable backups, logging, analytics  
-- Use offline modes where possible
+#### 🔐 Design Level
+- Collect only what’s necessary  
+- Remove analytics and cloud backups  
+- Prefer offline-first tools  
+- Avoid personal identifiers (names, phone, email)
 
-### 👥 At the Culture Level
-- Don’t treat tech as required  
-- Let people opt-in slowly  
-- Clearly communicate what is or isn’t logged  
-- Use roles to separate who touches tech vs. who is visible
+#### 👥 Culture Level
+- Never require apps to participate  
+- Communicate transparently about what’s logged  
+- Separate field vs. digital roles  
+- Normalize informed consent for digital visibility
 
-### 🧾 At the Legal Level
-- Publish a “what we log, what we don’t” document  
-- Work with movement lawyers (NLG, EFF, etc.)  
-- Prepare a **warrant canary** and legal policy statement  
+#### ⚖️ Legal Level
+- Publish a “What We Log” statement  
+- Collaborate with movement lawyers (EFF, NLG)  
+- Maintain a **warrant canary**  
+- Include **safe-use disclaimers** in trainings
 
 <Callout type="info">
-🎯 Use the **least dangerous tool** that still gets the job done.
+🎯 Use the least dangerous tool that still achieves your mission.
 </Callout>
 
-<Callout type="info">
-Language access: Build safety into communication. Pair this course with the Translator and ASL Interpreter micro‑badges for inclusive ops.
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+<Callout type="hint">
+Language access = safety.  
+Pair this with [Translator Micro-Badge](/courses/translator-micro-badge) and [ASL Interpreter Micro-Badge](/courses/asl-interpreter-micro-badge).
 </Callout>
 
 ---
 
-## 🛡️ When Phones Become Evidence
+### When Phones Become Evidence
 
-If you're arrested or raided, **your phone is not your friend**:
+If arrested or raided:
 
-| Scenario | What Happens |
-|----------|---------------|
-| Phone unlocked | Everything is accessible — even encrypted apps (if open) |
-| Cloud backups enabled | Messages, contacts, and images can be pulled remotely |
-| Group chats named or described poorly | Prosecutors can twist screenshots into “evidence” |
+| Scenario | Impact |
+|-----------|---------|
+| Phone unlocked | All data accessible, even “encrypted” apps |
+| Cloud backups active | Remote recovery of chats, media, and contacts |
+| Poorly named groups | Screenshots can be reframed as “intent” evidence |
 
-📌 *Best Practice:* Leave phones behind for sensitive ops. Use runners, radio, or in-person confirmations.
-
----
-
-## 🕵️ Who Should Touch What?
-
-### ⚠️ Risk Protocol Suggestion
-
-| Role              | Allowed Tech Use       | Restrictions |
-|-------------------|------------------------|--------------|
-| OTG Field Member  | Burner phones only     | No access to dispatch backend or Signal groups |
-| Dispatcher        | Encrypted devices only | Never goes OTG on same day |
-| Media Poster      | Uses templated graphics | Avoids naming or timestamping ops unless approved |
-| Coordinator       | Approves messaging only | Role separation with review required |
+> Best practice: Leave phones behind for sensitive operations. Use runners, radio, or in-person relay.
 
 ---
 
-## 🧱 Build Layers of Separation
+### Role Separation for Risk Control
 
-Use the **"Need to Know" model**:
+| Role | Device Type | Restrictions |
+|------|--------------|--------------|
+| Field Team | Burner only | No backend or Signal group access |
+| Dispatcher | Encrypted personal device | Never onsite same day |
+| Media | Templated, pre-approved graphics | No timestamps or locations |
+| Coordinator | Reviews and approves ops | Cannot dispatch self |
 
-- Not everyone needs access to everything  
-- Dispatch can operate separately from pod leads  
-- Field units can operate from flyers, not apps  
-- Alerts can be visual (images, banners) with no interactive data
+---
+
+### Building Layers of Separation
+
+Adopt a **need-to-know** model:
+
+- Each person only accesses what they need  
+- Dispatch and pods operate semi-independently  
+- Field units can act from printed briefs  
+- Public alerts can be images, not live maps  
 
 <Callout type="warning">
-🚧 Treat every new system as a **potential future compromise**. Design with that in mind.
+Design every system as if it may one day be compromised.
 </Callout>
 
 ---
 
-## ✅ Legal Mitigations You Can Demand
+### Legal Safeguards You Can Demand
 
-- **Conduct legal review** with a trusted movement lawyer  
-- Add **terms of use** to every tool, clarifying what is public vs private  
-- Provide **“safe usage guidelines”** in every field training  
-- Create a **public “Know the Risks” flyer** for new users  
-- Consider self-hosting or fully offline options for critical infrastructure
-
----
-
-## Practice Scenario
-
-🔍 _Someone in a Signal group suggests escalating an upcoming protest to a property destruction campaign, using ART Dispatch to gather._
-
-**Do you:**
-A. Say nothing  
-B. Agree with them  
-C. Leave the chat  
-D. Redirect and report to a trusted ops lead  
-
-✅ Answer: **D**, with C as backup.  
-Even encrypted apps are **not safe spaces for plotting illegal activity**. Silence ≠ safety.
+- Require **movement lawyer review** for major tools  
+- Add **clear Terms of Use** defining visibility boundaries  
+- Provide **user risk disclosures** in every onboarding  
+- Offer **public flyers** on safe app use  
+- Prefer **self-hosted or offline systems** when possible  
 
 ---
 
-## 📋 Takeaway Checklist
+### Practice Scenario
 
-- [ ] Does your current role expose others to risk?
-- [ ] Do you know what your tech tools log?
-- [ ] Are you in any chat where illegal action is being discussed?
-- [ ] Do you have a plan if your phone or laptop is seized?
-- [ ] Have you reviewed ART’s privacy + backend policies?
+> A Signal group discusses property destruction and mentions ART Dispatch as a coordination tool.
 
----
-
-## 🌱 Build Safer Culture
-
-This isn’t about you being “careful.” It’s about us protecting each other — **even if someone else slips**.
-
-> We don’t all need to be perfect. But we all need to be covered.
+✅ Correct response: **Redirect and report** to a trusted lead.  
+Leaving the chat is secondary; ignoring it is not protection.  
+Encrypted apps ≠ immunity.
 
 ---
 
-## Need Legal Help?
+### Checklist for Safer Ops
 
-- 🛡️ **National Lawyers Guild**: [nlg.org](https://www.nlg.org/)
-- 🔐 **Electronic Frontier Foundation**: [eff.org](https://www.eff.org/)
-- 🗂️ Request legal policy support via your pod leadership or your region’s admins/legal lead
+- [ ] Do I know what our tools log?  
+- [ ] Are illegal acts discussed anywhere I’m present?  
+- [ ] Is my device encrypted and backed up safely?  
+- [ ] Is there a seizure or arrest plan?  
+- [ ] Have we reviewed ART’s privacy practices as a team?
 
 ---
 
-## Related courses
+### Cultural Bottom Line
 
-- Digital Security Basics → /courses/digital-security-basics
-- Documentation Safety → /courses/documentation-safety
-- After‑Action Data Hygiene → /courses/after-action-data-hygiene
-- Data Ethics Pledge → /courses/data-ethics-pledge
-- KYR Basics → /courses/kyr-basics
-- Fourth Amendment Rights → /courses/fourth-amendment-rights
-- Interacting with Law Enforcement → /courses/interacting-with-law-enforcement
-- Dispatch Coordination → /courses/dispatch-coordination
-- Responding to Dispatch Calls → /courses/responding-to-dispatch-calls
-- Runners & Rides → /courses/runners-and-rides
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+Digital risk is shared.  
+Safety depends on collective discipline, not individual caution.  
+We protect each other **even when someone slips**.
 
+> “We don’t need perfection — we need redundancy.”
+
+---
+
+## Reflection
+
+What is one digital practice you’ve accepted as “normal” that actually increases exposure?  
+How could your group redesign it to protect everyone involved?
+
+---
+
+## Next Steps
+
+Advance your practice with:
+
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [Documentation Safety](/courses/documentation-safety)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)  
+- [Data Ethics Pledge](/courses/data-ethics-pledge)  
+- [KYR Basics](/courses/kyr-basics)  
+- [Interacting with Law Enforcement](/courses/interacting-with-law-enforcement)  
+- [Dispatch Coordination](/courses/dispatch-coordination)  
+- [Runners & Rides](/courses/runners-and-rides)
+
+---
+
+## External Resources
+
+- [National Lawyers Guild](https://www.nlg.org) — protest and movement legal defense  
+- [Electronic Frontier Foundation](https://www.eff.org) — digital privacy and legal tools  
+- [Movement Alliance Project – Tech and Risk Guides](https://movementalliance.org)  
+- [EFF: Security Self-Defense](https://ssd.eff.org)
+
+---
+
+## Rabbit Holes
+
+<Callout type="rabbit-hole">
+🧠 **History of Criminalized Organizing**  
+Explore COINTELPRO archives and recent FBI J20 protest cases to understand how digital data is weaponized.
+</Callout>
+
+<Callout type="rabbit-hole">
+💻 **Building Sovereign Tech**  
+Learn about open-source, self-hosted alternatives for movement infrastructure.
+</Callout>
+
+---
+
+<Callout type="success">
+Use technology as a tool of strategy, not exposure.  
+Every app and message is a political choice.
+</Callout>

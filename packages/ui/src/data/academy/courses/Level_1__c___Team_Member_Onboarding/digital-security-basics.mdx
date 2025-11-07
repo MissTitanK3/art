@@ -1,21 +1,19 @@
 ---
 title: Digital Security Basics
 slug: digital-security-basics
-description: >-
-  Learn the foundations of secure communication and digital safety in the ART
-  Network.
+description: Learn the foundations of secure communication and digital safety in the ART Network.
 type: qualified
 readingTime: 7
-version: '1.2'
+version: '1.3'
 ---
+
 # 🔐 Digital Security Basics
 <TrackBadge variant="tech-comms" />
 <TrackBadge variant="logistics" />
 
-
-Digital security isn’t a nice-to-have — it’s the frontline of community safety. From the moment a report is made to the time a responder takes action, our data can be targeted.
-
-This module gives you the tools and habits needed to protect yourself, your team, and the people we show up for.
+Digital security is not optional — it is the frontline of community safety.  
+From the first report to the final debrief, your device and data can become targets.  
+This course gives you the **habits and tools** to protect yourself, your pod, and the people we defend.
 
 ---
 
@@ -24,126 +22,164 @@ If we aren’t thinking about security, we’re making someone else vulnerable.
 </Callout>
 
 <Callout type="hint">
-Build habits that scale with ops: see <a href="/courses/data-ethics-pledge">ART Data Ethics & Security Pledge</a> for principles, and plan offline fallbacks via <a href="/courses/app-free-tactics">App‑Free Tactics</a> and <a href="/courses/comms-collapse">Comms Collapse</a>. For off‑grid comms, see <a href="/courses/mesh-networks-intro">Mesh Networks Intro</a>.
+Build habits that scale with your operations.  
+See [ART Data Ethics & Security Pledge](/courses/data-ethics-pledge) for guiding principles.  
+Plan offline fallbacks via [App-Free Tactics](/courses/app-free-tactics), [Comms Collapse](/courses/comms-collapse), and [Mesh Networks Intro](/courses/mesh-networks-intro).
 </Callout>
 
 ---
 
-## Core Practices
+## Overview
 
-At a minimum, everyone participating in ART field or digital roles should be using:
-
-- **📱 Signal** for all messaging  
-- **📧 Proton Mail** for secure email  
-- **📷 Metadata removal** from all shared photos or videos  
-- **🛜 VPNs** or local-only tools like **Tailscale** for coordination
-
-If any of these are new to you — don’t stress. Start where you are. Level up together.
+Digital security means minimizing exposure and maximizing resilience.  
+Good tools are part of it — but **discipline and culture** matter more.  
+Everyone in the ART network should be able to communicate securely, even when systems fail.
 
 ---
 
-## Why Signal?
+## Learn & Do
 
-Signal is:
+### Core Practices
 
-- **End-to-end encrypted** (even Signal can’t read your messages)
-- **Open-source and vetted** by privacy orgs
-- Used by everyone from journalists to dissidents to ART teams
+At minimum, every ART member should use:
+
+- **📱 Signal** for messaging  
+- **📧 Proton Mail** for encrypted email  
+- **📷 Metadata removal** for photos and videos  
+- **🛜 VPNs or local-only networks** (e.g., Tailscale) for coordination  
+
+Start simple. Practice these together as team habits.
+
+---
+
+### Why Signal?
+
+Signal is the backbone of ART communication because it is:
+
+- **End-to-end encrypted** (no third party can read your messages)  
+- **Open-source and audited** by independent researchers  
+- Used globally by activists, journalists, and human rights defenders  
 
 Use Signal for:
-
-- Dispatch alerts  
+- Dispatch and alert coordination  
 - Role assignment  
-- Internal check-ins  
-- Sharing sensitive observations
+- Internal updates  
+- Sensitive check-ins  
 
 <Callout type="rabbit-hole">
-💬 Want to learn how Signal works?
+💬 Learn how the Signal protocol protects your data.  
 → Search: “Signal protocol explained EFF”
 </Callout>
 
 ---
 
-## Why Proton?
+### Why Proton Mail?
 
-Proton Mail is a secure email service based in Switzerland (outside U.S. jurisdiction) that offers:
+Proton Mail provides privacy without surveillance.
 
-- End-to-end encrypted inboxes  
-- No ads, tracking, or metadata harvesting  
-- Calendar + Drive options for future collaboration
+- Based in Switzerland, outside U.S. jurisdiction  
+- End-to-end encrypted mail and drive  
+- No ad tracking or metadata harvesting  
 
-Only use Proton accounts for any ART-related messages, photos, or docs. Keep Gmail out of it.
+Only use Proton accounts for ART-related communication — keep Gmail and other cloud systems separate.
 
 ---
 
-## Stripping Metadata from Media
+### Stripping Metadata from Media
 
-Every photo you take includes hidden data like:
+Photos and videos often include invisible data like:
+- GPS coordinates  
+- Device model  
+- Timestamps  
 
-- Location (GPS)
-- Timestamp
-- Device info
+That metadata can expose people and locations.
 
-That data can expose people — or places they’re protecting.
-
-### Easy Ways to Remove Metadata:
-
-- Use **built-in “Export As”** or “Save for Web” on mobile  
-- Use apps like **ScrambledExif (Android)** or **Metapho (iOS)**  
-- If needed: send via Signal, which strips metadata automatically
+**Safe methods:**
+- Use “Export As” or “Save for Web” before sharing  
+- Use **ScrambledExif (Android)** or **Metapho (iOS)**  
+- Send via **Signal**, which removes metadata automatically  
 
 <Callout type="hint">
-Before sharing a photo or video, ask:  
-**“Could this expose someone’s location, face, or phone info?”**
+Before sharing, ask:  
+**“Could this image expose someone’s identity or location?”**
 </Callout>
 
 <Callout type="info">
-If you must retain sensitive media, prefer encrypted storage, keep retention short, and follow <a href="/courses/after-action-data-hygiene">After‑Action Data Hygiene</a>.
+If you must store sensitive media, use encrypted drives and delete after review per [After-Action Data Hygiene](/courses/after-action-data-hygiene).
 </Callout>
 
 ---
 
-## What *Not* to Do
+### What *Not* to Do
 
-- ❌ Don’t share screenshots of chat logs  
-- ❌ Don’t upload videos to public Google Drives or YouTube  
-- ❌ Don’t use unencrypted texting for field logistics
+| ❌ Don’t… | Because… |
+|-----------|-----------|
+| Screenshot chat logs | Even encrypted chats leak context |
+| Upload to Google Drive or YouTube | Metadata and IP exposure |
+| Use unencrypted texting for logistics | SMS can be intercepted easily |
 
-Even “private” groups can be subpoenaed or leaked. Assume nothing is safe unless it’s encrypted.
+> Assume nothing is private unless encrypted and verified.
 
 ---
 
-## Security Habits for the Field
+### Security Habits for the Field
 
-- ✅ Lock your device with a passcode (not fingerprint or face unlock)
-- ✅ Turn off auto cloud backups for Signal and Proton
-- ✅ Use encrypted storage for notes or observations (Standard Notes, Proton Drive)
-- ✅ Practice offline mode in case of no signal
+- Lock your device with a passcode (no biometrics)  
+- Disable cloud backups for Signal and Proton  
+- Store notes in encrypted apps (Standard Notes, Proton Drive)  
+- Practice working offline for when networks fail  
+
+<Callout type="info">
+During high-risk ops, use a separate device.  
+See [Burner Phones & Security Culture](/courses/burner-phones-security-culture) for compartmentalization.
+</Callout>
+
+---
+
+## Reflection
+
+What daily digital habits might reveal more about you than you realize?  
+Which one change this week could reduce risk the most for your team?
+
+---
+
+## Next Steps
+
+Continue building your digital safety foundation with:
+
+- [ART Data Ethics & Security Pledge](/courses/data-ethics-pledge)  
+- [Documentation Safety](/courses/documentation-safety)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)  
+- [App-Free Tactics](/courses/app-free-tactics)  
+- [Comms Collapse](/courses/comms-collapse)  
+- [Mesh Networks Intro](/courses/mesh-networks-intro)  
+- [Burner Phones & Security Culture](/courses/burner-phones-security-culture)
+
+---
+
+## External Resources
+
+- [EFF: Surveillance Self-Defense](https://ssd.eff.org/)  
+- [Privacy Guides: Secure Messaging Comparison](https://www.privacyguides.org/)  
+- [Tactical Tech: Data Detox Kit](https://datadetoxkit.org/)  
+
+---
+
+## Rabbit Holes
 
 <Callout type="rabbit-hole">
-🧠 Want to go deeper?
-→ Check out the full “Encryption 101” or “Secure Ops” certification track (coming soon)
+🧠 **Encryption 101**  
+Understand how encryption actually works — and why even “deleted” data can persist.
 </Callout>
 
-<Callout type="info">
-For device and SIM compartmentalization during high‑risk ops, see <a href="/courses/burner-phones-security-culture">Burner Phones & Security Culture</a>.
+<Callout type="rabbit-hole">
+📡 **Decentralized Comms**  
+Explore mesh and LoRa systems for offline field coordination.
 </Callout>
 
 ---
 
 <Callout type="success">
-You don’t need to be a hacker to protect your team. Just start with Signal, Proton, and awareness.
+Start with Signal. Build security into every conversation.  
+Digital discipline keeps communities safe.
 </Callout>
-
----
-
-## Related courses
-
-- [ART Data Ethics & Security Pledge](/courses/data-ethics-pledge)
-- [Documentation Safety](/courses/documentation-safety)
-- [After‑Action Data Hygiene](/courses/after-action-data-hygiene)
-- [App‑Free Tactics](/courses/app-free-tactics)
-- [Comms Collapse](/courses/comms-collapse)
-- [Mesh Networks Intro](/courses/mesh-networks-intro)
-- [Burner Phones & Security Culture](/courses/burner-phones-security-culture)
-

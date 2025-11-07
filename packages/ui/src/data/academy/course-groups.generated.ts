@@ -96,6 +96,21 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "courses": [
       {
         "slug": "admin-tools"
+      },
+      {
+        "slug": "cross-zone-coordination"
+      },
+      {
+        "slug": "regional-data-stewardship"
+      },
+      {
+        "slug": "trust-networks-signature-management"
+      },
+      {
+        "slug": "zone-administration"
+      },
+      {
+        "slug": "zone-lead-overview"
       }
     ]
   },
@@ -115,7 +130,17 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
   },
   {
     "label": "Community Care & Emotional Support Track",
-    "courses": []
+    "courses": [
+      {
+        "slug": "conflict-repair"
+      },
+      {
+        "slug": "mutual-aid-health-wellness"
+      },
+      {
+        "slug": "peer-support-checkins"
+      }
+    ]
   },
   {
     "label": "Community Safety & Rights",
@@ -133,6 +158,12 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "courses": [
       {
         "slug": "court-support"
+      },
+      {
+        "slug": "jail-support-legal-logistics"
+      },
+      {
+        "slug": "understanding-court-support"
       }
     ]
   },
@@ -204,7 +235,20 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
   },
   {
     "label": "Movement Strategy & Ethics Track",
-    "courses": []
+    "courses": [
+      {
+        "slug": "cross-regional-ethics"
+      },
+      {
+        "slug": "ethical-dilemmas-direct-action"
+      },
+      {
+        "slug": "movement-strategy-ethics"
+      },
+      {
+        "slug": "movement-sustainability-legacy"
+      }
+    ]
   },
   {
     "label": "Observation & Legal Track",

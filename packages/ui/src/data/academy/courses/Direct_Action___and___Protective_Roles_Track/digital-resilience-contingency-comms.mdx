@@ -1,166 +1,176 @@
 ---
 title: Digital Resilience & Contingency Comms
 slug: digital-resilience-contingency-comms
-description: >-
-  Learn how to keep communication flowing even when networks fail, using mesh,
-  LoRa, radios, and offline tools to maintain team coordination.
+description: Learn to maintain communication and coordination when networks fail using mesh, LoRa, radio, and offline protocols.
 type: qualified
-version: '1.3'
+version: '1.4'
 readingTime: 18
 ---
+
 # 📡 Digital Resilience & Contingency Comms
 <TrackBadge variant="tech-comms" />
 <TrackBadge variant="direct-action" />
 
-<Callout type="important">
-**Assume networks *will* fail.** Your contingency plan should be as rehearsed as your primary comms.
-</Callout>
-
-Dispatch and field teams often rely on **Signal, phones, and live updates**.  
-During large actions, state suppression, or disasters, these can fail.  
-This course teaches **fallback systems — mesh, LoRa, radios, and offline protocols — to keep pods connected and safe.**
-
-<Callout type="hint">
-Pre‑wire your fallback stack and roles with <a href="/courses/mesh-networks-intro">Mesh Networks Intro</a>, <a href="/courses/app-free-tactics">App‑Free Tactics</a>, and <a href="/courses/comms-collapse">Comms Collapse</a>. For device hardening, see <a href="/courses/digital-security-basics">Digital Security Basics</a> and <a href="/courses/burner-phones-security-culture">Burner Phones & Security Culture</a>.
+<Callout type="info">
+Assume networks **will** fail.  
+This course builds redundancy through **mesh, LoRa, radios, and analogue backups** so pods stay operational under blackout conditions.
 </Callout>
 
 ---
 
-## Enhanced Comms Framework
-
-### 1. Mesh Networking (Local Survival)
-
-Recommended tools:
-
-    - Bridgefy (Android/iOS, Bluetooth mesh)  
-    - Briar (Android, offline P2P via WiFi or Bluetooth)  
-    - Serval Mesh (legacy but stable for basic text)  
-
-Deployment tips:
-
-    - Use **roles, not names** as usernames (e.g., "Medic1", "Dispatch3").  
-    - Pre-load devices with offline maps (Organic Maps).  
-    - Test all chats with airplane mode ON to confirm offline functionality.
+## Overview
+Digital resilience is about **continuity** when connectivity collapses.  
+From disaster response to protest suppression, teams must move from phone-based tools to local, peer-to-peer, or analogue systems instantly.  
+You’ll learn how to design, test, and drill a layered communications stack that survives power loss, censorship, or surveillance.
 
 ---
 
-### 2. LoRa (Long-Range Text Relays)
+## Learn & Do
 
-Starter kit:
+### 1. Mesh Networking (Local Offline Mesh)
+**Use for:** Short-range messaging when Wi-Fi and cell towers fail.
 
-    - ~$250 for Meshtastic + T-Beam (1km urban, up to 10km rural).  
-    - Always enable **AES-128 encryption**, even for benign messages.  
+**Tools:**
+- Bridgefy (Bluetooth mesh, Android/iOS)  
+- Briar (P2P via Wi-Fi or Bluetooth)  
+- Serval Mesh (legacy, stable basic text)
 
-Message format (keep short):
+**Setup Tips:**
+- Identify by **role** not name (e.g., “Medic1”, “Dispatch3”).  
+- Preload offline maps (Organic Maps).  
+- Test with **airplane mode ON** to confirm offline delivery.
 
-    [PRIORITY] [LOCATION] [ACTION]  
-    "URGENT – 5th/Broadway – Need extraction"  
-    "INFO – Water at SE park entrance"
+---
+
+### 2. LoRa Networks (Long-Range Text Relay)
+**Hardware:** Meshtastic + T-Beam or Heltec (~$250 starter kit)  
+**Range:** 1 km urban | 10 km rural  
+**Encryption:** Always enable **AES-128**  
+**Message Format:**
+```
+[PRIORITY] [LOCATION] [ACTION]
+"URGENT – 5th/Broadway – Need extraction"
+"INFO – Water restock SE park"
+"CHECK-IN – Safe at base"
+```
+
 
 ---
 
 ### 3. Radio Hybrid Protocols
+Use pre-set **VHF/UHF** channels when digital systems die.
 
-When networks fail completely:
+**Codewords Example**
+| Code | Meaning |
+|------|----------|
+| Charlie 4 | Medical backup |
+| Foxtrot 1 | Move to fallback site |
 
-    - Switch to **pre-set VHF/UHF channels** immediately.  
-    - Use numbered codes for common needs:  
-        "Charlie 4" = Medical backup  
-        "Foxtrot 1" = Move to fallback location  
-    - Hold **30-minute check-ins** for accountability.
+- Maintain 30-minute check-ins.  
+- Keep at least **3 trained operators per pod**.  
+- Assume all traffic is public. Avoid personal or tactical details.
 
-<Callout type="warning">
-**Never** rely on a single tech operator. Train **at least 3 people per pod** on every comms tool.
-</Callout>
+---
+
+### 4. Comms Blackout Drill (Monthly)
+1. Disable all internet and cellular.  
+2. Deploy 1 LoRa node + 2 mesh relays.  
+3. Transmit coordinates and confirm receipt.  
+4. Send a mock “Medic to NW corner” request.  
+5. Record response times and signal coverage.
+
+Practice movement drills with [Runners & Rides](/courses/runners-and-rides) and your local [Dispatch Calls](/courses/responding-to-dispatch-calls) protocol.
+
+---
+
+### 5. Comms Hierarchy by Duration
+
+| Outage Duration | Tools | Message Scope |
+|-----------------|-------|----------------|
+| 0–2 hrs | Mesh apps + hand signals | Critical only |
+| 2–6 hrs | LoRa + encrypted radio | Scheduled check-ins |
+| 6 + hrs | Runners + dropboxes | Pre-coded notes |
 
 <Callout type="info">
-Assume airwaves are public. Avoid PII and plans over radio. Use pre‑agreed codes and keep messages minimal.
+Every pod must define one **non-digital fallback**—dropbox, runner, or coded signage.
 </Callout>
 
 ---
 
-## Comms Fallback Drill (Monthly Practice)
-
-Steps for pod drills:
-
-    1. Kill all internet and cellular on devices.  
-    2. Deploy:
-        - 1 LoRa node at rally point  
-        - 2 mesh-enabled phones as relays  
-    3. Transmit:
-        - GPS coordinates of supply cache → confirm receipt  
-        - Simulated emergency request ("Medic to NW corner")  
+### 6. Equipment Loadout
+- ≥ 2 LoRa nodes / 10 people  
+- Extra power banks & solar chargers  
+- Faraday bags for backups  
+- Laminated frequency & code sheets  
+- Multi-cable charging kits  
 
 <Callout type="hint">
-If movement is required during blackout drills, plan handoffs and transport with <a href="/courses/runners-and-rides">Runners & Rides</a> and your region’s <a href="/courses/responding-to-dispatch-calls">Responding to Dispatch Calls</a> norms.
+When logging activity, follow <a href="/courses/documentation-safety">Documentation Safety</a> and <a href="/courses/after-action-data-hygiene">After-Action Data Hygiene</a>.
 </Callout>
 
 ---
 
-## Comms Hierarchy for Blackouts
+### 7. Security Audit Checklist
+**Radios**
+- Encryption active?  
+- License compliance (FCC or local)?  
 
-    | Duration  | Tools                     | Message Limits                 |
-    |-----------|---------------------------|---------------------------------|
-    | 0–2 hrs   | Mesh apps + hand signals  | Critical updates only          |
-    | 2–6 hrs   | LoRa + encrypted radios   | Scheduled check-ins & updates  |
-    | 6+ hrs    | Runners + dead drops      | Pre-arranged coded locations   |
+**Mesh**
+- Devices non-discoverable?  
+- History cleared post-action?  
 
----
-
-## Essential Gear Checklist
-
-    - 2+ LoRa nodes per 10 people (with extra batteries).  
-    - Faraday bags for backup phones (protection from seizure or EMP).  
-    - Printed, laminated **frequency charts and code sheets**.  
-    - Multi-type charging cables (USB-C, MicroUSB, Lightning).
-
-<Callout type="info">
-When you must log anything, follow <a href="/courses/documentation-safety">Documentation Safety</a> and clean retention per <a href="/courses/after-action-data-hygiene">After‑Action Data Hygiene</a>.
-</Callout>
+**Field Ops**
+- Antennas concealed?  
+- No uncoded radio checks?  
 
 ---
 
-## Security Audit Questions
-
-Radios:
-
-    - Are privacy codes and encryption active?  
-    - Is your FCC license up-to-date if legally required?  
-
-Mesh:
-
-    - Are devices set to non-discoverable post-setup?  
-    - Is chat history cleared after every action?  
-
-OpSec:
-
-    - Are LoRa antennas and devices concealed (in packs or jackets)?  
-    - Are all radio checks **coded**? (Never say "testing 1-2-3".)
-
----
-
-## Final Checklist (Enhanced)
-
-    - [ ] Conducted 3+ blackout drills with your pod.  
-    - [ ] Established **analog fallbacks** (semaphore, chalk marks, paper maps).  
-    - [ ] Pre-loaded offline guides (KYR, medic, and crisis docs).  
-    - [ ] Can troubleshoot and replace failed LoRa nodes in the field.
+### 8. Final Practice Goals
+- [ ] Completed 3 + blackout drills  
+- [ ] Established analogue fallbacks (chalk marks, paper maps)  
+- [ ] Preloaded offline guides (KYR, medic, safety)  
+- [ ] Can replace or reflash LoRa nodes in field  
 
 <Callout type="success">
-**Remember:** The best backup system is the one your pod has actually **practiced under stress.**
+Resilience isn’t gear. It’s **practice under stress**.
 </Callout>
 
 ---
 
-## Related courses
+## Reflection
+- How fast could your pod switch to LoRa if cell service failed now?  
+- Do all members know the same code sheets and fallback points?  
+- How often does your team rehearse total blackout scenarios?
 
-- [Mesh Networks Intro](/courses/mesh-networks-intro)
-- [App‑Free Tactics](/courses/app-free-tactics)
-- [Comms Collapse](/courses/comms-collapse)
-- [Digital Security Basics](/courses/digital-security-basics)
-- [Burner Phones & Security Culture](/courses/burner-phones-security-culture)
-- [Runners & Rides](/courses/runners-and-rides)
-- [Responding to Dispatch Calls](/courses/responding-to-dispatch-calls)
-- [Documentation Safety](/courses/documentation-safety)
-- [After‑Action Data Hygiene](/courses/after-action-data-hygiene)
+---
 
+## Next Steps
+- [Mesh Networks Intro](/courses/mesh-networks-intro)  
+- [App-Free Tactics](/courses/app-free-tactics)  
+- [Comms Collapse](/courses/comms-collapse)  
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [Burner Phones & Security Culture](/courses/burner-phones-security-culture)  
+- [Runners & Rides](/courses/runners-and-rides)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)
+
+---
+
+## External Resources
+- Meshtastic documentation – [meshtastic.org](https://meshtastic.org)  
+- Briar Project – [briarproject.org](https://briarproject.org)  
+- ARRL Emergency Comms Manual – Amateur Radio Relay League  
+- Mutual Aid Disaster Relief – Offline coordination toolkit  
+
+---
+
+## Rabbit Holes
+- Explore **signal propagation maps** for LoRa coverage in your region.  
+- Study **encryption key rotation** for offline networks.  
+- Experiment with **hybrid mesh + radio repeaters**.  
+- Research **community spectrum rights** and unlicensed bands.
+
+---
+
+<Callout type="success">
+When the grid fails, connection becomes skill—not signal.
+</Callout>

@@ -1,173 +1,208 @@
 ---
 title: Admin Tools and Oversight
 slug: admin-tools
-description: >-
-  Learn how to manage dispatch creation, access roles, and trust signatures in
-  ART Dispatch — with clear boundaries on what the tools can (and can’t) do
-  today.
+description: Learn how to manage dispatch creation, access roles, and trust signatures in ART Dispatch — with clear boundaries on authority, audits, and accountability.
 type: qualified
 readingTime: 22
-version: '1.3'
+version: '1.4'
 ---
+
 # 🔐 Admin Tools and Oversight
 <TrackBadge variant="pod-leadership" />
 
-Admin-level dispatchers are trusted with sensitive tools and major responsibilities. This module covers managing dispatches, adjusting access roles, recording trust signatures, coordinating coverage, and maintaining accountability through activity reviews.
+<Callout type="info">
+Admin-level dispatchers maintain the backbone of ART’s trust network.  
+This course teaches how to manage tools responsibly, support teams, and preserve ethical transparency at every layer.
+</Callout>
 
 ---
 
-## Core Admin Permissions (today)
+## Overview
 
-Level 4 (Admin) users can:
-
-- ✅ **Create and edit dispatches**
-- 🔐 **Adjust user access roles** (e.g., promote to Verified/Admin Dispatcher)
-- 🤝 **Record trust signatures** (document who vouched for whom and when)
-- �️ **Review recent activity** (dispatch updates, approvals)
-- 🧭 **Coordinate coverage** (assign leads/areas; label a coordinator’s zone)
-- 📋 **Approve or remove reports** (if your region enables admin moderation)
-
-What you cannot do in-app yet (use policy or server-side workflows instead):
-
-- ⛔ A full, in-app **audit log viewer** for every action (server logs only)
-- ⛔ One-click **CSV export** of all records (use Supabase admin or request a limited export)
-- ⛔ Map-drawn **geofence radii** as “zones” (use coordination labels/shifts instead)
+Level 4 Admins balance coordination power with data sensitivity.  
+You can create dispatches, manage roles, record trust signatures, and review activity — but **every click carries ethical weight**.  
+This module clarifies what admins can and can’t do, and how to act as *stewards*, not owners.
 
 ---
 
-## Creating & Editing Dispatches
+## Learn & Do
 
-Admins can manually initiate new dispatches, bypassing normal triage. This is allowed only when:
+### Core Admin Permissions (Today)
 
-- The situation is **urgent** (active raid, medical crisis, imminent threat)
-- Another dispatcher requests backup
-- A trusted source confirms verified intel
+Admins **can**:
+- ✅ Create or edit dispatches  
+- 🔐 Adjust user access roles (promote/demote)  
+- 🤝 Record **trust signatures** documenting vouches  
+- 🧭 Assign coordination zones and coverage  
+- 📋 Review, approve, or remove reports (if region-enabled)  
+- 🕓 Review recent activity logs
 
-### Manual Dispatch Tips
+Admins **cannot yet**:
+- ⛔ View full audit logs in-app (use server logs)  
+- ⛔ Export full CSVs (request limited server export)  
+- ⛔ Draw map geofences (use labels instead)
 
-- Use precise **location data** (cross streets, GPS if safe)
-- Clearly flag **urgency and timing**
-- Add **internal notes** (visible to trusted roles only)
-- Avoid overuse; these tools should not replace collective triage
+<Callout type="warning">
+Tool capability ≠ moral authority.  
+Use minimal privilege. Escalate uncertain decisions for review.
+</Callout>
+
+---
+
+### Creating & Editing Dispatches
+
+Manual creation bypasses normal triage and should be rare.
+
+**Use only when:**
+- Verified urgent event (raid, medical, imminent threat)  
+- Requested by another dispatcher  
+- Confirmed trusted intel  
+
+**Guidelines:**
+- Log accurate location and time  
+- Mark urgency and audience clearly  
+- Add internal notes for trusted roles  
+- Follow up after closure for accountability  
 
 <Callout type="important">
-Always follow up with the responding dispatcher to confirm closure, updates, and after-action notes.
+Manual dispatch is an exception, not convenience.
 </Callout>
 
 ---
 
-## Access Roles and Trust Signatures
+### Access Roles & Trust Signatures
 
-Dispatch access is controlled by an access role set on a user’s profile (region-specific). Common roles include:
+**Roles**  
+- Dispatcher → base field coordination  
+- Verified Dispatcher → can assign and coordinate  
+- Admin Dispatcher → full oversight + tools  
 
-- Dispatcher (basic)
-- Verified Dispatcher (can coordinate and assign)
-- Admin Dispatcher (full coordination + admin tools)
+**Trust Signatures**  
+Document *who vouched for whom*, not automatic promotion.  
+Promotions require regional prerequisites (training, referrals, review).
 
-In addition to access roles, Admins can record “trust signatures” that document a vouch (who vouched, for whom, in what capacity). A trust signature:
-
-- Does not automatically change someone’s access role
-- Creates a transparent trail of endorsements for accountability
-
-Promotions should meet prerequisites agreed by your region:
-
-- **Level 1+**: Completed Response Training  
-- **Level 3**: At least 3 months of activity, Dispatch Certification, 2 peer referrals  
-- **Level 4**: Invitation by core team, conflict resolution training
+**Best practice:**  
+Record reason for every change, e.g.  
+> “Certified + consistent field leadership.”
 
 <Callout type="warning">
-Never promote someone as a favor or without full review.  
-Record a trust signature and **log the promotion reason** (e.g., “Certified + crisis leadership experience”).
+Never promote from friendship or pressure.  
+Trust is collective currency — spend it slowly.
 </Callout>
 
 ---
 
-## Coordinating Coverage (labels, not geofences)
+### Coordinating Coverage (Labels > Geofences)
 
-Coverage is coordinated through assignments and labels, not map-drawn geofences. Today you can:
+Use **labels and assignments**, not drawn zones.  
 
-- 🌐 Label a dispatcher’s “coordination zone” (e.g., Neighborhood/City)
-- 📍 Assign temporary coverage for marches, vigils, or emergency deployments
-- 🧭 Track shifts/coverage windows in scheduling tools (if your region enables them)
+- 🌐 Label coordination areas (“Tacoma West Zone”)  
+- 📍 Assign temporary event coverage  
+- 🧭 Track shifts in scheduling tools  
+- 💬 Add language or accessibility tags  
 
-Best practices:
-
-- Avoid overlapping coverage without coordination — designate a **primary lead and backup**  
-- Tag coverage for **language capacity** (e.g., "Spanish-speaking leads available")  
-- Reduce late-night paging unless critical; pre-plan quiet hours and escalation paths
+Avoid overlap. Assign one lead and one backup.  
+Maintain quiet hours and escalation paths.
 
 ---
 
-## Report Approvals and Removal
+### Report Review & Removal
 
-Admins can:
+Admins can validate or reject reports. Always document reasoning.
 
-- Review flagged or duplicate reports  
-- Approve valid submissions  
-- Remove spam, harmful, or false data
+**Do:**
+- Approve only verified info  
+- Log rejections with short rationale  
+- Escalate contested removals to accountability team  
 
-Always:
+**Don’t:**
+- Delete without trace  
+- Resolve conflicts privately  
 
-- Document **why a report was rejected** in the audit log  
-- Use **transparent reasoning** to maintain trust  
-- Refer disputes to the **Accountability Team** (never resolve alone if contested)
+Transparency sustains credibility.
 
 ---
 
-## Activity Review, Exports, and Audits
+### Activity Review & Audits
 
-From the Admin Dashboard and server logs, you can:
-
-- 🕓 Review recent activity (dispatch updates, approvals, role changes recorded by admins)
-- 🔍 Conduct periodic audits of major responses to identify gaps
-- 📊 Request limited exports via a server-side workflow (no in-app CSV export yet)
+From admin dashboard or server logs, you can:
+- Review recent role and dispatch changes  
+- Conduct monthly response audits  
+- Request redacted exports for analysis  
 
 <Callout type="warning">
-Exports can be subpoenaed. Do not include names, addresses, or sensitive identifiers in exported notes. Prefer aggregated stats and redact PII.
+Exports can be subpoenaed.  
+Never include names, addresses, or identifiers. Aggregate when possible.
 </Callout>
 
 ---
 
-## Compromised Accounts
+### Compromised Accounts Protocol
 
-If you suspect a breach:
+1. Revoke access immediately  
+2. Notify core team and region leads  
+3. Audit recent actions  
+4. Reset credentials  
+5. File a short incident note in the **Admin SOS** Signal channel  
 
-1. Revoke access immediately (via Admin Panel)  
-2. Notify the core team and affected leads  
-3. Audit recent logs for misuse  
-4. Reset passwords
-5. File a brief report in the Admin SOS channel (Signal)
-
----
-
-## Accountability & Community Standards
-
-Admin roles are about stewardship, not control. You must:
-
-- Avoid editing dispatches except for accuracy or emergency reasons  
-- Never promote or demote without full review  
-- Join the **Monthly Admin Sync** to share updates and resolve tool issues  
-- Report tool bugs or access friction via [this form](/admin-feedback)
+Speed and transparency prevent secondary harm.
 
 ---
 
-## Summary
+### Accountability Standards
 
-Admins hold the keys to critical infrastructure. Use this access to **support your teams, protect the network, and uphold trust.**
+Admins are **stewards**, not bosses.  
+You are responsible for safety, documentation, and cultural tone.
 
-<Callout type="success">
-Admins aren’t bosses — they’re anchors.  
-Lead with clarity, transparency, and care.
+- Edit only for clarity or emergency corrections  
+- Never alter reports to fit narrative  
+- Attend monthly admin syncs  
+- Submit bug or friction reports via [/admin-feedback](/admin-feedback)
+
+<Callout type="info">
+Authority in ART is rotational and reviewable.  
+If you can’t explain a decision publicly, rethink it.
 </Callout>
 
 ---
 
-## Related courses
+## Reflection
 
-- Trust & Ethics in Dispatch → [/courses/trust-and-ethics-in-dispatch](/courses/trust-and-ethics-in-dispatch)
-- Dispatch Training Pathway → [/courses/dispatch-training-pathway](/courses/dispatch-training-pathway)
-- Dispatch Coordination → [/courses/dispatch-coordination](/courses/dispatch-coordination)
-- Documentation Safety → [/courses/documentation-safety](/courses/documentation-safety)
-- Digital Security Basics → [/courses/digital-security-basics](/courses/digital-security-basics)
+What does ethical power look like in decentralized systems?  
+When have you seen trust reinforced — or broken — by admin behavior?
 
+---
 
+## Next Steps
+
+Advance to:
+- [Trust & Ethics in Dispatch](/courses/trust-and-ethics-in-dispatch)  
+- [Dispatch Coordination](/courses/dispatch-coordination)  
+- [Documentation Safety](/courses/documentation-safety)  
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)
+
+---
+
+## Rabbit Holes
+
+<Callout type="rabbit-hole">
+🧩 **Governance Without Hierarchy**  
+Explore how decentralized projects handle admin rights, audits, and rotation of privileges.
+</Callout>
+
+<Callout type="rabbit-hole">
+🔍 **Data Stewardship Ethics**  
+Review frameworks for balancing transparency with digital security in community defense systems.
+</Callout>
+
+---
+
+## Related Courses
+
+- [Trust & Ethics in Dispatch](/courses/trust-and-ethics-in-dispatch)
+- [Dispatch Training Pathway](/courses/dispatch-training-pathway)
+- [Dispatch Coordination](/courses/dispatch-coordination)
+- [Documentation Safety](/courses/documentation-safety)
+- [Digital Security Basics](/courses/digital-security-basics)
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)

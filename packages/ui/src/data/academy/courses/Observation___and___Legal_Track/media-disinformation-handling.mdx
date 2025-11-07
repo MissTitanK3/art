@@ -1,190 +1,220 @@
 ---
 title: Media and Disinformation Handling
 slug: media-disinformation-handling
-description: >-
-  Learn how to identify, counter, and contain false reports and hostile
-  narratives while coordinating accurate information flow with pods and the
-  public.
+description: Identify, counter, and contain false reports or hostile narratives while maintaining trust and secure, verified communication.
 type: qualified
-version: '1.3'
+version: '1.4'
 readingTime: 18
 ---
+
 # 📰 Media and Disinformation Handling
 <TrackBadge variant="observation-legal" />
 <TrackBadge variant="pod-leadership" />
 <TrackBadge variant="movement-strategy" />
 
 <Callout type="info">
-This course is in **Level 3: Dispatcher Certification (Verified Dispatcher)**.  
-It teaches **how to identify false reports, hostile narratives, and misinformation campaigns** while ensuring **secure, accurate updates** to the public and pods.
+**Level 3: Verified Dispatcher Certification**  
+Learn to identify false reports, misinformation campaigns, and narrative manipulation while maintaining accurate, secure updates to pods and the public.
 </Callout>
 
-<Callout type="info">
-Language access: For inclusive verification and messaging, pair this course with the Translator and ASL Interpreter micro‑badges. Use interpreters or visual summaries as needed, and ensure all volunteers know how to request support in their preferred language.
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+<Callout type="hint">
+Inclusive comms: Use [Translator Micro-badge](/courses/translator-micro-badge) and [ASL Interpreter Micro-badge](/courses/asl-interpreter-micro-badge) volunteers for verification and messaging across languages.  
+Provide visual or plain-language summaries when possible.
 </Callout>
 
 ---
 
 ## Why It Matters
 
-False ICE sightings, fake police presence alerts, or targeted disinformation can **waste resources, create panic, or discredit the network**.  
-Strong verification and messaging protocols keep **trust intact** and ensure dispatch only mobilizes when real threats exist.
+False ICE alerts or fake police activity drain resources, trigger panic, and erode trust.  
+Disinformation often targets mutual aid and dispatch systems to sow confusion or surveillance exposure.
+
+Effective response = fast, quiet verification and transparent correction without feeding the chaos.
 
 ---
 
-## What You'll Learn
+## What You’ll Learn
 
-1. **Verification Standards** – A matrix for cross-checking reports by type.  
-2. **Spotting Disinformation** – Recognizing bot patterns, narrative flags, and deepfake tactics.  
-3. **Secure Media Handling** – Sharing only what’s safe, avoiding leaks or predictable patterns.  
-4. **Counter-Messaging Protocols** – Quiet corrections, public neutral statements, or escalated responses.  
-5. **Escalation Flow** – Knowing when to involve pod leads or zone admins.
+1. **Verification Matrix** — Reliable cross-checking by type.  
+2. **Disinformation Detection** — Spotting bot patterns and narrative traps.  
+3. **Secure Media Handling** — Avoid leaks and predictable intel patterns.  
+4. **Counter-Messaging** — Correct without amplifying.  
+5. **Escalation Logic** — When to involve pod leads or admins.
 
 ---
 
 ## Verification Matrix
 
-| Report Type           | Minimum Verification Required               | Tools/Methods                                |
-|-----------------------|----------------------------------------------|----------------------------------------------|
-| ICE Sightings         | Visual proof + trusted witness confirmation | Encrypted photo/video, location timestamp    |
-| Police Presence       | Two pods cross-confirm via independent means | Radio or LoRa check + GPS ping               |
-| Viral Social Posts    | Reverse image search + timestamp validation  | Google Lens, InVID, EXIF metadata check      |
+| Report Type | Minimum Verification | Tools / Methods |
+|--------------|----------------------|-----------------|
+| ICE Sightings | Visual proof + trusted witness | Encrypted image/video + timestamp |
+| Police Presence | Two pods confirm independently | LoRa, radio, GPS |
+| Viral Posts | Reverse search + time check | InVID, EXIF data, Google Lens |
 
-**Rule:** *Never issue alerts without at least two independent checks.*
+**Golden Rule:** No alerts without two separate confirmations.
 
 <Callout type="hint">
-ART capability notes:
-- Report photos are supported; videos should be shared via secure links rather than direct upload.
-- Logs exist on the server side for safety and abuse response; there is no in‑app CSV export or exhaustive audit viewer.
-- Maps do not support drawing geofences; use labels and proximity notes instead.
-- Notifications are region‑configured; avoid implying generic “location‑based alerts.”
-- Use access roles and trust‑based reviews to limit who can see verification notes or reports.
+System limitations:
+- Video = secure link only, not upload.  
+- No map geofences — use zone labels.  
+- Logs exist for accountability; no full audit export.  
+- Notifications are region-scoped.  
+- Restrict verification notes to trusted access roles.
 </Callout>
 
 ---
 
 ## Spotting Disinformation
 
-### Bot or Troll Signs
-- Numeric or generic usernames.  
-- Burst posting with identical language.  
-- Presence at hours inconsistent with local timezones.
+### Bot / Troll Indicators
+- Generic usernames, repetitive phrasing  
+- Burst posting or off-timezone activity  
 
 ### Narrative Flags
-- Overly emotional framing or fear bait.  
-- Contradictory or unverifiable details.  
-- Focus on delegitimizing pods or dispatch.
+- Fear or outrage framing  
+- Contradictory or unverifiable “eyewitness” stories  
+- Attempts to discredit pods or leadership  
 
-### Deepfake or Edited Content
-- Shadows or lip-sync mismatches.  
-- Metadata inconsistencies (date/location mismatches).  
-- Pixelation around key elements (common in manipulated media).
+### Deepfake or Edit Clues
+- Lip-sync mismatch, distorted shadows  
+- Metadata date/location mismatch  
+- Pixelated overlay around focus areas  
 
 ---
 
 ## Counter-Messaging Protocol
 
-1. **Level 1 (Quiet Correction):** Alert trusted pods and correct internally without public attention.  
-2. **Level 2 (Neutral Public Statement):**  
-   *"We have no verified reports of [incident] at this time. Verification ongoing."*  
-3. **Level 3 (Escalated Response):** Pod leads and admins coordinate a **formal correction or press release**.
+1. **Level 1 — Quiet Correction**  
+   Notify trusted pods; correct internally without public notice.  
+2. **Level 2 — Neutral Public Statement**  
+   > “No verified reports of [incident] at this time. Verification ongoing.”  
+3. **Level 3 — Escalated Response**  
+   Admins coordinate formal correction or public release.
 
-**Never “call out” individuals** unless cleared by leadership.
+Never call out individuals publicly unless cleared by leadership and legally reviewed.
 
 ---
 
 ## Secure Information Sharing
 
-- Never share **exact pod movements, verification methods, or times** on public channels.  
-- Use **encrypted backchannels (Signal, Matrix, or PGP)** for sensitive confirmations.  
-- Rotate verification routes and responders to avoid predictable patterns.
+- Don’t share pod movements, verification methods, or times.  
+- Use encrypted backchannels (Signal, Matrix, PGP).  
+- Rotate who verifies and how, to break patterns.  
 
-<Callout type="hint">
-Documentation hygiene: Use minimal, time-bound retention. Avoid storing raw video or chat logs in shared apps. Prefer encrypted, access-controlled notes and delete temporary files after review. Always get explicit consent before sharing images or stories.
+<Callout type="warning">
+Store only temporary verification data. Delete raw files after review.  
+Always get consent before using others’ images or stories.
 </Callout>
 
 ---
 
-## Decision Flow (Visual Guide)
+## Decision Flow
 
-<Mermaid chart={`
-graph TD
-    A[Report Received] --> B{Immediate Threat?}
-    B -->|Yes| C[Activate Rapid Verification]
-    B -->|No| D[Standard Verification]
-    C --> E[Alert Trusted Verifiers]
-    D --> F[Cross-check With 2+ Sources]
-    F --> G{Verified?}
-    G -->|Yes| H[Draft Neutral Public Update]
-    G -->|No| I[Quietly Flag or Debunk]
-
+<Mermaid chart={`graph TD
+A[Report Received] --> B{Immediate Threat?}
+B -->|Yes| C[Activate Rapid Verification]
+B -->|No| D[Standard Verification]
+C --> E[Alert Trusted Verifiers]
+D --> F[Cross-check with 2+ Sources]
+F --> G{Verified?}
+G -->|Yes| H[Draft Neutral Public Update]
+G -->|No| I[Quietly Flag or Debunk]
 `} />
 
 ---
 
 ## Simulation Drill
 
-*"Scenario: A viral post claims there’s a police checkpoint near Main Street.*  
-1. **Verify with ground teams** or trusted pods.  
-2. **Reverse search the image** and check timestamps.  
-3. **Determine the response level** (quiet, neutral, or escalated).  
-4. **Draft messaging** using templates."
+**Scenario:** Viral post claims a police checkpoint on Main Street.  
+1. Verify with ground teams.  
+2. Reverse-search image, validate time.  
+3. Determine proper response level.  
+4. Draft neutral update or flag false.
 
 ---
 
 ## Quick Action Steps
 
-1. Always **double-verify** every report before alerts.  
-2. Use **secure, redundant channels** (Signal, radio, Matrix) for intel sharing.  
-3. Keep **neutral, factual language** in all public updates.  
-4. Rotate verification duties hourly during **high-volume events** to reduce errors.
+- Always double-verify before alerting.  
+- Keep language neutral and factual.  
+- Rotate verification shifts during peak flow.  
+- Escalate only with confirmed intel.
 
 ---
 
 ## Risks & Red Lines
 
-- Never share **unverified reports**, even privately.  
-- Never confirm **operational details** while denying or debunking reports.  
-- Avoid identifiable patterns in how verification is done — **keep methods discreet**.
+- Never forward unverified reports — even privately.  
+- Never confirm operations while denying rumors.  
+- Avoid predictable patterns in how you verify or message.  
+
+<Callout type="important">
+Operational secrecy protects everyone.  
+Verification is collective defense — not speculation.
+</Callout>
 
 ---
 
 ## Checklist
 
-- [ ] Can verify or debunk reports using at least two independent checks.  
-- [ ] Can run **basic image verification** (EXIF data, reverse search).  
-- [ ] Maintains a **directory of trusted verification contacts**.  
-- [ ] Knows when to issue **neutral updates** vs. escalate to admins.  
-- [ ] Has practiced **secure handoffs and messaging protocols**.
+- [ ] Double-checked every report.  
+- [ ] Completed basic image verification (EXIF or reverse search).  
+- [ ] Maintains trusted verifier list.  
+- [ ] Knows when to escalate to admin.  
+- [ ] Uses encrypted tools for confirmations.  
 
 ---
 
-## Resource Appendix
+## Reflection
 
-- **Verification Field Guide** (reverse image tools, bot detection checklist).  
-- **Neutral Statement Templates** for counter-messaging.  
-- **Escalation Flowchart** (for quick reference during dispatch).  
-- **Encrypted Reporting Template** (for pod-to-pod confirmations).
+- How does fear amplify misinformation?  
+- What tone keeps trust during public corrections?  
+- How can your region’s pods coordinate without leaking verification methods?
 
-<Callout type="important">
-Consent & ethics: Always ask before sharing anyone’s image, story, or name. Pair this course with Documentation Safety, Data Ethics Pledge, and After‑Action Data Hygiene for best practices.
+---
+
+## Next Steps
+
+Continue with:  
+- [Documentation Safety](/courses/documentation-safety)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)  
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [Data Ethics Pledge](/courses/data-ethics-pledge)  
+- [Dispatch Coordination](/courses/dispatch-coordination)
+
+---
+
+## Rabbit Holes
+
+<Callout type="rabbit-hole">
+🧠 **Cognitive Security Basics**  
+Explore how emotional manipulation drives viral disinfo and how “attention traps” shape public perception.  
+→ Resource: NATO StratCom Cognitive Security Reader
+</Callout>
+
+<Callout type="rabbit-hole">
+🔍 **Verification Journalism**  
+Study the verification frameworks used by Bellingcat and First Draft to debunk false imagery and narratives.
+</Callout>
+
+<Callout type="rabbit-hole">
+🌐 **Language-Based Disinfo**  
+Research multilingual narrative warfare and how translation errors are weaponized in cross-border organizing.
 </Callout>
 
 ---
 
-## Related courses
+## Related Courses
 
-- Documentation Safety → /courses/documentation-safety
-- After‑Action Data Hygiene → /courses/after-action-data-hygiene
-- Digital Security Basics → /courses/digital-security-basics
-- Data Ethics Pledge → /courses/data-ethics-pledge
-- Legal Observer → /courses/legal-observer
-- Interacting with Law Enforcement → /courses/interacting-with-law-enforcement
-- KYR Basics → /courses/kyr-basics
-- Fourth Amendment Rights → /courses/fourth-amendment-rights
-- Dispatch Coordination → /courses/dispatch-coordination
-- Responding to Dispatch Calls → /courses/responding-to-dispatch-calls
-- Translator Micro‑Badge → /courses/translator-micro-badge
-- ASL Interpreter Micro‑Badge → /courses/asl-interpreter-micro-badge
+- [Documentation Safety](/courses/documentation-safety)  
+- [After-Action Data Hygiene](/courses/after-action-data-hygiene)  
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [Data Ethics Pledge](/courses/data-ethics-pledge)  
+- [Legal Observer](/courses/legal-observer)  
+- [Interacting with Law Enforcement](/courses/interacting-with-law-enforcement)  
+- [Know Your Rights (KYR) Basics](/courses/kyr-basics)  
+- [Fourth Amendment Rights](/courses/fourth-amendment-rights)  
+- [Dispatch Coordination](/courses/dispatch-coordination)  
+- [Responding to Dispatch Calls](/courses/responding-to-dispatch-calls)  
+- [Translator Micro-Badge](/courses/translator-micro-badge)  
+- [ASL Interpreter Micro-Badge](/courses/asl-interpreter-micro-badge)
