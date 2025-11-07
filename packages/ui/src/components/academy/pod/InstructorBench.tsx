@@ -79,7 +79,7 @@ const academyCertificationOptions: Array<{ id: string; label: string }> = (() =>
   }
   return Array.from(unique.entries())
     .map(([id, label]) => ({ id, label }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')))
 })()
 
 type InstructorBenchProps = {
@@ -557,7 +557,6 @@ export function InstructorBench({
                     value={newInstructorName}
                     onChange={(event) => setNewInstructorName(event.target.value)}
                     placeholder="Taylor Jordan"
-                    autoFocus
                   />
                 </div>
                 <div className="space-y-2">

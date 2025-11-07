@@ -307,9 +307,9 @@ function OfferHelpForm({ needId, onClose, onOfferHelp }: { needId: string; onClo
     <div className="border rounded p-3 space-y-2">
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-xs">Resource</label>
+          <label className="text-xs" htmlFor="offer-resource">Resource</label>
           <Select value={resourceType} onValueChange={(v) => setResourceType(v as OfferPayload["resource_type"])}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger id="offer-resource"><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="time">Time</SelectItem>
               <SelectItem value="transport">Transport</SelectItem>
@@ -320,8 +320,8 @@ function OfferHelpForm({ needId, onClose, onOfferHelp }: { needId: string; onClo
           </Select>
         </div>
         <div className="space-y-1">
-          <label className="text-xs">Notes</label>
-          <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional" />
+          <label className="text-xs" htmlFor="offer-notes">Notes</label>
+          <Input id="offer-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional" />
         </div>
       </div>
       <div className="flex items-center gap-2">

@@ -74,11 +74,12 @@ export default function TeleprompterShell(props: TeleprompterShellProps) {
 
   return (
     <div
+      role="region"
+      aria-label="Teleprompter"
       ref={containerRef ?? undefined}
       className="relative min-h-[50vh] rounded-md border p-0 md:p-0"
-      tabIndex={0}
-      onFocus={props.onFocus}
-      onBlur={props.onBlur}
+      onFocusCapture={props.onFocus}
+      onBlurCapture={props.onBlur}
     >
       {props.overlays}
       {overlay.opacity > 0 ? (

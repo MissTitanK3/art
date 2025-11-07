@@ -81,8 +81,10 @@ type Props = {
 
 export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabaseAnonKey, className }: Props) {
   // Helpers for date input formatting (for type="datetime-local")
-  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-  const toLocalInputValue = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const toLocalInputValue = React.useCallback((d: Date) => {
+    const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }, []);
 
   const [agencyType, setAgencyType] = React.useState<string[]>([]);
   const [agencyOther, setAgencyOther] = React.useState("");
@@ -122,7 +124,7 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [toLocalInputValue]);
 
   const resetForm = React.useCallback(() => {
     setAgencyType([]);
@@ -138,7 +140,7 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
     setVetNotes("");
     setTest(false);
     setReportedAt(toLocalInputValue(new Date()));
-  }, []);
+  }, [toLocalInputValue]);
 
   const addAgencyType = (value: string) => setAgencyType((prev) => (prev.includes(value) ? prev : [...prev, value]));
   const removeAgencyType = (value: string) => setAgencyType((prev) => prev.filter((v) => v !== value));
@@ -161,7 +163,7 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
         const d = new Date(reportedAt);
         if (!isNaN(d.getTime())) timestampIso = d.toISOString();
       }
-    } catch {}
+    } catch { /* ignore */ }
 
     const payload: ConfirmedWatchPayload = {
       timestamp: timestampIso,
@@ -224,7 +226,7 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
               const { submitted_by, ...rest } = dbPayload as any;
               res = await ins(rest);
             }
-          } catch {}
+          } catch { /* ignore */ }
         }
         if (!res.ok) {
           const text = await res.text();
@@ -352,9 +354,18 @@ export function ConfirmedWatchForm({ onSubmit, submittedBy, supabaseUrl, supabas
           </div>
 
           <div className="space-y-2 flex flex-col w-full md:w-auto">
-            <label className="flex items-center justify-between gap-2 w-full"><span>Lights on</span><Switch checked={lightsOn} onCheckedChange={setLightsOn} /></label>
-            <label className="flex items-center justify-between gap-2 w-full"><span>Sirens on</span><Switch checked={sirensOn} onCheckedChange={setSirensOn} /></label>
-            <label className="flex items-center justify-between gap-2 w-full"><span>Mark as test report</span><Switch checked={test} onCheckedChange={setTest} /></label>
+            <div className="flex items-center justify-between gap-2 w-full">
+              <span id="lights-on-label">Lights on</span>
+              <Switch aria-labelledby="lights-on-label" checked={lightsOn} onCheckedChange={setLightsOn} />
+            </div>
+            <div className="flex items-center justify-between gap-2 w-full">
+              <span id="sirens-on-label">Sirens on</span>
+              <Switch aria-labelledby="sirens-on-label" checked={sirensOn} onCheckedChange={setSirensOn} />
+            </div>
+            <div className="flex items-center justify-between gap-2 w-full">
+              <span id="test-report-label">Mark as test report</span>
+              <Switch aria-labelledby="test-report-label" checked={test} onCheckedChange={setTest} />
+            </div>
           </div>
         </div>
 

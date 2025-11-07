@@ -19,7 +19,7 @@ export interface HowToLayoutProps {
 
 export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn how to navigate the platform and report issues effectively.", active, onSelect, renderers, quick }: HowToLayoutProps) {
   const sections = React.useMemo(
-    () => [...HOW_TO_SECTIONS].sort((a, b) => a.label.localeCompare(b.label)),
+    () => [...HOW_TO_SECTIONS].sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? ''))),
     []
   );
 
@@ -38,9 +38,9 @@ export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn h
     }
     const childIds = new Set(Array.from(childrenOf.values()).flat().map((c) => c.id));
     const parents = sections.filter((s) => !childIds.has(s.id));
-    parents.sort((a, b) => a.label.localeCompare(b.label));
+    parents.sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')));
     for (const [pid, list] of childrenOf.entries()) {
-      list.sort((a, b) => a.label.localeCompare(b.label));
+      list.sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')));
       childrenOf.set(pid, list);
     }
     return parents.map((p) => ({ parent: p, children: childrenOf.get(p.id) ?? [] }));
@@ -170,4 +170,3 @@ export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn h
 }
 
 export default HowToLayout;
-

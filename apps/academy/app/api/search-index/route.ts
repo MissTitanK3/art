@@ -32,13 +32,23 @@ function stripMd(md: string): string {
   return s;
 }
 
+function walkMdxFiles(dir: string, out: string[] = []) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const ent of entries) {
+    const abs = path.join(dir, ent.name);
+    if (ent.isDirectory()) walkMdxFiles(abs, out);
+    else if (ent.isFile() && ent.name.toLowerCase().endsWith('.mdx')) out.push(abs);
+  }
+  return out;
+}
+
 export async function GET() {
   try {
-    const files = fs.readdirSync(ACADEMY_COURSES_DIR).filter((f) => f.endsWith('.mdx'));
+    const files = walkMdxFiles(ACADEMY_COURSES_DIR);
     // Compute latest mtime across content files
     let latest = 0;
-    for (const f of files) {
-      const st = fs.statSync(path.join(ACADEMY_COURSES_DIR, f));
+    for (const abs of files) {
+      const st = fs.statSync(abs);
       latest = Math.max(latest, st.mtimeMs);
     }
 
@@ -46,13 +56,12 @@ export async function GET() {
       return NextResponse.json({ items: cachedItems });
     }
 
-    const items = files.map((file) => {
-      const filePath = path.join(ACADEMY_COURSES_DIR, file);
+    const items = files.map((filePath) => {
       const raw = fs.readFileSync(filePath, 'utf8');
       const { content, data } = matter(raw);
-      const slug = file.replace(/\.mdx$/, '');
-      const title = (data as any)?.title ?? slug;
-      const description = (data as any)?.description ?? '';
+      const slug = path.basename(filePath).replace(/\.mdx$/i, '');
+      const title = String((data as any)?.title ?? slug);
+      const description = String((data as any)?.description ?? '');
       const version = (data as any)?.version ?? null;
       const text = stripMd(content);
       return { slug, title, description, version, text };

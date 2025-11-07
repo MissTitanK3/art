@@ -11,7 +11,7 @@ export default function TestReportToggle() {
       <div className="flex items-center justify-between mb-2">
         <h2 className="font-semibold">{t('testReport')}</h2>
 
-        <label className="relative inline-block w-11 h-6 cursor-pointer">
+        <label className="relative inline-block w-11 h-6 cursor-pointer" aria-label={t('testReport') ?? 'Test Report'}>
           <input
             type="checkbox"
             checked={testReportEnabled}

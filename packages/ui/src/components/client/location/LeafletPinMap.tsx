@@ -61,10 +61,9 @@ function InvalidateOnOpen({ open }: { open: boolean }) {
     const t = setTimeout(() => {
       try {
         map.invalidateSize();
-      } catch {}
+      } catch { /* ignore */ }
     }, 150);
     return () => clearTimeout(t);
   }, [open, map]);
   return null;
 }
-

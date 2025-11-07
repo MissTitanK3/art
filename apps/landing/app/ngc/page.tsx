@@ -123,7 +123,6 @@ export default function NGCPage() {
       },
       articles: filterArticles(ngcData.articles, q),
     } as NGCTypes;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
   const resultsCount = useMemo(() => countMatches(ngcData, query.trim()), [query]);
@@ -159,10 +158,10 @@ export default function NGCPage() {
           />
           {query.trim() && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {resultsCount} result{resultsCount === 1 ? "" : "s"} for "{query.trim()}"
-            </p>
-          )}
-        </div>
+          {resultsCount} result{resultsCount === 1 ? "" : "s"} for &quot;{query.trim()}&quot;
+          </p>
+        )}
+      </div>
       </header>
 
       {/* Preamble */}

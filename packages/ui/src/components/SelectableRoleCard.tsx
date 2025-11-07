@@ -76,7 +76,15 @@ export function SelectableRoleCard({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
       className={cn(
         "flex items-center justify-between w-full rounded-lg border p-3 text-left transition cursor-pointer",
         selected

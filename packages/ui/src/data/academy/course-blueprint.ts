@@ -1,6 +1,7 @@
 import { humanize } from '../../lib/utils';
 import type { TrackVariant } from '../../components/academy/TrackBadge';
-import { ACADEMY_COURSE_DETAILS, ACADEMY_COURSE_GROUPS } from './course-groups';
+import { GENERATED_ACADEMY_COURSE_GROUPS as ACADEMY_COURSE_GROUPS } from './course-groups.generated';
+import { GENERATED_COURSE_DETAILS as ACADEMY_COURSE_DETAILS } from './course-details.generated';
 
 export type CourseBlueprintCourse = {
   slug: string;
@@ -44,8 +45,8 @@ export const COURSE_BLUEPRINT: CourseBlueprint[] = COURSE_GROUPS.map((group) => 
   const fallbackId = slugifyLabel(group.label);
   const variant = QUALIFICATION_VARIANTS[group.label];
   const isCertifiedGroup = group.courses.some((course) => {
-    const meta = ACADEMY_COURSE_DETAILS[course.slug];
-    return meta?.type === 'certified';
+    const slug = course.slug as keyof typeof ACADEMY_COURSE_DETAILS;
+    const meta = ACADEMY_COURSE_DETAILS[slug];
   });
 
   return {
@@ -54,18 +55,38 @@ export const COURSE_BLUEPRINT: CourseBlueprint[] = COURSE_GROUPS.map((group) => 
     trackLabel: group.track,
     variant,
     courses: group.courses.map((course) => {
-      const meta = ACADEMY_COURSE_DETAILS[course.slug];
+      const meta =
+        course.slug in ACADEMY_COURSE_DETAILS
+          ? ACADEMY_COURSE_DETAILS[course.slug as keyof typeof ACADEMY_COURSE_DETAILS]
+          : undefined;
+
       return {
         slug: course.slug,
-        title: meta?.title ?? humanize(course.slug),
-        description: meta?.description ?? 'Details available in Academy.',
-        icon: meta?.icon ?? course.icon ?? '📘',
+        title:
+          typeof meta?.title === 'string'
+            ? meta.title
+            : Array.isArray(meta?.title)
+              ? meta.title.join(' ')
+              : humanize(course.slug),
+        description:
+          typeof meta?.description === 'string'
+            ? meta.description
+            : Array.isArray(meta?.description)
+              ? meta.description.join(' ')
+              : 'Details available in Academy.',
+        icon:
+          typeof (meta && 'icon' in meta ? meta.icon : course.icon) === 'string'
+            ? meta && 'icon' in meta
+              ? (meta.icon as string)
+              : ((course.icon as string) ?? '📘')
+            : '📘',
         type: meta?.type ?? (isCertifiedGroup ? 'certified' : 'qualified'),
-        version: meta?.version,
-        durationHours: meta?.durationHours ?? 1,
-        modality: meta?.modality ?? 'online',
-        instructorType: meta?.instructorType ?? 'dispatcher',
-        certId: meta?.certId,
+        version: meta && 'version' in meta ? (meta.version as number) : undefined,
+        durationHours: meta && 'durationHours' in meta ? (meta.durationHours as number) : 1,
+        modality: meta && 'modality' in meta ? (meta.modality as 'in_person' | 'online' | 'hybrid') : 'online',
+        instructorType:
+          meta && 'instructorType' in meta ? (meta.instructorType as 'dispatcher' | 'mentor' | 'expert') : 'dispatcher',
+        certId: meta && 'certId' in meta ? (meta.certId as string) : undefined,
       };
     }),
   };

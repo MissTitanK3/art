@@ -33,8 +33,8 @@ type PreparedIndexItem = {
 
 // --- Fuzzy matching utilities (lightweight, typo tolerant) ---
 
-function norm(s: string) {
-  return s.toLowerCase();
+function norm(s: unknown) {
+  return String(s ?? '').toLowerCase();
 }
 
 function tokenize(s: string): string[] {
@@ -301,7 +301,7 @@ export default function SearchCoursesModal() {
     if (!rawItems) { setItems(rawItems as any); return; }
     const prepared: PreparedIndexItem[] = rawItems.map((it) => {
       const title = norm(it.title);
-      const desc = norm(it.description || '');
+      const desc = norm(it.description);
       const text = norm(it.text);
       return {
         raw: it,

@@ -14,7 +14,7 @@ export default function LoadingSpinner({ size = 64, text = 'Scanning…' }: { si
 
       {text && <p className="text-sm text-green-700 animate-pulse">{text}</p>}
 
-      <style jsx>{`
+      <style>{`
         @keyframes radar-ping {
           0% {
             transform: scale(0.25);

@@ -47,7 +47,7 @@ export default function GridOverlay({
   const [countyFeature, setCountyFeature] = useState<Feature<Polygon | MultiPolygon> | null>(null);
   const [gridCells, setGridCells] = useState<{ id: number; coords: L.LatLngTuple[][] }[]>([]);
   const [loading, setLoading] = useState(false);
-  const seen = new Set<number>();
+  // track processed hex IDs within a single build pass
 
   // --- NEW: edit state for multi-select painting ---
   const zonesRef = useRef<Set<number>>(toSet(selectedCounty.ZONE));   // live working set
@@ -71,16 +71,7 @@ export default function GridOverlay({
     };
   }, [map]);
 
-  // Idle callback polyfill
-  const requestIdle: (cb: () => void) => number =
-    typeof window !== 'undefined' && 'requestIdleCallback' in window
-      ? (window as any).requestIdleCallback
-      : (cb: () => void) => window.setTimeout(cb, 1);
-
-  const cancelIdle: (id: number) => void =
-    typeof window !== 'undefined' && 'cancelIdleCallback' in window
-      ? (window as any).cancelIdleCallback
-      : (id: number) => window.clearTimeout(id);
+  // Idle callback polyfill is defined inside effects where used
 
   // Load county data for the active county
   useEffect(() => {
@@ -112,6 +103,17 @@ export default function GridOverlay({
     }
 
     setLoading(true);
+    const seen = new Set<number>();
+
+    // Idle callback polyfill
+    const requestIdle: (cb: () => void) => number =
+      typeof window !== 'undefined' && 'requestIdleCallback' in window
+        ? (window as any).requestIdleCallback
+        : (cb: () => void) => window.setTimeout(cb, 1);
+    const cancelIdle: (id: number) => void =
+      typeof window !== 'undefined' && 'cancelIdleCallback' in window
+        ? (window as any).cancelIdleCallback
+        : (id: number) => window.clearTimeout(id);
 
     const idleId = requestIdle(() => {
       const [minX, minY, maxX, maxY] = turf.bbox(cf);

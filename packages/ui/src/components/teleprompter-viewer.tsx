@@ -71,11 +71,12 @@ const useActiveCountdownColor = (
   segments?: CountdownSegment[]
 ) => {
   const [tick, setTick] = React.useState(0);
+  const segLen = Array.isArray(segments) ? segments.length : 0;
   React.useEffect(() => {
-    if (!enabled || !startedAt || !totalMs || !segments?.length) return;
+    if (!enabled || !startedAt || !totalMs || !segLen) return;
     const id = window.setInterval(() => setTick((t) => t + 1), 250);
     return () => window.clearInterval(id);
-  }, [enabled, startedAt, totalMs, Array.isArray(segments) ? segments.length : 0]);
+  }, [enabled, startedAt, totalMs, segLen]);
   if (!enabled || !startedAt || !totalMs || !segments?.length) return undefined as string | undefined;
   void tick; // force update
   const elapsed = Date.now() - startedAt;

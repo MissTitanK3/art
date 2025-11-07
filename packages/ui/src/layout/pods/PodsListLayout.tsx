@@ -119,7 +119,7 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
           if (typeof saved?.pageSize === "number") setPageSize(saved.pageSize);
           if (typeof saved?.page === "number") setPage(saved.page);
         }
-      } catch { }
+      } catch { /* ignore */ }
     }
 
     const src = initialUrlParams ?? Object.fromEntries(new URLSearchParams(window.location.search).entries());
@@ -179,7 +179,7 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
           persistKey,
           JSON.stringify({ query, area, channel, pageSize, page })
         );
-      } catch { }
+      } catch { /* ignore */ }
     }
   }, [buildQueryString, currentCanonicalQueryString, onUrlChange, persistKey, query, area, channel, pageSize, page]);
 

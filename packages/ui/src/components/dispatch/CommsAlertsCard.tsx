@@ -37,7 +37,7 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
         const parsed = JSON.parse(raw) as CustomAlert[];
         if (Array.isArray(parsed)) setLocalAlerts(parsed);
       }
-    } catch {}
+    } catch { /* ignore */ }
   }, [storageKey, useExternal]);
 
   React.useEffect(() => {
@@ -46,7 +46,7 @@ export function CommsAlertsCard({ alerts: extAlerts, onCreateAlert, onUpdateAler
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(storageKey, JSON.stringify(localAlerts));
       }
-    } catch {}
+    } catch { /* ignore */ }
   }, [localAlerts, storageKey, useExternal]);
 
   const addAlert = async () => {

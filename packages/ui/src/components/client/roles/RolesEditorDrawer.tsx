@@ -60,7 +60,6 @@ export default function RolesEditorDrawer({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search roles..."
             className="w-full"
-            autoFocus
           />
         </div>
 

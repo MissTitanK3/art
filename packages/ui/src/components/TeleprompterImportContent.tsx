@@ -115,7 +115,7 @@ export default function TeleprompterImportContent({
   }, [compileLines, ns, userId]);
 
   React.useEffect(() => {
-    try { loadUserScripts(); } catch { }
+    try { loadUserScripts(); } catch { void 0; }
   }, [loadUserScripts]);
 
   React.useEffect(() => {
@@ -124,15 +124,15 @@ export default function TeleprompterImportContent({
       const watched = [ns('name'), ns('lines'), ns('saved')];
       if (watched.includes(e.key)) loadUserScripts();
     };
-    try { window.addEventListener('storage', handler); } catch { }
-    const onFocus = () => { try { loadUserScripts(); } catch { } };
+    try { window.addEventListener('storage', handler); } catch { void 0; }
+    const onFocus = () => { try { loadUserScripts(); } catch { void 0; } };
     const onVis = () => { if (document.visibilityState === 'visible') onFocus(); };
-    try { window.addEventListener('focus', onFocus); } catch { }
-    try { document.addEventListener('visibilitychange', onVis); } catch { }
+    try { window.addEventListener('focus', onFocus); } catch { void 0; }
+    try { document.addEventListener('visibilitychange', onVis); } catch { void 0; }
     return () => {
-      try { window.removeEventListener('storage', handler); } catch { }
-      try { window.removeEventListener('focus', onFocus); } catch { }
-      try { document.removeEventListener('visibilitychange', onVis); } catch { }
+      try { window.removeEventListener('storage', handler); } catch { void 0; }
+      try { window.removeEventListener('focus', onFocus); } catch { void 0; }
+      try { document.removeEventListener('visibilitychange', onVis); } catch { void 0; }
     };
   }, [loadUserScripts, ns]);
 
@@ -141,7 +141,7 @@ export default function TeleprompterImportContent({
     // keep draft in sync with selection
     const sel = builtinScripts.find((s) => s.id === builtinId) ?? builtinScripts[0];
     if (sel) setBuiltinDraft(sel.content);
-  }, [builtinId, Array.isArray(builtinScripts) ? builtinScripts.length : 0]);
+  }, [builtinId, builtinScripts]);
 
   return (
     <div className="grid gap-3 p-4 max-h-[70vh] overflow-y-auto">
@@ -162,7 +162,6 @@ export default function TeleprompterImportContent({
               <SelectContent>
                 <div className="p-1">
                   <Input
-                    autoFocus
                     placeholder="Search my scripts…"
                     value={userQuery}
                     onChange={(e) => setUserQuery(e.target.value)}
@@ -194,7 +193,7 @@ export default function TeleprompterImportContent({
                 if (sel) setUserDraft(sel.content);
               }}>Reset</Button>
             </div>
-            <div className="text-xs text-muted-foreground">Loaded from your browser's script builder saves.</div>
+            <div className="text-xs text-muted-foreground">Loaded from your browser&#39;s script builder saves.</div>
           </div>
         </div>
       )}
@@ -216,7 +215,6 @@ export default function TeleprompterImportContent({
               <SelectContent>
                 <div className="p-1">
                   <Input
-                    autoFocus
                     placeholder="Search scripts…"
                     value={builtinQuery}
                     onChange={(e) => setBuiltinQuery(e.target.value)}
@@ -229,7 +227,7 @@ export default function TeleprompterImportContent({
                     if (!q) return true;
                     return s.label.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
                   })
-                  .sort((a, b) => a.label.localeCompare(b.label))
+                  .sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')))
                   .map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
                   ))}
@@ -275,7 +273,7 @@ export default function TeleprompterImportContent({
             });
             const joined = compiled.join('\n\n');
             onApplyText(joined);
-            if (name) try { document.title = `${name} – Teleprompter`; } catch { }
+            if (name) try { document.title = `${name} – Teleprompter`; } catch { void 0; }
           } catch (err: any) {
             setImportStatus(err?.message || 'Failed to import builder JSON.');
           }

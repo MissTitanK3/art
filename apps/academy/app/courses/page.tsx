@@ -5,6 +5,7 @@ import { COURSE_GROUPS } from '@/lib/course-index';
 import ThemeToggle from '@workspace/ui/components/client/ThemeToggle';
 import { Callout } from '@workspace/ui/components/academy/Callout';
 import PrintButton from '@/components/client/PrintButton';
+// (LighthouseNav intentionally not used here to maintain legacy design)
 
 export default async function AcademyHome() {
   const allCourses = await getAllCourses();
@@ -12,7 +13,7 @@ export default async function AcademyHome() {
   return (
     <div className="max-w-4xl mx-auto py-12 px-2">
       <div className="flex justify-between w-full items-center">
-        <h1 className="text-3xl font-bold mb-6">🎓 ART Academy</h1>
+        <h1 className="text-3xl font-bold mb-6">ART Academy</h1>
         <div className="flex gap-3 no-print">
           <PrintButton />
           <ThemeToggle />

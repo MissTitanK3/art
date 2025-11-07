@@ -34,7 +34,7 @@ export default function RoleSelector({
 
   return (
     <div data-slot="field-role-selector">
-      <label className="block font-medium mb-2">Your Field Roles</label>
+      <div className="block font-medium mb-2">Your Field Roles</div>
       <p className="text-sm mb-4">
         Select the roles you&apos;re able to perform in the field. Tap or click a role to expand details. Risk level is
         indicated with color.
@@ -48,7 +48,15 @@ export default function RoleSelector({
           return (
             <div key={role} className="border rounded-lg transition">
               <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggle(role)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle(role);
+                  }
+                }}
                 className={`cursor-pointer w-full flex items-center justify-between px-4 py-2 rounded-t-lg font-medium transition ${isSelected ? 'bg-gray-900 text-slate-100' : 'bg-slate-300 text-slate-900 hover:bg-gray-50'
                   }`}>
                 <div className="flex flex-col text-left">

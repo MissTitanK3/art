@@ -149,7 +149,7 @@ export function ClassAssignmentContent({
     if (!academyClass) return instructorOptions;
     const matches = instructorOptions.filter((option) => option.type === academyClass.instructorType);
     return matches.length > 0 ? matches : instructorOptions;
-  }, [academyClass?.instructorType, instructorOptions]);
+  }, [academyClass, instructorOptions]);
 
   React.useEffect(() => {
     if (!instructorName) {

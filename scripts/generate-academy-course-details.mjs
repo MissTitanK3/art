@@ -1,4 +1,5 @@
-import fs from 'fs/promises'
+import fsp from 'fs/promises'
+import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { fileURLToPath } from 'url'
@@ -22,13 +23,23 @@ function pickFrontmatter(data) {
   }
   return out
 }
+function walk(dir, out = []) {
+  const items = fs.readdirSync(dir, { withFileTypes: true })
+  for (const it of items) {
+    const abs = path.join(dir, it.name)
+    if (it.isDirectory()) walk(abs, out)
+    else if (it.isFile() && it.name.toLowerCase().endsWith('.mdx')) out.push(abs)
+  }
+  return out
+}
+
 async function main() {
-  const files = await fs.readdir(COURSES_DIR)
+  const files = walk(COURSES_DIR)
   const entries = {}
-  for (const file of files.filter((f) => f.endsWith('.mdx'))) {
-    const raw = await fs.readFile(path.join(COURSES_DIR, file), 'utf8')
+  for (const abs of files) {
+    const raw = await fsp.readFile(abs, 'utf8')
     const { data } = matter(raw)
-    const slug = file.replace(/\.mdx$/, '')
+    const slug = path.basename(abs).replace(/\.mdx?$/, '')
     entries[slug] = pickFrontmatter(data)
   }
 
@@ -36,7 +47,7 @@ async function main() {
     `// AUTO-GENERATED — DO NOT EDIT
 export const GENERATED_COURSE_DETAILS = ${JSON.stringify(entries, null, 2)} as const;
 `
-  await fs.writeFile(OUT_FILE, content, 'utf8')
+  await fsp.writeFile(OUT_FILE, content, 'utf8')
   console.log('Wrote', OUT_FILE)
 }
 

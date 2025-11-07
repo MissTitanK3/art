@@ -239,9 +239,9 @@ export default function WatchMap({
             </DrawerHeader>
             <div className="px-4 pb-4 space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Map style</label>
+                <label className="mb-1 block text-xs text-muted-foreground" htmlFor="map-style">Map style</label>
                 <Select value={tileProviderId} onValueChange={setTileProviderId}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id="map-style" className="w-full">
                     <SelectValue placeholder="Select map style" />
                   </SelectTrigger>
                   <SelectContent className="z-[100000]">
@@ -257,17 +257,18 @@ export default function WatchMap({
               {(typeof filterQuery !== 'undefined' || typeof filterTimeWindow !== 'undefined') ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-xs text-muted-foreground">Search</label>
+                    <label className="mb-1 block text-xs text-muted-foreground" htmlFor="filter-search">Search</label>
                     <Input
+                      id="filter-search"
                       value={filterQuery ?? ''}
                       onChange={(e) => onFilterQueryChange?.(e.target.value)}
                       placeholder="Search agency, submitter, direction…"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-muted-foreground">Time window</label>
+                    <label className="mb-1 block text-xs text-muted-foreground" htmlFor="time-window">Time window</label>
                     <Select value={filterTimeWindow} onValueChange={onFilterTimeWindowChange}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger id="time-window" className="w-full">
                         <SelectValue placeholder="Last 24h" />
                       </SelectTrigger>
                       <SelectContent className="z-[100000]">
@@ -281,19 +282,20 @@ export default function WatchMap({
                     </Select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-muted-foreground">Agencies</label>
+                    <div className="mb-1 block text-xs text-muted-foreground">Agencies</div>
                     <div className="flex max-h-40 overflow-y-auto flex-wrap gap-3 p-2 rounded-md border bg-background">
                       {(availableAgencies && availableAgencies.length > 0) ? (
                         availableAgencies.map((a) => {
                           const checked = selectedAgencies?.has(a) ?? false;
                           return (
-                            <label key={a} className="inline-flex items-center gap-2 text-xs">
+                            <div key={a} className="inline-flex items-center gap-2 text-xs">
                               <Checkbox
+                                aria-label={a}
                                 checked={checked}
                                 onCheckedChange={(v) => onToggleAgency?.(a, Boolean(v))}
                               />
                               <span>{a}</span>
-                            </label>
+                            </div>
                           );
                         })
                       ) : (
@@ -303,26 +305,26 @@ export default function WatchMap({
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs">
-                    <label className="inline-flex items-center gap-2">
-                      <Checkbox checked={!!hideTest} onCheckedChange={(v) => onHideTestChange?.(Boolean(v))} />
+                    <div className="inline-flex items-center gap-2">
+                      <Checkbox aria-label="Hide test" checked={!!hideTest} onCheckedChange={(v) => onHideTestChange?.(Boolean(v))} />
                       <span>Hide test</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2">
-                      <Checkbox checked={!!withMediaOnly} onCheckedChange={(v) => onWithMediaOnlyChange?.(Boolean(v))} />
+                    </div>
+                    <div className="inline-flex items-center gap-2">
+                      <Checkbox aria-label="Media only" checked={!!withMediaOnly} onCheckedChange={(v) => onWithMediaOnlyChange?.(Boolean(v))} />
                       <span>Media only</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2">
-                      <Checkbox checked={!!lightsOnly} onCheckedChange={(v) => onLightsOnlyChange?.(Boolean(v))} />
+                    </div>
+                    <div className="inline-flex items-center gap-2">
+                      <Checkbox aria-label="Lights on" checked={!!lightsOnly} onCheckedChange={(v) => onLightsOnlyChange?.(Boolean(v))} />
                       <span>Lights on</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2">
-                      <Checkbox checked={!!sirensOnly} onCheckedChange={(v) => onSirensOnlyChange?.(Boolean(v))} />
+                    </div>
+                    <div className="inline-flex items-center gap-2">
+                      <Checkbox aria-label="Sirens on" checked={!!sirensOnly} onCheckedChange={(v) => onSirensOnlyChange?.(Boolean(v))} />
                       <span>Sirens on</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2">
-                      <Checkbox checked={!!movingOnly} onCheckedChange={(v) => onMovingOnlyChange?.(Boolean(v))} />
+                    </div>
+                    <div className="inline-flex items-center gap-2">
+                      <Checkbox aria-label="Officer moving" checked={!!movingOnly} onCheckedChange={(v) => onMovingOnlyChange?.(Boolean(v))} />
                       <span>Officer moving</span>
-                    </label>
+                    </div>
                   </div>
 
                   <div className="flex justify-end">
@@ -419,7 +421,7 @@ export default function WatchMap({
                 }
               } else if (typeof geog === 'string') {
                 // Try parsing WKT-like: "POINT(lng lat)" or with SRID prefix
-                const m = geog.match(/POINT\s*\(\s*([\-\d\.]+)\s+([\-\d\.]+)\s*\)/i);
+                const m = geog.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
                 if (m) {
                   const c0 = num(m[1]);
                   const c1 = num(m[2]);

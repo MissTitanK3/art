@@ -38,7 +38,7 @@ function CountyLayer({ selected, onToggleCounty }: Props) {
   }, [map, data]);
 
   // helper to restyle one polygon based on current `selected`
-  const restylePolygon = (polygon: FeatureLayer) => {
+  const restylePolygon = React.useCallback((polygon: FeatureLayer) => {
     const props = polygon.feature?.properties;
     if (!props) return;
     const match = selected.find((c) => c.GEO_ID === props.GEO_ID);
@@ -50,14 +50,14 @@ function CountyLayer({ selected, onToggleCounty }: Props) {
       color: 'blue',
       weight: 1,
     });
-  };
+  }, [selected]);
 
   // UPDATE STYLES whenever `selected` changes
   useEffect(() => {
     const inst = geoRef.current;
     if (!inst) return;
     inst.eachLayer((layer) => restylePolygon(layer as FeatureLayer));
-  }, [selected]);
+  }, [selected, restylePolygon]);
 
   if (!visible || !data) return null;
 

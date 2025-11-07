@@ -44,6 +44,7 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
       map.get(key)!.push(r);
     }
     // sort items in each group according to sortBy/sortDir
+    const priorityOrder: Record<string, number> = { critical: 3, high: 2, medium: 1, low: 0 };
     const compare = (a: BugReportRow, b: BugReportRow) => {
       let av: any;
       let bv: any;
@@ -53,9 +54,8 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
           bv = new Date(b.created_at).getTime();
           break;
         case 'priority':
-          const order: Record<string, number> = { 'critical': 3, 'high': 2, 'medium': 1, 'low': 0 };
-          av = order[a.priority || 'low'] || 0;
-          bv = order[b.priority || 'low'] || 0;
+          av = priorityOrder[a.priority || 'low'] || 0;
+          bv = priorityOrder[b.priority || 'low'] || 0;
           break;
         case 'status':
           av = a.status;

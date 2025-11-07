@@ -7,10 +7,12 @@
     "dev": "turbo dev --concurrency=20",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepare": "husky",
+    "ci:local": "node scripts/ci-local.mjs",
     "create:region": "node scripts/create-region.mjs",
+    "new:course": "node scripts/new-course.mjs",
+    "generate:academy-groups": "node scripts/generate-academy-groups.mjs",
     "generate:academy-course-details": "node scripts/generate-academy-course-details.mjs",
-    "prebuild": "pnpm -w run generate:academy-course-details",
+    "prebuild": "pnpm -w run generate:academy-course-details && pnpm -w run generate:academy-groups && pnpm -w run validate:academy",
     "validate:academy": "node scripts/validate-academy-content.mjs"
   },
   "devDependencies": {
@@ -29,7 +31,6 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "gray-matter": "^4.0.3",
     "prettier": "^3.6.2",
-    "husky": "^9.1.6",
     "turbo": "^2.5.5",
     "typescript": "5.7.3"
   },

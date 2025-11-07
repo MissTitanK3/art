@@ -206,7 +206,7 @@ function RenameDialog({
         </DialogHeader>
         <div className="grid gap-2 py-2">
           <Label htmlFor="pod-name">Name</Label>
-          <Input id="pod-name" value={value} onChange={(e) => onChange(e.target.value)} autoFocus />
+          <Input id="pod-name" value={value} onChange={(e) => onChange(e.target.value)} />
         </div>
         <DialogFooter>
           <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>

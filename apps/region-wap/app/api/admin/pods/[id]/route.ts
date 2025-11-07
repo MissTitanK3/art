@@ -43,7 +43,9 @@ async function authz(podId?: string) {
       .eq('id', podId)
       .maybeSingle();
     if (!podErr && podRow && podRow.created_by && String(podRow.created_by) === String(callerProfile.id)) return true;
-  } catch {}
+  } catch (e) {
+    // no-op
+  }
   return false;
 }
 

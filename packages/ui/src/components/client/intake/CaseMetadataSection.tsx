@@ -52,35 +52,38 @@ interface ViewProps extends BaseProps {
 export type CaseMetadataSectionProps = EditProps | ViewProps;
 
 export function CaseMetadataSection(props: CaseMetadataSectionProps) {
-  const title = props.title ?? "Case Metadata";
-  const description = props.description ?? "Basic identifying details about this detention.";
-  const sectionName = props.sectionName ?? "Case Metadata";
-
   if (props.mode === "view") {
-    const { data } = props;
-    return (
-      <FormSectionCard title={title} description={description}>
-        <DetailGrid>
-          <DetailItem label="Case ID" value={formatText(data.caseId)} />
-          <DetailItem label="Detention Date & Time" value={formatDateTime(data.detentionDateTime)} />
-          <DetailItem label="Detention Location" value={formatText(data.detentionLocation)} />
-          <DetailItem label="Arresting Agency" value={formatText(data.arrestingAgency)} />
-        </DetailGrid>
-      </FormSectionCard>
-    );
+    return <CaseMetadataSectionView {...props} />;
   }
+  return <CaseMetadataSectionEdit {...props} />;
+}
 
-  const {
-    control,
-    onSave,
-    saveButtonProps,
-    onGenerateCaseId,
-    loadLastCaseId,
-    caseIdExamples,
-    region,
-    existingCaseIds,
-  } = props;
+function CaseMetadataSectionView({ title = "Case Metadata", description = "Basic identifying details about this detention.", data }: ViewProps) {
+  return (
+    <FormSectionCard title={title} description={description}>
+      <DetailGrid>
+        <DetailItem label="Case ID" value={formatText(data.caseId)} />
+        <DetailItem label="Detention Date & Time" value={formatDateTime(data.detentionDateTime)} />
+        <DetailItem label="Detention Location" value={formatText(data.detentionLocation)} />
+        <DetailItem label="Arresting Agency" value={formatText(data.arrestingAgency)} />
+      </DetailGrid>
+    </FormSectionCard>
+  );
+}
 
+function CaseMetadataSectionEdit({
+  title = "Case Metadata",
+  description = "Basic identifying details about this detention.",
+  sectionName = "Case Metadata",
+  control,
+  onSave,
+  saveButtonProps,
+  onGenerateCaseId,
+  loadLastCaseId,
+  caseIdExamples,
+  region,
+  existingCaseIds,
+}: EditProps) {
   const [zoneInput, setZoneInput] = React.useState("");
   const [generating, setGenerating] = React.useState(false);
 
@@ -90,7 +93,6 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
 
   const normalise = (s: string) => s.trim().replace(/\s+/g, "-").toUpperCase();
 
-  // Extract trailing numeric sequence from an existing caseId
   const parseSequenceFromCaseId = React.useCallback((caseId: string | null | undefined) => {
     if (!caseId) return 0;
     const text = normalise(caseId);
@@ -161,7 +163,6 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                           value={zoneInput}
                           onChange={(e) => {
                             const raw = e.target.value ?? "";
-                            // Replace any whitespace with dashes and uppercase the zone
                             const sanitised = raw.replace(/\s+/g, "-").toUpperCase();
                             setZoneInput(sanitised);
                           }}
@@ -181,7 +182,6 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                                 try {
                                   last = await loadLastCaseId();
                                 } catch {
-                                  // ignore backend errors; fallback to local
                                   last = null;
                                 }
                               }
@@ -189,7 +189,6 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                               if (last) {
                                 seq = parseSequenceFromCaseId(last);
                               } else if (existingCaseIds && existingCaseIds.length) {
-                                // fallback: best-effort from provided IDs
                                 const prefix = `${normalise(region ?? "REGION")}-${normalise(zoneInput)}-${year}-${month}-`;
                                 for (const id of existingCaseIds) {
                                   const n = normalise(id);
@@ -211,12 +210,10 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                         </Button>
                       </div>
                     </div>
-                    {/* Display the generated Case ID (read-only) */}
                     <Input value={field.value ?? ""} readOnly placeholder={`e.g. ${buildCaseId(1)}`} />
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    {/* No region: only allow generation via callback if provided */}
                     <Input value={field.value ?? ""} readOnly placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`} />
                     {onGenerateCaseId || loadLastCaseId ? (
                       <Button
@@ -250,7 +247,6 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                   <FormMessage />
                 </div>
                 <div className="flex-shrink-0">
-
                   <Button
                     type="button"
                     variant="outline"
@@ -260,7 +256,7 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
                       try {
                         await navigator.clipboard.writeText(text);
                       } catch {
-                        // ignore clipboard errors
+                        /* ignore */
                       }
                     }}
                   >

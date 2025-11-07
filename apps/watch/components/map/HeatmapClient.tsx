@@ -106,7 +106,19 @@ export default function HeatmapClient() {
 
       {/* Backdrop */}
       {filtersOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setFiltersOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          role="button"
+          tabIndex={0}
+          aria-label="Close filters"
+          onClick={() => setFiltersOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setFiltersOpen(false);
+            }
+          }}
+        />
       )}
 
       {/* Sidepanel */}

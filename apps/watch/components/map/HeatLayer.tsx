@@ -82,7 +82,6 @@ export function HeatLayer({ reports, gradients }: { reports: Report[]; gradients
     }
 
     for (const [agency, points] of Object.entries(grouped)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const heat = (L as any)
         .heatLayer(points, {
           radius: 35,
@@ -101,7 +100,7 @@ export function HeatLayer({ reports, gradients }: { reports: Report[]; gradients
       layersRef.current.forEach((layer) => map.removeLayer(layer));
       layersRef.current = [];
     };
-  }, [map, reports]);
+  }, [map, reports, gradients]);
 
   return null;
 }

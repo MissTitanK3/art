@@ -25,7 +25,6 @@ export function AcademyStatsGrid({ stats }: AcademyStatsGridProps) {
           </>
         )
         const inner = stat.href ? (
-          // eslint-disable-next-line jsx-a11y/anchor-is-valid
           <a href={stat.href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 rounded-xl">
             {content}
           </a>

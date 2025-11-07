@@ -182,7 +182,7 @@ export function DispatchListLayout({
           if (typeof saved?.pageSize === "number") setPageSize(saved.pageSize);
           if (typeof saved?.page === "number") setPage(saved.page);
         }
-      } catch { }
+      } catch { /* ignore */ }
     }
 
     const sourceParams = initialUrlParams ?? (typeof window !== "undefined" ? Object.fromEntries(new URLSearchParams(window.location.search).entries()) : {});
@@ -242,9 +242,9 @@ export function DispatchListLayout({
             page,
           })
         );
-      } catch { }
+      } catch { /* ignore */ }
     }
-  }, [buildQueryString, currentCanonicalQueryString, onUrlChange, persistKey]);
+  }, [buildQueryString, currentCanonicalQueryString, onUrlChange, persistKey, query, status, type, dateRange, pageSize, page]);
 
   // Subset submissions per tab first
   const tabScopedSubmissions = React.useMemo(() => {
@@ -297,7 +297,7 @@ export function DispatchListLayout({
       return true;
     });
     return list;
-  }, [tabScopedSubmissions, debouncedQuery, status, type, dateRange, activeTab]);
+  }, [tabScopedSubmissions, debouncedQuery, status, type, dateRange]);
 
   // Reset page when filters change
   React.useEffect(() => {
@@ -305,9 +305,8 @@ export function DispatchListLayout({
   }, [debouncedQuery, status, type, dateRange, pageSize]);
 
   // --- Group by urgency windows based on date_of_event ---
-  const now = new Date();
   function diffMs(a: Date, b: Date) { return a.getTime() - b.getTime(); }
-  function bucketFor(sub: typeof submissions[number]):
+  const bucketFor = React.useCallback((sub: typeof submissions[number]):
     | "Immediately"
     | "Within 30 Minutes"
     | "Within 1 Hour"
@@ -316,7 +315,8 @@ export function DispatchListLayout({
     | "Within A Day"
     | "Within 3 Days"
     | "Within the Week"
-    | "Beyond Next Week" {
+    | "Beyond Next Week" => {
+    const now = new Date();
     const whenStr = sub.date_of_event ?? sub.timestamp;
     const when = new Date(whenStr);
     if (isNaN(when.getTime())) return "Within the Week"; // fallback bucket
@@ -347,7 +347,7 @@ export function DispatchListLayout({
     const endOfWeek = new Date(endOfToday);
     endOfWeek.setDate(endOfWeek.getDate() + 7);
     return when <= endOfWeek ? "Within the Week" : "Beyond Next Week";
-  }
+  }, []);
 
   const grouped = React.useMemo(() => {
     const order = [
@@ -389,7 +389,7 @@ export function DispatchListLayout({
     }
 
     return { order, groups };
-  }, [filtered]);
+  }, [filtered, bucketFor]);
 
   // Flatten back to list for pagination after grouping but preserving grouped order
   const groupedFlattened = React.useMemo(() => {

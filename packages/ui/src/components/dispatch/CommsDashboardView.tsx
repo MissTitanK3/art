@@ -86,7 +86,7 @@ export function CommsDashboardView({
 
         <Card>
           <CardHeader className="flex items-center justify-between">
-            <CardTitle className="w-full">Check In's</CardTitle>
+            <CardTitle className="w-full">Check In&rsquo;s</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-3 space-y-3">

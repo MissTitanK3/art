@@ -39,7 +39,7 @@ function clientFromCookies() {
               cookies.forEach(({ name, value, options }) => {
                 store.set(name, value, options as CookieOptions | undefined);
               });
-            } catch {}
+            } catch { /* no-op */ }
           },
         },
       }),

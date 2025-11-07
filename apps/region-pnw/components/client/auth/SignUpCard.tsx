@@ -40,7 +40,7 @@ export function SignUpCard({ redirectTo }: Props) {
     } as Partial<Profile>;
 
     if (session) {
-      try { setSession(session); await refresh(); } catch {}
+      try { setSession(session); await refresh(); } catch { /* no-op */ }
       const profile: Profile = {
         id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `${session.user.id}-${Date.now()}`,
         user_id: session.user.id,
@@ -72,7 +72,7 @@ export function SignUpCard({ redirectTo }: Props) {
           const map = raw ? (JSON.parse(raw) as Record<string, Partial<Profile>>) : {};
           map[email] = { ...baseProfile };
           localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(map));
-        } catch {}
+        } catch { /* no-op: localStorage unavailable */ }
       }
       router.push(target);
       return;
@@ -82,7 +82,7 @@ export function SignUpCard({ redirectTo }: Props) {
         const map = raw ? (JSON.parse(raw) as Record<string, Partial<Profile>>) : {};
         map[email] = baseProfile;
         localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(map));
-      } catch {}
+      } catch { /* no-op: localStorage unavailable */ }
       return { info: "Check your email to confirm your account. We will finish creating your profile after you sign in." };
     }
   }, [providerId, signUpWithPassword, setSession, refresh, profileAdapter, router, target]);

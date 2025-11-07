@@ -265,7 +265,7 @@ export default function PodManagementDataLayer() {
         const el = document.activeElement as HTMLElement | null;
         el?.blur?.();
       }
-    } catch {}
+    } catch { /* no-op */ }
     return handleSubmit(onValidSubmit)(e);
   };
 

@@ -1,0 +1,173 @@
+---
+title: Admin Tools and Oversight
+slug: admin-tools
+description: >-
+  Learn how to manage dispatch creation, access roles, and trust signatures in
+  ART Dispatch — with clear boundaries on what the tools can (and can’t) do
+  today.
+type: qualified
+readingTime: 22
+version: '1.3'
+---
+# 🔐 Admin Tools and Oversight
+<TrackBadge variant="pod-leadership" />
+
+Admin-level dispatchers are trusted with sensitive tools and major responsibilities. This module covers managing dispatches, adjusting access roles, recording trust signatures, coordinating coverage, and maintaining accountability through activity reviews.
+
+---
+
+## Core Admin Permissions (today)
+
+Level 4 (Admin) users can:
+
+- ✅ **Create and edit dispatches**
+- 🔐 **Adjust user access roles** (e.g., promote to Verified/Admin Dispatcher)
+- 🤝 **Record trust signatures** (document who vouched for whom and when)
+- �️ **Review recent activity** (dispatch updates, approvals)
+- 🧭 **Coordinate coverage** (assign leads/areas; label a coordinator’s zone)
+- 📋 **Approve or remove reports** (if your region enables admin moderation)
+
+What you cannot do in-app yet (use policy or server-side workflows instead):
+
+- ⛔ A full, in-app **audit log viewer** for every action (server logs only)
+- ⛔ One-click **CSV export** of all records (use Supabase admin or request a limited export)
+- ⛔ Map-drawn **geofence radii** as “zones” (use coordination labels/shifts instead)
+
+---
+
+## Creating & Editing Dispatches
+
+Admins can manually initiate new dispatches, bypassing normal triage. This is allowed only when:
+
+- The situation is **urgent** (active raid, medical crisis, imminent threat)
+- Another dispatcher requests backup
+- A trusted source confirms verified intel
+
+### Manual Dispatch Tips
+
+- Use precise **location data** (cross streets, GPS if safe)
+- Clearly flag **urgency and timing**
+- Add **internal notes** (visible to trusted roles only)
+- Avoid overuse; these tools should not replace collective triage
+
+<Callout type="important">
+Always follow up with the responding dispatcher to confirm closure, updates, and after-action notes.
+</Callout>
+
+---
+
+## Access Roles and Trust Signatures
+
+Dispatch access is controlled by an access role set on a user’s profile (region-specific). Common roles include:
+
+- Dispatcher (basic)
+- Verified Dispatcher (can coordinate and assign)
+- Admin Dispatcher (full coordination + admin tools)
+
+In addition to access roles, Admins can record “trust signatures” that document a vouch (who vouched, for whom, in what capacity). A trust signature:
+
+- Does not automatically change someone’s access role
+- Creates a transparent trail of endorsements for accountability
+
+Promotions should meet prerequisites agreed by your region:
+
+- **Level 1+**: Completed Response Training  
+- **Level 3**: At least 3 months of activity, Dispatch Certification, 2 peer referrals  
+- **Level 4**: Invitation by core team, conflict resolution training
+
+<Callout type="warning">
+Never promote someone as a favor or without full review.  
+Record a trust signature and **log the promotion reason** (e.g., “Certified + crisis leadership experience”).
+</Callout>
+
+---
+
+## Coordinating Coverage (labels, not geofences)
+
+Coverage is coordinated through assignments and labels, not map-drawn geofences. Today you can:
+
+- 🌐 Label a dispatcher’s “coordination zone” (e.g., Neighborhood/City)
+- 📍 Assign temporary coverage for marches, vigils, or emergency deployments
+- 🧭 Track shifts/coverage windows in scheduling tools (if your region enables them)
+
+Best practices:
+
+- Avoid overlapping coverage without coordination — designate a **primary lead and backup**  
+- Tag coverage for **language capacity** (e.g., "Spanish-speaking leads available")  
+- Reduce late-night paging unless critical; pre-plan quiet hours and escalation paths
+
+---
+
+## Report Approvals and Removal
+
+Admins can:
+
+- Review flagged or duplicate reports  
+- Approve valid submissions  
+- Remove spam, harmful, or false data
+
+Always:
+
+- Document **why a report was rejected** in the audit log  
+- Use **transparent reasoning** to maintain trust  
+- Refer disputes to the **Accountability Team** (never resolve alone if contested)
+
+---
+
+## Activity Review, Exports, and Audits
+
+From the Admin Dashboard and server logs, you can:
+
+- 🕓 Review recent activity (dispatch updates, approvals, role changes recorded by admins)
+- 🔍 Conduct periodic audits of major responses to identify gaps
+- 📊 Request limited exports via a server-side workflow (no in-app CSV export yet)
+
+<Callout type="warning">
+Exports can be subpoenaed. Do not include names, addresses, or sensitive identifiers in exported notes. Prefer aggregated stats and redact PII.
+</Callout>
+
+---
+
+## Compromised Accounts
+
+If you suspect a breach:
+
+1. Revoke access immediately (via Admin Panel)  
+2. Notify the core team and affected leads  
+3. Audit recent logs for misuse  
+4. Reset passwords
+5. File a brief report in the Admin SOS channel (Signal)
+
+---
+
+## Accountability & Community Standards
+
+Admin roles are about stewardship, not control. You must:
+
+- Avoid editing dispatches except for accuracy or emergency reasons  
+- Never promote or demote without full review  
+- Join the **Monthly Admin Sync** to share updates and resolve tool issues  
+- Report tool bugs or access friction via [this form](/admin-feedback)
+
+---
+
+## Summary
+
+Admins hold the keys to critical infrastructure. Use this access to **support your teams, protect the network, and uphold trust.**
+
+<Callout type="success">
+Admins aren’t bosses — they’re anchors.  
+Lead with clarity, transparency, and care.
+</Callout>
+
+---
+
+## Related courses
+
+- Trust & Ethics in Dispatch → [/courses/trust-and-ethics-in-dispatch](/courses/trust-and-ethics-in-dispatch)
+- Dispatch Training Pathway → [/courses/dispatch-training-pathway](/courses/dispatch-training-pathway)
+- Dispatch Coordination → [/courses/dispatch-coordination](/courses/dispatch-coordination)
+- Documentation Safety → [/courses/documentation-safety](/courses/documentation-safety)
+- Digital Security Basics → [/courses/digital-security-basics](/courses/digital-security-basics)
+
+

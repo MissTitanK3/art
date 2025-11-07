@@ -78,7 +78,7 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
-        <label className="text-sm font-medium">Font face</label>
+        <div className="text-sm font-medium">Font face</div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant={fontFace === "sans" ? "secondary" : "outline"} onClick={() => onFontFaceChange("sans")}>Sans</Button>
           <Button variant={fontFace === "serif" ? "secondary" : "outline"} onClick={() => onFontFaceChange("serif")}>Serif</Button>
@@ -88,7 +88,7 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-medium">Theme</label>
+        <div className="text-sm font-medium">Theme</div>
         <div className="flex items-center gap-2">
           <Select value={preset} onValueChange={(v) => onPresetChange(v as PresetId)}>
             <SelectTrigger className="w-[200px]"><SelectValue placeholder="Preset" /></SelectTrigger>
@@ -110,7 +110,7 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-medium">Overlay</label>
+        <div className="text-sm font-medium">Overlay</div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 text-sm"><span>Color</span><input type="color" value={overlayColor} onChange={(e) => onOverlayColorChange(e.target.value)} /></div>
           <div className="flex items-center gap-2 text-sm">
@@ -122,7 +122,7 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-medium">Hints</label>
+        <div className="text-sm font-medium">Hints</div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={onResetKeyboardHint}>Reset keyboard hint</Button>
           <span className="text-xs text-muted-foreground">Show the “Press Space to play” hint again</span>
@@ -130,7 +130,7 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-medium">Default speed</label>
+        <div className="text-sm font-medium">Default speed</div>
         <div className="flex items-center gap-3 flex-wrap">
           <Select
             value={closestSpeedPresetId(defaultSpeed)}

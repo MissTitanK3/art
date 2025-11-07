@@ -28,6 +28,10 @@ export default function AdminPage() {
   const [uniquePods, setUniquePods] = React.useState<number>(0);
   const [dispatches, setDispatches] = React.useState<DispatchSubmission[]>([]);
 
+  const [loadingProfiles, setLoadingProfiles] = React.useState(true);
+  const [loadingPods, setLoadingPods] = React.useState(true);
+  const [loadingDispatches, setLoadingDispatches] = React.useState(true);
+
   React.useEffect(() => {
     const controller = new AbortController();
     const load = async () => {
@@ -36,34 +40,43 @@ export default function AdminPage() {
           credentials: "include",
           signal: controller.signal,
         });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { profiles } = (await res.json()) as { profiles?: Profile[] };
+        const size = Array.isArray(profiles) ? new Set(profiles.map((p) => p.id)).size : 0;
+        setUniqueProfiles(size);
+      } catch {
+        setUniqueProfiles(0);
+      } finally {
+        setLoadingProfiles(false);
+      }
 
+      try {
         const podsRes = await fetch("/api/admin/pods", {
           credentials: "include",
           signal: controller.signal,
         });
+        if (!podsRes.ok) throw new Error(`HTTP ${podsRes.status}`);
+        const { pods } = (await podsRes.json()) as { pods?: Pod[] };
+        const podSize = Array.isArray(pods) ? new Set(pods.map((p) => p.id)).size : 0;
+        setUniquePods(podSize);
+      } catch {
+        setUniquePods(0);
+      } finally {
+        setLoadingPods(false);
+      }
 
+      try {
         const dispatchesRes = await fetch("/api/admin/dispatches", {
           credentials: "include",
           signal: controller.signal,
         });
-
-        if (!podsRes.ok) throw new Error(`HTTP ${podsRes.status}`);
-        const { pods } = (await podsRes.json()) as { pods?: Pod[] };
-        const podSize = Array.isArray(pods) ? new Set(pods.map((p) => p.id)).size : 0;
-        setUniquePods((prev) => (prev === podSize ? prev : podSize));
-
         if (!dispatchesRes.ok) throw new Error(`HTTP ${dispatchesRes.status}`);
         const { submissions } = (await dispatchesRes.json()) as { submissions?: DispatchSubmission[] };
         setDispatches(Array.isArray(submissions) ? submissions : []);
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { profiles } = (await res.json()) as { profiles?: Profile[] };
-        const size = Array.isArray(profiles) ? new Set(profiles.map((p) => p.id)).size : 0;
-        setUniqueProfiles((prev) => (prev === size ? prev : size));
-      } catch (err) {
-        // ignore abort errors; keep zero on other errors
-        if ((err as any)?.name === "AbortError") return;
-        setUniqueProfiles((prev) => (prev === 0 ? prev : 0));
+      } catch {
+        setDispatches([]);
+      } finally {
+        setLoadingDispatches(false);
       }
     };
     load();
@@ -125,13 +138,14 @@ export default function AdminPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total Profiles" value={uniqueProfiles} icon={<Users2 className="h-4 w-4 text-muted-foreground" />} />
+        <StatCard label="Total Profiles" value={uniqueProfiles} loading={loadingProfiles} icon={<Users2 className="h-4 w-4 text-muted-foreground" />} />
         <StatCard
           label="Active Dispatches"
           value={activeDispatches}
+          loading={loadingDispatches}
           icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
         />
-        <StatCard label="Pods" value={uniquePods} icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />} />
+        <StatCard label="Pods" value={uniquePods} loading={loadingPods} icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />} />
         <StatCard label="Training Completed" value={`${trainingPct}%`} icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />} />
       </div>
 

@@ -58,8 +58,9 @@ export function ActionsStep({ initial, onBack, onNext }: ActionsStepProps) {
         </div>
 
         <div>
-          <label className="block font-semibold mb-1">Notes</label>
+          <label className="block font-semibold mb-1" htmlFor="intended-notes">Notes</label>
           <Textarea
+            id="intended-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add context or clarifications..."
@@ -68,8 +69,9 @@ export function ActionsStep({ initial, onBack, onNext }: ActionsStepProps) {
         </div>
 
         <div>
-          <label className="block font-semibold mb-1">Custom Action</label>
+          <label className="block font-semibold mb-1" htmlFor="custom-action">Custom Action</label>
           <Input
+            id="custom-action"
             value={custom}
             onChange={(e) => setCustom(e.target.value)}
             placeholder="Describe a custom plan..."

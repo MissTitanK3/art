@@ -75,7 +75,7 @@ function NeedsListWrapper() {
         if (typeof saved?.pageSize === 'number') setPageSize(saved.pageSize);
         if (typeof saved?.page === 'number') setPage(saved.page);
       }
-    } catch { }
+    } catch { /* no-op: ignore bad stored filters */ }
 
     const params = Object.fromEntries((searchParams ?? new URLSearchParams()).entries());
     if (typeof params.q === 'string') setQuery(params.q);
@@ -116,7 +116,7 @@ function NeedsListWrapper() {
         page,
       };
       window.localStorage.setItem('meetANeed.filters', JSON.stringify(payload));
-    } catch { }
+    } catch { /* no-op */ }
   }, [query, category, urgency, visibility, status, dateRange.from, dateRange.to, pageSize, page]);
 
   const categories = React.useMemo(() => NEED_CATEGORIES, []);
@@ -200,7 +200,7 @@ function NeedsListWrapper() {
     const items: React.ReactNode[] = [];
     const maxToShow = 5;
     let start = Math.max(1, currentPage - Math.floor(maxToShow / 2));
-    let end = Math.min(totalPages, start + maxToShow - 1);
+    const end = Math.min(totalPages, start + maxToShow - 1);
     if (end - start + 1 < maxToShow) start = Math.max(1, end - maxToShow + 1);
 
     if (start > 1) {
@@ -423,4 +423,3 @@ function SubmitNeedDrawerWrapper() {
     </>
   );
 }
-

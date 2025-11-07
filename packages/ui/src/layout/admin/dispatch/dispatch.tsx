@@ -218,7 +218,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
                         <TableCell className="text-right">
                           <div className="inline-flex gap-2">
                             <Button asChild variant="outline" size="sm">
-                              <a target="_blank" href={`/dispatches/submission/${d.id}`}>View</a>
+                              <a target="_blank" rel="noreferrer" href={`/dispatches/submission/${d.id}`}>View</a>
                             </Button>
                             <Button size="sm" variant={flagged ? "outline" : "secondary"} onClick={() => toggleFlag(d.id)}>
                               {flagged ? <><FlagOff className="h-4 w-4 mr-2" /> Unflag</> : <><Flag className="h-4 w-4 mr-2" /> Flag</>}

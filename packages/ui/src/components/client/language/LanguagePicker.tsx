@@ -107,7 +107,15 @@ export default function LanguagePicker({
     >
       <div
         className={`flex min-h-11 w-full flex-wrap items-center gap-2 rounded-2xl border border-muted-foreground/20 px-3 py-2 focus-within:ring-2 focus-within:ring-primary/40 ${disabled ? "opacity-60" : ""}`}
+        role="button"
+        tabIndex={0}
         onClick={() => inputRef.current?.focus()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            inputRef.current?.focus();
+          }
+        }}
       >
         {/* Chips */}
         {items.map((lang) => (

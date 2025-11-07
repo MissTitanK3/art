@@ -3,7 +3,7 @@
 import { toast } from 'sonner'
 import { Button } from "@workspace/ui/components/button"
 
-type Props = {}
+type Props = Record<string, never>
 
 export const TestSonner = (props: Props) => {
   return (

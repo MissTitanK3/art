@@ -31,7 +31,7 @@ export default function DispatchRolesManager({
   onUpdate,
   roster,
 }: DispatchRolesManagerProps) {
-  const providedRoster = roster ?? [];
+  const providedRoster = useMemo(() => roster ?? [], [roster]);
   const [openRole, setOpenRole] = useState<string | null>(null);
   const [openRolesEditor, setOpenRolesEditor] = useState(false);
   const [loadingRoster, setLoadingRoster] = useState(false);

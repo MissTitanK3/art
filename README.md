@@ -169,6 +169,18 @@ Deploy via CI/CD pipeline (Vercel, Docker, etc.), with per-region environment co
 
 ---
 
+## Local CI Workflow
+
+Run the full local CI (generate course metadata, validate Academy links, lint, and build):
+
+pnpm -w run ci:local
+
+This replaces Git hooks/GitHub Actions for validation. It will fail on any broken `/academy/*` or `/courses/*` links in Academy content and surface other build/lint errors.
+
+Logs: Each run writes a timestamped log to `.logs/ci-local-YYYY-MM-DDTHH-MM-SS-sssZ.log`.
+
+---
+
 ## License
 
 Copyright © [2025] Always Ready Tools contributors.  

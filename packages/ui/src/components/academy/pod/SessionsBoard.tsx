@@ -89,10 +89,15 @@ export function SessionsBoard({
   onUpdateSession,
   onDeleteSession,
 }: SessionsBoardProps) {
-  const handleCreateSession = onCreateSession ?? (() => { })
-  const handleUpdateStatus = onUpdateSessionStatus ?? (() => { })
-  const handleUpdateSession = onUpdateSession ?? (() => { })
-  const handleDeleteSession = onDeleteSession ?? (() => { })
+  const noopCreate = React.useCallback((_: AcademyTrainingSessionDraft) => { }, [])
+  const noopUpdateStatus = React.useCallback((_: string, __: AcademyTrainingSession['status']) => { }, [])
+  const noopUpdateSession = React.useCallback((_: string, __: Partial<AcademyTrainingSession>) => { }, [])
+  const noopDeleteSession = React.useCallback((_: string) => { }, [])
+
+  const handleCreateSession = onCreateSession ?? noopCreate
+  const handleUpdateStatus = onUpdateSessionStatus ?? noopUpdateStatus
+  const handleUpdateSession = onUpdateSession ?? noopUpdateSession
+  const handleDeleteSession = onDeleteSession ?? noopDeleteSession
 
   const [sessionStatusFilter, setSessionStatusFilter] = React.useState<SessionFilterValue>('all')
   const [showArchivedSessions, setShowArchivedSessions] = React.useState(false)

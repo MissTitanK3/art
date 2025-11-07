@@ -208,7 +208,7 @@ export function AdvocacyGroupsAdmin({
     const payload = {
       ...draft,
       contact_emails: String(contactEmailsText || "")
-        .split(/[\,\s]+/)
+        .split(/[,\s]+/)
         .map((s) => s.trim())
         .filter(Boolean),
     } as any;
@@ -477,7 +477,7 @@ export function AdvocacyGroupsAdmin({
           <DialogHeader>
             <DialogTitle>Remove Organization</DialogTitle>
             <DialogDescription>
-              This will permanently remove "{deleteTarget?.name}" from the Advocacy Network. This action cannot be undone.
+              This will permanently remove &quot;{deleteTarget?.name}&quot; from the Advocacy Network. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-1 text-sm text-muted-foreground">
@@ -504,4 +504,3 @@ export function AdvocacyGroupsAdmin({
 }
 
 export default AdvocacyGroupsAdmin;
-

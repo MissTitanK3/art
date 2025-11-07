@@ -100,7 +100,7 @@ function useLocalStorage<T>(key: string, initial: T) {
       if (raw != null) {
         setState(JSON.parse(raw) as T);
       }
-    } catch { }
+    } catch { /* ignore */ }
     hydratedRef.current = true;
   }, [key]);
 
@@ -108,7 +108,7 @@ function useLocalStorage<T>(key: string, initial: T) {
     if (!hydratedRef.current) return;
     try {
       window.localStorage.setItem(key, JSON.stringify(state));
-    } catch { }
+    } catch { /* ignore */ }
   }, [key, state]);
   return [state, setState] as const;
 }
@@ -236,7 +236,7 @@ export default function TeleprompterScriptBuilder({ builtinScripts, builtinMeta,
   const placeholdersInUse = React.useMemo(() => {
     const text = compiledLines.join('\n\n');
     const m = text.match(/\[([A-Z_]+)\]/g) || [];
-    const uniq = Array.from(new Set(m.map((x) => x.replace(/[\[\]]/g, ''))));
+    const uniq = Array.from(new Set(m.map((x) => x.replace(/\[/g, '').replace(/\]/g, ''))));
     return uniq;
   }, [compiledLines]);
 
@@ -447,7 +447,7 @@ export default function TeleprompterScriptBuilder({ builtinScripts, builtinMeta,
         ) : lines.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">No lines yet. Add your first line above.</p>
         ) : (
-          <ol className="mt-3 space-y-3" role="list">
+          <ol className="mt-3 space-y-3">
             {lines.map((l, idx) => (
               <li
                 key={l.id}
@@ -457,7 +457,6 @@ export default function TeleprompterScriptBuilder({ builtinScripts, builtinMeta,
                 onDragOver={(e) => onDragOver(idx, e)}
                 className={`relative group flex flex-wrap items-start gap-3 rounded-md border bg-background p-3 ${dragOverIndex === idx ? 'ring-2 ring-primary/50' : ''}`}
                 aria-label={`Line ${idx + 1}`}
-                role="listitem"
               >
                 {dragOverIndex === idx && (
                   <div
@@ -637,16 +636,17 @@ export default function TeleprompterScriptBuilder({ builtinScripts, builtinMeta,
                 });
                 if (importedName) setName(importedName);
                 setLines(toLines);
-              } catch (err) {
-                console.error(err);
-                alert('Failed to import JSON.');
-              }
-            }}
+    } catch (err) {
+      console.error(err);
+      alert('Failed to import JSON.');
+    }
+  }}
             className="w-full sm:max-w-sm"
           />
           <div className="grid gap-2 w-full">
-            <label className="text-xs text-muted-foreground">Paste JSON</label>
+            <label className="text-xs text-muted-foreground" htmlFor="import-json">Paste JSON</label>
             <textarea
+              id="import-json"
               rows={6}
               placeholder='{"name":"My Script","lines":["Line 1 [pause]","Line 2"]}'
               className="w-full rounded-md border bg-background px-3 py-2 text-sm sm:text-xs outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -685,12 +685,12 @@ export default function TeleprompterScriptBuilder({ builtinScripts, builtinMeta,
           <div className="text-sm font-medium">Add to core scripts</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             <div className="grid gap-1">
-              <label className="text-xs text-muted-foreground">Script ID</label>
-              <input value={coreId} onChange={(e) => setCoreId(e.target.value)} placeholder={suggestedId} className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm" />
+              <label className="text-xs text-muted-foreground" htmlFor="core-script-id">Script ID</label>
+              <input id="core-script-id" value={coreId} onChange={(e) => setCoreId(e.target.value)} placeholder={suggestedId} className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm" />
             </div>
             <div className="grid gap-1 md:col-span-2">
-              <label className="text-xs text-muted-foreground">Label</label>
-              <input value={coreLabel} onChange={(e) => setCoreLabel(e.target.value)} placeholder={name} className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm" />
+              <label className="text-xs text-muted-foreground" htmlFor="core-script-label">Label</label>
+              <input id="core-script-label" value={coreLabel} onChange={(e) => setCoreLabel(e.target.value)} placeholder={name} className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm" />
             </div>
           </div>
           <pre className="mt-2 w-full max-h-60 overflow-auto rounded-md border bg-background p-3 text-sm sm:text-xs whitespace-pre-wrap break-words">{coreScriptsSnippet}</pre>

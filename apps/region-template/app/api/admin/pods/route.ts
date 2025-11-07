@@ -70,7 +70,7 @@ export async function POST(req: Request) {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch {}
+          } catch { /* no-op */ }
         },
       },
     });
@@ -120,7 +120,7 @@ export async function GET() {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch {}
+          } catch { /* no-op */ }
         },
       },
     });

@@ -83,7 +83,7 @@ export const computeLineMs = (line: string, spd: number, baseMsPerChar: number =
   let ms = Math.max(300, (Math.max(1, (line ?? '').trim().length) * baseMsPerChar) / Math.max(0.25, spd));
   if (/\[pause\]/i.test(line)) ms += 600;
   if (/\[breathe\]/i.test(line)) ms += 300;
-  if (/[\[look up\]]/i.test(line)) ms += 1200;
+  if (/\[look up\]/i.test(line)) ms += 1200;
   return ms;
 };
 

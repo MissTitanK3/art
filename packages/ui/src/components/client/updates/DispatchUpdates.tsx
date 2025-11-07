@@ -69,20 +69,18 @@ export default function DispatchUpdates({
           className="flex-1 text-sm resize-y min-h-[80px]"
         />
         <div className="flex justify-end gap-2">
-          <label>
-            <input
-              type="file"
-              multiple
-              className="hidden"
-              onChange={handleAttach}
-            />
-            <Button type="button" size="sm" variant="outline" asChild>
-              <span>
-                <Paperclip className="h-4 w-4 mr-1" />
-                Attach
-              </span>
-            </Button>
-          </label>
+          <label htmlFor="dispatch-attach" className="sr-only">Attach files</label>
+          <input
+            id="dispatch-attach"
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleAttach}
+          />
+          <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById('dispatch-attach')?.click()}>
+            <Paperclip className="h-4 w-4 mr-1" />
+            Attach
+          </Button>
           <Button type="submit" size="sm">
             Post
           </Button>

@@ -83,7 +83,7 @@ export default function AdminPage() {
 
   const toggleFlagged = async () => {
     if (!firstSubmission) return;
-    const next = !Boolean(firstSubmission.flagged);
+    const next = !firstSubmission.flagged;
     const res = await fetch(`/api/admin/dispatches/${firstSubmission.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

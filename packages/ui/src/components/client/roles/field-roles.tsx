@@ -23,6 +23,8 @@ import { Controller, type Control, type FieldValues, type Path } from "react-hoo
 type RiskLevel = "low" | "medium" | "high";
 const LABEL = FIELD_ROLE_LABELS;
 const TIER = FIELD_ROLE_TIERS;
+const TIERS = [1, 2, 3, 4] as const;
+type Tier = (typeof TIERS)[number];
 const DETAILS = Object.fromEntries(FIELD_ROLE_DETAILS.map((d) => [d.role, d])) as Record<
   FieldRole,
   (typeof FIELD_ROLE_DETAILS)[number]
@@ -138,9 +140,6 @@ export function FieldRolesEditor({
     onChange([...next]);
   };
 
-  // group once
-  const TIERS = [1, 2, 3, 4] as const;
-  type Tier = (typeof TIERS)[number];
   const groups = React.useMemo(() => {
     const grouped: Record<Tier, FieldRole[]> = { 1: [], 2: [], 3: [], 4: [] };
     FIELD_ROLE_OPTIONS.forEach((r) => grouped[FIELD_ROLE_TIERS[r]].push(r));
@@ -253,7 +252,6 @@ export function FieldRolesEditor({
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
-                  autoFocus
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value);
@@ -399,4 +397,3 @@ export function RHFFieldRoles<TFieldValues extends FieldValues>({
     />
   );
 }
-

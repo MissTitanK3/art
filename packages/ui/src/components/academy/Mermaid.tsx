@@ -200,7 +200,7 @@ export function Mermaid({ chart, className, theme = "auto" }: MermaidProps) {
         rectEl.setAttribute('stroke-width', '1.5')
         rectEl.setAttribute('stroke', raw === 'yes' ? yesColor : noColor)
 
-        try { (g as any).dataset.padded = '1' } catch (_) {}
+        try { (g as any).dataset.padded = '1' } catch (_) { void 0 }
         return
       }
 
@@ -215,7 +215,7 @@ export function Mermaid({ chart, className, theme = "auto" }: MermaidProps) {
         div.style.borderRadius = `${radius}px`
         div.style.border = `1.5px solid ${raw === 'yes' ? yesColor : noColor}`
         div.style.display = 'inline-block'
-        try { (g as any).dataset.padded = '1' } catch (_) {}
+        try { (g as any).dataset.padded = '1' } catch (_) { void 0 }
       }
     })
   }, [svg])

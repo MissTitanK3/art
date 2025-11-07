@@ -36,7 +36,7 @@ export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn, 
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('comms.defaultCheckInMinutes', String(mins));
       }
-    } catch { }
+    } catch { /* ignore */ }
   };
 
   const choices = [10, 20, 30, 40, 50, 60];
