@@ -41,6 +41,7 @@ export default function FeedDrawer({ zoom, openAtZoom = 12, openExternal, onClos
   return (
     <BottomDrawer
       isOpen={isOpen}
+      heightClassName='h-[70vh] max-w-lg mx-auto'
       onClose={() => {
         if (isControlled) {
           onCloseExternal?.();

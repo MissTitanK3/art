@@ -28,7 +28,7 @@ export default function BottomDrawer({ isOpen, onClose, children, title, heightC
       )}
       <div
         ref={ref}
-        className={`fixed left-0 right-0 bottom-0 z-[46] bg-white/10 backdrop-blur-md border-t border-white/20 shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'
+        className={`fixed left-0 right-0 bottom-0 z-[46] bg-black/50 backdrop-blur-md border-t border-white/20 shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'
           } ${heightClassName ?? 'h-[80vh]'} overflow-hidden`}>
         <div className="h-full flex flex-col">
           <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">

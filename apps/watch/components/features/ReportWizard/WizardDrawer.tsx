@@ -32,7 +32,7 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
   console.log('draft', draft);
 
   return (
-    <BottomDrawer isOpen={isOpen} onClose={onClose} title={t('reportWizard')} heightClassName={`h-[70vh] max-w-md mx-auto ${borderClass}`}>
+    <BottomDrawer isOpen={isOpen} onClose={onClose} title={t('reportWizard')} heightClassName={`h-[70vh] max-w-lg mx-auto ${borderClass}`}>
       <div className={`mb-4 text-sm text-white/70 flex flex-col items-center gap-3 `}>
         <span>Test reports will be marked as such and not included in public data.</span>
         <span className="font-semibold">This is a test report.</span>
