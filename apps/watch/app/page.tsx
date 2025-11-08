@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import AddReportButton from '../components/AddReportButton';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LatLngLiteral } from 'leaflet';
 import { RefreshCw } from 'lucide-react';
@@ -386,6 +387,24 @@ export default function Home() {
           setFeedOpen(false);
         }}
       />
+
+      {/* Main Add Report Button - fixed bottom center */}
+      <div className="fixed bottom-6 left-1/2 z-[40] -translate-x-1/2 flex justify-center pointer-events-auto">
+        <AddReportButton
+          onClick={() => {
+            if (locMode === 'off') {
+              if (geoPermissionState === 'granted') {
+                setTempLocEnabled(true);
+                setChooseLocOpen(true);
+              } else {
+                setLocExplainOpen(true);
+              }
+            } else {
+              setChooseLocOpen(true);
+            }
+          }}
+        />
+      </div>
 
       {/* Bottom-left feed button */}
       <FeedButton onClick={() => setFeedOpen(true)} />

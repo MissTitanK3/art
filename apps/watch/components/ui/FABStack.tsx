@@ -53,7 +53,7 @@ export default function FABStack({ onAddReport, onFilters, onToggleLive, onInfo,
   return (
     <div className="fixed bottom-6 right-4 z-[43] flex flex-col items-end gap-2">
       {open && (
-        <div className="flex flex-col items-end gap-2 mb-2">
+        <div className="flex flex-col items-end gap-2 mb-18">
           {/* Top action: Add or Cancel report */}
           <button onClick={() => { onMapSettings?.(); setOpen(false); }} className={`px-4 py-2 rounded-full bg-zinc-700 text-white shadow hover:bg-zinc-600 ${compact ? 'w-20' : 'w-44'}`}>
             {label(<MapIcon className="w-4 h-4" />, t('basemap'))}
@@ -90,26 +90,14 @@ export default function FABStack({ onAddReport, onFilters, onToggleLive, onInfo,
           <button onClick={() => { onFilters?.(); setOpen(false); }} className={`px-4 py-2 rounded-full bg-indigo-600 text-white shadow hover:bg-indigo-700 ${compact ? 'w-20' : 'w-44'}`}>
             {label(<Settings className="w-4 h-4" />, t('filters'))}
           </button>
-          {isReporting ? (
-            <button
-              onClick={() => { onCancelReport?.(); setOpen(false); }}
-              className={`px-4 py-2 rounded-full bg-red-700 text-white shadow hover:bg-red-800 ${compact ? 'w-20' : 'w-44'}`}>
-              {label(<Plus className="w-4 h-4" />, t('cancelReport'))}
-            </button>
-          ) : (
-            <button
-              onClick={() => { onAddReport?.(); setOpen(false); }}
-              className={`px-4 py-2 rounded-full bg-green-600 text-white shadow hover:bg-green-700 ${compact ? 'w-20' : 'w-44'}`}>
-              {label(<Plus className="w-4 h-4" />, t('addReport'))}
-            </button>
-          )}
         </div>
       )}
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="w-14 h-14 rounded-full bg-blue-600 text-white text-2xl shadow-xl hover:bg-blue-700">
+        className="fixed right-4 bottom-6 z-[43] px-4 py-2 rounded-full bg-zinc-700 hover:bg-zinc-600 text-white shadow inline-flex items-center gap-2">
         {open ? '✕' : '⋮'}
+        <span>Options</span>
       </button>
     </div>
   );

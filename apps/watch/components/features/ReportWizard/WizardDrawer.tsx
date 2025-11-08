@@ -29,7 +29,6 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
     [],
   );
   const borderClass = draft.test ? 'border-4 border-yellow-800 rounded-lg' : '';
-  console.log('draft', draft);
 
   return (
     <BottomDrawer isOpen={isOpen} onClose={onClose} title={t('reportWizard')} heightClassName={`h-[70vh] max-w-lg mx-auto ${borderClass}`}>
@@ -161,6 +160,9 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
         </div>
 
         <div className="flex gap-2">
+          <FrostedButton variant="secondary" className="flex-1" onClick={onCancel ?? onClose}>
+            Cancel
+          </FrostedButton>
           <FrostedButton
             variant="primary"
             className={`flex-1 ${borderClass}`}
@@ -178,9 +180,6 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
               }
             }}>
             {submitting ? 'Submitting…' : 'Submit'}
-          </FrostedButton>
-          <FrostedButton variant="secondary" className="flex-1" onClick={onCancel ?? onClose}>
-            Cancel
           </FrostedButton>
         </div>
       </div>
