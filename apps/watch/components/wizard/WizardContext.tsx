@@ -33,6 +33,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     officer_direction: null,
     officer_moving: null,
     sirens_on: null,
+    test: null,
   });
 
   const next = () => {

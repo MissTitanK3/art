@@ -32,7 +32,7 @@ export default function ChoiceModal({ open, title, description, primaryLabel = '
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
       <div
         className="relative z-[61] w-[92vw] max-w-md rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl p-5 text-white"
         role="dialog"

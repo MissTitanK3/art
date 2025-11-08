@@ -28,9 +28,25 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
     () => ['NorthWest', 'North', 'NorthEast', 'West', null, 'East', 'SouthWest', 'South', 'SouthEast'] as const,
     [],
   );
+  const borderClass = draft.test ? 'border-4 border-yellow-800 rounded-lg' : '';
+  console.log('draft', draft);
 
   return (
-    <BottomDrawer isOpen={isOpen} onClose={onClose} title={t('reportWizard')} heightClassName="h-[70vh] max-w-md mx-auto">
+    <BottomDrawer isOpen={isOpen} onClose={onClose} title={t('reportWizard')} heightClassName={`h-[70vh] max-w-md mx-auto ${borderClass}`}>
+      <div className={`mb-4 text-sm text-white/70 flex flex-col items-center gap-3 `}>
+        <span>Test reports will be marked as such and not included in public data.</span>
+        <span className="font-semibold">This is a test report.</span>
+        <button
+          type="button"
+          aria-pressed={!!draft.test}
+          onClick={() => onChange({ test: !draft.test })}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${draft.test ? 'bg-blue-600' : 'bg-gray-400'}`}
+        >
+          <span
+            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${draft.test ? 'translate-x-5' : 'translate-x-1'}`}
+          />
+        </button>
+      </div>
       <div className="space-y-4">
         <div className="text-sm text-white/80 space-y-1">
           <div>Report Location: {draft.location ? `${draft.location.lat.toFixed(5)}, ${draft.location.lng.toFixed(5)}` : 'Not set'}</div>
@@ -86,7 +102,7 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
             <FrostedButton
               type="button"
               variant={draft.officer_moving === false ? 'primary' : 'secondary'}
-              onClick={() => onChange({ officer_moving: false, officer_direction: null })}
+              onClick={() => onChange({ officer_moving: false })}
             >
               {t('stationary')}
             </FrostedButton>
@@ -100,11 +116,10 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
                   <FrostedButton
                     key={dir}
                     type="button"
-                    onClick={() => onChange({ officer_direction: dir as any, officer_moving: true })}
+                    onClick={() => onChange({ officer_direction: dir as any })}
                     variant={draft.officer_direction === dir ? 'primary' : 'secondary'}
                     size="altLg"
                     className="w-full justify-center text-sm"
-                    disabled={draft.officer_moving === false}
                   >
                     {t(`direction.${dir}` as TranslationKey)}
                   </FrostedButton>
@@ -118,37 +133,37 @@ export default function WizardDrawer({ isOpen, onClose, onCancel, draft, onChang
 
         <div className="grid grid-cols-2 gap-3">
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={!!draft.lights_on}
-              onChange={(e) => onChange({ lights_on: e.target.checked })}
-            />
             <span>Lights On</span>
+            <button
+              type="button"
+              aria-pressed={!!draft.lights_on}
+              onClick={() => onChange({ lights_on: !draft.lights_on })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${draft.lights_on ? 'bg-blue-600' : 'bg-gray-400'}`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${draft.lights_on ? 'translate-x-5' : 'translate-x-1'}`}
+              />
+            </button>
           </label>
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={!!draft.sirens_on}
-              onChange={(e) => onChange({ sirens_on: e.target.checked })}
-            />
             <span>Sirens On</span>
+            <button
+              type="button"
+              aria-pressed={!!draft.sirens_on}
+              onClick={() => onChange({ sirens_on: !draft.sirens_on })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${draft.sirens_on ? 'bg-blue-600' : 'bg-gray-400'}`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${draft.sirens_on ? 'translate-x-5' : 'translate-x-1'}`}
+              />
+            </button>
           </label>
-        </div>
-
-        <div>
-          <label className="block text-white/80 mb-2">Photo or Video (optional)</label>
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={(e) => onChange({ media_url: e.target.files && e.target.files[0] ? (e.target.files[0] as any) : null })}
-            className="block w-full text-sm text-white file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30"
-          />
         </div>
 
         <div className="flex gap-2">
           <FrostedButton
             variant="primary"
-            className="flex-1"
+            className={`flex-1 ${borderClass}`}
             disabled={
               submitting ||
               !draft.location ||

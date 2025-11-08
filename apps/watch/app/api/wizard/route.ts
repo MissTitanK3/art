@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
     const officer_direction = formData.get('officer_direction') || null;
     const lights_on = formData.get('lights_on') === 'true';
     const sirens_on = formData.get('sirens_on') === 'true';
+    const test = formData.get('test') === 'true';
 
     let media_url: string | null = null;
 
@@ -69,12 +70,13 @@ export async function POST(req: NextRequest) {
       {
         agency_type,
         agency_other,
-        report_location: location,
+        location,
         media_url,
         officer_moving,
         officer_direction,
         lights_on,
         sirens_on,
+        test,
         timestamp: new Date().toISOString(),
       },
     ]);

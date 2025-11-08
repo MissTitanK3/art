@@ -80,6 +80,7 @@ export default function Home() {
     officer_direction: null,
     lights_on: null,
     sirens_on: null,
+    test: null,
   };
   const [draft, setDraft] = useState<ReportFormData>(initialDraft);
   const [reports, setReports] = useState<Report[]>([]);
@@ -88,6 +89,30 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastFetchedAt, setLastFetchedAt] = useState<Date | null>(null);
+  // Auto-refresh interval ref
+  const autoRefreshRef = useRef<NodeJS.Timeout | null>(null);
+  // Auto-refresh when live is true
+  useEffect(() => {
+    if (live) {
+      autoRefreshRef.current = setInterval(() => {
+        if (!isRefreshing) {
+          setIsRefreshing(true);
+        }
+        setRefreshKey((k) => k + 1);
+      }, 60000); // 60 seconds
+    } else {
+      if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+        autoRefreshRef.current = null;
+      }
+    }
+    return () => {
+      if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+        autoRefreshRef.current = null;
+      }
+    };
+  }, [live, isRefreshing]);
   const { tile } = useMapTile();
   const [bounds, setBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
 
@@ -568,6 +593,7 @@ export default function Home() {
           if (draft.officer_moving != null) fd.append('officer_moving', String(!!draft.officer_moving));
           if (draft.officer_direction) fd.append('officer_direction', draft.officer_direction);
           if (draft.media_url) fd.append('media', draft.media_url as any);
+          if (draft.test != null) fd.append('test', String(!!draft.test));
           const res = await fetch('/api/wizard', { method: 'POST', body: fd });
           const json = await res.json();
           if (!res.ok) throw new Error(json?.error || 'Failed to submit');
@@ -614,7 +640,10 @@ export default function Home() {
         open={chooseLocOpen}
         onClose={() => setChooseLocOpen(false)}
         title="Choose report location"
-        description={<p>Use your current location automatically or tap the map to choose a spot.</p>}
+        description={<>
+          <p>You can either use your current location (auto-detect) or tap anywhere on the map to select a spot manually for your report.</p>
+          <p>To submit a test report (for practice or demo), enable test mode in the report options after choosing your location. Test reports are not included in public data.</p>
+        </>}
         primaryLabel="Auto-detect my location"
         secondaryLabel="Select on map"
         onPrimary={() => {

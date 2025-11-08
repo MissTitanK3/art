@@ -23,7 +23,7 @@ export default function RightSidebar({ isOpen, onClose, title, children, widthCl
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[41] bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[41] bg-black/80 backdrop-blur-sm"
           onClick={onClose}
           role="button"
           tabIndex={0}
