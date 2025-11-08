@@ -29,7 +29,7 @@ export function useFindMe(
     };
   }, []);
 
-  const handleFindMe = useCallback(() => {
+  const handleFindMe = useCallback((opts?: { force?: boolean }) => {
     if (!active) return; // don't fetch in background
 
     setIsLocating(true);
@@ -37,7 +37,7 @@ export function useFindMe(
 
     const { coords: cachedCoords, timestamp } = getCachedLocation();
     const now = Date.now();
-    const shouldFetch = !cachedCoords || now - timestamp > refreshIntervalMs;
+    const shouldFetch = opts?.force ? true : (!cachedCoords || now - timestamp > refreshIntervalMs);
 
     const emitLocation = (coords: LatLngExpression) => {
       setCachedLocation(coords);

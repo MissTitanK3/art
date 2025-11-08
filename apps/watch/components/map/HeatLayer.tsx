@@ -183,7 +183,7 @@ export default function HeatMap({ reports, center: initialCenter }: { reports: R
       </div>
       <div className="flex my-2 gap-3 flex-wrap justify-center text-center">
         <TileLayerDropdown />
-        <FrostedButton onClick={handleFindMe} disabled={isLocating}>
+        <FrostedButton onClick={() => handleFindMe()} disabled={isLocating}>
           {isLocating ? 'Locating...' : `📍 ${t('findMe') ?? 'Find Me'}`}
         </FrostedButton>
         <div className="flex my-2 gap-3 flex-wrap justify-center text-center">

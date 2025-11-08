@@ -65,7 +65,7 @@ export default function LocationStep() {
           <p className="text-sm text-gray-600">{t('tapMapOrGPS')}</p>
         </div>
         <div className="p-2 flex flex-wrap justify-evenly">
-          <FrostedButton onClick={handleFindMe} disabled={isLocating}>
+          <FrostedButton onClick={() => handleFindMe()} disabled={isLocating}>
             {isLocating ? 'Locating...' : `📍 ${t('findMe') ?? 'Find Me'}`}
           </FrostedButton>
           <TileLayerDropdown />

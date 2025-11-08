@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Range } from 'react-range';
 import { FrostedButton } from './ui/FrostedButton';
+import { useTranslations } from '@/lib/il8n/useTranslations';
 
 const MAX = 168;
 const STEP = 4;
@@ -11,10 +12,12 @@ const STEP = 4;
 type Props = {
   reports?: { timestamp: string }[];
   onChange: (range: [number, number]) => void;
+  value?: [number, number];
 };
 
-export default function TimeRangeSlider({ onChange }: Props) {
+export default function TimeRangeSlider({ onChange, value }: Props) {
   const searchParams = useSearchParams();
+  const { t } = useTranslations();
   const router = useRouter();
 
   const parseIntOrDefault = (value: string | null, fallback: number) =>
@@ -22,11 +25,12 @@ export default function TimeRangeSlider({ onChange }: Props) {
 
   const initialFrom = parseIntOrDefault(searchParams.get('from'), 0);
   const initialTo = parseIntOrDefault(searchParams.get('to'), MAX);
-
-  const [range, setRange] = useState<[number, number]>([
+  const derivedInitial: [number, number] = [
     Math.min(initialFrom, initialTo),
     Math.max(initialFrom, initialTo),
-  ]);
+  ];
+  const isControlled = Array.isArray(value);
+  const [range, setRange] = useState<[number, number]>(() => (isControlled && value ? value : derivedInitial));
 
   const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -55,6 +59,14 @@ export default function TimeRangeSlider({ onChange }: Props) {
   };
 
   useEffect(() => {
+    if (!isControlled || !value) return;
+    if (value[0] !== range[0] || value[1] !== range[1]) {
+      setRange(value);
+    }
+  }, [isControlled, value, range]);
+
+  useEffect(() => {
+    if (isControlled) return;
     const urlFrom = parseIntOrDefault(searchParams.get('from'), 0);
     const urlTo = parseIntOrDefault(searchParams.get('to'), MAX);
     const normalized: [number, number] = [Math.min(urlFrom, urlTo), Math.max(urlFrom, urlTo)];
@@ -65,7 +77,7 @@ export default function TimeRangeSlider({ onChange }: Props) {
       onChange(normalized);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, isControlled]);
 
   return (
     <div className="my-4 flex flex-col justify-center m-auto">
@@ -78,7 +90,7 @@ export default function TimeRangeSlider({ onChange }: Props) {
 
       {/* Label */}
       <label className="block font-semibold mb-15">
-        Showing reports from {Math.floor(range[0] / 24)}d {range[0] % 24}h → {Math.floor(range[1] / 24)}d{' '}
+        {t('showingReportsFrom')} {Math.floor(range[0] / 24)}d {range[0] % 24}h → {Math.floor(range[1] / 24)}d{' '}
         {range[1] % 24}h ago
       </label>
 

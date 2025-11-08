@@ -12,7 +12,7 @@
 @custom-variant inline (&:is([data-theme="inline"] *));
 
 :root {
-  --background: linear-gradient(135deg, oklch(1 0 0) 0%, oklch(0.8 0 0) 100%);
+  --background: oklch(0.38 0.02 260);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

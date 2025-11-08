@@ -1,44 +1,167 @@
 'use client';
 
-import Link from 'next/link';
-import { useTranslations } from '@/lib/il8n/useTranslations';
-import { roleKeys } from '@/lib/il8n/translations';
+import dynamic from 'next/dynamic';
+import { useEffect, useMemo, useState } from 'react';
+import type { LatLngLiteral } from 'leaflet';
+import RightSidebar from '@/components/ui/RightSidebar';
+import JoinDispatchPanel from '@/components/features/JoinDispatch/JoinDispatchPanel';
+import FilterSidebar from '@/components/features/Filters/FilterSidebar';
+import FABStack from '@/components/ui/FABStack';
+import { useFindMe } from '@/lib/useFindMe';
+import FeedDrawer from '@/components/features/ReportFeed/FeedDrawer';
+import LocationButton from '@/components/features/Location/LocationButton';
+import LocationDrawer, { type LocationMode } from '@/components/features/Location/LocationDrawer';
+
+const MapWrapper = dynamic(() => import('@/components/map/MapWrapper'), { ssr: false });
 
 export default function JoinDispatchPage() {
-  const { t } = useTranslations();
+  // Map state
+  const [position, setPosition] = useState<LatLngLiteral>({ lat: 37.7749, lng: -122.4194 });
+  const [zoom, setZoom] = useState(10);
+
+  // UI state
+  const [sidebarOpen, setSidebarOpen] = useState(true); // open by default per redesign
+  const [panel, setPanel] = useState<'join' | 'filters' | 'info'>('join');
+  const [live, setLive] = useState(false);
+
+  // Location UI state
+  const [locDrawerOpen, setLocDrawerOpen] = useState(false);
+  const [locMode, setLocMode] = useState<LocationMode>('off');
+  const [showRadius, setShowRadius] = useState<boolean>(false);
+  const [radius, setRadius] = useState<number>(200);
+
+  const { handleFindMe } = useFindMe((coords) => {
+    if (Array.isArray(coords)) {
+      const [lat, lng] = coords as [number, number];
+      setPosition({ lat, lng });
+    } else if (coords && typeof coords === 'object' && 'lat' in (coords as any) && 'lng' in (coords as any)) {
+      setPosition({ lat: (coords as any).lat, lng: (coords as any).lng });
+    }
+  });
+
+  useEffect(() => {
+    // Try to center on user once on load without persisting
+    handleFindMe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Hydrate location preferences on client
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const m = localStorage.getItem('loc_mode') as LocationMode | null;
+      if (m === 'off' || m === 'report' || m === 'trusted') setLocMode(m);
+      const s = localStorage.getItem('loc_radius_show') === '1';
+      setShowRadius(s);
+      const r = Number(localStorage.getItem('loc_radius'));
+      if (!Number.isNaN(r) && r > 0) setRadius(r);
+    } catch {}
+  }, []);
+
+  // Persist location preferences
+  useEffect(() => {
+    localStorage.setItem('loc_mode', locMode);
+  }, [locMode]);
+  useEffect(() => {
+    localStorage.setItem('loc_radius_show', showRadius ? '1' : '0');
+  }, [showRadius]);
+  useEffect(() => {
+    localStorage.setItem('loc_radius', String(radius));
+  }, [radius]);
+
+  const mapContainerClass = useMemo(() => 'fixed inset-0 z-[30]', []);
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-10">
-      <section className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">{t('joinDispatchTitle')}</h1>
-        <p className="text-lg text-gray-300">{t('joinDispatchIntro')}</p>
-        <p className="text-md text-gray-400">{t('joinDispatchNote')}</p>
-        <Link
-          href="https://dispatch.peoplesrebellion.org/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-4 px-6 py-3 bg-blue-700 text-white font-bold rounded hover:bg-blue-800 transition">
-          🔗 {t('joinDispatchContactButton')}
-        </Link>
-      </section>
+    <>
+      {/* Fullscreen map shell */}
+      <div className={mapContainerClass}>
+        <div className="absolute inset-0">
+          <MapWrapper
+            position={position}
+            zoom={zoom}
+            onZoomChange={setZoom}
+            onSelect={(pos) => setPosition(pos)}
+            showRadius={showRadius}
+            radiusMeters={radius}
+          />
+        </div>
+      </div>
 
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">🚨 {t('joinDispatchRolesTitle')}</h2>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {roleKeys.map((key) => (
-            <li
-              key={key}
-              className="bg-gray-800 rounded-lg px-4 py-3 shadow border border-gray-700 text-white text-sm sm:text-base">
-              {t(key)}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Bottom report feed drawer (shell) */}
+      <FeedDrawer zoom={zoom} openAtZoom={12} />
 
-      <section className="text-sm text-gray-400 border-t pt-4">
-        <p>{t('joinDispatchFooter')}</p>
-        <p className="text-sm text-yellow-400">{t('joinDispatchLanguageNote')}</p>
-      </section>
-    </main>
+      {/* Floating action buttons per redesign */}
+      <FABStack
+        onAddReport={() => {
+          // Placeholder: navigate to wizard route (existing)
+          window.location.href = '/report/wizard';
+        }}
+        onFilters={() => {
+          setPanel('filters');
+          setSidebarOpen(true);
+        }}
+        onToggleLive={() => setLive((v) => !v)}
+        onInfo={() => {
+          setPanel('join'); // reuse info -> join for now
+          setSidebarOpen(true);
+        }}
+        liveActive={live}
+      />
+
+      {/* Location button and drawer */}
+      <LocationButton mode={locMode} onClick={() => setLocDrawerOpen(true)} />
+      <LocationDrawer
+        isOpen={locDrawerOpen}
+        onClose={() => setLocDrawerOpen(false)}
+        mode={locMode}
+        onChangeMode={async (m) => {
+          if (m === 'trusted' && navigator.permissions && (navigator as any).permissions?.query) {
+            try {
+              const res = await (navigator as any).permissions.query({ name: 'geolocation' });
+              if (res.state === 'denied') {
+                alert('Permission denied by browser. Reverting to Off.');
+                setLocMode('off');
+                return;
+              }
+            } catch {}
+          }
+          setLocMode(m);
+          if (m === 'report') {
+            // one-time use; could trigger a find on next submission
+          }
+        }}
+        showRadius={showRadius}
+        radius={radius}
+        onToggleRadius={() => setShowRadius((v) => !v)}
+        onErase={async () => {
+          try {
+            localStorage.removeItem('loc_mode');
+            localStorage.removeItem('loc_radius');
+            localStorage.removeItem('loc_radius_show');
+          } catch {}
+          setLocMode('off');
+          setShowRadius(false);
+          setRadius(200);
+          try {
+            if ((navigator as any).permissions?.revoke) {
+              await (navigator as any).permissions.revoke({ name: 'geolocation' as PermissionName });
+            }
+          } catch {}
+          alert('Location data erased. Update browser site permissions to fully revoke access if needed.');
+        }}
+      />
+
+      {/* Right-side contextual panel */}
+      <RightSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        title={panel === 'filters' ? 'Filters' : 'Join Dispatch'}>
+        {panel === 'filters' ? (
+          <FilterSidebar onClose={() => setSidebarOpen(false)} onApply={() => setSidebarOpen(false)} />
+        ) : (
+          <JoinDispatchPanel />
+        )}
+      </RightSidebar>
+    </>
   );
 }

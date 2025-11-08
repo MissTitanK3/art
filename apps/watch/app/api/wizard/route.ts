@@ -18,7 +18,16 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ wizard });
+  // Normalize DB rows to client shape (location instead of report_location)
+  const normalized = (wizard ?? []).map((row: any) => {
+    const loc = row.report_location ?? row.location;
+    return {
+      ...row,
+      location: loc,
+    };
+  });
+
+  return NextResponse.json({ wizard: normalized });
 }
 
 export async function POST(req: NextRequest) {

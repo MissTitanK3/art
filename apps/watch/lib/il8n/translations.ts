@@ -78,6 +78,133 @@ export type TranslationKey =
   | 'kyrSection1Bullet5'
   | 'kyrSection2Title'
   | 'kyrSection2Intro'
+  // --- Map Surfaces & Shared Components ---
+  | 'refreshReports'
+  | 'refreshingReports'
+  | 'lastUpdatedAt'
+  | 'waitingForReports'
+  | 'tapWithinRadius'
+  | 'filters'
+  | 'mapSettings'
+  | 'infoResources'
+  | 'locationOneTimeTitle'
+  | 'locationOneTimeIntro'
+  | 'locationOneTimeBulletCenter'
+  | 'locationOneTimeBulletRadius'
+  | 'locationOneTimeNote'
+  | 'locationOneTimeConfirm'
+  | 'locationOneTimeCancel'
+  | 'chooseLocationTitle'
+  | 'chooseLocationDescription'
+  | 'chooseLocationAuto'
+  | 'chooseLocationManual'
+  | 'locationBlockedTitle'
+  | 'locationBlockedDescription'
+  | 'locationBlockedMobile'
+  | 'locationBlockedConfirm'
+  | 'locationBlockedCancel'
+  | 'locationDataErased'
+  | 'locationPermissionDeniedAlert'
+  | 'locationButtonOff'
+  | 'locationButtonReport'
+  | 'locationButtonTrusted'
+  | 'locationPermissionStatusGranted'
+  | 'locationPermissionStatusPrompt'
+  | 'locationPermissionStatusDenied'
+  | 'locationSettingsTitle'
+  | 'locationModeOffLabel'
+  | 'locationModeOffDesc'
+  | 'locationModeReportLabel'
+  | 'locationModeReportDesc'
+  | 'locationModeTrustedLabel'
+  | 'locationModeTrustedDesc'
+  | 'hideRadius'
+  | 'showRadius'
+  | 'eraseLocationData'
+  | 'saveChoice'
+  | 'metersAbbrev'
+  | 'addReport'
+  | 'cancelReport'
+  | 'basemap'
+  | 'liveOn'
+  | 'liveOff'
+  | 'languageLabel'
+  | 'unitsLabel'
+  | 'info'
+  | 'showLabels'
+  | 'iconsOnly'
+  | 'apply'
+  | 'cancel'
+  | 'close'
+  | 'sidebar'
+  | 'currentBasemap'
+  | 'attributionLabel'
+  | 'timePreset24h'
+  | 'timePreset72h'
+  | 'timePreset168h'
+  | 'timeRangeLabel'
+  | 'timeRangeSuffix'
+  | 'dayAbbrev'
+  | 'hourAbbrev'
+  | 'loadingDefault'
+  | 'loadingReports'
+  // --- Heatmap & Feed ---
+  | 'heatmapLoading'
+  | 'mapHeatmapAriaLabel'
+  | 'mapZoomToReport'
+  | 'reportedPrefix'
+  | 'feed'
+  | 'reportsInViewTitle'
+  | 'noReportsInView'
+  | 'unknownAgency'
+  | 'verified'
+  | 'reportMediaAlt'
+  | 'zoomTo'
+  // --- Report Wizard ---
+  | 'reportLocation'
+  | 'yourLocation'
+  | 'agencyTypeLabel'
+  | 'otherAgencyLabel'
+  | 'optionalPlaceholder'
+  | 'photoVideoLabel'
+  | 'photoVideoOptional'
+  | 'submitting'
+  | 'withinRadius'
+  | 'outsideRadius'
+  | 'distanceLabel'
+  | 'maxLabel'
+  | 'validatingLocation'
+  | 'locationFarWarning'
+  // --- Locating ---
+  | 'locating'
+  // --- Resources & Support Pages ---
+  | 'resourcesSuggestTitle'
+  | 'resourcesSuggestIntro'
+  | 'resourcesSuggestOutro'
+  | 'resourcesContributorsTitle'
+  | 'resourcesContributorsDescription'
+  | 'resourcesContributorsDocIntro'
+  | 'resourcesContributorsDocLabel'
+  | 'searchResourcesPlaceholder'
+  | 'categoryEmpty'
+  | 'homescreenTitle'
+  | 'homescreenIntro'
+  | 'homescreenAndroidTitle'
+  | 'homescreenOpenBrowser'
+  | 'homescreenAndroidStepMenu'
+  | 'homescreenAndroidStepAdd'
+  | 'homescreenAndroidStepConfirm'
+  | 'homescreenIosTitle'
+  | 'homescreenIosStepShare'
+  | 'homescreenIosStepAdd'
+  | 'homescreenIosStepConfirm'
+  | 'homescreenWhyTitle'
+  | 'homescreenWhyBullet1'
+  | 'homescreenWhyBullet2'
+  | 'homescreenWhyBullet3'
+  | 'homescreenWhyBullet4'
+  | 'mitigationHeader'
+  | 'effectivenessHeader'
   | 'kyrSection2Bullet1'
   | 'kyrSection2Bullet2'
   | 'kyrSection2Bullet3'
@@ -186,6 +313,11 @@ export type TranslationKey =
   | 'anonymous'
   | 'filterAgencies'
   | 'resetFilters'
+  | 'applyFilters'
+  | 'closeFilters'
+  | 'showingReportsFrom'
+  | 'applyFilters'
+  | 'closeFilters'
   | 'immigrantResourcesTitle'
   | 'noResourcesYet'
   | 'Donations'
@@ -256,7 +388,12 @@ export type TranslationKey =
   | 'mapControlsUS'
   | 'mapControlsClose'
   | 'goToAcademy'
-  | 'goToDispatch';
+  | 'joinDispatchRegionNote'
+  | 'goToDispatch'
+  | 'language.en'
+  | 'language.es'
+  | 'unit.km'
+  | 'unit.mi';
 
 export const roleKeys: TranslationKey[] = [
   'joinDispatchRole.dispatcher',
@@ -278,6 +415,137 @@ export const TRANSLATIONS: {
   en: {
     goToAcademy: 'Go To Academy',
     goToDispatch: 'Go To Dispatch',
+    'language.en': 'English',
+    'language.es': 'Spanish',
+    'unit.km': 'Kilometers',
+    'unit.mi': 'Miles',
+    // --- Map Surfaces & Shared Components ---
+    refreshReports: 'Refresh reports',
+    refreshingReports: 'Refreshing reports…',
+    lastUpdatedAt: 'Last updated at {time}',
+    waitingForReports: 'Waiting for reports…',
+    tapWithinRadius: 'Tap within your radius (max {distance})',
+    filters: 'Filters',
+    mapSettings: 'Map Settings',
+    infoResources: 'Info & Resources',
+    locationOneTimeTitle: 'Turn on location for this report?',
+    locationOneTimeIntro: 'To place your report, we need temporary access to your location.',
+    locationOneTimeBulletCenter: 'Your location is used only to center the map.',
+    locationOneTimeBulletRadius: 'Your radius is never stored or shared.',
+    locationOneTimeNote: 'You can turn off location after submitting.',
+    locationOneTimeConfirm: 'Turn On',
+    locationOneTimeCancel: 'Cancel',
+    chooseLocationTitle: 'Choose report location',
+    chooseLocationDescription: 'Select a location for your report.',
+    chooseLocationAuto: 'Use my location',
+    chooseLocationManual: 'Choose manually',
+    locationBlockedTitle: 'Location permission blocked',
+    locationBlockedDescription: 'Your browser has blocked location access.',
+    locationBlockedMobile: 'Check your device settings to allow location.',
+    locationBlockedConfirm: 'OK',
+    locationBlockedCancel: 'Cancel',
+    locationDataErased: 'Location data erased.',
+    locationPermissionDeniedAlert: 'Permission denied by browser. Reverting to Off.',
+    locationButtonOff: 'Location Off',
+    locationButtonReport: 'Report Only',
+    locationButtonTrusted: 'Trusted',
+    locationPermissionStatusGranted: 'Browser permission: Granted',
+    locationPermissionStatusPrompt: 'Browser permission: Needs approval',
+    locationPermissionStatusDenied: 'Browser permission: Blocked',
+    locationSettingsTitle: 'Location Settings',
+    locationModeOffLabel: 'Off',
+    locationModeOffDesc: 'No location data shared.',
+    locationModeReportLabel: 'Report Only',
+    locationModeReportDesc: 'Location used for this report only.',
+    locationModeTrustedLabel: 'Trusted',
+    locationModeTrustedDesc: 'Location always on for trusted reports.',
+    hideRadius: 'Hide My Radius ({radius}m)',
+    showRadius: 'Show My Radius ({radius}m)',
+    eraseLocationData: 'Erase My Location Data',
+    saveChoice: 'Save choice',
+    metersAbbrev: 'km',
+    addReport: 'Add Report',
+    cancelReport: 'Cancel Report',
+    basemap: 'Basemap',
+    liveOn: 'Live Is On',
+    liveOff: 'Live Is Off',
+    languageLabel: 'Language: {lang}',
+    unitsLabel: 'Units: {unit}',
+    info: 'Info',
+    showLabels: 'Show Labels',
+    iconsOnly: 'Icons Only',
+    apply: 'Apply',
+    cancel: 'Cancel',
+    close: 'Close',
+    sidebar: 'Sidebar',
+    currentBasemap: 'Current basemap: {name}',
+    attributionLabel: 'Attribution: {attribution}',
+    timePreset24h: 'Last 24h',
+    timePreset72h: 'Last 3d',
+    timePreset168h: 'Last 7d',
+    timeRangeLabel: 'Showing reports from {start} → {end} {suffix}',
+    timeRangeSuffix: 'ago',
+    dayAbbrev: 'd',
+    hourAbbrev: 'h',
+    loadingDefault: 'Scanning…',
+    loadingReports: 'Loading reports…',
+    // --- Heatmap & Feed ---
+    heatmapLoading: 'Loading heatmap…',
+    mapHeatmapAriaLabel: 'Heatmap of ICE and law enforcement reports',
+    mapZoomToReport: 'Zoom to report',
+    reportedPrefix: 'Reported',
+    feed: 'Feed',
+    reportsInViewTitle: 'Reports in view',
+    noReportsInView: 'No reports in view.',
+    unknownAgency: 'Unknown agency',
+    verified: 'Verified',
+    reportMediaAlt: 'Report media',
+    zoomTo: 'Zoom to',
+    // --- Report Wizard ---
+    reportLocation: 'Report Location:',
+    yourLocation: 'Your Location:',
+    agencyTypeLabel: 'Agency Type',
+    otherAgencyLabel: 'Other Agency',
+    optionalPlaceholder: 'Optional',
+    photoVideoLabel: 'Photo or Video',
+    photoVideoOptional: 'Photo or Video (optional)',
+    submitting: 'Submitting…',
+    withinRadius: 'Within radius',
+    outsideRadius: 'Outside radius',
+    distanceLabel: 'Distance',
+    maxLabel: 'Max',
+    validatingLocation: 'Validating your location to be within 15km…',
+    locationFarWarning: 'Your location is outside the allowed radius.',
+    // --- Locating ---
+    locating: 'Locating…',
+    // --- Resources & Support Pages ---
+    resourcesSuggestTitle: 'Suggest a Resource',
+    resourcesSuggestIntro: 'Know of a local or national resource that’s missing? Email us at',
+    resourcesSuggestOutro: 'and we’ll review and add it.',
+    resourcesContributorsTitle: 'Contributors',
+    resourcesContributorsDescription: 'People who have contributed resources.',
+    resourcesContributorsDocIntro: 'See the documentation for more info.',
+    resourcesContributorsDocLabel: 'Documentation',
+    searchResourcesPlaceholder: 'Search resources…',
+    categoryEmpty: 'No listings yet',
+    homescreenTitle: 'Add to Homescreen',
+    homescreenIntro: 'Install this app on your device for quick access.',
+    homescreenAndroidTitle: 'Android',
+    homescreenOpenBrowser: 'Open your browser',
+    homescreenAndroidStepMenu: 'Tap the menu button',
+    homescreenAndroidStepAdd: 'Select "Add to Home screen"',
+    homescreenAndroidStepConfirm: 'Confirm addition',
+    homescreenIosTitle: 'iOS',
+    homescreenIosStepShare: 'Tap the share icon',
+    homescreenIosStepAdd: 'Select "Add to Home screen"',
+    homescreenIosStepConfirm: 'Confirm addition',
+    homescreenWhyTitle: 'Why add to homescreen?',
+    homescreenWhyBullet1: 'Faster access',
+    homescreenWhyBullet2: 'Works offline',
+    homescreenWhyBullet3: 'No app store needed',
+    homescreenWhyBullet4: 'Privacy-safe',
+    mitigationHeader: 'Mitigation',
+    effectivenessHeader: 'Effectiveness',
     mapControlsTitle: 'Map Controls',
     mapControlsOpen: 'Open map keyboard controls',
     mapControlsClose: 'Close map keyboard controls',
@@ -361,6 +629,10 @@ export const TRANSLATIONS: {
     verifiedByDispatch: 'Verified By Dispatch',
     filterAgencies: 'Filter Agencies',
     resetFilters: 'Reset Filters',
+    // Removed duplicate applyFilters and closeFilters
+    showingReportsFrom: 'Showing reports from',
+    applyFilters: 'Apply Filters',
+    closeFilters: 'Close Filters',
 
     // Heatlayer
     visibleReports: 'Visible Reports',
@@ -577,9 +849,9 @@ export const TRANSLATIONS: {
     joinDispatch: 'Join Dispatch',
     joinDispatchTitle: 'Join the ART Dispatch Network',
     joinDispatchIntro:
-      'We’re looking for committed community members to serve as dispatchers or respond in the field when law enforcement or ICE presence is reported.',
+      'We’re looking for committed community members to serve as dispatchers or respond in the field when law enforcement or ICE presence is reported. Visit the Always Ready Tools dispatch portal to find your region and connect with your local team.',
     joinDispatchNote: 'This work saves lives. It requires discretion, coordination, and courage.',
-    joinDispatchContactButton: 'Start at dispatch.peoplesrebellion.org',
+    joinDispatchContactButton: 'Visit alwaysreadytools.org/regions',
 
     joinDispatchRolesTitle: 'Roles We’re Seeking',
     'joinDispatchRole.dispatcher': 'Dispatcher (remote, verified)',
@@ -597,10 +869,142 @@ export const TRANSLATIONS: {
       'All roles are volunteer-based. Some involve remote coordination, while others are in-person response. We provide training, peer support, and escalation protocols to keep each other safe.',
     joinDispatchLanguageNote:
       '⚠️ Dispatch coordination is currently conducted in English. Spanish-speaking volunteers are welcome, but basic English proficiency is required.',
+    joinDispatchRegionNote: 'Select your region to access the latest dispatch workflows and communications.',
   },
   es: {
     goToAcademy: 'Ir a la Academia',
     goToDispatch: 'Ir al Despacho',
+    'language.en': 'Inglés',
+    'language.es': 'Español',
+    'unit.km': 'Kilómetros',
+    'unit.mi': 'Millas',
+    // --- Map Surfaces & Shared Components ---
+    refreshReports: 'Actualizar reportes',
+    refreshingReports: 'Actualizando reportes…',
+    lastUpdatedAt: 'Última actualización: {time}',
+    waitingForReports: 'Esperando reportes…',
+    tapWithinRadius: 'Marca dentro de tu radio (máx. {distance})',
+    filters: 'Filtros',
+    mapSettings: 'Ajustes del mapa',
+    infoResources: 'Información y recursos',
+    locationOneTimeTitle: '¿Activar la ubicación para este reporte?',
+    locationOneTimeIntro: 'Para ubicar tu reporte, necesitamos acceso temporal a tu ubicación.',
+    locationOneTimeBulletCenter: 'Tu ubicación solo se usa para centrar el mapa.',
+    locationOneTimeBulletRadius: 'Tu radio nunca se almacena ni comparte.',
+    locationOneTimeNote: 'Puedes desactivar la ubicación después de enviar.',
+    locationOneTimeConfirm: 'Activar',
+    locationOneTimeCancel: 'Cancelar',
+    chooseLocationTitle: 'Elige la ubicación del reporte',
+    chooseLocationDescription: 'Selecciona una ubicación para tu reporte.',
+    chooseLocationAuto: 'Usar mi ubicación',
+    chooseLocationManual: 'Elegir manualmente',
+    locationBlockedTitle: 'Permiso de ubicación bloqueado',
+    locationBlockedDescription: 'Tu navegador ha bloqueado el acceso a la ubicación.',
+    locationBlockedMobile: 'Revisa la configuración de tu dispositivo para permitir la ubicación.',
+    locationBlockedConfirm: 'OK',
+    locationBlockedCancel: 'Cancelar',
+    locationDataErased: 'Datos de ubicación borrados.',
+    locationPermissionDeniedAlert: 'El navegador denegó el permiso. Regresamos a Apagado.',
+    locationButtonOff: 'Ubicación apagada',
+    locationButtonReport: 'Solo reporte',
+    locationButtonTrusted: 'Confiable',
+    locationPermissionStatusGranted: 'Permiso del navegador: Concedido',
+    locationPermissionStatusPrompt: 'Permiso del navegador: Requiere aprobación',
+    locationPermissionStatusDenied: 'Permiso del navegador: Bloqueado',
+    locationSettingsTitle: 'Ajustes de ubicación',
+    locationModeOffLabel: 'Apagado',
+    locationModeOffDesc: 'No se comparte ubicación.',
+    locationModeReportLabel: 'Solo reporte',
+    locationModeReportDesc: 'Ubicación solo para este reporte.',
+    locationModeTrustedLabel: 'Confiable',
+    locationModeTrustedDesc: 'Ubicación siempre activa para reportes confiables.',
+    hideRadius: 'Ocultar mi radio ({radius}m)',
+    showRadius: 'Mostrar mi radio ({radius}m)',
+    eraseLocationData: 'Borrar mis datos de ubicación',
+    saveChoice: 'Guardar elección',
+    metersAbbrev: 'km',
+    addReport: 'Agregar reporte',
+    cancelReport: 'Cancelar reporte',
+    basemap: 'Mapa base',
+    liveOn: 'Live activado',
+    liveOff: 'Live desactivado',
+    languageLabel: 'Idioma: {lang}',
+    unitsLabel: 'Unidades: {unit}',
+    info: 'Información',
+    showLabels: 'Mostrar etiquetas',
+    iconsOnly: 'Solo íconos',
+    apply: 'Aplicar',
+    cancel: 'Cancelar',
+    close: 'Cerrar',
+    sidebar: 'Panel',
+    currentBasemap: 'Mapa base actual: {name}',
+    attributionLabel: 'Atribución: {attribution}',
+    timePreset24h: 'Últimas 24h',
+    timePreset72h: 'Últimos 3d',
+    timePreset168h: 'Últimos 7d',
+    timeRangeLabel: 'Mostrando reportes desde {start} → {end} {suffix}',
+    timeRangeSuffix: 'atrás',
+    dayAbbrev: 'd',
+    hourAbbrev: 'h',
+    loadingDefault: 'Escaneando…',
+    loadingReports: 'Cargando reportes…',
+    // --- Heatmap & Feed ---
+    heatmapLoading: 'Cargando mapa de calor…',
+    mapHeatmapAriaLabel: 'Mapa de calor de reportes de ICE y policía',
+    mapZoomToReport: 'Acercar al reporte',
+    reportedPrefix: 'Reportado',
+    feed: 'Feed',
+    reportsInViewTitle: 'Reportes en vista',
+    noReportsInView: 'No hay reportes en vista.',
+    unknownAgency: 'Agencia desconocida',
+    verified: 'Verificado',
+    reportMediaAlt: 'Multimedia del reporte',
+    zoomTo: 'Acercar',
+    // --- Report Wizard ---
+    reportLocation: 'Ubicación del reporte:',
+    yourLocation: 'Tu ubicación:',
+    agencyTypeLabel: 'Tipo de agencia',
+    otherAgencyLabel: 'Otra agencia',
+    optionalPlaceholder: 'Opcional',
+    photoVideoLabel: 'Foto o video',
+    photoVideoOptional: 'Foto o video (opcional)',
+    submitting: 'Enviando…',
+    withinRadius: 'Dentro del radio',
+    outsideRadius: 'Fuera del radio',
+    distanceLabel: 'Distancia',
+    maxLabel: 'Máx',
+    validatingLocation: 'Validando que tu ubicación esté dentro de 15km…',
+    locationFarWarning: 'Tu ubicación está fuera del radio permitido.',
+    // --- Locating ---
+    locating: 'Buscando ubicación…',
+    // --- Resources & Support Pages ---
+    resourcesSuggestTitle: 'Sugerir un recurso',
+    resourcesSuggestIntro: '¿Conoces un recurso local o nacional que falte? Escríbenos a',
+    resourcesSuggestOutro: 'y lo revisaremos para agregarlo.',
+    resourcesContributorsTitle: 'Colaboradores',
+    resourcesContributorsDescription: 'Personas que han contribuido recursos.',
+    resourcesContributorsDocIntro: 'Consulta la documentación para más información.',
+    resourcesContributorsDocLabel: 'Documentación',
+    searchResourcesPlaceholder: 'Buscar recursos…',
+    categoryEmpty: 'Sin registros todavía',
+    homescreenTitle: 'Agregar a la pantalla de inicio',
+    homescreenIntro: 'Instala esta app en tu dispositivo para acceso rápido.',
+    homescreenAndroidTitle: 'Android',
+    homescreenOpenBrowser: 'Abre tu navegador',
+    homescreenAndroidStepMenu: 'Toca el botón de menú',
+    homescreenAndroidStepAdd: 'Selecciona "Agregar a pantalla de inicio"',
+    homescreenAndroidStepConfirm: 'Confirma la adición',
+    homescreenIosTitle: 'iOS',
+    homescreenIosStepShare: 'Toca el ícono de compartir',
+    homescreenIosStepAdd: 'Selecciona "Agregar a pantalla de inicio"',
+    homescreenIosStepConfirm: 'Confirma la adición',
+    homescreenWhyTitle: '¿Por qué agregar a la pantalla de inicio?',
+    homescreenWhyBullet1: 'Acceso más rápido',
+    homescreenWhyBullet2: 'Funciona sin conexión',
+    homescreenWhyBullet3: 'No necesitas tienda de apps',
+    homescreenWhyBullet4: 'Privacidad garantizada',
+    mitigationHeader: 'Mitigación',
+    effectivenessHeader: 'Eficacia',
     mapControlsTitle: 'Controles del Mapa',
     mapControlsOpen: 'Abrir controles del mapa con el teclado',
     mapControlsClose: 'Cerrar controles del mapa',
@@ -690,6 +1094,10 @@ export const TRANSLATIONS: {
     verifiedByDispatch: 'Verificado por Despacho',
     filterAgencies: 'Filtrar Agencias',
     resetFilters: 'Restablecer filtros',
+    // Removed duplicate applyFilters and closeFilters
+    showingReportsFrom: 'Mostrando reportes desde',
+    applyFilters: 'Aplicar filtros',
+    closeFilters: 'Cerrar filtros',
 
     // Heatlayer
     visibleReports: 'Reportes visibles',
@@ -905,9 +1313,9 @@ export const TRANSLATIONS: {
 
     joinDispatchTitle: 'Únete a la Red de Despacho ART',
     joinDispatchIntro:
-      'Buscamos personas comprometidas con la comunidad para actuar como despachadoras o responder en el terreno cuando se reporta presencia policial o de ICE.',
+      'Buscamos personas comprometidas con la comunidad para actuar como despachadoras o responder en el terreno cuando se reporta presencia policial o de ICE. Visita el portal de despacho de Always Ready Tools para encontrar tu región y conectarte con tu equipo local.',
     joinDispatchNote: 'Este trabajo salva vidas. Requiere discreción, coordinación y valentía.',
-    joinDispatchContactButton: 'Comienza en dispatch.peoplesrebellion.org',
+    joinDispatchContactButton: 'Visita alwaysreadytools.org/regions',
 
     joinDispatchRolesTitle: 'Roles que estamos buscando',
     'joinDispatchRole.dispatcher': 'Despachador/a (remoto, verificado)',
@@ -925,6 +1333,7 @@ export const TRANSLATIONS: {
       'Todos los roles son voluntarios. Algunos implican coordinación remota, mientras que otros requieren respuesta presencial. Ofrecemos entrenamiento, apoyo entre pares y protocolos de escalamiento para cuidarnos entre todos.',
     joinDispatchLanguageNote:
       '⚠️ La coordinación del despacho actualmente se realiza en inglés. Personas voluntarias que hablen español son bienvenidas, pero se requiere comprensión básica de inglés.',
+    joinDispatchRegionNote: 'Elige tu región para acceder a los flujos de despacho y comunicaciones más recientes.',
   },
   // Add more languages as needed
 };

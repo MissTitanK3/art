@@ -12,3 +12,8 @@ export function setCachedLocation(coords: LatLngExpression) {
   lastCoords = coords;
   lastFetch = Date.now();
 }
+
+export function clearCachedLocation() {
+  lastCoords = null;
+  lastFetch = 0;
+}

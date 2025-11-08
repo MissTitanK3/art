@@ -9,6 +9,8 @@ import { NavRole } from "@workspace/store/utils/nav";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import type { AuthSession } from "@/lib/auth/types";
 import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
+import ServiceWorkerRegister from "@/components/client/ServiceWorkerRegister";
+import InstallPrompt from "@/components/client/InstallPrompt";
 
 // Ensure layout and session are always computed per-request in production
 export const dynamic = "force-dynamic";
@@ -65,14 +67,15 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.ico"],
   },
   manifest: "/site.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black",
+  },
 };
 
 // (Optional) nice address bar color
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },
-  ],
+  themeColor: "oklch(0.38 0.02 260)",
 };
 
 // ---------- Fonts ----------
@@ -108,8 +111,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}>
+      <body
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
+        style={{ backgroundColor: "oklch(0.38 0.02 260)" }}
+      >
         <AppProviders initialSession={session}>
+          <ServiceWorkerRegister />
+          <InstallPrompt />
           <GlobalNavBridge />
           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
         </AppProviders>
