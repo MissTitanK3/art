@@ -3,13 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
-import { navConfig } from "@/nav.config";
-import { GlobalNav } from "@/components/client/global-nav";
-import { NavRole } from "@workspace/store/utils/nav";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import type { AuthSession } from "@/lib/auth/types";
 import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
-import ServiceWorkerRegister from "@/components/client/ServiceWorkerRegister";
+import RegisterServiceWorker from "./components/register-sw";
 import InstallPrompt from "@/components/client/InstallPrompt";
 
 // Ensure layout and session are always computed per-request in production
@@ -116,7 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ backgroundColor: "oklch(0.38 0.02 260)" }}
       >
         <AppProviders initialSession={session}>
-          <ServiceWorkerRegister />
+          <RegisterServiceWorker />
           <InstallPrompt />
           <GlobalNavBridge />
           <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
