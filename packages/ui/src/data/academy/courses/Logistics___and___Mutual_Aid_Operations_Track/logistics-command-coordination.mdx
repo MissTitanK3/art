@@ -1,0 +1,256 @@
+---
+title: Mutual Aid Logistics Command & Coordination
+slug: logistics-command-coordination
+description: Learn how to organize and synchronize community logistics operations across pods and regions during high-demand or crisis events.
+type: qualified
+version: '1.1'
+readingTime: 42
+---
+
+# 🚚 Mutual Aid Logistics Command & Coordination
+<TrackBadge variant="logistics" />
+<TrackBadge variant="dispatch" />
+<TrackBadge variant="admin" />
+
+<Callout type="info">
+This course builds the backbone of operational logistics: **how to move supplies, people, and information safely and efficiently** in decentralized networks during emergency response or sustained community operations.
+</Callout>
+
+---
+
+## Overview
+During crisis events, supply and communication channels fragment.  
+Without a structured logistics command, pods duplicate effort, lose track of stock, or miss urgent needs.  
+This module defines **field-tested coordination methods** to synchronize volunteers, warehouses, and dispatch systems.
+
+You’ll learn how to:
+- Establish a logistics command node under stress  
+- Coordinate requests, sourcing, and delivery transparently  
+- Maintain accountability without bureaucracy  
+- Operate during tech failure or isolation  
+
+> “Command is not control — it’s synchronization.”
+
+---
+
+## Learn & Do
+
+### 1. Building a Logistics Command Node
+Every large-scale operation needs a **coordination nucleus** that tracks movement, stock, and requests.
+
+**Minimum structure:**
+- **Comms Lead:** Handles incoming requests  
+- **Logistics Officer:** Assigns runs and manages stock  
+- **Transport Coordinator:** Tracks drivers/runners  
+- **Supply Verifier:** Confirms quality, quantity, and chain of custody  
+- **Safety Lead:** Confirms readiness and security before departure  
+
+Use whiteboards, printed manifests, or encrypted tablets. The key is clarity and redundancy, not fancy software.
+
+---
+
+### 2. Chain of Custody & Verification
+Trust comes from traceability.
+
+Each handoff should record:
+- Item  
+- Quantity  
+- From / To  
+- Timestamp  
+- Condition  
+- Verified by (initials or call sign)
+
+Paper manifests are acceptable if digital fails.  
+Digitize when possible for accountability and audit.
+
+<Callout type="warning">
+Never transport personal medical data, names of recipients, or GPS-tagged logs. Use coded IDs or aliases for privacy.
+</Callout>
+
+---
+
+### 3. Rapid Request Verification
+In chaotic situations, false or duplicated requests waste resources.  
+Verification should take **under 2 minutes**.
+
+**Checklist:**
+1. Who is making the request? (Pod, dispatcher, or field team)  
+2. What is the exact need and quantity?  
+3. Can another source confirm? (cross-check Signal thread or dispatch log)  
+4. Is it life-safety critical or deferrable?  
+5. Assign unique request ID.
+
+If in doubt, mark **pending verification** and revisit after immediate needs are covered.
+
+---
+
+### 4. Dispatch Integration
+All logistics should connect to dispatch operations.
+
+| Function | Coordination Method |
+|-----------|--------------------|
+| Field Request | Entered through Watch or dispatcher intake |
+| Assignment | Logistics node matches to resource holder |
+| Transport | Runners or drivers notified via secure comms |
+| Confirmation | Arrival verified by both ends |
+| Update | Inventory and dispatch record updated |
+
+When systems are offline, use radio or phone fallback with pre-agreed code phrases.
+
+---
+
+### 5. Mobile Command Setup
+If stationary hubs are unsafe or inaccessible, deploy **mobile logistics command posts**.
+
+**Requirements:**
+- Power (inverter, battery, solar)  
+- Printed or laminated manifests  
+- Radio/Signal device with secure group access  
+- Folding table or flat surface for routing layout  
+- Emergency signage (supply, med, comms)  
+
+These can operate from vehicles, community centers, or tents.
+
+---
+
+### 6. Offline Coordination Tools
+Plan for **connectivity loss** as default, not exception.
+
+**Offline kit includes:**
+- Local mesh or LoRa node with offline packet sync  
+- USB or SD data transfer for manifests  
+- QR or short code request forms  
+- Printed rotation lists and call signs  
+- Physical map with zones and rally points  
+
+After restoration, sync logs and resolve duplicates manually.
+
+---
+
+### 7. Safety & Accountability in Transit
+Before deployment, every driver or runner confirms:
+- Destination and fallback  
+- Supply manifest count  
+- Radio/Signal check-in times  
+- Contact if delayed or detained  
+- Emergency procedure if route fails  
+
+If a team misses two check-ins, activate **Search & Verify Protocol** (contact, reroute, or pause deployment).
+
+---
+
+### 8. Coordinating Across Regions
+When local capacity collapses:
+1. Identify neighboring region supply leads.  
+2. Use shared resource format (item, qty, ETA, status).  
+3. Confirm transport and border protocols (jurisdiction, permits).  
+4. Maintain consistent labeling between regions.  
+5. Record inter-region shipments in audit logs.
+
+> Inter-region trade succeeds on clarity, not speed.
+
+---
+
+### 9. Demobilization & Post-Action Recovery
+When an operation ends:
+- Reconcile manifests and remaining stock.  
+- Sanitize and repackage reusable gear.  
+- Record lessons learned and shortages.  
+- Identify equipment to repair or replace.  
+- Archive anonymized data for training use.
+
+Close the loop by debriefing all coordinators and updating checklists.
+
+---
+
+## Logistics Coordination Flow
+<Mermaid chart={`graph TD
+    A[Field Request Received] --> B{Verify Request?}
+
+    %% Verification Step
+    B -->|No| D[Flag for Verification Queue]
+    B -->|Yes| C[Assign Request ID & Priority]
+    D --> D1{Follow-Up Succeeded?}
+    D1 -->|No| D2[Escalate to Dispatcher Review]
+    D1 -->|Yes| C
+    D2 --> D3[Mark as Unverified / Hold]
+
+    %% Matching Supply
+    C --> E{Resource Available?}
+    E -->|Yes| F[Generate Transport Manifest]
+    E -->|No| E1[Alert Nearby Pods or Regions]
+    E1 --> E2{Replacement Found?}
+    E2 -->|Yes| F
+    E2 -->|No| E3[Request Logged as Unfilled / Archive]
+
+    %% Runner Assignment
+    F --> G{Runner/Driver Ready?}
+    G -->|Yes| H[Dispatch Confirmation via Signal/Radio]
+    G -->|No| G1[Trigger Standby Transport Roster]
+    G1 --> G2{Backup Found?}
+    G2 -->|Yes| H
+    G2 -->|No| G3[Delay Dispatch / Escalate to Logistics Officer]
+
+    %% Communication & Tracking
+    H --> H1{Comms Stable?}
+    H1 -->|No| H2[Switch to Radio or LoRa Relay]
+    H1 -->|Yes| I[Delivery In Transit]
+    H2 --> I
+
+    %% Delivery & Chain of Custody
+    I --> I1{Delivery Completed?}
+    I1 -->|No| I2[Activate Search & Verify Protocol]
+    I1 -->|Yes| J[Verify Chain of Custody]
+    I2 --> I3{Team Located?}
+    I3 -->|No| I4[Escalate to Safety & Security Review]
+    I3 -->|Yes| J
+
+    %% Verification and Logging
+    J --> J1{All Items Accounted For?}
+    J1 -->|Yes| K[Update Inventory & Logs]
+    J1 -->|No| J2[Flag Discrepancy / Open Incident Log]
+    J2 --> J3{Resolved?}
+    J3 -->|Yes| K
+    J3 -->|No| J4[Escalate to Regional Admin]
+
+    %% Reporting and Debrief
+    K --> L{Data Sync Successful?}
+    L -->|Yes| M[Report to Regional Dashboard]
+    L -->|No| L1[Store Offline Log / Retry Later]
+    L1 --> M
+    M --> N[Demobilize & Debrief]
+`} />
+
+
+---
+
+## Reflection
+- How does your region currently verify and track supplies?  
+- Who has the clearest picture of where everything goes — and is that sustainable?  
+- Could your logistics system still function without internet for a week?
+
+---
+
+## Next Steps
+- [Advanced Logistics & Resource Planning](/courses/advanced-logistics-resource-planning)
+- [Supply Chain Resilience & Local Production](/courses/supply-chain-resilience)
+- [Field Safety & Situational Awareness](/courses/field-safety)
+- [Managing and Conducting Meetings](/courses/managing-meetings-virtual-physical)
+
+---
+
+## External Resources
+- **Mutual Aid Disaster Relief (MADR) – Supply Operations Guide**  
+- **OpenRelief Humanitarian Logistics Framework**  
+- **Transition Network: Local Resilience Case Studies**  
+- **FEMA ICS Alternatives for Community Response**  
+- **LoRa Mesh and Offline Coordination Guides**
+
+---
+
+## Rabbit Holes
+- Distributed warehouse synchronization  
+- Offline mesh inventory systems  
+- 3D-printed logistics tags  
+- Post-disaster ethical triage and prioritization  
+- Gamified supply audits for volunteer training

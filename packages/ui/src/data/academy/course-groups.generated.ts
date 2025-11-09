@@ -21,6 +21,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         "slug": "how-to-report"
       },
       {
+        "slug": "signal-basics-accessible"
+      },
+      {
         "slug": "support-art"
       },
       {
@@ -99,6 +102,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "cross-zone-coordination"
+      },
+      {
+        "slug": "incident-response-admins"
       },
       {
         "slug": "regional-data-stewardship"
@@ -185,6 +191,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "label": "Field Safety & Stabilization Track",
     "courses": [
       {
+        "slug": "advanced-deescalation"
+      },
+      {
         "slug": "care-support"
       },
       {
@@ -197,6 +206,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         "slug": "deescalation-basics"
       },
       {
+        "slug": "environmental-safety"
+      },
+      {
         "slug": "escalation-evacuation-protocols"
       },
       {
@@ -206,7 +218,13 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         "slug": "logistics-resource-management"
       },
       {
+        "slug": "mass-casualty-response"
+      },
+      {
         "slug": "medical-basics-field-safety"
+      },
+      {
+        "slug": "national-guard-interactions"
       },
       {
         "slug": "otg-checklist"
@@ -230,6 +248,12 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "advanced-logistics-resource-planning"
+      },
+      {
+        "slug": "logistics-command-coordination"
+      },
+      {
+        "slug": "supply-chain-resilience"
       }
     ]
   },
@@ -293,6 +317,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
   {
     "label": "Pod Leadership & Organizing Track",
     "courses": [
+      {
+        "slug": "consensus-decision-frameworks"
+      },
       {
         "slug": "create-a-pod"
       },

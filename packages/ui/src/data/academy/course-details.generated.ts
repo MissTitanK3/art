@@ -84,6 +84,12 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.4,
     "type": "qualified"
   },
+  "advanced-deescalation": {
+    "title": "Advanced De-Escalation & Crisis Mediation",
+    "description": "Deepen your de-escalation skills for complex, multi-party, or high-stress situations — including crowd dynamics, trauma-informed responses, and tactical containment under pressure.",
+    "version": 1,
+    "type": "qualified"
+  },
   "care-support": {
     "title": "Care & Emotional Support",
     "description": "Learn trauma-informed care for crisis situations and peer support within field and mutual aid teams.",
@@ -108,6 +114,12 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 2.3,
     "type": "qualified"
   },
+  "environmental-safety": {
+    "title": "Environmental Safety & Extreme Conditions",
+    "description": "Prepare for heat, cold, smoke, and storms during field or mutual aid operations using low-cost, field-tested safety practices.",
+    "version": 1.3,
+    "type": "qualified"
+  },
   "escalation-evacuation-protocols": {
     "title": "Escalation & Evacuation Protocols",
     "description": "Learn to anticipate volatile situations and coordinate safe exits, fallback points, and team transport during field operations.",
@@ -126,10 +138,22 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.4,
     "type": "qualified"
   },
+  "mass-casualty-response": {
+    "title": "Mass Casualty Response & Coordination",
+    "description": "Learn how to manage multi-injury emergencies, triage effectively, and coordinate medics, dispatch, and communication under pressure.",
+    "version": 1.3,
+    "type": "qualified"
+  },
   "medical-basics-field-safety": {
     "title": "Medical Basics for Field Safety",
     "description": "Learn essential first-aid skills including Stop the Bleed, CPR, and field triage to keep teams safe during actions.",
     "version": 1.4,
+    "type": "qualified"
+  },
+  "national-guard-interactions": {
+    "title": "Interacting with the National Guard & Active Military Presence",
+    "description": "Learn to recognize, de-escalate, and navigate interactions with National Guard or active-duty forces acting in domestic law enforcement or emergency roles.",
+    "version": 1,
     "type": "qualified"
   },
   "otg-checklist": {
@@ -178,6 +202,12 @@ export const GENERATED_COURSE_DETAILS = {
     "title": "How to Report ICE Presence",
     "description": "Learn the proper steps to submit a clear, verified Community Watch report safely and effectively.",
     "version": 3,
+    "type": "qualified"
+  },
+  "signal-basics-accessible": {
+    "title": "Signal Messenger Basics & Accessibility",
+    "description": "A clear, step-by-step guide to using Signal Messenger — from setup and navigation to calls, muting, and privacy — written for all experience levels, including older or less tech-comfortable users.",
+    "version": 1.1,
     "type": "qualified"
   },
   "support-art": {
@@ -300,6 +330,12 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1,
     "type": "qualified"
   },
+  "incident-response-admins": {
+    "title": "Incident Response for Regional Admins",
+    "description": "Learn how to coordinate high-risk or sensitive incidents at the regional level while maintaining safety, integrity, and legal protection for all pods.",
+    "version": 1.3,
+    "type": "qualified"
+  },
   "regional-data-stewardship": {
     "title": "Regional Data Stewardship & Privacy Oversight",
     "description": "Learn how to securely manage volunteer, dispatch, and incident data at the regional level with ethical transparency and legal compliance.",
@@ -340,6 +376,18 @@ export const GENERATED_COURSE_DETAILS = {
     "title": "Advanced Logistics & Resource Planning",
     "description": "Plan, scale, and sustain pod operations for multi-day, multi-pod, or long-term defense with ethical and secure logistics.",
     "version": 1.4,
+    "type": "qualified"
+  },
+  "logistics-command-coordination": {
+    "title": "Mutual Aid Logistics Command & Coordination",
+    "description": "Learn how to organize and synchronize community logistics operations across pods and regions during high-demand or crisis events.",
+    "version": 1.1,
+    "type": "qualified"
+  },
+  "supply-chain-resilience": {
+    "title": "Supply Chain Resilience & Local Production",
+    "description": "Learn how to secure, localize, and sustain essential supplies for your pod or region when conventional supply chains fail.",
+    "version": 1.3,
     "type": "qualified"
   },
   "cross-regional-ethics": {
@@ -423,6 +471,12 @@ export const GENERATED_COURSE_DETAILS = {
   "radio-communications": {
     "title": "Radio Communications & Protocols",
     "description": "Learn how to use radios for secure, clear, and effective field coordination.",
+    "version": 1.3,
+    "type": "qualified"
+  },
+  "consensus-decision-frameworks": {
+    "title": "Consensus & Rapid Decision Frameworks",
+    "description": "Learn practical methods for making transparent, collective, and time-sensitive decisions without losing trust or momentum.",
     "version": 1.3,
     "type": "qualified"
   },

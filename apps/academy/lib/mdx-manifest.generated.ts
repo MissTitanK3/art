@@ -19,14 +19,18 @@ const mod_understanding_court_support = () => import('@workspace/ui/data/academy
 const mod_app_free_tactics = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles_Track/app-free-tactics.mdx');
 const mod_checkpoint_monitoring = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles_Track/checkpoint-monitoring.mdx');
 const mod_digital_resilience_contingency_comms = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles_Track/digital-resilience-contingency-comms.mdx');
+const mod_advanced_deescalation = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/advanced-deescalation.mdx');
 const mod_care_support = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/care-support.mdx');
 const mod_collective_safety_protocols = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/collective-safety-protocols.mdx');
 const mod_crisis_debrief_care = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/crisis-debrief-care.mdx');
 const mod_deescalation_basics = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/deescalation-basics.mdx');
+const mod_environmental_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/environmental-safety.mdx');
 const mod_escalation_evacuation_protocols = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/escalation-evacuation-protocols.mdx');
 const mod_field_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/field-safety.mdx');
 const mod_logistics_resource_management = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/logistics-resource-management.mdx');
+const mod_mass_casualty_response = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/mass-casualty-response.mdx');
 const mod_medical_basics_field_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/medical-basics-field-safety.mdx');
+const mod_national_guard_interactions = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/national-guard-interactions.mdx');
 const mod_otg_checklist = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/otg-checklist.mdx');
 const mod_trauma_risk_awareness = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/trauma-risk-awareness.mdx');
 const mod_weapon_safety_firearms_101 = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/weapon-safety-firearms-101.mdx');
@@ -35,6 +39,7 @@ const mod_art_watch = () => import('@workspace/ui/data/academy/courses/Getting_S
 const mod_data_ethics_pledge = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/data-ethics-pledge.mdx');
 const mod_dispatch_training_pathway = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/dispatch-training-pathway.mdx');
 const mod_how_to_report = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/how-to-report.mdx');
+const mod_signal_basics_accessible = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/signal-basics-accessible.mdx');
 const mod_support_art = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/support-art.mdx');
 const mod_why_we_do_this = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/why-we-do-this.mdx');
 const mod_burner_phones_security_culture = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/burner-phones-security-culture.mdx');
@@ -55,6 +60,7 @@ const mod_dealing_with_chaos = () => import('@workspace/ui/data/academy/courses/
 const mod_trust_and_ethics_in_dispatch = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/trust-and-ethics-in-dispatch.mdx');
 const mod_admin_tools = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/admin-tools.mdx');
 const mod_cross_zone_coordination = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/cross-zone-coordination.mdx');
+const mod_incident_response_admins = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/incident-response-admins.mdx');
 const mod_regional_data_stewardship = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/regional-data-stewardship.mdx');
 const mod_trust_networks_signature_management = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/trust-networks-signature-management.mdx');
 const mod_zone_administration = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/zone-administration.mdx');
@@ -62,6 +68,8 @@ const mod_zone_lead_overview = () => import('@workspace/ui/data/academy/courses/
 const mod_60_day_checklist = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/60-day-checklist.mdx');
 const mod_60_day_preparedness = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/60-day-preparedness.mdx');
 const mod_advanced_logistics_resource_planning = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/advanced-logistics-resource-planning.mdx');
+const mod_logistics_command_coordination = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/logistics-command-coordination.mdx');
+const mod_supply_chain_resilience = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/supply-chain-resilience.mdx');
 const mod_cross_regional_ethics = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/cross-regional-ethics.mdx');
 const mod_ethical_dilemmas_direct_action = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/ethical-dilemmas-direct-action.mdx');
 const mod_movement_strategy_ethics = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/movement-strategy-ethics.mdx');
@@ -76,6 +84,7 @@ const mod_community_defense_center = () => import('@workspace/ui/data/academy/co
 const mod_pod_directory = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/pod-directory.mdx');
 const mod_pod_video_content = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/pod-video-content.mdx');
 const mod_radio_communications = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/radio-communications.mdx');
+const mod_consensus_decision_frameworks = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/consensus-decision-frameworks.mdx');
 const mod_create_a_pod = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/create-a-pod.mdx');
 const mod_inter_pod_regional_coordination = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/inter-pod-regional-coordination.mdx');
 const mod_managing_meetings_virtual_physical = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/managing-meetings-virtual-physical.mdx');
@@ -123,14 +132,18 @@ export const MDX_COURSE_MODULES = {
   'app-free-tactics': mod_app_free_tactics,
   'checkpoint-monitoring': mod_checkpoint_monitoring,
   'digital-resilience-contingency-comms': mod_digital_resilience_contingency_comms,
+  'advanced-deescalation': mod_advanced_deescalation,
   'care-support': mod_care_support,
   'collective-safety-protocols': mod_collective_safety_protocols,
   'crisis-debrief-care': mod_crisis_debrief_care,
   'deescalation-basics': mod_deescalation_basics,
+  'environmental-safety': mod_environmental_safety,
   'escalation-evacuation-protocols': mod_escalation_evacuation_protocols,
   'field-safety': mod_field_safety,
   'logistics-resource-management': mod_logistics_resource_management,
+  'mass-casualty-response': mod_mass_casualty_response,
   'medical-basics-field-safety': mod_medical_basics_field_safety,
+  'national-guard-interactions': mod_national_guard_interactions,
   'otg-checklist': mod_otg_checklist,
   'trauma-risk-awareness': mod_trauma_risk_awareness,
   'weapon-safety-firearms-101': mod_weapon_safety_firearms_101,
@@ -139,6 +152,7 @@ export const MDX_COURSE_MODULES = {
   'data-ethics-pledge': mod_data_ethics_pledge,
   'dispatch-training-pathway': mod_dispatch_training_pathway,
   'how-to-report': mod_how_to_report,
+  'signal-basics-accessible': mod_signal_basics_accessible,
   'support-art': mod_support_art,
   'why-we-do-this': mod_why_we_do_this,
   'burner-phones-security-culture': mod_burner_phones_security_culture,
@@ -159,6 +173,7 @@ export const MDX_COURSE_MODULES = {
   'trust-and-ethics-in-dispatch': mod_trust_and_ethics_in_dispatch,
   'admin-tools': mod_admin_tools,
   'cross-zone-coordination': mod_cross_zone_coordination,
+  'incident-response-admins': mod_incident_response_admins,
   'regional-data-stewardship': mod_regional_data_stewardship,
   'trust-networks-signature-management': mod_trust_networks_signature_management,
   'zone-administration': mod_zone_administration,
@@ -166,6 +181,8 @@ export const MDX_COURSE_MODULES = {
   '60-day-checklist': mod_60_day_checklist,
   '60-day-preparedness': mod_60_day_preparedness,
   'advanced-logistics-resource-planning': mod_advanced_logistics_resource_planning,
+  'logistics-command-coordination': mod_logistics_command_coordination,
+  'supply-chain-resilience': mod_supply_chain_resilience,
   'cross-regional-ethics': mod_cross_regional_ethics,
   'ethical-dilemmas-direct-action': mod_ethical_dilemmas_direct_action,
   'movement-strategy-ethics': mod_movement_strategy_ethics,
@@ -180,6 +197,7 @@ export const MDX_COURSE_MODULES = {
   'pod-directory': mod_pod_directory,
   'pod-video-content': mod_pod_video_content,
   'radio-communications': mod_radio_communications,
+  'consensus-decision-frameworks': mod_consensus_decision_frameworks,
   'create-a-pod': mod_create_a_pod,
   'inter-pod-regional-coordination': mod_inter_pod_regional_coordination,
   'managing-meetings-virtual-physical': mod_managing_meetings_virtual_physical,
@@ -226,14 +244,18 @@ export const MDX_COURSE_FRONTMATTER = {
   'app-free-tactics': {"title":"App-Free Community Defense Tactics","slug":"app-free-tactics","description":"Learn how to coordinate, communicate, and protect communities without relying on apps, phones, or digital systems.","type":"qualified","readingTime":25,"version":1.3},
   'checkpoint-monitoring': {"title":"Checkpoint Monitoring","slug":"checkpoint-monitoring","description":"Learn how to safely observe and document law enforcement or immigration checkpoints without escalating risk.","type":"qualified","readingTime":30,"version":2.4},
   'digital-resilience-contingency-comms': {"title":"Digital Resilience & Contingency Comms","slug":"digital-resilience-contingency-comms","description":"Learn to maintain communication and coordination when networks fail using mesh, LoRa, radio, and offline protocols.","type":"qualified","version":1.4,"readingTime":18},
+  'advanced-deescalation': {"title":"Advanced De-Escalation & Crisis Mediation","slug":"advanced-deescalation","description":"Deepen your de-escalation skills for complex, multi-party, or high-stress situations — including crowd dynamics, trauma-informed responses, and tactical containment under pressure.","type":"qualified","version":1,"readingTime":40},
   'care-support': {"title":"Care & Emotional Support","slug":"care-support","description":"Learn trauma-informed care for crisis situations and peer support within field and mutual aid teams.","type":"qualified","readingTime":35,"version":2.3},
   'collective-safety-protocols': {"title":"Security Protocols for Collective Safety","slug":"collective-safety-protocols","description":"Learn to reduce shared risk through structured roles, exposure limits, and coordinated recovery after leaks or arrests.","type":"qualified","readingTime":30,"version":1.3},
   'crisis-debrief-care': {"title":"Crisis Debriefing & Mutual Care","slug":"crisis-debrief-care","description":"Learn to debrief after difficult actions or trauma and support podmates through recovery, burnout, or breakdown with clarity and consent.","type":"qualified","readingTime":30,"version":1.3},
   'deescalation-basics': {"title":"De-escalation Basics","slug":"deescalation-basics","description":"Learn practical techniques to calm tense situations, preserve dignity, and prevent harm in community or field settings.","type":"qualified","readingTime":40,"version":2.3},
+  'environmental-safety': {"title":"Environmental Safety & Extreme Conditions","slug":"environmental-safety","description":"Prepare for heat, cold, smoke, and storms during field or mutual aid operations using low-cost, field-tested safety practices.","type":"qualified","version":1.3,"readingTime":38},
   'escalation-evacuation-protocols': {"title":"Escalation & Evacuation Protocols","slug":"escalation-evacuation-protocols","description":"Learn to anticipate volatile situations and coordinate safe exits, fallback points, and team transport during field operations.","type":"qualified","readingTime":15,"version":1.4},
   'field-safety': {"title":"Field Safety & Situational Awareness","slug":"field-safety","description":"Learn how to stay safe, alert, and coordinated in high-risk field environments through threat recognition, preparation, and team awareness.","type":"qualified","readingTime":35,"version":2.3},
   'logistics-resource-management': {"title":"Logistics & Resource Management","slug":"logistics-resource-management","description":"Learn how to plan, stage, and sustain pods with fuel, supplies, and transport, including resupply and fallback staging for field actions.","type":"qualified","version":1.4,"readingTime":20},
+  'mass-casualty-response': {"title":"Mass Casualty Response & Coordination","slug":"mass-casualty-response","description":"Learn how to manage multi-injury emergencies, triage effectively, and coordinate medics, dispatch, and communication under pressure.","type":"qualified","version":1.3,"readingTime":40},
   'medical-basics-field-safety': {"title":"Medical Basics for Field Safety","slug":"medical-basics-field-safety","description":"Learn essential first-aid skills including Stop the Bleed, CPR, and field triage to keep teams safe during actions.","type":"qualified","version":1.4,"readingTime":20},
+  'national-guard-interactions': {"title":"Interacting with the National Guard & Active Military Presence","slug":"national-guard-interactions","description":"Learn to recognize, de-escalate, and navigate interactions with National Guard or active-duty forces acting in domestic law enforcement or emergency roles.","type":"qualified","version":1,"readingTime":28},
   'otg-checklist': {"title":"OTG Deployment Checklist & Field Protocols","slug":"otg-checklist","description":"Learn what to do before, during, and after hitting the ground with your pod — using a shared field checklist to stay safe, coordinated, and effective in real time.","type":"qualified","readingTime":15,"version":1.3},
   'trauma-risk-awareness': {"title":"Collective Trauma & Risk Awareness for Frontliners","slug":"trauma-risk-awareness","description":"Learn how to recognize trauma responses, speak up about safety concerns, and build a healthy risk culture that protects both individuals and the community over the long haul.","type":"qualified","readingTime":30,"version":1.2},
   'weapon-safety-firearms-101': {"title":"Weapon Safety & Firearms 101","slug":"weapon-safety-firearms-101","description":"Foundational firearm safety, handling principles, and community risk protocols for field teams operating near or around weapons.","type":"qualified","version":1.2,"readingTime":22},
@@ -242,6 +264,7 @@ export const MDX_COURSE_FRONTMATTER = {
   'data-ethics-pledge': {"title":"ART Data Ethics & Security Pledge","slug":"data-ethics-pledge","description":"A living agreement for anyone handling data or communications in the ART network.","type":"qualified","readingTime":5,"version":2},
   'dispatch-training-pathway': {"title":"ART Dispatch Training Pathway","slug":"dispatch-training-pathway","description":"Understand the training levels required to serve in dispatch and field leadership roles.","type":"overview","readingTime":6,"version":1.3},
   'how-to-report': {"title":"How to Report ICE Presence","slug":"how-to-report","description":"Learn the proper steps to submit a clear, verified Community Watch report safely and effectively.","type":"qualified","readingTime":6,"version":3},
+  'signal-basics-accessible': {"title":"Signal Messenger Basics & Accessibility","slug":"signal-basics-accessible","description":"A clear, step-by-step guide to using Signal Messenger — from setup and navigation to calls, muting, and privacy — written for all experience levels, including older or less tech-comfortable users.","type":"qualified","version":1.1,"readingTime":40},
   'support-art': {"title":"Support ART","slug":"support-art","description":"How to sustain ART through community funding and help grow its network of pods, volunteers, and Dispatch Admins.","type":"qualified","readingTime":30,"version":2},
   'why-we-do-this': {"title":"Why We Do This","slug":"why-we-do-this","description":"Understand the moral foundation and historical roots of ART Academy.","type":"qualified","readingTime":6,"version":2},
   'burner-phones-security-culture': {"title":"Burner Phones & Security Culture (2025 Edition)","slug":"burner-phones-security-culture","description":"Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.","type":"qualified","readingTime":15,"version":1.3},
@@ -262,6 +285,7 @@ export const MDX_COURSE_FRONTMATTER = {
   'trust-and-ethics-in-dispatch': {"title":"Trust and Ethics in Dispatch","slug":"trust-and-ethics-in-dispatch","description":"Learn how to make ethically grounded decisions when coordinating field responses and holding movement trust.","type":"qualified","readingTime":25,"version":1.4},
   'admin-tools': {"title":"Admin Tools and Oversight","slug":"admin-tools","description":"Learn how to manage dispatch creation, access roles, and trust signatures in ART Dispatch — with clear boundaries on authority, audits, and accountability.","type":"qualified","readingTime":22,"version":1.4},
   'cross-zone-coordination': {"title":"Cross-Zone Coordination & Global Resilience Planning","slug":"cross-zone-coordination","description":"Learn how to link regional zones, share resources, and maintain operational trust across the decentralized network during crises and large-scale events.","type":"qualified","version":1,"readingTime":28},
+  'incident-response-admins': {"title":"Incident Response for Regional Admins","slug":"incident-response-admins","description":"Learn how to coordinate high-risk or sensitive incidents at the regional level while maintaining safety, integrity, and legal protection for all pods.","type":"qualified","version":1.3,"readingTime":40},
   'regional-data-stewardship': {"title":"Regional Data Stewardship & Privacy Oversight","slug":"regional-data-stewardship","description":"Learn how to securely manage volunteer, dispatch, and incident data at the regional level with ethical transparency and legal compliance.","type":"qualified","version":1.3,"readingTime":28},
   'trust-networks-signature-management': {"title":"Trust Networks & Signature Management","slug":"trust-networks-signature-management","description":"Learn to verify, rotate, and audit trust signatures across regional nodes securely and transparently.","type":"qualified","version":1.4,"readingTime":30},
   'zone-administration': {"title":"Strategic Oversight & Zone Administration","slug":"zone-administration","description":"Learn how to manage regional operations, ensure ethical oversight, and maintain resilience across multi-pod or multi-region networks.","type":"qualified","version":1,"readingTime":28},
@@ -269,6 +293,8 @@ export const MDX_COURSE_FRONTMATTER = {
   '60-day-checklist': {"title":"60-Day Checklist: Weekly Community Readiness Plan","slug":"60-day-checklist","description":"Build up your pod’s readiness with this step-by-step 8-week preparedness guide for resilient, connected communities.","type":"qualified","readingTime":12,"version":2.2},
   '60-day-preparedness': {"title":"60-Day Preparedness","slug":"60-day-preparedness","description":"A practical, community-first guide for survival, coordination, and dignity when systems fail.","type":"qualified","readingTime":22,"version":2.2},
   'advanced-logistics-resource-planning': {"title":"Advanced Logistics & Resource Planning","slug":"advanced-logistics-resource-planning","description":"Plan, scale, and sustain pod operations for multi-day, multi-pod, or long-term defense with ethical and secure logistics.","type":"qualified","readingTime":18,"version":1.4},
+  'logistics-command-coordination': {"title":"Mutual Aid Logistics Command & Coordination","slug":"logistics-command-coordination","description":"Learn how to organize and synchronize community logistics operations across pods and regions during high-demand or crisis events.","type":"qualified","version":1.1,"readingTime":42},
+  'supply-chain-resilience': {"title":"Supply Chain Resilience & Local Production","slug":"supply-chain-resilience","description":"Learn how to secure, localize, and sustain essential supplies for your pod or region when conventional supply chains fail.","type":"qualified","version":1.3,"readingTime":42},
   'cross-regional-ethics': {"title":"Cross-Regional Solidarity & Cultural Ethics","slug":"cross-regional-ethics","description":"Learn how to collaborate across regions and cultures with respect, transparency, and accountability while maintaining decentralized autonomy.","type":"qualified","version":1,"readingTime":26},
   'ethical-dilemmas-direct-action': {"title":"Ethical Dilemmas in Direct Action","slug":"ethical-dilemmas-direct-action","description":"Frameworks for weighing risk, consent, and impact when planning or joining high-risk actions.","type":"qualified","version":1.3,"readingTime":30},
   'movement-strategy-ethics': {"title":"Movement Strategy & Ethics","slug":"movement-strategy-ethics","description":"Learn to design actions, campaigns, and organizing systems guided by shared ethics, sustainability, and strategic foresight.","type":"qualified","version":1,"readingTime":28},
@@ -283,6 +309,7 @@ export const MDX_COURSE_FRONTMATTER = {
   'pod-directory': {"title":"General Pod Directory","slug":"pod-directory","description":"Find regional entry points to connect with local ART pods or start one safely and securely.","type":"qualified","readingTime":12,"version":1.3},
   'pod-video-content': {"title":"Pod Creator Video Content Framework","slug":"pod-video-content","description":"30 modular video ideas to help Pod Creators recruit, educate, and organize safely with trust.","type":"qualified","readingTime":15,"version":1.3},
   'radio-communications': {"title":"Radio Communications & Protocols","slug":"radio-communications","description":"Learn how to use radios for secure, clear, and effective field coordination.","type":"qualified","readingTime":18,"version":1.3},
+  'consensus-decision-frameworks': {"title":"Consensus & Rapid Decision Frameworks","slug":"consensus-decision-frameworks","description":"Learn practical methods for making transparent, collective, and time-sensitive decisions without losing trust or momentum.","type":"qualified","version":1.3,"readingTime":38},
   'create-a-pod': {"title":"How to Create a Pod","slug":"create-a-pod","description":"Learn how to start a local response pod in areas without ART coverage.","type":"qualified","readingTime":22,"version":1.3},
   'inter-pod-regional-coordination': {"title":"Inter-Pod & Regional Coordination","slug":"inter-pod-regional-coordination","description":"Learn how to link pods across counties and regions, build fallback mutual aid networks, and coordinate communications during large-scale or multi-day actions.","type":"qualified","readingTime":20,"version":1.4},
   'managing-meetings-virtual-physical': {"title":"Managing and Conducting Meetings (Virtual & Physical)","slug":"managing-meetings-virtual-physical","description":"Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.","type":"qualified","readingTime":28,"version":1.4},
