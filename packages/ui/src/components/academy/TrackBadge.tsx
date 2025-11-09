@@ -37,6 +37,7 @@ export const TRACK_VARIANTS = [
   "faith-support",
   "survivor-escort",
   "vehicle-specialist",
+  "specialized-role",
 ] as const
 
 export type TrackVariant = (typeof TRACK_VARIANTS)[number]
@@ -162,6 +163,11 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     label: "Vehicle Specialist (Micro-Badge)",
     icon: Package,
     color: "bg-yellow-200 text-yellow-800",
+  },
+  "specialized-role": {
+    label: "Specialized Role",
+    icon: Users,
+    color: "bg-emerald-200 text-emerald-800",
   },
 }
 

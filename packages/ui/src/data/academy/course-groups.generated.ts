@@ -135,7 +135,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Community Care & Emotional Support Track",
+    "label": "Community Care & Emotional Support",
     "courses": [
       {
         "slug": "conflict-repair"
@@ -160,7 +160,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Court & Post-Raid Support Track",
+    "label": "Court & Post-Raid Support",
     "courses": [
       {
         "slug": "court-support"
@@ -174,7 +174,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Direct Action & Protective Roles Track",
+    "label": "Direct Action & Protective Roles",
     "courses": [
       {
         "slug": "app-free-tactics"
@@ -188,7 +188,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Field Safety & Stabilization Track",
+    "label": "Field Safety & Stabilization",
     "courses": [
       {
         "slug": "advanced-deescalation"
@@ -198,6 +198,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "collective-safety-protocols"
+      },
+      {
+        "slug": "community-intelligence-situational-reporting"
       },
       {
         "slug": "crisis-debrief-care"
@@ -230,6 +233,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         "slug": "otg-checklist"
       },
       {
+        "slug": "rapid-field-assessment-triage"
+      },
+      {
         "slug": "trauma-risk-awareness"
       },
       {
@@ -238,7 +244,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Logistics & Mutual Aid Operations Track",
+    "label": "Logistics & Mutual Aid Operations",
     "courses": [
       {
         "slug": "60-day-checklist"
@@ -250,6 +256,12 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         "slug": "advanced-logistics-resource-planning"
       },
       {
+        "slug": "cdc-location-selection"
+      },
+      {
+        "slug": "cdc-logistics-site-operations"
+      },
+      {
         "slug": "logistics-command-coordination"
       },
       {
@@ -258,13 +270,16 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Movement Strategy & Ethics Track",
+    "label": "Movement Strategy & Ethics",
     "courses": [
       {
         "slug": "cross-regional-ethics"
       },
       {
         "slug": "ethical-dilemmas-direct-action"
+      },
+      {
+        "slug": "information-ops-counter-propaganda"
       },
       {
         "slug": "movement-strategy-ethics"
@@ -275,7 +290,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Observation & Legal Track",
+    "label": "Observation & Legal",
     "courses": [
       {
         "slug": "after-action-data-hygiene"
@@ -315,7 +330,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Pod Leadership & Organizing Track",
+    "label": "Pod Leadership & Organizing",
     "courses": [
       {
         "slug": "consensus-decision-frameworks"
@@ -341,16 +356,124 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "label": "Specialized Roles",
     "courses": [
       {
+        "slug": "arrest-tracker-jail-support"
+      },
+      {
+        "slug": "asl-interpreter-access"
+      },
+      {
+        "slug": "bondsman-bail-support"
+      },
+      {
+        "slug": "care-station-coordinator"
+      },
+      {
+        "slug": "child-specialist-safety-care"
+      },
+      {
         "slug": "child-specialist"
+      },
+      {
+        "slug": "community-organizer-strategy-impact"
+      },
+      {
+        "slug": "court-float-support"
+      },
+      {
+        "slug": "courthouse-marshal"
+      },
+      {
+        "slug": "de-escalation-specialist"
+      },
+      {
+        "slug": "defensive-presence-nonviolent-shielding"
+      },
+      {
+        "slug": "disability-aid-accessibility"
+      },
+      {
+        "slug": "dispatch-assistant-coordination"
+      },
+      {
+        "slug": "docket-tracker"
+      },
+      {
+        "slug": "faith-leader-support"
+      },
+      {
+        "slug": "grounding-support"
+      },
+      {
+        "slug": "immigration-specialist-support"
+      },
+      {
+        "slug": "know-your-rights-observer"
+      },
+      {
+        "slug": "legal-liaison"
       },
       {
         "slug": "legal-observer"
       },
       {
+        "slug": "legal-support-observation-coordination"
+      },
+      {
+        "slug": "line-scheduler"
+      },
+      {
+        "slug": "logistics-support-operations"
+      },
+      {
+        "slug": "media-press-monitor"
+      },
+      {
+        "slug": "mental-health-support"
+      },
+      {
+        "slug": "night-logistics-operations"
+      },
+      {
+        "slug": "press-coordination"
+      },
+      {
+        "slug": "resource-drop-coordinator"
+      },
+      {
         "slug": "runners-and-rides"
       },
       {
+        "slug": "safety-marshal-crowd-coordination"
+      },
+      {
+        "slug": "security-witness"
+      },
+      {
+        "slug": "social-worker-crisis-support"
+      },
+      {
+        "slug": "street-medic-field-support"
+      },
+      {
+        "slug": "survivor-escort"
+      },
+      {
+        "slug": "tech-jammer-counter-surveillance"
+      },
+      {
         "slug": "tech-jamming"
+      },
+      {
+        "slug": "tech-support-field-systems"
+      },
+      {
+        "slug": "translator-language-access"
+      },
+      {
+        "slug": "vehicle-support-transport"
+      },
+      {
+        "slug": "wellness-float"
       }
     ]
   },
@@ -375,7 +498,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
-    "label": "Tech & Comms Track",
+    "label": "Tech & Comms",
     "courses": [
       {
         "slug": "comms-collapse"

@@ -8,32 +8,34 @@ import type { AcademyCourseFrontmatter } from '@workspace/ui/data/academy/types'
 const mod_dispatch_coordination = () => import('@workspace/ui/data/academy/courses/Advanced_Tools/dispatch-coordination.mdx');
 const mod_heatmap_verification = () => import('@workspace/ui/data/academy/courses/Advanced_Tools/heatmap-verification.mdx');
 const mod_report_reviewing = () => import('@workspace/ui/data/academy/courses/Advanced_Tools/report-reviewing.mdx');
-const mod_conflict_repair = () => import('@workspace/ui/data/academy/courses/Community_Care___and___Emotional_Support_Track/conflict-repair.mdx');
-const mod_mutual_aid_health_wellness = () => import('@workspace/ui/data/academy/courses/Community_Care___and___Emotional_Support_Track/mutual-aid-health-wellness.mdx');
-const mod_peer_support_checkins = () => import('@workspace/ui/data/academy/courses/Community_Care___and___Emotional_Support_Track/peer-support-checkins.mdx');
+const mod_conflict_repair = () => import('@workspace/ui/data/academy/courses/Community_Care___and___Emotional_Support/conflict-repair.mdx');
+const mod_mutual_aid_health_wellness = () => import('@workspace/ui/data/academy/courses/Community_Care___and___Emotional_Support/mutual-aid-health-wellness.mdx');
+const mod_peer_support_checkins = () => import('@workspace/ui/data/academy/courses/Community_Care___and___Emotional_Support/peer-support-checkins.mdx');
 const mod_bystander_support = () => import('@workspace/ui/data/academy/courses/Community_Safety___and___Rights/bystander-support.mdx');
 const mod_interacting_with_law_enforcement = () => import('@workspace/ui/data/academy/courses/Community_Safety___and___Rights/interacting-with-law-enforcement.mdx');
-const mod_court_support = () => import('@workspace/ui/data/academy/courses/Court___and___Post-Raid_Support_Track/court-support.mdx');
-const mod_jail_support_legal_logistics = () => import('@workspace/ui/data/academy/courses/Court___and___Post-Raid_Support_Track/jail-support-legal-logistics.mdx');
-const mod_understanding_court_support = () => import('@workspace/ui/data/academy/courses/Court___and___Post-Raid_Support_Track/understanding-court-support.mdx');
-const mod_app_free_tactics = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles_Track/app-free-tactics.mdx');
-const mod_checkpoint_monitoring = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles_Track/checkpoint-monitoring.mdx');
-const mod_digital_resilience_contingency_comms = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles_Track/digital-resilience-contingency-comms.mdx');
-const mod_advanced_deescalation = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/advanced-deescalation.mdx');
-const mod_care_support = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/care-support.mdx');
-const mod_collective_safety_protocols = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/collective-safety-protocols.mdx');
-const mod_crisis_debrief_care = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/crisis-debrief-care.mdx');
-const mod_deescalation_basics = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/deescalation-basics.mdx');
-const mod_environmental_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/environmental-safety.mdx');
-const mod_escalation_evacuation_protocols = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/escalation-evacuation-protocols.mdx');
-const mod_field_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/field-safety.mdx');
-const mod_logistics_resource_management = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/logistics-resource-management.mdx');
-const mod_mass_casualty_response = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/mass-casualty-response.mdx');
-const mod_medical_basics_field_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/medical-basics-field-safety.mdx');
-const mod_national_guard_interactions = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/national-guard-interactions.mdx');
-const mod_otg_checklist = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/otg-checklist.mdx');
-const mod_trauma_risk_awareness = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/trauma-risk-awareness.mdx');
-const mod_weapon_safety_firearms_101 = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization_Track/weapon-safety-firearms-101.mdx');
+const mod_court_support = () => import('@workspace/ui/data/academy/courses/Court___and___Post-Raid_Support/court-support.mdx');
+const mod_jail_support_legal_logistics = () => import('@workspace/ui/data/academy/courses/Court___and___Post-Raid_Support/jail-support-legal-logistics.mdx');
+const mod_understanding_court_support = () => import('@workspace/ui/data/academy/courses/Court___and___Post-Raid_Support/understanding-court-support.mdx');
+const mod_app_free_tactics = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles/app-free-tactics.mdx');
+const mod_checkpoint_monitoring = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles/checkpoint-monitoring.mdx');
+const mod_digital_resilience_contingency_comms = () => import('@workspace/ui/data/academy/courses/Direct_Action___and___Protective_Roles/digital-resilience-contingency-comms.mdx');
+const mod_advanced_deescalation = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/advanced-deescalation.mdx');
+const mod_care_support = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/care-support.mdx');
+const mod_collective_safety_protocols = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/collective-safety-protocols.mdx');
+const mod_community_intelligence_situational_reporting = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/community-intelligence-situational-reporting.mdx');
+const mod_crisis_debrief_care = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/crisis-debrief-care.mdx');
+const mod_deescalation_basics = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/deescalation-basics.mdx');
+const mod_environmental_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/environmental-safety.mdx');
+const mod_escalation_evacuation_protocols = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/escalation-evacuation-protocols.mdx');
+const mod_field_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/field-safety.mdx');
+const mod_logistics_resource_management = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/logistics-resource-management.mdx');
+const mod_mass_casualty_response = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/mass-casualty-response.mdx');
+const mod_medical_basics_field_safety = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/medical-basics-field-safety.mdx');
+const mod_national_guard_interactions = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/national-guard-interactions.mdx');
+const mod_otg_checklist = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/otg-checklist.mdx');
+const mod_rapid_field_assessment_triage = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/rapid-field-assessment-triage.mdx');
+const mod_trauma_risk_awareness = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/trauma-risk-awareness.mdx');
+const mod_weapon_safety_firearms_101 = () => import('@workspace/ui/data/academy/courses/Field_Safety___and___Stabilization/weapon-safety-firearms-101.mdx');
 const mod_academy_overview = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/academy-overview.mdx');
 const mod_art_watch = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/art-watch.mdx');
 const mod_data_ethics_pledge = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/data-ethics-pledge.mdx');
@@ -65,45 +67,84 @@ const mod_regional_data_stewardship = () => import('@workspace/ui/data/academy/c
 const mod_trust_networks_signature_management = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/trust-networks-signature-management.mdx');
 const mod_zone_administration = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/zone-administration.mdx');
 const mod_zone_lead_overview = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/zone-lead-overview.mdx');
-const mod_60_day_checklist = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/60-day-checklist.mdx');
-const mod_60_day_preparedness = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/60-day-preparedness.mdx');
-const mod_advanced_logistics_resource_planning = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/advanced-logistics-resource-planning.mdx');
-const mod_logistics_command_coordination = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/logistics-command-coordination.mdx');
-const mod_supply_chain_resilience = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations_Track/supply-chain-resilience.mdx');
-const mod_cross_regional_ethics = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/cross-regional-ethics.mdx');
-const mod_ethical_dilemmas_direct_action = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/ethical-dilemmas-direct-action.mdx');
-const mod_movement_strategy_ethics = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/movement-strategy-ethics.mdx');
-const mod_movement_sustainability_legacy = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics_Track/movement-sustainability-legacy.mdx');
-const mod_after_action_data_hygiene = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal_Track/after-action-data-hygiene.mdx');
-const mod_documentation_safety = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal_Track/documentation-safety.mdx');
-const mod_fourth_amendment_rights = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal_Track/fourth-amendment-rights.mdx');
-const mod_legal_followthrough_jail_support = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal_Track/legal-followthrough-jail-support.mdx');
-const mod_media_disinformation_handling = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal_Track/media-disinformation-handling.mdx');
-const mod_visual_alerts = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal_Track/visual-alerts.mdx');
+const mod_60_day_checklist = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/60-day-checklist.mdx');
+const mod_60_day_preparedness = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/60-day-preparedness.mdx');
+const mod_advanced_logistics_resource_planning = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/advanced-logistics-resource-planning.mdx');
+const mod_cdc_location_selection = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/cdc-location-selection.mdx');
+const mod_cdc_logistics_site_operations = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/cdc-logistics-site-operations.mdx');
+const mod_logistics_command_coordination = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/logistics-command-coordination.mdx');
+const mod_supply_chain_resilience = () => import('@workspace/ui/data/academy/courses/Logistics___and___Mutual_Aid_Operations/supply-chain-resilience.mdx');
+const mod_cross_regional_ethics = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics/cross-regional-ethics.mdx');
+const mod_ethical_dilemmas_direct_action = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics/ethical-dilemmas-direct-action.mdx');
+const mod_information_ops_counter_propaganda = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics/information-ops-counter-propaganda.mdx');
+const mod_movement_strategy_ethics = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics/movement-strategy-ethics.mdx');
+const mod_movement_sustainability_legacy = () => import('@workspace/ui/data/academy/courses/Movement_Strategy___and___Ethics/movement-sustainability-legacy.mdx');
+const mod_after_action_data_hygiene = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal/after-action-data-hygiene.mdx');
+const mod_documentation_safety = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal/documentation-safety.mdx');
+const mod_fourth_amendment_rights = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal/fourth-amendment-rights.mdx');
+const mod_legal_followthrough_jail_support = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal/legal-followthrough-jail-support.mdx');
+const mod_media_disinformation_handling = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal/media-disinformation-handling.mdx');
+const mod_visual_alerts = () => import('@workspace/ui/data/academy/courses/Observation___and___Legal/visual-alerts.mdx');
 const mod_community_defense_center = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/community-defense-center.mdx');
 const mod_pod_directory = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/pod-directory.mdx');
 const mod_pod_video_content = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/pod-video-content.mdx');
 const mod_radio_communications = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/radio-communications.mdx');
-const mod_consensus_decision_frameworks = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/consensus-decision-frameworks.mdx');
-const mod_create_a_pod = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/create-a-pod.mdx');
-const mod_inter_pod_regional_coordination = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/inter-pod-regional-coordination.mdx');
-const mod_managing_meetings_virtual_physical = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/managing-meetings-virtual-physical.mdx');
-const mod_mentoring_new_dispatchers = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/mentoring-new-dispatchers.mdx');
-const mod_training_the_trainers = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing_Track/training-the-trainers.mdx');
+const mod_consensus_decision_frameworks = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/consensus-decision-frameworks.mdx');
+const mod_create_a_pod = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/create-a-pod.mdx');
+const mod_inter_pod_regional_coordination = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/inter-pod-regional-coordination.mdx');
+const mod_managing_meetings_virtual_physical = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/managing-meetings-virtual-physical.mdx');
+const mod_mentoring_new_dispatchers = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/mentoring-new-dispatchers.mdx');
+const mod_training_the_trainers = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/training-the-trainers.mdx');
+const mod_arrest_tracker_jail_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/arrest-tracker-jail-support.mdx');
+const mod_asl_interpreter_access = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/asl-interpreter-access.mdx');
+const mod_bondsman_bail_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/bondsman-bail-support.mdx');
+const mod_care_station_coordinator = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/care-station-coordinator.mdx');
+const mod_child_specialist_safety_care = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/child-specialist-safety-care.mdx');
 const mod_child_specialist = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/child-specialist.mdx');
+const mod_community_organizer_strategy_impact = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/community-organizer-strategy-impact.mdx');
+const mod_court_float_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/court-float-support.mdx');
+const mod_courthouse_marshal = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/courthouse-marshal.mdx');
+const mod_de_escalation_specialist = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/de-escalation-specialist.mdx');
+const mod_defensive_presence_nonviolent_shielding = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/defensive-presence-nonviolent-shielding.mdx');
+const mod_disability_aid_accessibility = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/disability-aid-accessibility.mdx');
+const mod_dispatch_assistant_coordination = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/dispatch-assistant-coordination.mdx');
+const mod_docket_tracker = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/docket-tracker.mdx');
+const mod_faith_leader_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/faith-leader-support.mdx');
+const mod_grounding_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/grounding-support.mdx');
+const mod_immigration_specialist_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/immigration-specialist-support.mdx');
+const mod_know_your_rights_observer = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/know-your-rights-observer.mdx');
+const mod_legal_liaison = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/legal-liaison.mdx');
 const mod_legal_observer = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/legal-observer.mdx');
+const mod_legal_support_observation_coordination = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/legal-support-observation-coordination.mdx');
+const mod_line_scheduler = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/line-scheduler.mdx');
+const mod_logistics_support_operations = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/logistics-support-operations.mdx');
+const mod_media_press_monitor = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/media-press-monitor.mdx');
+const mod_mental_health_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/mental-health-support.mdx');
+const mod_night_logistics_operations = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/night-logistics-operations.mdx');
+const mod_press_coordination = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/press-coordination.mdx');
+const mod_resource_drop_coordinator = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/resource-drop-coordinator.mdx');
 const mod_runners_and_rides = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/runners-and-rides.mdx');
+const mod_safety_marshal_crowd_coordination = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/safety-marshal-crowd-coordination.mdx');
+const mod_security_witness = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/security-witness.mdx');
+const mod_social_worker_crisis_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/social-worker-crisis-support.mdx');
+const mod_street_medic_field_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/street-medic-field-support.mdx');
+const mod_survivor_escort = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/survivor-escort.mdx');
+const mod_tech_jammer_counter_surveillance = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/tech-jammer-counter-surveillance.mdx');
 const mod_tech_jamming = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/tech-jamming.mdx');
+const mod_tech_support_field_systems = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/tech-support-field-systems.mdx');
+const mod_translator_language_access = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/translator-language-access.mdx');
+const mod_vehicle_support_transport = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/vehicle-support-transport.mdx');
+const mod_wellness_float = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/wellness-float.mdx');
 const mod_asl_interpreter_micro_badge = () => import('@workspace/ui/data/academy/courses/Standalone_Micro-Badges/asl-interpreter-micro-badge.mdx');
 const mod_faith_support_micro_badge = () => import('@workspace/ui/data/academy/courses/Standalone_Micro-Badges/faith-support-micro-badge.mdx');
 const mod_survivor_escort_micro_badge = () => import('@workspace/ui/data/academy/courses/Standalone_Micro-Badges/survivor-escort-micro-badge.mdx');
 const mod_translator_micro_badge = () => import('@workspace/ui/data/academy/courses/Standalone_Micro-Badges/translator-micro-badge.mdx');
 const mod_vehicle_specialist_micro_badge = () => import('@workspace/ui/data/academy/courses/Standalone_Micro-Badges/vehicle-specialist-micro-badge.mdx');
-const mod_comms_collapse = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms_Track/comms-collapse.mdx');
-const mod_encryption_101 = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms_Track/encryption-101.mdx');
-const mod_mesh_networks_hardware_guide = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms_Track/mesh-networks-hardware-guide.mdx');
-const mod_mesh_networks_pod_ops = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms_Track/mesh-networks-pod-ops.mdx');
-const mod_meshtastic_large_scale = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms_Track/meshtastic-large-scale.mdx');
+const mod_comms_collapse = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/comms-collapse.mdx');
+const mod_encryption_101 = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/encryption-101.mdx');
+const mod_mesh_networks_hardware_guide = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/mesh-networks-hardware-guide.mdx');
+const mod_mesh_networks_pod_ops = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/mesh-networks-pod-ops.mdx');
+const mod_meshtastic_large_scale = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/meshtastic-large-scale.mdx');
 const mod_abolition_ethics = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/abolition-ethics.mdx');
 const mod_community_consent = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/community-consent.mdx');
 const mod_decolonization_land_context = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/decolonization-land-context.mdx');
@@ -135,6 +176,7 @@ export const MDX_COURSE_MODULES = {
   'advanced-deescalation': mod_advanced_deescalation,
   'care-support': mod_care_support,
   'collective-safety-protocols': mod_collective_safety_protocols,
+  'community-intelligence-situational-reporting': mod_community_intelligence_situational_reporting,
   'crisis-debrief-care': mod_crisis_debrief_care,
   'deescalation-basics': mod_deescalation_basics,
   'environmental-safety': mod_environmental_safety,
@@ -145,6 +187,7 @@ export const MDX_COURSE_MODULES = {
   'medical-basics-field-safety': mod_medical_basics_field_safety,
   'national-guard-interactions': mod_national_guard_interactions,
   'otg-checklist': mod_otg_checklist,
+  'rapid-field-assessment-triage': mod_rapid_field_assessment_triage,
   'trauma-risk-awareness': mod_trauma_risk_awareness,
   'weapon-safety-firearms-101': mod_weapon_safety_firearms_101,
   'academy-overview': mod_academy_overview,
@@ -181,10 +224,13 @@ export const MDX_COURSE_MODULES = {
   '60-day-checklist': mod_60_day_checklist,
   '60-day-preparedness': mod_60_day_preparedness,
   'advanced-logistics-resource-planning': mod_advanced_logistics_resource_planning,
+  'cdc-location-selection': mod_cdc_location_selection,
+  'cdc-logistics-site-operations': mod_cdc_logistics_site_operations,
   'logistics-command-coordination': mod_logistics_command_coordination,
   'supply-chain-resilience': mod_supply_chain_resilience,
   'cross-regional-ethics': mod_cross_regional_ethics,
   'ethical-dilemmas-direct-action': mod_ethical_dilemmas_direct_action,
+  'information-ops-counter-propaganda': mod_information_ops_counter_propaganda,
   'movement-strategy-ethics': mod_movement_strategy_ethics,
   'movement-sustainability-legacy': mod_movement_sustainability_legacy,
   'after-action-data-hygiene': mod_after_action_data_hygiene,
@@ -203,10 +249,46 @@ export const MDX_COURSE_MODULES = {
   'managing-meetings-virtual-physical': mod_managing_meetings_virtual_physical,
   'mentoring-new-dispatchers': mod_mentoring_new_dispatchers,
   'training-the-trainers': mod_training_the_trainers,
+  'arrest-tracker-jail-support': mod_arrest_tracker_jail_support,
+  'asl-interpreter-access': mod_asl_interpreter_access,
+  'bondsman-bail-support': mod_bondsman_bail_support,
+  'care-station-coordinator': mod_care_station_coordinator,
+  'child-specialist-safety-care': mod_child_specialist_safety_care,
   'child-specialist': mod_child_specialist,
+  'community-organizer-strategy-impact': mod_community_organizer_strategy_impact,
+  'court-float-support': mod_court_float_support,
+  'courthouse-marshal': mod_courthouse_marshal,
+  'de-escalation-specialist': mod_de_escalation_specialist,
+  'defensive-presence-nonviolent-shielding': mod_defensive_presence_nonviolent_shielding,
+  'disability-aid-accessibility': mod_disability_aid_accessibility,
+  'dispatch-assistant-coordination': mod_dispatch_assistant_coordination,
+  'docket-tracker': mod_docket_tracker,
+  'faith-leader-support': mod_faith_leader_support,
+  'grounding-support': mod_grounding_support,
+  'immigration-specialist-support': mod_immigration_specialist_support,
+  'know-your-rights-observer': mod_know_your_rights_observer,
+  'legal-liaison': mod_legal_liaison,
   'legal-observer': mod_legal_observer,
+  'legal-support-observation-coordination': mod_legal_support_observation_coordination,
+  'line-scheduler': mod_line_scheduler,
+  'logistics-support-operations': mod_logistics_support_operations,
+  'media-press-monitor': mod_media_press_monitor,
+  'mental-health-support': mod_mental_health_support,
+  'night-logistics-operations': mod_night_logistics_operations,
+  'press-coordination': mod_press_coordination,
+  'resource-drop-coordinator': mod_resource_drop_coordinator,
   'runners-and-rides': mod_runners_and_rides,
+  'safety-marshal-crowd-coordination': mod_safety_marshal_crowd_coordination,
+  'security-witness': mod_security_witness,
+  'social-worker-crisis-support': mod_social_worker_crisis_support,
+  'street-medic-field-support': mod_street_medic_field_support,
+  'survivor-escort': mod_survivor_escort,
+  'tech-jammer-counter-surveillance': mod_tech_jammer_counter_surveillance,
   'tech-jamming': mod_tech_jamming,
+  'tech-support-field-systems': mod_tech_support_field_systems,
+  'translator-language-access': mod_translator_language_access,
+  'vehicle-support-transport': mod_vehicle_support_transport,
+  'wellness-float': mod_wellness_float,
   'asl-interpreter-micro-badge': mod_asl_interpreter_micro_badge,
   'faith-support-micro-badge': mod_faith_support_micro_badge,
   'survivor-escort-micro-badge': mod_survivor_escort_micro_badge,
@@ -247,6 +329,7 @@ export const MDX_COURSE_FRONTMATTER = {
   'advanced-deescalation': {"title":"Advanced De-Escalation & Crisis Mediation","slug":"advanced-deescalation","description":"Deepen your de-escalation skills for complex, multi-party, or high-stress situations — including crowd dynamics, trauma-informed responses, and tactical containment under pressure.","type":"qualified","version":1,"readingTime":40},
   'care-support': {"title":"Care & Emotional Support","slug":"care-support","description":"Learn trauma-informed care for crisis situations and peer support within field and mutual aid teams.","type":"qualified","readingTime":35,"version":2.3},
   'collective-safety-protocols': {"title":"Security Protocols for Collective Safety","slug":"collective-safety-protocols","description":"Learn to reduce shared risk through structured roles, exposure limits, and coordinated recovery after leaks or arrests.","type":"qualified","readingTime":30,"version":1.3},
+  'community-intelligence-situational-reporting': {"title":"Community Intelligence & Situational Reporting","slug":"community-intelligence-situational-reporting","description":"Learn how to gather, assess, and relay critical on-the-ground information to dispatch teams safely and effectively during community operations.","type":"qualified","readingTime":26,"version":1},
   'crisis-debrief-care': {"title":"Crisis Debriefing & Mutual Care","slug":"crisis-debrief-care","description":"Learn to debrief after difficult actions or trauma and support podmates through recovery, burnout, or breakdown with clarity and consent.","type":"qualified","readingTime":30,"version":1.3},
   'deescalation-basics': {"title":"De-escalation Basics","slug":"deescalation-basics","description":"Learn practical techniques to calm tense situations, preserve dignity, and prevent harm in community or field settings.","type":"qualified","readingTime":40,"version":2.3},
   'environmental-safety': {"title":"Environmental Safety & Extreme Conditions","slug":"environmental-safety","description":"Prepare for heat, cold, smoke, and storms during field or mutual aid operations using low-cost, field-tested safety practices.","type":"qualified","version":1.3,"readingTime":38},
@@ -257,6 +340,7 @@ export const MDX_COURSE_FRONTMATTER = {
   'medical-basics-field-safety': {"title":"Medical Basics for Field Safety","slug":"medical-basics-field-safety","description":"Learn essential first-aid skills including Stop the Bleed, CPR, and field triage to keep teams safe during actions.","type":"qualified","version":1.4,"readingTime":20},
   'national-guard-interactions': {"title":"Interacting with the National Guard & Active Military Presence","slug":"national-guard-interactions","description":"Learn to recognize, de-escalate, and navigate interactions with National Guard or active-duty forces acting in domestic law enforcement or emergency roles.","type":"qualified","version":1,"readingTime":28},
   'otg-checklist': {"title":"OTG Deployment Checklist & Field Protocols","slug":"otg-checklist","description":"Learn what to do before, during, and after hitting the ground with your pod — using a shared field checklist to stay safe, coordinated, and effective in real time.","type":"qualified","readingTime":15,"version":1.3},
+  'rapid-field-assessment-triage': {"title":"Rapid Field Assessment & Triage for Civilian Responders","slug":"rapid-field-assessment-triage","description":"Learn how to quickly and safely assess scenes, prioritize needs, and communicate essential information during emergencies before professional responders arrive.","type":"qualified","readingTime":30,"version":1},
   'trauma-risk-awareness': {"title":"Collective Trauma & Risk Awareness for Frontliners","slug":"trauma-risk-awareness","description":"Learn how to recognize trauma responses, speak up about safety concerns, and build a healthy risk culture that protects both individuals and the community over the long haul.","type":"qualified","readingTime":30,"version":1.2},
   'weapon-safety-firearms-101': {"title":"Weapon Safety & Firearms 101","slug":"weapon-safety-firearms-101","description":"Foundational firearm safety, handling principles, and community risk protocols for field teams operating near or around weapons.","type":"qualified","version":1.2,"readingTime":22},
   'academy-overview': {"title":"ART Academy Overview","slug":"academy-overview","description":"Learn how the ART Academy works, how progress is tracked, and how to get certified for trusted roles.","type":"qualified","readingTime":6,"version":4},
@@ -293,10 +377,13 @@ export const MDX_COURSE_FRONTMATTER = {
   '60-day-checklist': {"title":"60-Day Checklist: Weekly Community Readiness Plan","slug":"60-day-checklist","description":"Build up your pod’s readiness with this step-by-step 8-week preparedness guide for resilient, connected communities.","type":"qualified","readingTime":12,"version":2.2},
   '60-day-preparedness': {"title":"60-Day Preparedness","slug":"60-day-preparedness","description":"A practical, community-first guide for survival, coordination, and dignity when systems fail.","type":"qualified","readingTime":22,"version":2.2},
   'advanced-logistics-resource-planning': {"title":"Advanced Logistics & Resource Planning","slug":"advanced-logistics-resource-planning","description":"Plan, scale, and sustain pod operations for multi-day, multi-pod, or long-term defense with ethical and secure logistics.","type":"qualified","readingTime":18,"version":1.4},
+  'cdc-location-selection': {"title":"Choosing Safe & Strategic CDC Locations","slug":"cdc-location-selection","description":"Learn how to choose, assess, and prepare Community Defense Center sites that are accessible, safe, and trusted by the community.","type":"qualified","version":1.1,"readingTime":30},
+  'cdc-logistics-site-operations': {"title":"Community Defense Center (CDC) Logistics & Site Operations","slug":"cdc-logistics-site-operations","description":"Learn how to manage supply flow, safety, and communication during active Community Defense Center operations.","type":"qualified","readingTime":30,"version":1},
   'logistics-command-coordination': {"title":"Mutual Aid Logistics Command & Coordination","slug":"logistics-command-coordination","description":"Learn how to organize and synchronize community logistics operations across pods and regions during high-demand or crisis events.","type":"qualified","version":1.1,"readingTime":42},
   'supply-chain-resilience': {"title":"Supply Chain Resilience & Local Production","slug":"supply-chain-resilience","description":"Learn how to secure, localize, and sustain essential supplies for your pod or region when conventional supply chains fail.","type":"qualified","version":1.3,"readingTime":42},
   'cross-regional-ethics': {"title":"Cross-Regional Solidarity & Cultural Ethics","slug":"cross-regional-ethics","description":"Learn how to collaborate across regions and cultures with respect, transparency, and accountability while maintaining decentralized autonomy.","type":"qualified","version":1,"readingTime":26},
   'ethical-dilemmas-direct-action': {"title":"Ethical Dilemmas in Direct Action","slug":"ethical-dilemmas-direct-action","description":"Frameworks for weighing risk, consent, and impact when planning or joining high-risk actions.","type":"qualified","version":1.3,"readingTime":30},
+  'information-ops-counter-propaganda': {"title":"Information Operations & Counter-Propaganda for Activists","slug":"information-ops-counter-propaganda","description":"Learn how to recognize, analyze, and counter disinformation and infiltration campaigns targeting activist and mutual aid networks.","type":"qualified","readingTime":28,"version":1.1},
   'movement-strategy-ethics': {"title":"Movement Strategy & Ethics","slug":"movement-strategy-ethics","description":"Learn to design actions, campaigns, and organizing systems guided by shared ethics, sustainability, and strategic foresight.","type":"qualified","version":1,"readingTime":28},
   'movement-sustainability-legacy': {"title":"Long-Term Movement Sustainability & Legacy Planning","slug":"movement-sustainability-legacy","description":"Design strategies that keep movements alive across generations through leadership rotation, cultural preservation, and infrastructure continuity.","type":"qualified","version":1,"readingTime":28},
   'after-action-data-hygiene': {"title":"After-Action Reviews & Data Hygiene","slug":"after-action-data-hygiene","description":"Run secure, structured debriefs and reduce risk by applying strong data hygiene and ethical evidence retention practices.","type":"qualified","readingTime":15,"version":1.4},
@@ -315,10 +402,46 @@ export const MDX_COURSE_FRONTMATTER = {
   'managing-meetings-virtual-physical': {"title":"Managing and Conducting Meetings (Virtual & Physical)","slug":"managing-meetings-virtual-physical","description":"Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.","type":"qualified","readingTime":28,"version":1.4},
   'mentoring-new-dispatchers': {"title":"Mentoring New Dispatchers","slug":"mentoring-new-dispatchers","description":"Learn how to guide, train, and support new dispatchers through active mentoring and thoughtful feedback.","type":"qualified","readingTime":17,"version":1.3},
   'training-the-trainers': {"title":"Training the Trainers","slug":"training-the-trainers","description":"Learn how to teach ART Academy material, mentor pod members, and scale knowledge across pods while maintaining consistency and trust.","type":"qualified","readingTime":22,"version":1.3},
+  'arrest-tracker-jail-support': {"title":"Arrest Tracker For Detention & Jail Support Coordination","slug":"arrest-tracker-jail-support","description":"Learn how to track arrests and detentions during actions, collect essential information safely, and coordinate with jail support teams for follow-up and release.","type":"qualified","readingTime":60,"version":1},
+  'asl-interpreter-access': {"title":"ASL Interpreter For Sign Language Access & Inclusion","slug":"asl-interpreter-access","description":"Learn how to interpret spoken language into American Sign Language (ASL) and vice versa during actions, meetings, and emergencies, ensuring full participation for Deaf and hard-of-hearing community members.","type":"qualified","readingTime":60,"version":1},
+  'bondsman-bail-support': {"title":"Bondsman For Bail Coordination & Post-Arrest Support","slug":"bondsman-bail-support","description":"Learn how to coordinate bail, navigate jail procedures, and connect arrestees with legal and community support networks during and after detention.","type":"qualified","readingTime":65,"version":1},
+  'care-station-coordinator': {"title":"Care Station Coordinator For Calm Zones, Recovery & Emotional Safety","slug":"care-station-coordinator","description":"Learn how to set up, manage, and sustain quiet or decompression zones during actions and events—creating safe spaces for rest, grounding, and emotional stabilization.","type":"qualified","readingTime":60,"version":1},
+  'child-specialist-safety-care': {"title":"Child Specialist For Safety, Care & Emotional Stability for Youth","slug":"child-specialist-safety-care","description":"Learn how to protect, comfort, and stabilize children present or affected during actions, ensuring their physical and emotional safety through trauma-informed, developmentally appropriate care.","type":"qualified","readingTime":60,"version":1},
   'child-specialist': {"title":"Child Specialist Role","slug":"child-specialist","description":"Support children and youth during tense or traumatic situations with trauma-informed, culturally safe, and coordinated care.","type":"qualified","readingTime":48,"version":2.5},
+  'community-organizer-strategy-impact': {"title":"Community Organizer For Strategy, Relationship & Long-Term Impact","slug":"community-organizer-strategy-impact","description":"Learn how to connect immediate actions to lasting change through strategic planning, relational organizing, and structured community follow-up.","type":"qualified","readingTime":65,"version":1},
+  'court-float-support': {"title":"Court Float Support For Post-Hearing Presence & Gentle Community Care","slug":"court-float-support","description":"Learn to offer calm, compassionate presence outside courthouses after proceedings—supporting impacted individuals and families through grounding, listening, and quiet reassurance.","type":"qualified","readingTime":55,"version":1},
+  'courthouse-marshal': {"title":"Courthouse Marshal For Legal Site Coordination & Public Safety Flow","slug":"courthouse-marshal","description":"Learn to manage courthouse surroundings, maintain safety and order, monitor law enforcement behavior, and coordinate with legal observers during hearings or post-arrest support.","type":"qualified","readingTime":65,"version":1},
+  'de-escalation-specialist': {"title":"De-escalation Specialist For Preventing Conflict & Promoting Safety","slug":"de-escalation-specialist","description":"Learn trauma-informed and verbal de-escalation techniques to defuse tense situations, reduce harm, and maintain safety during public actions or mutual aid events.","type":"qualified","readingTime":60,"version":1},
+  'defensive-presence-nonviolent-shielding': {"title":"Defensive Presence For Visible Protection & Nonviolent Shielding","slug":"defensive-presence-nonviolent-shielding","description":"Learn how to stand as a calm, visible deterrent to violence—protecting vulnerable groups through nonviolent presence, body positioning, and grounded awareness.","type":"qualified","readingTime":60,"version":1},
+  'disability-aid-accessibility': {"title":"Disability Aid For Accessibility & Inclusive Field Support","slug":"disability-aid-accessibility","description":"Learn how to assist community members with mobility, sensory, or neurodiverse needs before, during, and after actions using disability justice principles and trauma-informed care.","type":"qualified","readingTime":60,"version":1},
+  'dispatch-assistant-coordination': {"title":"Dispatch Assistant For Coordination, Tracking & Communication Support","slug":"dispatch-assistant-coordination","description":"Learn how to assist dispatchers by managing updates, tracking team statuses, and ensuring accurate communication across field and command during operations.","type":"qualified","readingTime":60,"version":1},
+  'docket-tracker': {"title":"Docket Tracker For Court Calendar Management & Legal Coordination","slug":"docket-tracker","description":"Learn to track court dockets, hearings, and attendance updates for legal and observer teams—ensuring accurate, timely information flow between field, admin, and defense networks.","type":"qualified","readingTime":55,"version":1},
+  'faith-leader-support': {"title":"Faith Leader For Spiritual Grounding & Moral Support in Action","slug":"faith-leader-support","description":"Learn how to provide spiritual, moral, and emotional grounding during actions and crises—supporting teams through reflection, ritual, and presence.","type":"qualified","readingTime":60,"version":1},
+  'grounding-support': {"title":"Grounding Support For 1-on-1 Emotional Stabilization & Presence","slug":"grounding-support","description":"Learn to provide calm, trauma-informed, 1-on-1 grounding for people in emotional overwhelm—restoring safety, consent, and self-regulation without escalation or intervention.","type":"qualified","readingTime":55,"version":1},
+  'immigration-specialist-support': {"title":"Immigration Specialist For Support, Rights & Rapid Response","slug":"immigration-specialist-support","description":"Learn how to support non-citizens and mixed-status individuals through informed risk assessment, de-escalation, and coordination with trusted legal and advocacy resources.","type":"qualified","readingTime":65,"version":1},
+  'know-your-rights-observer': {"title":"Know Your Rights Observer For Accountability & Documentation","slug":"know-your-rights-observer","description":"Learn how to observe and document potential rights violations or misconduct during public actions, ensuring facts are preserved for later accountability and advocacy.","type":"qualified","readingTime":60,"version":1},
+  'legal-liaison': {"title":"Legal Liaison For Bridging Field Operations and Legal Defense","slug":"legal-liaison","description":"Learn to coordinate safely and effectively between field teams, dispatch, and legal defense networks, ensuring clear, timely, and secure information flow during legal processes.","type":"qualified","readingTime":65,"version":1},
   'legal-observer': {"title":"Legal Observer Basics","slug":"legal-observer","description":"Learn to document police presence and state behavior safely and credibly during protests or enforcement actions.","type":"qualified","readingTime":17,"version":2.4},
+  'legal-support-observation-coordination': {"title":"Legal Support For Observation & Coordination","slug":"legal-support-observation-coordination","description":"Learn how to serve as a legal support volunteer—observing, documenting, and coordinating with legal teams to protect community members’ rights during actions or crises.","type":"qualified","readingTime":60,"version":1},
+  'line-scheduler': {"title":"Line Scheduler For Early Arrival & Queue Rotation Coordination","slug":"line-scheduler","description":"Learn how to organize early arrivals, manage queue rotation, and maintain real-time updates for high-demand court appearances with professionalism and care.","type":"qualified","readingTime":55,"version":1},
+  'logistics-support-operations': {"title":"Logistics Support For Supply, Setup & Sustenance Operations","slug":"logistics-support-operations","description":"Learn how to organize, manage, and distribute critical supplies like food, water, sanitation, and rest areas during actions, ensuring sustainability and comfort for teams and communities.","type":"qualified","readingTime":60,"version":1},
+  'media-press-monitor': {"title":"Media & Press Monitor For Coverage Oversight and Protection","slug":"media-press-monitor","description":"Learn how to engage with journalists and media crews safely, ensuring accurate coverage, respectful boundaries, and protection for vulnerable participants during public actions.","type":"qualified","readingTime":60,"version":1},
+  'mental-health-support': {"title":"Mental Health Support For Emotional Care & Trauma Recovery","slug":"mental-health-support","description":"Learn how to provide compassionate, trauma-informed emotional care and grounding to participants during and after actions or crisis events.","type":"qualified","readingTime":60,"version":1},
+  'night-logistics-operations': {"title":"Night Logistics For After-Hours Movement & Quiet Coordination","slug":"night-logistics-operations","description":"Learn how to manage nighttime supply runs, quiet movement, and low-visibility coordination with safety, discretion, and precision.","type":"qualified","readingTime":60,"version":1},
+  'press-coordination': {"title":"Press Coordination For Media Engagement & Participant Protection","slug":"press-coordination","description":"Learn to coordinate safely and effectively with media, balancing transparency and protection of vulnerable participants during high-visibility actions and events.","type":"qualified","readingTime":65,"version":1},
+  'resource-drop-coordinator': {"title":"Resource Drop Coordinator For Contactless Supply Delivery & Field Logistics","slug":"resource-drop-coordinator","description":"Learn how to plan, execute, and confirm contactless resource drop-offs safely and discreetly while maintaining coordination with dispatch and supply networks.","type":"qualified","readingTime":60,"version":1},
   'runners-and-rides': {"title":"Runners & Rides Coordination","slug":"runners-and-rides","description":"Learn to move people, supplies, and information safely through decentralized, low-surveillance methods.","type":"qualified","readingTime":37,"version":2.3},
+  'safety-marshal-crowd-coordination': {"title":"Safety Marshal For Crowd Coordination & Hazard Prevention","slug":"safety-marshal-crowd-coordination","description":"Learn how to manage crowd flow, identify hazards, and maintain group cohesion during public actions or mutual aid events while keeping everyone safe and calm.","type":"qualified","readingTime":60,"version":1},
+  'security-witness': {"title":"Security Witness For Monitoring Law Enforcement & Institutional Conduct","slug":"security-witness","description":"Learn to observe, record, and report courthouse or law enforcement behavior calmly and accurately, maintaining safety and integrity while documenting potential misconduct.","type":"qualified","readingTime":60,"version":1},
+  'social-worker-crisis-support': {"title":"Social Worker For Crisis Care & Resource Navigation","slug":"social-worker-crisis-support","description":"Learn how to provide trauma-informed crisis care, emotional stabilization, and navigation of public or community support systems for individuals impacted during or after actions.","type":"qualified","readingTime":65,"version":1},
+  'street-medic-field-support': {"title":"Street Medic For Field First Aid & Trauma Support","slug":"street-medic-field-support","description":"Learn how to provide emergency medical and trauma support during actions, including first aid, chemical exposure response, and psychological stabilization.","type":"qualified","readingTime":60,"version":1},
+  'survivor-escort': {"title":"Survivor Escort For Courthouse Navigation & Trauma-Informed Presence","slug":"survivor-escort","description":"Learn to accompany and support survivors or witnesses through courthouse environments with care, consent, and grounded awareness from arrival through exit.","type":"qualified","readingTime":60,"version":1},
+  'tech-jammer-counter-surveillance': {"title":"Tech Jammer For Counter-Surveillance & Digital Protection","slug":"tech-jammer-counter-surveillance","description":"Learn how to identify, disrupt, and defend against digital surveillance or tracking attempts while maintaining legal, ethical, and operational safety for community members.","type":"qualified","readingTime":65,"version":1},
   'tech-jamming': {"title":"Tech Jamming & Signal Defense","slug":"tech-jamming","description":"Learn to protect communications, detect surveillance, and defend digital operations without escalation or legal risk.","type":"qualified","readingTime":38,"version":1.2},
+  'tech-support-field-systems': {"title":"Tech Support For Field Systems, Security & Comms Maintenance","slug":"tech-support-field-systems","description":"Learn how to configure, maintain, and troubleshoot radios, encrypted devices, livestreams, and communications tools during operations to keep the network online and secure.","type":"qualified","readingTime":60,"version":1},
+  'translator-language-access': {"title":"Translator For Language Access & Communication Equity","slug":"translator-language-access","description":"Learn how to provide accurate, ethical, and real-time translation of speech or text during actions, meetings, and dispatch operations to ensure all participants have equal access to information.","type":"qualified","readingTime":60,"version":1},
+  'vehicle-support-transport': {"title":"Vehicle Support For Transport, Evacuation & Mobile Safety","slug":"vehicle-support-transport","description":"Learn how to safely transport people, supplies, and teams while navigating dynamic or high-stress environments, ensuring reliable mobility and coordinated exits.","type":"qualified","readingTime":60,"version":1},
+  'wellness-float': {"title":"Wellness Float For Mobile Observation & Preventative Care","slug":"wellness-float","description":"Learn how to roam between pods, clusters, or event zones to identify early signs of burnout, distress, or overheating—and provide calm, proactive care before crises occur.","type":"qualified","readingTime":60,"version":1},
   'asl-interpreter-micro-badge': {"title":"ASL Interpreter Micro-Badge","slug":"asl-interpreter-micro-badge","description":"Certification for volunteers fluent in ASL to interpret securely during field actions, legal briefings, and pod coordination.","type":"qualified","readingTime":12,"version":1.4},
   'faith-support-micro-badge': {"title":"Spiritual & Moral Support Micro-Badge","slug":"faith-support-micro-badge","description":"Certification for volunteers who provide calm, grounding, and spiritual or moral support during field actions and recovery, without proselytizing.","type":"qualified","version":1.4,"readingTime":12},
   'survivor-escort-micro-badge': {"title":"Survivor Escort Micro-Badge","slug":"survivor-escort-micro-badge","description":"Certification for volunteers supporting survivors and witnesses through courthouses or stressful public environments with consent, calm, and security awareness.","type":"qualified","version":1.3,"readingTime":14},

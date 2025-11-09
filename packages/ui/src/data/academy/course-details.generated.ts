@@ -102,6 +102,12 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.3,
     "type": "qualified"
   },
+  "community-intelligence-situational-reporting": {
+    "title": "Community Intelligence & Situational Reporting",
+    "description": "Learn how to gather, assess, and relay critical on-the-ground information to dispatch teams safely and effectively during community operations.",
+    "version": 1,
+    "type": "qualified"
+  },
   "crisis-debrief-care": {
     "title": "Crisis Debriefing & Mutual Care",
     "description": "Learn to debrief after difficult actions or trauma and support podmates through recovery, burnout, or breakdown with clarity and consent.",
@@ -160,6 +166,12 @@ export const GENERATED_COURSE_DETAILS = {
     "title": "OTG Deployment Checklist & Field Protocols",
     "description": "Learn what to do before, during, and after hitting the ground with your pod — using a shared field checklist to stay safe, coordinated, and effective in real time.",
     "version": 1.3,
+    "type": "qualified"
+  },
+  "rapid-field-assessment-triage": {
+    "title": "Rapid Field Assessment & Triage for Civilian Responders",
+    "description": "Learn how to quickly and safely assess scenes, prioritize needs, and communicate essential information during emergencies before professional responders arrive.",
+    "version": 1,
     "type": "qualified"
   },
   "trauma-risk-awareness": {
@@ -378,6 +390,18 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.4,
     "type": "qualified"
   },
+  "cdc-location-selection": {
+    "title": "Choosing Safe & Strategic CDC Locations",
+    "description": "Learn how to choose, assess, and prepare Community Defense Center sites that are accessible, safe, and trusted by the community.",
+    "version": 1.1,
+    "type": "qualified"
+  },
+  "cdc-logistics-site-operations": {
+    "title": "Community Defense Center (CDC) Logistics & Site Operations",
+    "description": "Learn how to manage supply flow, safety, and communication during active Community Defense Center operations.",
+    "version": 1,
+    "type": "qualified"
+  },
   "logistics-command-coordination": {
     "title": "Mutual Aid Logistics Command & Coordination",
     "description": "Learn how to organize and synchronize community logistics operations across pods and regions during high-demand or crisis events.",
@@ -400,6 +424,12 @@ export const GENERATED_COURSE_DETAILS = {
     "title": "Ethical Dilemmas in Direct Action",
     "description": "Frameworks for weighing risk, consent, and impact when planning or joining high-risk actions.",
     "version": 1.3,
+    "type": "qualified"
+  },
+  "information-ops-counter-propaganda": {
+    "title": "Information Operations & Counter-Propaganda for Activists",
+    "description": "Learn how to recognize, analyze, and counter disinformation and infiltration campaigns targeting activist and mutual aid networks.",
+    "version": 1.1,
     "type": "qualified"
   },
   "movement-strategy-ethics": {
@@ -510,10 +540,118 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.3,
     "type": "qualified"
   },
+  "arrest-tracker-jail-support": {
+    "title": "Arrest Tracker For Detention & Jail Support Coordination",
+    "description": "Learn how to track arrests and detentions during actions, collect essential information safely, and coordinate with jail support teams for follow-up and release.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "asl-interpreter-access": {
+    "title": "ASL Interpreter For Sign Language Access & Inclusion",
+    "description": "Learn how to interpret spoken language into American Sign Language (ASL) and vice versa during actions, meetings, and emergencies, ensuring full participation for Deaf and hard-of-hearing community members.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "bondsman-bail-support": {
+    "title": "Bondsman For Bail Coordination & Post-Arrest Support",
+    "description": "Learn how to coordinate bail, navigate jail procedures, and connect arrestees with legal and community support networks during and after detention.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "care-station-coordinator": {
+    "title": "Care Station Coordinator For Calm Zones, Recovery & Emotional Safety",
+    "description": "Learn how to set up, manage, and sustain quiet or decompression zones during actions and events—creating safe spaces for rest, grounding, and emotional stabilization.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "child-specialist-safety-care": {
+    "title": "Child Specialist For Safety, Care & Emotional Stability for Youth",
+    "description": "Learn how to protect, comfort, and stabilize children present or affected during actions, ensuring their physical and emotional safety through trauma-informed, developmentally appropriate care.",
+    "version": 1,
+    "type": "qualified"
+  },
   "child-specialist": {
     "title": "Child Specialist Role",
     "description": "Support children and youth during tense or traumatic situations with trauma-informed, culturally safe, and coordinated care.",
     "version": 2.5,
+    "type": "qualified"
+  },
+  "community-organizer-strategy-impact": {
+    "title": "Community Organizer For Strategy, Relationship & Long-Term Impact",
+    "description": "Learn how to connect immediate actions to lasting change through strategic planning, relational organizing, and structured community follow-up.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "court-float-support": {
+    "title": "Court Float Support For Post-Hearing Presence & Gentle Community Care",
+    "description": "Learn to offer calm, compassionate presence outside courthouses after proceedings—supporting impacted individuals and families through grounding, listening, and quiet reassurance.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "courthouse-marshal": {
+    "title": "Courthouse Marshal For Legal Site Coordination & Public Safety Flow",
+    "description": "Learn to manage courthouse surroundings, maintain safety and order, monitor law enforcement behavior, and coordinate with legal observers during hearings or post-arrest support.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "de-escalation-specialist": {
+    "title": "De-escalation Specialist For Preventing Conflict & Promoting Safety",
+    "description": "Learn trauma-informed and verbal de-escalation techniques to defuse tense situations, reduce harm, and maintain safety during public actions or mutual aid events.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "defensive-presence-nonviolent-shielding": {
+    "title": "Defensive Presence For Visible Protection & Nonviolent Shielding",
+    "description": "Learn how to stand as a calm, visible deterrent to violence—protecting vulnerable groups through nonviolent presence, body positioning, and grounded awareness.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "disability-aid-accessibility": {
+    "title": "Disability Aid For Accessibility & Inclusive Field Support",
+    "description": "Learn how to assist community members with mobility, sensory, or neurodiverse needs before, during, and after actions using disability justice principles and trauma-informed care.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "dispatch-assistant-coordination": {
+    "title": "Dispatch Assistant For Coordination, Tracking & Communication Support",
+    "description": "Learn how to assist dispatchers by managing updates, tracking team statuses, and ensuring accurate communication across field and command during operations.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "docket-tracker": {
+    "title": "Docket Tracker For Court Calendar Management & Legal Coordination",
+    "description": "Learn to track court dockets, hearings, and attendance updates for legal and observer teams—ensuring accurate, timely information flow between field, admin, and defense networks.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "faith-leader-support": {
+    "title": "Faith Leader For Spiritual Grounding & Moral Support in Action",
+    "description": "Learn how to provide spiritual, moral, and emotional grounding during actions and crises—supporting teams through reflection, ritual, and presence.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "grounding-support": {
+    "title": "Grounding Support For 1-on-1 Emotional Stabilization & Presence",
+    "description": "Learn to provide calm, trauma-informed, 1-on-1 grounding for people in emotional overwhelm—restoring safety, consent, and self-regulation without escalation or intervention.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "immigration-specialist-support": {
+    "title": "Immigration Specialist For Support, Rights & Rapid Response",
+    "description": "Learn how to support non-citizens and mixed-status individuals through informed risk assessment, de-escalation, and coordination with trusted legal and advocacy resources.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "know-your-rights-observer": {
+    "title": "Know Your Rights Observer For Accountability & Documentation",
+    "description": "Learn how to observe and document potential rights violations or misconduct during public actions, ensuring facts are preserved for later accountability and advocacy.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "legal-liaison": {
+    "title": "Legal Liaison For Bridging Field Operations and Legal Defense",
+    "description": "Learn to coordinate safely and effectively between field teams, dispatch, and legal defense networks, ensuring clear, timely, and secure information flow during legal processes.",
+    "version": 1,
     "type": "qualified"
   },
   "legal-observer": {
@@ -522,16 +660,124 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 2.4,
     "type": "qualified"
   },
+  "legal-support-observation-coordination": {
+    "title": "Legal Support For Observation & Coordination",
+    "description": "Learn how to serve as a legal support volunteer—observing, documenting, and coordinating with legal teams to protect community members’ rights during actions or crises.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "line-scheduler": {
+    "title": "Line Scheduler For Early Arrival & Queue Rotation Coordination",
+    "description": "Learn how to organize early arrivals, manage queue rotation, and maintain real-time updates for high-demand court appearances with professionalism and care.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "logistics-support-operations": {
+    "title": "Logistics Support For Supply, Setup & Sustenance Operations",
+    "description": "Learn how to organize, manage, and distribute critical supplies like food, water, sanitation, and rest areas during actions, ensuring sustainability and comfort for teams and communities.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "media-press-monitor": {
+    "title": "Media & Press Monitor For Coverage Oversight and Protection",
+    "description": "Learn how to engage with journalists and media crews safely, ensuring accurate coverage, respectful boundaries, and protection for vulnerable participants during public actions.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "mental-health-support": {
+    "title": "Mental Health Support For Emotional Care & Trauma Recovery",
+    "description": "Learn how to provide compassionate, trauma-informed emotional care and grounding to participants during and after actions or crisis events.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "night-logistics-operations": {
+    "title": "Night Logistics For After-Hours Movement & Quiet Coordination",
+    "description": "Learn how to manage nighttime supply runs, quiet movement, and low-visibility coordination with safety, discretion, and precision.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "press-coordination": {
+    "title": "Press Coordination For Media Engagement & Participant Protection",
+    "description": "Learn to coordinate safely and effectively with media, balancing transparency and protection of vulnerable participants during high-visibility actions and events.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "resource-drop-coordinator": {
+    "title": "Resource Drop Coordinator For Contactless Supply Delivery & Field Logistics",
+    "description": "Learn how to plan, execute, and confirm contactless resource drop-offs safely and discreetly while maintaining coordination with dispatch and supply networks.",
+    "version": 1,
+    "type": "qualified"
+  },
   "runners-and-rides": {
     "title": "Runners & Rides Coordination",
     "description": "Learn to move people, supplies, and information safely through decentralized, low-surveillance methods.",
     "version": 2.3,
     "type": "qualified"
   },
+  "safety-marshal-crowd-coordination": {
+    "title": "Safety Marshal For Crowd Coordination & Hazard Prevention",
+    "description": "Learn how to manage crowd flow, identify hazards, and maintain group cohesion during public actions or mutual aid events while keeping everyone safe and calm.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "security-witness": {
+    "title": "Security Witness For Monitoring Law Enforcement & Institutional Conduct",
+    "description": "Learn to observe, record, and report courthouse or law enforcement behavior calmly and accurately, maintaining safety and integrity while documenting potential misconduct.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "social-worker-crisis-support": {
+    "title": "Social Worker For Crisis Care & Resource Navigation",
+    "description": "Learn how to provide trauma-informed crisis care, emotional stabilization, and navigation of public or community support systems for individuals impacted during or after actions.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "street-medic-field-support": {
+    "title": "Street Medic For Field First Aid & Trauma Support",
+    "description": "Learn how to provide emergency medical and trauma support during actions, including first aid, chemical exposure response, and psychological stabilization.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "survivor-escort": {
+    "title": "Survivor Escort For Courthouse Navigation & Trauma-Informed Presence",
+    "description": "Learn to accompany and support survivors or witnesses through courthouse environments with care, consent, and grounded awareness from arrival through exit.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "tech-jammer-counter-surveillance": {
+    "title": "Tech Jammer For Counter-Surveillance & Digital Protection",
+    "description": "Learn how to identify, disrupt, and defend against digital surveillance or tracking attempts while maintaining legal, ethical, and operational safety for community members.",
+    "version": 1,
+    "type": "qualified"
+  },
   "tech-jamming": {
     "title": "Tech Jamming & Signal Defense",
     "description": "Learn to protect communications, detect surveillance, and defend digital operations without escalation or legal risk.",
     "version": 1.2,
+    "type": "qualified"
+  },
+  "tech-support-field-systems": {
+    "title": "Tech Support For Field Systems, Security & Comms Maintenance",
+    "description": "Learn how to configure, maintain, and troubleshoot radios, encrypted devices, livestreams, and communications tools during operations to keep the network online and secure.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "translator-language-access": {
+    "title": "Translator For Language Access & Communication Equity",
+    "description": "Learn how to provide accurate, ethical, and real-time translation of speech or text during actions, meetings, and dispatch operations to ensure all participants have equal access to information.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "vehicle-support-transport": {
+    "title": "Vehicle Support For Transport, Evacuation & Mobile Safety",
+    "description": "Learn how to safely transport people, supplies, and teams while navigating dynamic or high-stress environments, ensuring reliable mobility and coordinated exits.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "wellness-float": {
+    "title": "Wellness Float For Mobile Observation & Preventative Care",
+    "description": "Learn how to roam between pods, clusters, or event zones to identify early signs of burnout, distress, or overheating—and provide calm, proactive care before crises occur.",
+    "version": 1,
     "type": "qualified"
   },
   "asl-interpreter-micro-badge": {

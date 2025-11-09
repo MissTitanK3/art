@@ -1,0 +1,161 @@
+---
+title: Tech Support For Field Systems, Security & Comms Maintenance
+slug: tech-support-field-systems
+description: Learn how to configure, maintain, and troubleshoot radios, encrypted devices, livestreams, and communications tools during operations to keep the network online and secure.
+type: qualified
+readingTime: 60
+version: '1.0'
+---
+
+# 🧰 Tech Support: Field Systems, Security & Comms Maintenance
+<TrackBadge variant="specialized-role" />
+
+<Callout type="info">
+Tech Support keeps the network alive when everything else fails. They ensure radios connect, devices encrypt, and livestreams run safely—so operations continue even under stress.
+</Callout>
+
+---
+
+## Overview
+**Tech Support volunteers** manage the invisible infrastructure that keeps a region running. They configure hardware, maintain comms tools, and fix system disruptions in real time.  
+
+In crisis or large-scale deployments, they become the backbone of coordination—preventing information blackouts and protecting privacy.  
+
+This course teaches how to:
+- Diagnose and fix common tech failures in the field.  
+- Manage secure communication devices.  
+- Support livestreams and encrypted systems safely.  
+- Operate under pressure while keeping data integrity intact.
+
+---
+
+## Learn & Do
+
+✅ **1. Understand your operational scope**
+- Tech Support maintains **comms, devices, and security layers**—not content moderation.  
+- Focus on uptime, encryption, and reliability.  
+- Know who to notify for escalations (Comms Lead, Dispatcher, or Admin).  
+- Always assume tools may fail and plan fallbacks.
+
+🔍 *Task:* Draw a quick network map of your current operation—radios, mesh nodes, backup Wi-Fi, or encrypted chat links.
+
+---
+
+✅ **2. Configure and maintain comms gear**
+- Radios:  
+  - Verify frequencies, privacy codes, and call signs.  
+  - Keep spare batteries charged and labeled.  
+  - Log channel use during events.  
+- Mesh or LoRa devices:  
+  - Sync IDs and region keys before deployment.  
+  - Run test pings or message loops every hour.  
+- Cell / Wi-Fi networks:  
+  - Use VPN or Tor for public connections.  
+  - Disable unnecessary location services.  
+
+🧩 *Example:* Before an action, you test all LoRa nodes, confirm encryption keys, and hand backup radios to Safety Marshals.
+
+<Mermaid chart={`
+graph TD
+  A[Comms Failure Detected] --> B[Identify System Layer: Hardware / Network / App]
+  B --> C{Layer Isolated?}
+  C -->|No| D[Test Alternate Path or Device]
+  C -->|Yes| E[Restart / Reconnect]
+  D --> F[Retest Connectivity]
+  E --> F
+  F --> G[Verify Encryption and Restore Communication]
+  G --> H[Log Fix and Notify Dispatcher]
+  H --> I[Document for Post-Event Review]
+`}/>
+
+---
+
+✅ **3. Handle livestream and data feeds safely**
+- Livestream only when **authorized by the action lead or media team**.  
+- Avoid showing faces, license plates, or sensitive tactics.  
+- Use delay or blur filters for live coverage.  
+- Archive safely—prefer encrypted local storage over cloud.  
+- Maintain ethical consent: no filming without explicit agreement.  
+
+⚙️ *Tip:* Treat cameras and mics as potential security leaks—cover or disable when not in use.
+
+---
+
+✅ **4. Troubleshoot under pressure**
+- When systems fail:
+  1. **Identify the layer**—hardware, network, or software.  
+  2. **Restart lowest layer first** (device → router → server).  
+  3. **Isolate variables**—swap cables, check battery, verify settings.  
+  4. **Test alternate paths**—switch mesh channel, fallback SIM, or peer relay.  
+- Keep a **paper log** of issues and fixes for AAR.  
+
+🧩 *Example:* During a protest, Dispatch loses radio contact. You trace the issue to interference and switch both units to backup frequency within 90 seconds.
+
+---
+
+✅ **5. Manage encryption and privacy tools**
+- Use end-to-end encrypted apps for communication (Signal, Session, Briar).  
+- Rotate encryption keys periodically.  
+- Disable telemetry and unnecessary sync services.  
+- Store passwords securely using local vaults (Bitwarden offline, KeePass).  
+- Never screenshot or copy sensitive logs.  
+
+<Callout type="warning">
+⚠️ Every message could become evidence.  
+Encrypt, minimize retention, and avoid unnecessary backups.
+</Callout>
+
+---
+
+✅ **6. Support others calmly**
+- Explain fixes clearly without jargon.  
+- Write simple “if-then” instructions for non-technical volunteers.  
+- Create labeled kits (Chargers, Radios, Cables, SIMs).  
+- Be patient—panic spreads faster than failure.  
+- Focus on restoring *function*, not perfection.
+
+🔍 *Task:* Write a one-page “Tech Emergency Guide” for your region with 5 bullet fallback protocols.
+
+---
+
+✅ **7. Post-operation recovery**
+- Power down, clean, and inventory all devices.  
+- Wipe sensitive temporary data.  
+- Document recurring issues or missing gear.  
+- Review what worked, what failed, and update configuration guides.  
+- Check in with your own energy—information fatigue is real.
+
+---
+
+## Reflection
+How do you handle frustration when a system goes down under pressure?  
+List three actions that help you reset and troubleshoot logically instead of reactively.
+
+---
+
+## Next Steps
+- [Comms Collapse Scenarios & Offline Protocols](/courses/comms-collapse)  
+- [Operating a Pod Mesh Network](/courses/mesh-networks-pod-ops)  
+- [Encryption 101](/courses/encryption-101)  
+- [Operational Security 101 for Activists and Revolutionaries](/courses/opsec-101)  
+- [Mesh Network Hardware & Power Guide](/courses/mesh-networks-hardware-guide)
+
+---
+
+## External Resources
+- *Tactical Tech: Security in a Box – Activist Tech Guide*  
+- *EFF: Digital Security Self-Defense Handbook*  
+- *Signal & Briar Field Operations Notes*  
+- *LoRa Mesh Community Wiki – Field Node Setup*  
+- *Mozilla: Offline-First Development and Data Stewardship Toolkit*
+
+---
+
+## Rabbit Holes
+- Learn **field radio propagation and interference mitigation.**  
+- Study **mobile mesh network topology** for disconnected operations.  
+- Explore **threat modeling** for activist communication systems.  
+- Practice **rapid repair drills**—simulate losing comms and restore within 2 minutes.  
+- Optional task: build a **“Go-Kit”** containing spare gear, cables, and encrypted drives for field deployment.
+
+---
