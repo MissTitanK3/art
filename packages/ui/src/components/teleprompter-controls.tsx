@@ -2,8 +2,17 @@
 
 import * as React from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
-import { SPEED_PRESETS, closestSpeedPresetId } from "@workspace/ui/lib/teleprompter";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
+import {
+  SPEED_PRESETS,
+  closestSpeedPresetId,
+} from "@workspace/ui/lib/teleprompter";
 
 export type TransportControlsProps = {
   playing: boolean;
@@ -24,13 +33,29 @@ export function TransportControls({
   compact,
   className,
 }: TransportControlsProps) {
-  const sizeCls = compact ? "h-9 px-3 text-sm" : "h-11 px-4 text-base sm:h-10 sm:text-sm";
+  const sizeCls = compact
+    ? "h-9 px-3 text-sm"
+    : "h-11 px-4 text-base sm:h-10 sm:text-sm";
   return (
-    <div className={`grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 ${className ?? ""}`}>
-      <Button className={`w-full ${sizeCls}`} onClick={onRewind}>⏮ Rewind</Button>
-      <Button className={`w-full ${sizeCls}`} variant="light" onClick={onPlayToggle}>{playing ? "⏸ Pause" : "▶ Play"}</Button>
-      <Button className={`w-full ${sizeCls}`} onClick={onPrev}>Prev</Button>
-      <Button className={`w-full ${sizeCls}`} onClick={onNext}>Next</Button>
+    <div
+      className={`grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 ${className ?? ""}`}
+    >
+      <Button className={`w-full ${sizeCls}`} onClick={onRewind}>
+        ⏮ Rewind
+      </Button>
+      <Button
+        className={`w-full ${sizeCls}`}
+        variant="light"
+        onClick={onPlayToggle}
+      >
+        {playing ? "⏸ Pause" : "▶ Play"}
+      </Button>
+      <Button className={`w-full ${sizeCls}`} onClick={onPrev}>
+        Prev
+      </Button>
+      <Button className={`w-full ${sizeCls}`} onClick={onNext}>
+        Next
+      </Button>
     </div>
   );
 }
@@ -42,21 +67,37 @@ export type SpeedControlProps = {
   className?: string;
 };
 
-export function SpeedControl({ value, onChange, layout = "auto", className }: SpeedControlProps) {
+export function SpeedControl({
+  value,
+  onChange,
+  layout = "auto",
+  className,
+}: SpeedControlProps) {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const content = (
     <>
       <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
         <span>Speed</span>
-        <span suppressHydrationWarning>{mounted ? `${value.toFixed(2)}x` : "--"}</span>
+        <span suppressHydrationWarning>
+          {mounted ? `${value.toFixed(2)}x` : "--"}
+        </span>
       </div>
       <div className="md:hidden">
-        <Select value={closestSpeedPresetId(value)} onValueChange={(v) => onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)}>
-          <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm"><SelectValue placeholder="Speed" /></SelectTrigger>
+        <Select
+          value={closestSpeedPresetId(value)}
+          onValueChange={(v) =>
+            onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)
+          }
+        >
+          <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm">
+            <SelectValue placeholder="Speed" />
+          </SelectTrigger>
           <SelectContent>
             {Object.entries(SPEED_PRESETS).map(([id, p]) => (
-              <SelectItem key={id} value={id}>{p.label}</SelectItem>
+              <SelectItem key={id} value={id}>
+                {p.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -65,7 +106,9 @@ export function SpeedControl({ value, onChange, layout = "auto", className }: Sp
         {Object.entries(SPEED_PRESETS).map(([id, p]) => (
           <Button
             key={id}
-            variant={closestSpeedPresetId(value) === id ? "secondary" : "outline"}
+            variant={
+              closestSpeedPresetId(value) === id ? "secondary" : "outline"
+            }
             className="w-full"
             onClick={() => onChange(p.value)}
           >
@@ -81,13 +124,24 @@ export function SpeedControl({ value, onChange, layout = "auto", className }: Sp
       <div className={className}>
         <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
           <span>Speed</span>
-          <span suppressHydrationWarning>{mounted ? `${value.toFixed(2)}x` : "--"}</span>
+          <span suppressHydrationWarning>
+            {mounted ? `${value.toFixed(2)}x` : "--"}
+          </span>
         </div>
-        <Select value={closestSpeedPresetId(value)} onValueChange={(v) => onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)}>
-          <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm"><SelectValue placeholder="Speed" /></SelectTrigger>
+        <Select
+          value={closestSpeedPresetId(value)}
+          onValueChange={(v) =>
+            onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)
+          }
+        >
+          <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm">
+            <SelectValue placeholder="Speed" />
+          </SelectTrigger>
           <SelectContent>
             {Object.entries(SPEED_PRESETS).map(([id, p]) => (
-              <SelectItem key={id} value={id}>{p.label}</SelectItem>
+              <SelectItem key={id} value={id}>
+                {p.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

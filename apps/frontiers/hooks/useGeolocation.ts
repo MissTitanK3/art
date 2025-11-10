@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
 export function useGeolocation() {
   async function getPosition(): Promise<{ lat: number; lng: number }> {
-    if (!('geolocation' in navigator)) throw new Error('Geolocation not supported in this browser');
+    if (!("geolocation" in navigator))
+      throw new Error("Geolocation not supported in this browser");
     const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         enableHighAccuracy: false,
@@ -10,7 +11,10 @@ export function useGeolocation() {
         maximumAge: 0,
       });
     });
-    return { lat: round2(pos.coords.latitude), lng: round2(pos.coords.longitude) };
+    return {
+      lat: round2(pos.coords.latitude),
+      lng: round2(pos.coords.longitude),
+    };
   }
 
   function round2(n: number) {

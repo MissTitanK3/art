@@ -89,7 +89,7 @@ export function SelectableRoleCard({
         "flex items-center justify-between w-full rounded-lg border p-3 text-left transition cursor-pointer",
         selected
           ? `${palette.border} ${palette.bg} ${palette.text} shadow-sm`
-          : `border-gray-300 ${palette.hover}`
+          : `border-gray-300 ${palette.hover}`,
       )}
     >
       <div className="flex items-center gap-2">

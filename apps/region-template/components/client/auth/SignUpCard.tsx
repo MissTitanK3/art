@@ -19,7 +19,10 @@ import { useRegionAdapters } from "@/providers/RegionProvider";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Textarea } from "@workspace/ui/components/textarea";
 import type { Profile } from "@workspace/store/types/global.ts";
-import { FIELD_ROLE_OPTIONS, type FieldRole } from "@workspace/store/types/roles.ts";
+import {
+  FIELD_ROLE_OPTIONS,
+  type FieldRole,
+} from "@workspace/store/types/roles.ts";
 import {
   SESSION_COOKIE,
   ONE_WEEK_SECONDS,
@@ -31,7 +34,8 @@ const PENDING_PROFILE_KEY = "pending-profile";
 
 export function SignUpCard() {
   const router = useRouter();
-  const { providerId, signUpWithPassword, refresh, setSession } = useAuth() as any;
+  const { providerId, signUpWithPassword, refresh, setSession } =
+    useAuth() as any;
   const { profileAdapter } = useRegionAdapters();
 
   const [email, setEmail] = React.useState("");
@@ -95,18 +99,19 @@ export function SignUpCard() {
           // Persist lightweight app session cookie for client/server harmony
           try {
             document.cookie = `${SESSION_COOKIE}=${encodeSession(session)}; path=/; max-age=${ONE_WEEK_SECONDS}; SameSite=Lax`;
-          } catch { }
+          } catch {}
 
           try {
             setSession(session);
             await refresh();
-          } catch { }
+          } catch {}
 
           // Save profile immediately if session is available
           const profile: Profile = {
-            id: (typeof crypto !== "undefined" && crypto.randomUUID)
-              ? crypto.randomUUID()
-              : `${session.user.id}-${Date.now()}`,
+            id:
+              typeof crypto !== "undefined" && crypto.randomUUID
+                ? crypto.randomUUID()
+                : `${session.user.id}-${Date.now()}`,
             user_id: session.user.id,
             coverage_zones: [],
             operating_counties: [],
@@ -115,7 +120,9 @@ export function SignUpCard() {
             verified_by: (baseProfile.verified_by as any) || "self",
             availability: baseProfile.availability ?? true,
             self_risk_acknowledged: baseProfile.self_risk_acknowledged ?? false,
-            weekly_availability: baseProfile.weekly_availability ?? { blocks: {} },
+            weekly_availability: baseProfile.weekly_availability ?? {
+              blocks: {},
+            },
             inserted_at: baseProfile.inserted_at || now,
           } as Profile;
           try {
@@ -124,22 +131,26 @@ export function SignUpCard() {
             // If DB write fails, stash as pending so AutoCreateProfile can retry
             try {
               const raw = localStorage.getItem(PENDING_PROFILE_KEY);
-              const map = raw ? (JSON.parse(raw) as Record<string, Partial<Profile>>) : {};
+              const map = raw
+                ? (JSON.parse(raw) as Record<string, Partial<Profile>>)
+                : {};
               map[email] = { ...baseProfile };
               localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(map));
-            } catch { }
+            } catch {}
           }
           router.push("/");
         } else {
           // Store pending profile for later auto-create after email confirmation
           try {
             const raw = localStorage.getItem(PENDING_PROFILE_KEY);
-            const map = raw ? (JSON.parse(raw) as Record<string, Partial<Profile>>) : {};
+            const map = raw
+              ? (JSON.parse(raw) as Record<string, Partial<Profile>>)
+              : {};
             map[email] = baseProfile;
             localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(map));
-          } catch { }
+          } catch {}
           setInfo(
-            "Check your email to confirm your account. We will finish creating your profile after you sign in."
+            "Check your email to confirm your account. We will finish creating your profile after you sign in.",
           );
         }
       } catch (err: unknown) {
@@ -148,7 +159,24 @@ export function SignUpCard() {
         setPending(false);
       }
     },
-    [email, password, providerId, signUpWithPassword, router, displayName, affiliation, city, state, contactSignal, coordinationZone, fieldRoles, passwordRules, profileAdapter, refresh, setSession]
+    [
+      email,
+      password,
+      providerId,
+      signUpWithPassword,
+      router,
+      displayName,
+      affiliation,
+      city,
+      state,
+      contactSignal,
+      coordinationZone,
+      fieldRoles,
+      passwordRules,
+      profileAdapter,
+      refresh,
+      setSession,
+    ],
   );
 
   return (
@@ -203,11 +231,61 @@ export function SignUpCard() {
               </button>
             </div>
             <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-              <li className={password ? (passwordRules.length ? "text-emerald-600" : "text-destructive") : ""}>• 8+ characters</li>
-              <li className={password ? (passwordRules.lower ? "text-emerald-600" : "text-destructive") : ""}>• At least one lowercase letter</li>
-              <li className={password ? (passwordRules.upper ? "text-emerald-600" : "text-destructive") : ""}>• At least one uppercase letter</li>
-              <li className={password ? (passwordRules.number ? "text-emerald-600" : "text-destructive") : ""}>• At least one number</li>
-              <li className={password ? (passwordRules.special ? "text-emerald-600" : "text-destructive") : ""}>• At least one symbol</li>
+              <li
+                className={
+                  password
+                    ? passwordRules.length
+                      ? "text-emerald-600"
+                      : "text-destructive"
+                    : ""
+                }
+              >
+                • 8+ characters
+              </li>
+              <li
+                className={
+                  password
+                    ? passwordRules.lower
+                      ? "text-emerald-600"
+                      : "text-destructive"
+                    : ""
+                }
+              >
+                • At least one lowercase letter
+              </li>
+              <li
+                className={
+                  password
+                    ? passwordRules.upper
+                      ? "text-emerald-600"
+                      : "text-destructive"
+                    : ""
+                }
+              >
+                • At least one uppercase letter
+              </li>
+              <li
+                className={
+                  password
+                    ? passwordRules.number
+                      ? "text-emerald-600"
+                      : "text-destructive"
+                    : ""
+                }
+              >
+                • At least one number
+              </li>
+              <li
+                className={
+                  password
+                    ? passwordRules.special
+                      ? "text-emerald-600"
+                      : "text-destructive"
+                    : ""
+                }
+              >
+                • At least one symbol
+              </li>
             </ul>
           </div>
           <div className="grid gap-1">
@@ -223,11 +301,22 @@ export function SignUpCard() {
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1">
               <Label htmlFor="city">City</Label>
-              <Input id="city" type="text" value={city} onChange={(e) => setCity(e.target.value)} />
+              <Input
+                id="city"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
             </div>
             <div className="grid gap-1">
               <Label htmlFor="state">State</Label>
-              <Input id="state" type="text" value={state} onChange={(e) => setState(e.target.value)} placeholder="WA" />
+              <Input
+                id="state"
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="WA"
+              />
             </div>
           </div>
           <div className="grid gap-1">
@@ -239,11 +328,17 @@ export function SignUpCard() {
               onChange={(e) => setContactSignal(e.target.value)}
               placeholder="@yourname.12"
             />
-            <p className="text-xs text-muted-foreground">Format: @name.12 and ends with at least two digits.</p>
+            <p className="text-xs text-muted-foreground">
+              Format: @name.12 and ends with at least two digits.
+            </p>
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="coordinationZone">Coordination zone (optional)</Label>
-            <p className="text-xs text-muted-foreground">e.g. City, county or region</p>
+            <Label htmlFor="coordinationZone">
+              Coordination zone (optional)
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              e.g. City, county or region
+            </p>
             <Input
               id="coordinationZone"
               type="text"
@@ -275,20 +370,30 @@ export function SignUpCard() {
             </div>
           </div>
           {error && (
-            <p className="text-sm text-destructive" role="alert">{error}</p>
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
           )}
           {info && (
-            <p className="text-sm text-muted-foreground" role="status">{info}</p>
+            <p className="text-sm text-muted-foreground" role="status">
+              {info}
+            </p>
           )}
-          <Button type="submit" className="w-full" disabled={pending || !passwordRules.valid}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={pending || !passwordRules.valid}
+          >
             {pending ? "Creating account…" : "Create account"}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm text-muted-foreground">
-        Already have an account? <Link href="/sign-in" className="underline">Sign in</Link>
+        Already have an account?{" "}
+        <Link href="/sign-in" className="underline">
+          Sign in
+        </Link>
       </CardFooter>
     </Card>
   );
 }
-

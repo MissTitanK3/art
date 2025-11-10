@@ -16,56 +16,64 @@ export interface DispatchUpdate {
 
 export interface LogisticsItem {
   id: string;
-  category: 'transport' | 'supply' | 'comms' | 'rally_point' | 'other';
+  category: "transport" | "supply" | "comms" | "rally_point" | "other";
   description: string;
   quantity?: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'pending' | 'in_progress' | 'delivered' | 'cancelled';
-  responsibleParty?: { type: 'user'; userId: string } | { type: 'anon'; name: string };
+  priority: "low" | "medium" | "high" | "critical";
+  status: "pending" | "in_progress" | "delivered" | "cancelled";
+  responsibleParty?:
+    | { type: "user"; userId: string }
+    | { type: "anon"; name: string };
   warehouse?: { name?: string; location?: string; contact?: string };
   accountabilityNotes?: string;
   updatedAt: string;
 }
 
 export type DispatchStatus =
-  | 'preplanning'
-  | 'unconfirmed'
-  | 'confirmed'
-  | 'mobilizing'
-  | 'in_progress'
-  | 'debriefing'
-  | 'completed'
-  | 'cancelled'
-  | 'expired'
-  | 'archived';
+  | "preplanning"
+  | "unconfirmed"
+  | "confirmed"
+  | "mobilizing"
+  | "in_progress"
+  | "debriefing"
+  | "completed"
+  | "cancelled"
+  | "expired"
+  | "archived";
 
 export type DispatchType =
-  | 'rapid_response'
-  | 'planned_event'
-  | 'training'
-  | 'community_aid'
-  | 'technical_aid'
-  | 'other';
+  | "rapid_response"
+  | "planned_event"
+  | "training"
+  | "community_aid"
+  | "technical_aid"
+  | "other";
 
 export const DISPATCH_TYPE_VARIANTS: Record<
   DispatchType,
-  'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning"
+  | "info"
 > = {
-  rapid_response: 'destructive', // red
-  planned_event: 'info', // blue
-  training: 'warning', // yellow
-  community_aid: 'success', // green
-  technical_aid: 'secondary', // purple/neutral
-  other: 'outline', // gray/fallback
+  rapid_response: "destructive", // red
+  planned_event: "info", // blue
+  training: "warning", // yellow
+  community_aid: "success", // green
+  technical_aid: "secondary", // purple/neutral
+  other: "outline", // gray/fallback
 };
 
 export const DISPATCH_TYPE_LABELS: Record<DispatchType, string> = {
-  rapid_response: 'Rapid Response',
-  planned_event: 'Planned Event',
-  training: 'Training',
-  community_aid: 'Community Aid',
-  technical_aid: 'Technical Aid',
-  other: 'Other',
+  rapid_response: "Rapid Response",
+  planned_event: "Planned Event",
+  training: "Training",
+  community_aid: "Community Aid",
+  technical_aid: "Technical Aid",
+  other: "Other",
 };
 
 export function getDispatchTypeStyle(type: DispatchType) {

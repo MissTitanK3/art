@@ -13,7 +13,19 @@
     "generate:academy-groups": "node scripts/generate-academy-groups.mjs",
     "generate:academy-course-details": "node scripts/generate-academy-course-details.mjs",
     "prebuild": "pnpm -w run generate:academy-course-details && pnpm -w run generate:academy-groups && pnpm -w run validate:academy",
-    "validate:academy": "node scripts/validate-academy-content.mjs"
+    "validate:academy": "node scripts/validate-academy-content.mjs",
+    "check:regions": "node scripts/check-align-regions.mjs",
+    "check:regions:ts": "node --loader ts-node/esm scripts/check-align-regions.ts",
+    "check:regions:demo": "node scripts/check-align-regions.mjs --demo",
+    "check:regions:diff": "node scripts/check-align-regions.mjs --format diff",
+    "check:regions:diff:verbose": "node scripts/check-align-regions.mjs --format diff --verbose",
+    "check:regions:git": "node scripts/check-align-regions.mjs --git",
+    "check:regions:staged": "node scripts/check-align-regions.mjs --staged",
+    "check:regions:whitelist": "node scripts/check-align-regions.mjs --whitelist-file scripts/check-align-whitelist.txt",
+    "check:regions:demo:diff": "node scripts/check-align-regions.mjs --demo --format diff",
+    "check:regions:ci": "node scripts/check-align-regions.mjs --format diff --git",
+    "check:regions:full": "echo \"Running region alignment (scan + manifest/sw checks + secret-scan)...\" && node scripts/check-align-regions.mjs --format diff --run-lint --run-typecheck --whitelist-file scripts/check-align-whitelist.txt --output .check-unaligned-region/report.json --out-dir .check-unaligned-region --verbose || true && echo \"Artifacts written to .check-unaligned-region/ (report.json, report.md, pr_suggestion.md, per-region .diff files)\" && echo \"Prioritizing diffs...\" && node scripts/prioritize-diffs.mjs && echo \"Posting check report...\" && node scripts/post-check-report.mjs",
+    "sanity-check": "bash ./scripts/sanity-check.sh"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
@@ -32,7 +44,9 @@
     "gray-matter": "^4.0.3",
     "prettier": "^3.6.2",
     "turbo": "^2.5.5",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "minimatch": "^9.0.2",
+    "ts-node": "^10.9.1"
   },
   "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
   "engines": {

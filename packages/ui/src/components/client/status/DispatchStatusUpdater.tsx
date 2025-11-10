@@ -23,9 +23,14 @@ type DispatchStatusUpdaterProps = {
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchStatusUpdater({ submission, onUpdate }: DispatchStatusUpdaterProps) {
+export default function DispatchStatusUpdater({
+  submission,
+  onUpdate,
+}: DispatchStatusUpdaterProps) {
   const [open, setOpen] = useState(false);
-  const [locationLabel, setLocationLabel] = useState(submission.location_label ?? "");
+  const [locationLabel, setLocationLabel] = useState(
+    submission.location_label ?? "",
+  );
 
   useEffect(() => {
     setLocationLabel(submission.location_label ?? "");
@@ -51,9 +56,7 @@ export default function DispatchStatusUpdater({ submission, onUpdate }: Dispatch
   return (
     <>
       <div className="flex justify-between gap-2">
-        <Badge
-          className={cn("!text-white", currentMeta.color, "shadow-sm")}
-        >
+        <Badge className={cn("!text-white", currentMeta.color, "shadow-sm")}>
           {currentMeta.label}
         </Badge>
 
@@ -67,7 +70,8 @@ export default function DispatchStatusUpdater({ submission, onUpdate }: Dispatch
           <DrawerHeader>
             <DrawerTitle>Update Dispatch Status</DrawerTitle>
             <DrawerDescription>
-              Choose a new status for this dispatch and update the location label.
+              Choose a new status for this dispatch and update the location
+              label.
             </DrawerDescription>
           </DrawerHeader>
 
@@ -81,32 +85,36 @@ export default function DispatchStatusUpdater({ submission, onUpdate }: Dispatch
           </div>
 
           <div className="grid grid-cols-2 gap-2 mt-4">
-            {(Object.entries(STATUS_META) as [DispatchStatus, { label: string; color: string }][])
-              .map(([value, meta]) => {
-                const isCurrent = value === submission.status;
-                return (
-                  <Button
-                    key={value}
-                    variant={isCurrent ? "default" : "outline"}
-                    className={cn(
-                      "justify-start",
-                      isCurrent ? `${meta.color} !text-white` : "text-foreground hover:bg-muted"
-                    )}
-                    onClick={() => handleStatusChange(value)}
-                  >
-                    {meta.label}
-                  </Button>
-                );
-              })}
+            {(
+              Object.entries(STATUS_META) as [
+                DispatchStatus,
+                { label: string; color: string },
+              ][]
+            ).map(([value, meta]) => {
+              const isCurrent = value === submission.status;
+              return (
+                <Button
+                  key={value}
+                  variant={isCurrent ? "default" : "outline"}
+                  className={cn(
+                    "justify-start",
+                    isCurrent
+                      ? `${meta.color} !text-white`
+                      : "text-foreground hover:bg-muted",
+                  )}
+                  onClick={() => handleStatusChange(value)}
+                >
+                  {meta.label}
+                </Button>
+              );
+            })}
           </div>
 
           <DrawerFooter>
             <Button variant="secondary" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSaveLocation}>
-              Save location
-            </Button>
+            <Button onClick={handleSaveLocation}>Save location</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

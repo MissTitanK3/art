@@ -1,11 +1,17 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card'
-import type { AcademySummaryStat } from '@workspace/store/types/academy.ts'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import type { AcademySummaryStat } from "@workspace/store/types/academy.ts";
 
 type AcademyStatsGridProps = {
-  stats: AcademySummaryStat[]
-}
+  stats: AcademySummaryStat[];
+};
 
 export function AcademyStatsGrid({ stats }: AcademyStatsGridProps) {
   return (
@@ -15,7 +21,9 @@ export function AcademyStatsGrid({ stats }: AcademyStatsGridProps) {
           <>
             <CardHeader className="pb-2">
               <CardDescription>{stat.label}</CardDescription>
-              <CardTitle className="text-3xl font-semibold">{stat.value}</CardTitle>
+              <CardTitle className="text-3xl font-semibold">
+                {stat.value}
+              </CardTitle>
             </CardHeader>
             {stat.helper ? (
               <CardContent>
@@ -23,20 +31,26 @@ export function AcademyStatsGrid({ stats }: AcademyStatsGridProps) {
               </CardContent>
             ) : null}
           </>
-        )
+        );
         const inner = stat.href ? (
-          <a href={stat.href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 rounded-xl">
+          <a
+            href={stat.href}
+            className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 rounded-xl"
+          >
             {content}
           </a>
         ) : (
           content
-        )
+        );
         return (
-          <Card key={stat.label} className="border border-border/60 shadow-none hover:border-primary/40 transition-colors">
+          <Card
+            key={stat.label}
+            className="border border-border/60 shadow-none hover:border-primary/40 transition-colors"
+          >
             {inner}
           </Card>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

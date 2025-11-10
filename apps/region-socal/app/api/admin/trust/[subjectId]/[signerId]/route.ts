@@ -1,12 +1,15 @@
-import { NextResponse } from 'next/server';
-import { jsonError } from '@/lib/api/responses';
-import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
-import { getProfileByUserId } from '@/lib/dal/admin';
-import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies as nextCookies } from 'next/headers';
-import { notifyUsers, resolveUserIdsFromProfileOrUserIds } from '@/lib/server/notify';
+import { NextResponse } from "next/server";
+import { jsonError } from "@/lib/api/responses";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
+import { getProfileByUserId } from "@/lib/dal/admin";
+import { regionAdmins } from "@workspace/store/utils/nav";
+import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies as nextCookies } from "next/headers";
+import {
+  notifyUsers,
+  resolveUserIdsFromProfileOrUserIds,
+} from "@/lib/server/notify";
 
 type PatchBody = Partial<{
   status: string; // 'active' | 'inactive'
@@ -21,17 +24,26 @@ async function authz() {
   if (userError || !userData?.user) return false;
   const callerProfile = await getProfileByUserId(userData.user.id);
   const callerAccessRole = callerProfile?.access_role as any | undefined;
-  return !!callerAccessRole && (regionAdmins.includes(callerAccessRole) || callerAccessRole === 'dispatcher_admin');
+  return (
+    !!callerAccessRole &&
+    (regionAdmins.includes(callerAccessRole) ||
+      callerAccessRole === "dispatcher_admin")
+  );
 }
 
 function clientFromCookies() {
-  const env = ensureSupabaseEnv('server');
+  const env = ensureSupabaseEnv("server");
   return nextCookies().then((store) =>
     createServerClient(env.url, env.anonKey, {
       cookies: {
         getAll() {
           if (!store) return [] as { name: string; value: string }[];
-          return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
+          return store
+            .getAll()
+            .map(({ name, value }: { name: string; value: string }) => ({
+              name,
+              value,
+            }));
         },
         setAll(cookies) {
           if (!store) return;
@@ -48,57 +60,72 @@ function clientFromCookies() {
   );
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ subjectId: string; signerId: string }> }) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ subjectId: string; signerId: string }> },
+) {
   try {
-    if (!(await authz())) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await authz()))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const { subjectId, signerId } = await params;
     const body = (await req.json()) as PatchBody;
     const patch: any = {};
-    if (typeof body.status === 'string') patch.status = body.status;
-    if (typeof body.signer_role === 'string') patch.signer_role = body.signer_role;
-    if (typeof body.signer_rot === 'string') patch.signer_rot = body.signer_rot;
-    if (typeof body.signed_at === 'string') patch.signed_at = body.signed_at;
-    if (Object.keys(patch).length === 0) return NextResponse.json({ error: 'No valid fields' }, { status: 400 });
+    if (typeof body.status === "string") patch.status = body.status;
+    if (typeof body.signer_role === "string")
+      patch.signer_role = body.signer_role;
+    if (typeof body.signer_rot === "string") patch.signer_rot = body.signer_rot;
+    if (typeof body.signed_at === "string") patch.signed_at = body.signed_at;
+    if (Object.keys(patch).length === 0)
+      return NextResponse.json({ error: "No valid fields" }, { status: 400 });
 
     const client = await clientFromCookies();
     // Load current before update
     const { data: beforeRows } = await client
-      .from('trust_signatures')
-      .select('*')
-      .eq('subject_id', subjectId)
-      .eq('signer_id', signerId)
+      .from("trust_signatures")
+      .select("*")
+      .eq("subject_id", subjectId)
+      .eq("signer_id", signerId)
       .limit(1);
-    const before = Array.isArray(beforeRows) ? beforeRows[0] : (beforeRows as any);
+    const before = Array.isArray(beforeRows)
+      ? beforeRows[0]
+      : (beforeRows as any);
 
     const { data, error } = await client
-      .from('trust_signatures')
+      .from("trust_signatures")
       .update(patch)
-      .eq('subject_id', subjectId)
-      .eq('signer_id', signerId)
-      .select('*')
+      .eq("subject_id", subjectId)
+      .eq("signer_id", signerId)
+      .select("*")
       .limit(1);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error)
+      return NextResponse.json({ error: error.message }, { status: 500 });
     const out = Array.isArray(data) ? data[0] : (data as any);
 
     // Fire-and-forget notifications on status changes
     (async () => {
       try {
         if (!out) return;
-        if (before && typeof patch.status === 'string' && before.status !== out.status) {
-          const recipients = await resolveUserIdsFromProfileOrUserIds([subjectId]);
+        if (
+          before &&
+          typeof patch.status === "string" &&
+          before.status !== out.status
+        ) {
+          const recipients = await resolveUserIdsFromProfileOrUserIds([
+            subjectId,
+          ]);
           if (recipients.length) {
             await notifyUsers({
-              title: 'Trust Signature Status Updated',
+              title: "Trust Signature Status Updated",
               body: `${before.status} → ${out.status}`,
-              level: out.status === 'inactive' ? 'warning' : 'info',
-              channel: 'system',
-              link: '/admin/trust',
+              level: out.status === "inactive" ? "warning" : "info",
+              channel: "system",
+              link: "/admin/trust",
               recipients,
             });
           }
         }
       } catch (e) {
-        console.warn('[admin/trust] PATCH notify exception:', e);
+        console.warn("[admin/trust] PATCH notify exception:", e);
       }
     })();
 

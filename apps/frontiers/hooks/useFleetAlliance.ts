@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { toast } from 'sonner';
-import { supabase } from '@/lib/supabaseClient';
+import * as React from "react";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 export type Fleet = {
   id: string;
@@ -23,10 +23,10 @@ export function useFleetAlliance(profileId: string | null) {
     }
     setFleetsLoading(true);
     try {
-      const cols = 'id,name,region_id,leader_id,members';
+      const cols = "id,name,region_id,leader_id,members";
       const [l1, l2] = await Promise.all([
-        supabase.from('fleets').select(cols).eq('leader_id', profileId),
-        supabase.from('fleets').select(cols).contains('members', [profileId]),
+        supabase.from("fleets").select(cols).eq("leader_id", profileId),
+        supabase.from("fleets").select(cols).contains("members", [profileId]),
       ]);
       const a = Array.isArray(l1.data) ? l1.data : [];
       const b = Array.isArray(l2.data) ? l2.data : [];
@@ -37,11 +37,13 @@ export function useFleetAlliance(profileId: string | null) {
           name: (f as any).name,
           region_id: (f as any).region_id ?? null,
           leader_id: (f as any).leader_id ? String((f as any).leader_id) : null,
-          members: Array.isArray((f as any).members) ? (f as any).members.map(String) : null,
+          members: Array.isArray((f as any).members)
+            ? (f as any).members.map(String)
+            : null,
         });
       setFleets(Array.from(map.values()));
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to load fleets');
+      toast.error(e?.message || "Failed to load fleets");
     } finally {
       setFleetsLoading(false);
     }

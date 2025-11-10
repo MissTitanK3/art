@@ -5,18 +5,18 @@ export default function HowToUserGuide() {
     <section id="user-guide" className="prose dark:prose-invert max-w-none">
       <h2>Platform User Guide</h2>
       <Callout type="info">
-        New here? Start with the Academy for foundational knowledge, then return to this guide to operate the platform
-        day-to-day.
+        New here? Start with the Academy for foundational knowledge, then return
+        to this guide to operate the platform day-to-day.
       </Callout>
 
       <p>
-        The platform is organized by mission areas. Use the global navigation to access each area. Below is a quick
-        overview and deep links:
+        The platform is organized by mission areas. Use the global navigation to
+        access each area. Below is a quick overview and deep links:
       </p>
 
       <ul>
         <li>
-          <strong>Create</strong> — Submit new team or community requests.{' '}
+          <strong>Create</strong> — Submit new team or community requests.{" "}
           <a href="/team-req" className="text-blue-500 hover:underline">
             Go to Create
           </a>
@@ -82,7 +82,7 @@ export default function HowToUserGuide() {
           </ul>
         </li>
         <li>
-          <strong>Missing Persons</strong> — Manage cases and signals.{' '}
+          <strong>Missing Persons</strong> — Manage cases and signals.{" "}
           <a href="/missing-persons" className="text-blue-500 hover:underline">
             Missing Persons
           </a>
@@ -100,8 +100,8 @@ export default function HowToUserGuide() {
       </ul>
 
       <Callout type="important">
-        Access to some areas depends on your role and onboarding status. If something is missing, contact a regional
-        admin.
+        Access to some areas depends on your role and onboarding status. If
+        something is missing, contact a regional admin.
       </Callout>
     </section>
   );

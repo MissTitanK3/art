@@ -4,8 +4,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@workspace/ui/components/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { US_STATES } from "@workspace/ui/lib/constants/states";
 import { humanize } from "@workspace/ui/lib/utils";
 import { DispatchType } from "@workspace/store/types/dispatch.ts";
@@ -29,14 +41,21 @@ interface BasicInfoStepProps {
 
 export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
   const round2 = (n: number) => Math.round(n * 100) / 100;
-  const [locationLabel, setLocationLabel] = useState(initial?.location_label ?? "");
+  const [locationLabel, setLocationLabel] = useState(
+    initial?.location_label ?? "",
+  );
   const [state, setState] = useState(initial?.state ?? "");
-  const [type, setType] = useState<DispatchType>(initial?.type ?? "rapid_response");
+  const [type, setType] = useState<DispatchType>(
+    initial?.type ?? "rapid_response",
+  );
   // Distance unit preference (persisted)
   const unit = usePreferencesStore((s) => s.distanceUnit);
   const [radiusInput, setRadiusInput] = useState<number>(() => {
-    const baseKm = initial?.visibility_radius_km != null ? initial.visibility_radius_km : 9.66;
-    const v = unit === 'mi' ? kmToMi(baseKm) : baseKm;
+    const baseKm =
+      initial?.visibility_radius_km != null
+        ? initial.visibility_radius_km
+        : 9.66;
+    const v = unit === "mi" ? kmToMi(baseKm) : baseKm;
     return round2(v);
   });
   const lastUnitRef = useRef(unit);
@@ -44,15 +63,17 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
     if (unit !== lastUnitRef.current) {
       setRadiusInput((prev) => {
         // Convert previous value to km based on previous unit, then to the new unit
-        const km = lastUnitRef.current === 'mi' ? miToKm(prev) : prev;
-        const converted = unit === 'mi' ? kmToMi(km) : km;
+        const km = lastUnitRef.current === "mi" ? miToKm(prev) : prev;
+        const converted = unit === "mi" ? kmToMi(km) : km;
         return Math.round(converted * 100) / 100;
       });
       lastUnitRef.current = unit;
     }
   }, [unit]);
   const [location] = useState(initial?.location);
-  const [dateOfEvent, setDateOfEvent] = useState<string | undefined>(initial?.date_of_event ?? new Date().toISOString());
+  const [dateOfEvent, setDateOfEvent] = useState<string | undefined>(
+    initial?.date_of_event ?? new Date().toISOString(),
+  );
   const [resolvedOnce, setResolvedOnce] = useState(false);
 
   const stateLookup = useMemo(() => {
@@ -65,8 +86,10 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
 
   useEffect(() => {
     if (!location) return;
-    if (typeof location.lat !== "number" || typeof location.lng !== "number") return;
-    if (!Number.isFinite(location.lat) || !Number.isFinite(location.lng)) return;
+    if (typeof location.lat !== "number" || typeof location.lng !== "number")
+      return;
+    if (!Number.isFinite(location.lat) || !Number.isFinite(location.lng))
+      return;
     if (resolvedOnce) return;
 
     let active = true;
@@ -83,10 +106,15 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
       const resolvedLabel =
         info.city && stateDisplay
           ? `${info.city}, ${stateDisplay}`
-          : info.city ?? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+          : (info.city ??
+            `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
 
       setLocationLabel((prev) => {
-        if (prev && prev.trim().length > 0 && prev !== initial?.location_label) {
+        if (
+          prev &&
+          prev.trim().length > 0 &&
+          prev !== initial?.location_label
+        ) {
           return prev;
         }
         return resolvedLabel;
@@ -122,20 +150,29 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
 
         {location && (
           <div className="text-sm text-muted-foreground">
-            Coordinates from pin: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+            Coordinates from pin: {location.lat.toFixed(4)},{" "}
+            {location.lng.toFixed(4)}
           </div>
         )}
 
         <div>
-          <Label htmlFor="">
-            Reponse Type
-          </Label>
-          <Select value={type} onValueChange={(v) => setType(v as DispatchType)}>
+          <Label htmlFor="">Reponse Type</Label>
+          <Select
+            value={type}
+            onValueChange={(v) => setType(v as DispatchType)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select response type" />
             </SelectTrigger>
             <SelectContent>
-              {["rapid_response", "planned_event", "training", "community_aid", "technical_aid", "other"].map((type) => (
+              {[
+                "rapid_response",
+                "planned_event",
+                "training",
+                "community_aid",
+                "technical_aid",
+                "other",
+              ].map((type) => (
                 <SelectItem key={type} value={type}>
                   {humanize(type)}
                 </SelectItem>
@@ -146,9 +183,15 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
         <div>
           <Label>Event Date/Time</Label>
           <div className="mt-1">
-            <DateTimePicker label="Date of Event" value={dateOfEvent} onChange={setDateOfEvent} />
+            <DateTimePicker
+              label="Date of Event"
+              value={dateOfEvent}
+              onChange={setDateOfEvent}
+            />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">For Planned Events, set in the future. Defaults to now.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            For Planned Events, set in the future. Defaults to now.
+          </p>
         </div>
 
         <div>
@@ -180,7 +223,9 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
             onChange={(e) => {
               const val = parseFloat(e.target.value);
               // Ensure we pass a number to the state setter (toFixed returns a string)
-              setRadiusInput(Number.isNaN(val) ? 0 : Math.round(val * 100) / 100);
+              setRadiusInput(
+                Number.isNaN(val) ? 0 : Math.round(val * 100) / 100,
+              );
             }}
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -195,7 +240,8 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
               location_label: locationLabel,
               type,
               state,
-              visibility_radius_km: unit === 'mi' ? miToKm(radiusInput) : radiusInput,
+              visibility_radius_km:
+                unit === "mi" ? miToKm(radiusInput) : radiusInput,
               location,
               date_of_event: dateOfEvent,
             })

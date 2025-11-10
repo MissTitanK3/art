@@ -29,7 +29,9 @@ export type DispatchShiftsLayoutProps = {
   onAddDrawerChange: (open: boolean) => void;
   loadingMessage?: React.ReactNode;
   // Optional: fetch members for the selected pod from the app's data layer
-  getVolunteersForPod?: (podId: string) => Promise<import("@workspace/store/types/pod.ts").RosterEntry[]>;
+  getVolunteersForPod?: (
+    podId: string,
+  ) => Promise<import("@workspace/store/types/pod.ts").RosterEntry[]>;
 };
 
 export function DispatchShiftsLayout({
@@ -54,10 +56,17 @@ export function DispatchShiftsLayout({
         <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-lg font-bold">Dispatch Shifts</h2>
-            <p className="text-xs text-muted-foreground">{shifts.length} total shifts registered</p>
+            <p className="text-xs text-muted-foreground">
+              {shifts.length} total shifts registered
+            </p>
           </div>
           <div>
-            <Button size="sm" variant="outline" className="mt-2 sm:mt-0" onClick={onCreateShift ?? (() => onAddDrawerChange(true))}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2 sm:mt-0"
+              onClick={onCreateShift ?? (() => onAddDrawerChange(true))}
+            >
               <Plus className="mr-2" /> New Shift
             </Button>
           </div>
@@ -68,7 +77,10 @@ export function DispatchShiftsLayout({
         <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>
       ) : null}
 
-      <Tabs defaultValue="active" className="flex flex-1 flex-col mt-14 overflow-hidden lg:mt-14">
+      <Tabs
+        defaultValue="active"
+        className="flex flex-1 flex-col mt-14 overflow-hidden lg:mt-14"
+      >
         <TabsList className="mb-3 grid w-full shrink-0 grid-cols-3 gap-2 border-b border-border bg-background/60 p-1">
           <TabsTrigger
             value="active"
@@ -110,7 +122,10 @@ export function DispatchShiftsLayout({
           )}
         </TabsContent>
 
-        <TabsContent value="upcoming" className="flex-1 overflow-y-auto min-h-0">
+        <TabsContent
+          value="upcoming"
+          className="flex-1 overflow-y-auto min-h-0"
+        >
           {upcomingShifts.length === 0 ? (
             <p className="p-4 text-muted-foreground">No upcoming shifts.</p>
           ) : (
@@ -131,7 +146,6 @@ export function DispatchShiftsLayout({
         </TabsContent>
 
         <TabsContent value="all" className="flex-1 overflow-y-auto min-h-0">
-
           {shifts.length === 0 ? (
             <p className="p-4 text-muted-foreground">No shifts registered.</p>
           ) : (

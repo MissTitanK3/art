@@ -35,20 +35,33 @@ type Props = {
   getVolunteersForPod?: (podId: string) => Promise<RosterEntry[]>;
 };
 
-export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSubmit, getVolunteersForPod }: Props) {
+export default function AddShiftDrawer({
+  open,
+  onOpenChange,
+  pods,
+  roster,
+  onSubmit,
+  getVolunteersForPod,
+}: Props) {
   const [podId, setPodId] = useState<string | undefined>(undefined);
   // volunteerId will hold the profile.id when selecting from roster, or free-text when in custom mode
   const [volunteerId, setVolunteerId] = useState("");
   // Track the selected roster entry id solely for driving the Select's value
-  const [selectedRosterEntryId, setSelectedRosterEntryId] = useState<string>("");
+  const [selectedRosterEntryId, setSelectedRosterEntryId] =
+    useState<string>("");
   const [volunteerName, setVolunteerName] = useState("");
-  const [volunteerMode, setVolunteerMode] = useState<"none" | "roster" | "custom">("none");
+  const [volunteerMode, setVolunteerMode] = useState<
+    "none" | "roster" | "custom"
+  >("none");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [notes, setNotes] = useState("");
-  const [availableVolunteers, setAvailableVolunteers] = useState<RosterEntry[]>(roster);
+  const [availableVolunteers, setAvailableVolunteers] =
+    useState<RosterEntry[]>(roster);
   const [loadingMembers, setLoadingMembers] = useState(false);
-  const [podMemberCounts, setPodMemberCounts] = useState<Record<string, number>>({});
+  const [podMemberCounts, setPodMemberCounts] = useState<
+    Record<string, number>
+  >({});
   const [loadingPodCounts, setLoadingPodCounts] = useState(false);
 
   // Determine eligible pods:
@@ -155,7 +168,9 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
 
     if (volunteerMode === "roster" && selectedRosterEntryId) {
       // Drive the Select by the chosen roster entry id, independent of volunteerId presence
-      return availableVolunteers.some((member) => member.id === selectedRosterEntryId)
+      return availableVolunteers.some(
+        (member) => member.id === selectedRosterEntryId,
+      )
         ? selectedRosterEntryId
         : "__none__";
     }
@@ -165,7 +180,9 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
 
   useEffect(() => {
     if (volunteerMode === "roster" && selectedRosterEntryId) {
-      const stillAvailable = availableVolunteers.some((member) => member.id === selectedRosterEntryId);
+      const stillAvailable = availableVolunteers.some(
+        (member) => member.id === selectedRosterEntryId,
+      );
       if (!stillAvailable) {
         setVolunteerMode("none");
         setVolunteerId("");
@@ -240,7 +257,15 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
               disabled={eligiblePods.length === 0 || loadingPodCounts}
             >
               <SelectTrigger>
-                <SelectValue placeholder={loadingPodCounts ? "Loading pods..." : eligiblePods.length === 0 ? "No pods with members" : "Select pod"} />
+                <SelectValue
+                  placeholder={
+                    loadingPodCounts
+                      ? "Loading pods..."
+                      : eligiblePods.length === 0
+                        ? "No pods with members"
+                        : "Select pod"
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="max-h-48 overflow-y-auto">
                 {eligiblePods.map((p) => (
@@ -277,18 +302,30 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
                 setSelectedRosterEntryId(value);
                 const member = availableVolunteers.find((m) => m.id === value);
                 setVolunteerId(value);
-                const display = member?.profile?.display_name || member?.handle || "";
+                const display =
+                  member?.profile?.display_name || member?.handle || "";
                 setVolunteerName(display);
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder={!podId ? "Select a pod first" : loadingMembers ? "Loading members..." : "Select volunteer or add new"} />
+                <SelectValue
+                  placeholder={
+                    !podId
+                      ? "Select a pod first"
+                      : loadingMembers
+                        ? "Loading members..."
+                        : "Select volunteer or add new"
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="max-h-48 overflow-y-auto">
                 <SelectItem value="__none__">No volunteer assigned</SelectItem>
                 <SelectItem value="__custom__">Unlisted volunteer</SelectItem>
                 {availableVolunteers.map((member) => {
-                  const display = member?.profile?.display_name || member?.handle || "Unknown";
+                  const display =
+                    member?.profile?.display_name ||
+                    member?.handle ||
+                    "Unknown";
                   const handle = member?.handle ? ` (${member.handle})` : "";
                   return (
                     <SelectItem key={member.id} value={member.id}>
@@ -312,7 +349,9 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="custom-volunteer-id">Volunteer identifier (optional)</Label>
+                  <Label htmlFor="custom-volunteer-id">
+                    Volunteer identifier (optional)
+                  </Label>
                   <Input
                     id="custom-volunteer-id"
                     value={volunteerId}
@@ -325,7 +364,11 @@ export default function AddShiftDrawer({ open, onOpenChange, pods, roster, onSub
           </div>
 
           {/* Start / End */}
-          <DateTimePicker label="Starts At" value={startsAt} onChange={setStartsAt} />
+          <DateTimePicker
+            label="Starts At"
+            value={startsAt}
+            onChange={setStartsAt}
+          />
           <DateTimePicker label="Ends At" value={endsAt} onChange={setEndsAt} />
 
           {/* Notes */}

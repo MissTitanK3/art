@@ -1,12 +1,12 @@
-export type NeedUrgency = 'low' | 'normal' | 'urgent';
-import type { AccessRole } from './roles.ts';
+export type NeedUrgency = "low" | "normal" | "urgent";
+import type { AccessRole } from "./roles.ts";
 // Visibility is scoped to authenticated users within a region.
 // Support legacy values plus role-based minimum access gates.
-export type NeedVisibility = 'public' | 'region' | 'pod' | `role:${AccessRole}`;
-export type NeedStatus = 'open' | 'matched' | 'fulfilled' | 'closed';
+export type NeedVisibility = "public" | "region" | "pod" | `role:${AccessRole}`;
+export type NeedStatus = "open" | "matched" | "fulfilled" | "closed";
 
 export interface NeedLocation {
-  type?: 'online' | 'in-person' | 'approx_area';
+  type?: "online" | "in-person" | "approx_area";
   label?: string;
   lat?: number;
   lng?: number;
@@ -15,7 +15,7 @@ export interface NeedLocation {
 
 export interface NeedResponder {
   profile_id: string;
-  resource_type: 'time' | 'transport' | 'supplies' | 'funding' | 'other';
+  resource_type: "time" | "transport" | "supplies" | "funding" | "other";
   notes?: string;
   created_at: string;
 }

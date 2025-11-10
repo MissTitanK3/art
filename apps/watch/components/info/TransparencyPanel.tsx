@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { DataAccessExplainer } from '@/components/DataAccessExplainer';
-import GitHubCard from '@/components/GithubCard';
-import TransparencyNotice from '@/components/TransparencyNotice';
-import { useTranslations } from '@/lib/il8n/useTranslations';
+import { DataAccessExplainer } from "@/components/DataAccessExplainer";
+import GitHubCard from "@/components/GithubCard";
+import TransparencyNotice from "@/components/TransparencyNotice";
+import { useTranslations } from "@/lib/il8n/useTranslations";
 
 const reportFormDataExample = `export type ReportFormData = {
   agency_type: string[];
@@ -56,64 +56,77 @@ export default function TransparencyPanel() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{t('transparencyTitle')}</h1>
+      <h1 className="text-3xl font-bold">{t("transparencyTitle")}</h1>
 
       <TransparencyNotice />
 
       <DataAccessExplainer />
 
       <section className="space-y-2">
-        <h2 className="text-2xl font-semibold mb-2">{t('transparencyWhyTitle')}</h2>
-        <p>{t('transparencyWhyText')}</p>
-        <p>{t('mediaPrivacyNote')}</p>
+        <h2 className="text-2xl font-semibold mb-2">
+          {t("transparencyWhyTitle")}
+        </h2>
+        <p>{t("transparencyWhyText")}</p>
+        <p>{t("mediaPrivacyNote")}</p>
       </section>
 
       <GitHubCard />
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-semibold">{t('transparencyCollectTitle')}</h2>
+        <h2 className="text-2xl font-semibold">
+          {t("transparencyCollectTitle")}
+        </h2>
         <ul className="list-disc ml-6 space-y-1">
-          <li>{t('transparencyCollectList1')}</li>
-          <li>{t('transparencyCollectList2')}</li>
-          <li>{t('transparencyCollectList3')}</li>
-          <li>{t('transparencyCollectList4')}</li>
-          <li>{t('transparencyCollectList5')}</li>
-          <li>{t('transparencyCollectList6')}</li>
-          <li>{t('transparencyCollectList7')}</li>
-          <li>{t('transparencyCollectList8')}</li>
+          <li>{t("transparencyCollectList1")}</li>
+          <li>{t("transparencyCollectList2")}</li>
+          <li>{t("transparencyCollectList3")}</li>
+          <li>{t("transparencyCollectList4")}</li>
+          <li>{t("transparencyCollectList5")}</li>
+          <li>{t("transparencyCollectList6")}</li>
+          <li>{t("transparencyCollectList7")}</li>
+          <li>{t("transparencyCollectList8")}</li>
         </ul>
-        <p className="mt-2">{t('transparencyAnonNote')}</p>
+        <p className="mt-2">{t("transparencyAnonNote")}</p>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">{t('transparencyTypesTitle')}</h2>
+        <h2 className="text-2xl font-semibold">
+          {t("transparencyTypesTitle")}
+        </h2>
 
         <div className="space-y-3">
           <div>
             <h3 className="text-xl font-semibold">ReportFormData</h3>
-            <pre className="bg-gray-800 text-sm p-4 rounded overflow-x-auto">{reportFormDataExample}</pre>
-            <p>{t('transparencyFormDataExplain')}</p>
+            <pre className="bg-gray-800 text-sm p-4 rounded overflow-x-auto">
+              {reportFormDataExample}
+            </pre>
+            <p>{t("transparencyFormDataExplain")}</p>
           </div>
 
           <div>
             <h3 className="text-xl font-semibold">Report</h3>
-            <pre className="bg-gray-800 text-sm p-4 rounded overflow-x-auto">{reportExample}</pre>
-            <p>{t('transparencyReportExplain')}</p>
-            <p className="mt-2">{t('transparencyOfficerNote')}</p>
+            <pre className="bg-gray-800 text-sm p-4 rounded overflow-x-auto">
+              {reportExample}
+            </pre>
+            <p>{t("transparencyReportExplain")}</p>
+            <p className="mt-2">{t("transparencyOfficerNote")}</p>
           </div>
         </div>
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-2xl font-semibold">{t('transparencyInspectTitle')}</h2>
-        <p>{t('transparencyInspectDesktop')}</p>
+        <h2 className="text-2xl font-semibold">
+          {t("transparencyInspectTitle")}
+        </h2>
+        <p>{t("transparencyInspectDesktop")}</p>
         <p>
-          {t('transparencyInspectMobile')}{' '}
+          {t("transparencyInspectMobile")}{" "}
           <a
             href="https://httptoolkit.tech/"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline text-blue-400">
+            className="underline text-blue-400"
+          >
             HTTP Toolkit
           </a>
           .

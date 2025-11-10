@@ -172,17 +172,34 @@ const createPodStoreInitializer =
 
     updateAcademyClass: (id, patch) => {
       const timestamp = new Date().toISOString();
-      return set((s) => ({
-        academyClasses: s.academyClasses.map((entry) =>
-          entry.id === id
-            ? {
-                ...entry,
-                ...patch,
-                updatedAt: patch.updatedAt ?? timestamp,
-              }
-            : entry,
-        ),
-      }));
+      return set((s) => {
+        const next = s.academyClasses.map((entry) => {
+          if (entry.id !== id) return entry;
+
+          const merged = {
+            ...entry,
+            ...patch,
+            updatedAt: patch.updatedAt ?? timestamp,
+          } as typeof entry;
+
+          // Shallow-compare merged vs existing entry. If nothing changed, return original
+          const keys = new Set([...Object.keys(entry), ...Object.keys(merged)]);
+          const changedKeys: string[] = [];
+          for (const k of keys) {
+            // @ts-ignore - dynamic key access
+            if (entry[k] !== (merged as any)[k]) {
+              changedKeys.push(k);
+            }
+          }
+          if (changedKeys.length === 0) {
+            // No-op: avoid unnecessary state update
+            return entry;
+          }
+
+          return merged;
+        });
+        return { academyClasses: next } as Partial<PodStoreState> as any;
+      });
     },
 
     removeAcademyClass: (id) =>

@@ -37,61 +37,80 @@ export default function HowToUseDataLayer() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initial = (searchParams.get("section") as HowToSectionId) || DEFAULT_HOW_TO_SECTION_ID;
+  const initial =
+    (searchParams.get("section") as HowToSectionId) ||
+    DEFAULT_HOW_TO_SECTION_ID;
   const [active, setActive] = React.useState<HowToSectionId>(initial);
 
   React.useEffect(() => {
-    const fromUrl = (searchParams.get("section") as HowToSectionId) || DEFAULT_HOW_TO_SECTION_ID;
+    const fromUrl =
+      (searchParams.get("section") as HowToSectionId) ||
+      DEFAULT_HOW_TO_SECTION_ID;
     setActive(fromUrl);
   }, [searchParams]);
 
-  const select = React.useCallback((id: HowToSectionId) => {
-    setActive(id);
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
-    params.set("section", id);
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+  const select = React.useCallback(
+    (id: HowToSectionId) => {
+      setActive(id);
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.set("section", id);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
-  const renderers = React.useMemo(() => ({
-    "user-guide": <HowToUserGuide />,
-    "bug-tracker": (
-      <HowToBugTracker
-        quickReport={<>
-          <span className="text-sm text-muted-foreground mb-4">(Not on Github)</span>
-          <BugReportForm />
-        </>}
-      />
-    ),
-    "team-req": <TeamReqGuide />,
-    dispatches: <DispatchesGuide />,
-    watch: <WatchGuide />,
-    schedules: <SchedulesGuide />,
-    pods: <PodsGuide />,
-    "pods-new": <PodsNewGuide />,
-    academy: <AcademyGuide />,
-    "academy-class": <AcademyClassGuide />,
-    "nav-roles": <NavRolesGuide />,
-    "missing-persons": <MissingPersonsGuide />,
-    "missing-persons-intake": <MissingPersonsIntakeGuide />,
-    "missing-persons-case": <MissingPersonsCaseGuide />,
-    "my-profile": <MyProfileGuide />,
-    "my-profile-map": <MyProfileMapGuide />,
-    admin: <AdminGuide />,
-    "admin-bug-reports": <AdminBugReportsGuide />,
-    "admin-dispatch": <AdminDispatchGuide />,
-    "admin-pods": <AdminPodsGuide />,
-    "admin-profiles": <AdminProfilesGuide />,
-    "admin-training": <AdminTrainingGuide />,
-    "admin-trust": <AdminTrustGuide />,
-  }) as Record<string, React.ReactNode>, []);
+  const renderers = React.useMemo(
+    () =>
+      ({
+        "user-guide": <HowToUserGuide />,
+        "bug-tracker": (
+          <HowToBugTracker
+            quickReport={
+              <>
+                <span className="text-sm text-muted-foreground mb-4">
+                  (Not on Github)
+                </span>
+                <BugReportForm />
+              </>
+            }
+          />
+        ),
+        "team-req": <TeamReqGuide />,
+        dispatches: <DispatchesGuide />,
+        watch: <WatchGuide />,
+        schedules: <SchedulesGuide />,
+        pods: <PodsGuide />,
+        "pods-new": <PodsNewGuide />,
+        academy: <AcademyGuide />,
+        "academy-class": <AcademyClassGuide />,
+        "nav-roles": <NavRolesGuide />,
+        "missing-persons": <MissingPersonsGuide />,
+        "missing-persons-intake": <MissingPersonsIntakeGuide />,
+        "missing-persons-case": <MissingPersonsCaseGuide />,
+        "my-profile": <MyProfileGuide />,
+        "my-profile-map": <MyProfileMapGuide />,
+        admin: <AdminGuide />,
+        "admin-bug-reports": <AdminBugReportsGuide />,
+        "admin-dispatch": <AdminDispatchGuide />,
+        "admin-pods": <AdminPodsGuide />,
+        "admin-profiles": <AdminProfilesGuide />,
+        "admin-training": <AdminTrainingGuide />,
+        "admin-trust": <AdminTrustGuide />,
+      }) as Record<string, React.ReactNode>,
+    [],
+  );
 
   const quick = (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="border border-muted rounded-lg p-4">
         <h3 className="font-semibold">Bug Tracker</h3>
-        <p className="text-sm text-muted-foreground mt-1">Report issues and track fixes directly from the platform.</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Report issues and track fixes directly from the platform.
+        </p>
         <div className="mt-3">
-          <Button onClick={() => select("bug-tracker")}>Open Bug Tracker</Button>
+          <Button onClick={() => select("bug-tracker")}>
+            Open Bug Tracker
+          </Button>
         </div>
       </div>
     </div>
@@ -106,4 +125,3 @@ export default function HowToUseDataLayer() {
     />
   );
 }
-

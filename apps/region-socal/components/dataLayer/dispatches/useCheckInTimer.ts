@@ -21,9 +21,13 @@ export function useCheckInTimer({ lastCheckIn, intervalMinutes }: Args) {
   const percent = Math.min(1, Math.max(0, elapsed / intervalMs));
 
   // color logic: green (0-80%), yellow (80-100%), red (>100%)
-  const status: 'green' | 'yellow' | 'red' = elapsed <= intervalMs * 0.8 ? 'green' : elapsed <= intervalMs ? 'yellow' : 'red';
+  const status: "green" | "yellow" | "red" =
+    elapsed <= intervalMs * 0.8
+      ? "green"
+      : elapsed <= intervalMs
+        ? "yellow"
+        : "red";
   const overdueMinutes = (elapsed - intervalMs) / 60000;
 
   return { status, percent, overdueMinutes } as const;
 }
-

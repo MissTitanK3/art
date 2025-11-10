@@ -12,7 +12,7 @@ const SIGNAL_GROUP_URL = process.env.NEXT_PUBLIC_SIGNAL_GROUP_URL || undefined;
 
 export const navConfig: GlobalNavConfigInput = {
   brand: {
-    name: 'ART Region SOCAL',
+    name: `ART Region ${process.env.NEXT_PUBLIC_BRAND_NAME || ''}`,
     href: '/',
     logoSrc: '/art.png', // optional, string only
   },
@@ -40,7 +40,12 @@ export const navConfig: GlobalNavConfigInput = {
       href: '/missing-persons',
       roles: completeOnboarding,
     },
-    { label: 'Advocacy Network', href: '/admin/advocacy-groups', icon: 'link', roles: regionAdmins },
+    {
+      label: 'Advocacy Network',
+      href: '/admin/advocacy-groups',
+      icon: 'link',
+      roles: regionAdmins,
+    },
     {
       label: 'Dispatch',
       icon: 'radio',
@@ -48,7 +53,11 @@ export const navConfig: GlobalNavConfigInput = {
       children: [
         { label: 'Dispatch Map', href: '/dispatches', roles: elevatedRoles },
         { label: 'Community Watch', href: '/watch', roles: completeOnboarding },
-        { label: 'Confirmed Watch', href: '/confirmed-watch', roles: verifiedAdmins },
+        {
+          label: 'Confirmed Watch',
+          href: '/confirmed-watch',
+          roles: verifiedAdmins,
+        },
         { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
       ],
     },
@@ -88,8 +97,16 @@ export const navConfig: GlobalNavConfigInput = {
       children: [
         { label: 'My Profile', href: '/my-profile' },
         { label: 'Settings', href: '/settings' },
-        { label: 'Admin', href: '/admin', roles: ['dispatcher_admin', 'admin', 'regional_admin', 'national_admin'] },
-        { label: 'How To Use Platform', href: '/how-to-use', roles: completeOnboarding },
+        {
+          label: 'Admin',
+          href: '/admin',
+          roles: ['dispatcher_admin', 'admin', 'regional_admin', 'national_admin'],
+        },
+        {
+          label: 'How To Use Platform',
+          href: '/how-to-use',
+          roles: completeOnboarding,
+        },
         ...(SIGNAL_GROUP_URL
           ? [
               {
@@ -102,7 +119,12 @@ export const navConfig: GlobalNavConfigInput = {
           label: 'New Region Setup Signal',
           href: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-',
         },
-        { label: 'Log out', href: '/sign-out', icon: 'log-out', roles: completeOnboarding },
+        {
+          label: 'Log out',
+          href: '/sign-out',
+          icon: 'log-out',
+          roles: completeOnboarding,
+        },
         // { label: 'Credential Card', href: '/credentials' },
       ],
     },

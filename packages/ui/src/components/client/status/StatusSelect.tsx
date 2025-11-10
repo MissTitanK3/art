@@ -1,8 +1,18 @@
 // components/status/StatusSelect.tsx
 "use client";
 
-import { STATUS_BY_VALUE, STATUS_OPTIONS, StatusValue } from "@workspace/store/types/status.ts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../select.tsx";
+import {
+  STATUS_BY_VALUE,
+  STATUS_OPTIONS,
+  StatusValue,
+} from "@workspace/store/types/status.ts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../select.tsx";
 import { cn } from "../../../lib/utils.ts";
 import { Dot } from "../../server/Dot.tsx";
 
@@ -13,7 +23,7 @@ export interface StatusSelectProps {
   onChange?: (v: StatusValue) => void;
   placeholder?: string;
   className?: string;
-  error?: boolean;         // toggles ring
+  error?: boolean; // toggles ring
   disabled?: boolean;
 }
 
@@ -28,7 +38,10 @@ export function StatusSelect({
   disabled,
 }: StatusSelectProps) {
   // For rendering the label+dot inside the trigger, we derive it from current value.
-  const current = (value ?? defaultValue) ? STATUS_BY_VALUE[(value ?? defaultValue)!] : undefined;
+  const current =
+    (value ?? defaultValue)
+      ? STATUS_BY_VALUE[(value ?? defaultValue)!]
+      : undefined;
 
   return (
     <Select
@@ -39,7 +52,11 @@ export function StatusSelect({
     >
       <SelectTrigger
         id={id}
-        className={cn("w-[220px]", error && "ring-1 ring-destructive", className)}
+        className={cn(
+          "w-[220px]",
+          error && "ring-1 ring-destructive",
+          className,
+        )}
         aria-invalid={!!error}
       >
         {/* If nothing selected, SelectValue shows placeholder; else we custom-render */}

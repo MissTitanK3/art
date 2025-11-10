@@ -19,7 +19,9 @@ export default function PreferencesSection() {
       <div className="flex items-center justify-between">
         <div>
           <div className="font-medium">Distance units</div>
-          <div className="text-sm text-muted-foreground">Current: {unit.toUpperCase()}</div>
+          <div className="text-sm text-muted-foreground">
+            Current: {unit.toUpperCase()}
+          </div>
         </div>
         <DistanceUnitToggle size="sm" />
       </div>

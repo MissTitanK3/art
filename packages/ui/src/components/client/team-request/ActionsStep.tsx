@@ -4,10 +4,15 @@ import { useState } from "react";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@workspace/ui/components/card";
 import { ACTION_PRESETS_GROUPED } from "@workspace/store/types/roles.ts";
 import { SelectableCard } from "@workspace/ui/components/SelectableCard";
-
 
 interface ActionsStepProps {
   initial?: {
@@ -22,13 +27,17 @@ interface ActionsStepProps {
 
 export function ActionsStep({ initial, onBack, onNext }: ActionsStepProps) {
   const [preset, setPreset] = useState(initial?.intended_action_preset ?? "");
-  const [actions, setActions] = useState<string[]>(initial?.intended_actions ?? []);
+  const [actions, setActions] = useState<string[]>(
+    initial?.intended_actions ?? [],
+  );
   const [notes, setNotes] = useState(initial?.intended_action_notes ?? "");
   const [custom, setCustom] = useState(initial?.intended_actions_custom ?? "");
 
   const toggleAction = (action: string) => {
     setActions((prev) =>
-      prev.includes(action) ? prev.filter((a) => a !== action) : [...prev, action]
+      prev.includes(action)
+        ? prev.filter((a) => a !== action)
+        : [...prev, action],
     );
   };
 
@@ -58,7 +67,9 @@ export function ActionsStep({ initial, onBack, onNext }: ActionsStepProps) {
         </div>
 
         <div>
-          <label className="block font-semibold mb-1" htmlFor="intended-notes">Notes</label>
+          <label className="block font-semibold mb-1" htmlFor="intended-notes">
+            Notes
+          </label>
           <Textarea
             id="intended-notes"
             value={notes}
@@ -69,7 +80,9 @@ export function ActionsStep({ initial, onBack, onNext }: ActionsStepProps) {
         </div>
 
         <div>
-          <label className="block font-semibold mb-1" htmlFor="custom-action">Custom Action</label>
+          <label className="block font-semibold mb-1" htmlFor="custom-action">
+            Custom Action
+          </label>
           <Input
             id="custom-action"
             value={custom}

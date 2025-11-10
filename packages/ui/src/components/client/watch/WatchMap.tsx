@@ -27,8 +27,7 @@ import {
   DrawerClose,
 } from "@workspace/ui/components/drawer";
 
-
-type ActionMode = 'create' | 'view' | 'none'
+type ActionMode = "create" | "view" | "none";
 
 interface WatchMapProps {
   reports: WizardReport[];
@@ -80,7 +79,8 @@ const TILE_PROVIDERS: TileProvider[] = [
     id: "osm",
     label: "OpenStreetMap Standard",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
   },
   {
     id: "osm-hot",
@@ -207,7 +207,10 @@ export default function WatchMap({
     window.localStorage.setItem(TILE_PROVIDER_STORAGE_KEY, tileProviderId);
   }, [tileProviderId]);
   const activeProvider = useMemo<TileProvider>(() => {
-    return TILE_PROVIDERS.find((provider) => provider.id === tileProviderId) ?? DEFAULT_TILE_PROVIDER;
+    return (
+      TILE_PROVIDERS.find((provider) => provider.id === tileProviderId) ??
+      DEFAULT_TILE_PROVIDER
+    );
   }, [tileProviderId]);
 
   if (window === undefined) {
@@ -216,11 +219,16 @@ export default function WatchMap({
   const effectiveMode: ActionMode = actionMode
     ? actionMode
     : onCreateDispatch
-      ? 'create'
-      : 'none'
+      ? "create"
+      : "none";
 
   return (
-    <div className={cn("relative w-full h-[600px] lg:h-[90vh] rounded-2xl border", className)}>
+    <div
+      className={cn(
+        "relative w-full h-[600px] lg:h-[90vh] rounded-2xl border",
+        className,
+      )}
+    >
       <div className="absolute right-4 top-4 flex flex-col z-50 items-end gap-2">
         <Drawer direction="right">
           <DrawerTrigger asChild>
@@ -235,12 +243,22 @@ export default function WatchMap({
           <DrawerContent className="bg-card text-card-foreground z-[99999]">
             <DrawerHeader>
               <DrawerTitle>Map Options</DrawerTitle>
-              <DrawerDescription>Choose a base layer and view preferences.</DrawerDescription>
+              <DrawerDescription>
+                Choose a base layer and view preferences.
+              </DrawerDescription>
             </DrawerHeader>
             <div className="px-4 pb-4 space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
-                <label className="mb-1 block text-xs text-muted-foreground" htmlFor="map-style">Map style</label>
-                <Select value={tileProviderId} onValueChange={setTileProviderId}>
+                <label
+                  className="mb-1 block text-xs text-muted-foreground"
+                  htmlFor="map-style"
+                >
+                  Map style
+                </label>
+                <Select
+                  value={tileProviderId}
+                  onValueChange={setTileProviderId}
+                >
                   <SelectTrigger id="map-style" className="w-full">
                     <SelectValue placeholder="Select map style" />
                   </SelectTrigger>
@@ -254,20 +272,34 @@ export default function WatchMap({
                 </Select>
               </div>
 
-              {(typeof filterQuery !== 'undefined' || typeof filterTimeWindow !== 'undefined') ? (
+              {typeof filterQuery !== "undefined" ||
+              typeof filterTimeWindow !== "undefined" ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-xs text-muted-foreground" htmlFor="filter-search">Search</label>
+                    <label
+                      className="mb-1 block text-xs text-muted-foreground"
+                      htmlFor="filter-search"
+                    >
+                      Search
+                    </label>
                     <Input
                       id="filter-search"
-                      value={filterQuery ?? ''}
+                      value={filterQuery ?? ""}
                       onChange={(e) => onFilterQueryChange?.(e.target.value)}
                       placeholder="Search agency, submitter, direction…"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-muted-foreground" htmlFor="time-window">Time window</label>
-                    <Select value={filterTimeWindow} onValueChange={onFilterTimeWindowChange}>
+                    <label
+                      className="mb-1 block text-xs text-muted-foreground"
+                      htmlFor="time-window"
+                    >
+                      Time window
+                    </label>
+                    <Select
+                      value={filterTimeWindow}
+                      onValueChange={onFilterTimeWindowChange}
+                    >
                       <SelectTrigger id="time-window" className="w-full">
                         <SelectValue placeholder="Last 24h" />
                       </SelectTrigger>
@@ -282,53 +314,96 @@ export default function WatchMap({
                     </Select>
                   </div>
                   <div>
-                    <div className="mb-1 block text-xs text-muted-foreground">Agencies</div>
+                    <div className="mb-1 block text-xs text-muted-foreground">
+                      Agencies
+                    </div>
                     <div className="flex max-h-40 overflow-y-auto flex-wrap gap-3 p-2 rounded-md border bg-background">
-                      {(availableAgencies && availableAgencies.length > 0) ? (
+                      {availableAgencies && availableAgencies.length > 0 ? (
                         availableAgencies.map((a) => {
                           const checked = selectedAgencies?.has(a) ?? false;
                           return (
-                            <div key={a} className="inline-flex items-center gap-2 text-xs">
+                            <div
+                              key={a}
+                              className="inline-flex items-center gap-2 text-xs"
+                            >
                               <Checkbox
                                 aria-label={a}
                                 checked={checked}
-                                onCheckedChange={(v) => onToggleAgency?.(a, Boolean(v))}
+                                onCheckedChange={(v) =>
+                                  onToggleAgency?.(a, Boolean(v))
+                                }
                               />
                               <span>{a}</span>
                             </div>
                           );
                         })
                       ) : (
-                        <span className="text-xs text-muted-foreground">No agency labels</span>
+                        <span className="text-xs text-muted-foreground">
+                          No agency labels
+                        </span>
                       )}
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs">
                     <div className="inline-flex items-center gap-2">
-                      <Checkbox aria-label="Hide test" checked={!!hideTest} onCheckedChange={(v) => onHideTestChange?.(Boolean(v))} />
+                      <Checkbox
+                        aria-label="Hide test"
+                        checked={!!hideTest}
+                        onCheckedChange={(v) => onHideTestChange?.(Boolean(v))}
+                      />
                       <span>Hide test</span>
                     </div>
                     <div className="inline-flex items-center gap-2">
-                      <Checkbox aria-label="Media only" checked={!!withMediaOnly} onCheckedChange={(v) => onWithMediaOnlyChange?.(Boolean(v))} />
+                      <Checkbox
+                        aria-label="Media only"
+                        checked={!!withMediaOnly}
+                        onCheckedChange={(v) =>
+                          onWithMediaOnlyChange?.(Boolean(v))
+                        }
+                      />
                       <span>Media only</span>
                     </div>
                     <div className="inline-flex items-center gap-2">
-                      <Checkbox aria-label="Lights on" checked={!!lightsOnly} onCheckedChange={(v) => onLightsOnlyChange?.(Boolean(v))} />
+                      <Checkbox
+                        aria-label="Lights on"
+                        checked={!!lightsOnly}
+                        onCheckedChange={(v) =>
+                          onLightsOnlyChange?.(Boolean(v))
+                        }
+                      />
                       <span>Lights on</span>
                     </div>
                     <div className="inline-flex items-center gap-2">
-                      <Checkbox aria-label="Sirens on" checked={!!sirensOnly} onCheckedChange={(v) => onSirensOnlyChange?.(Boolean(v))} />
+                      <Checkbox
+                        aria-label="Sirens on"
+                        checked={!!sirensOnly}
+                        onCheckedChange={(v) =>
+                          onSirensOnlyChange?.(Boolean(v))
+                        }
+                      />
                       <span>Sirens on</span>
                     </div>
                     <div className="inline-flex items-center gap-2">
-                      <Checkbox aria-label="Officer moving" checked={!!movingOnly} onCheckedChange={(v) => onMovingOnlyChange?.(Boolean(v))} />
+                      <Checkbox
+                        aria-label="Officer moving"
+                        checked={!!movingOnly}
+                        onCheckedChange={(v) =>
+                          onMovingOnlyChange?.(Boolean(v))
+                        }
+                      />
                       <span>Officer moving</span>
                     </div>
                   </div>
 
                   <div className="flex justify-end">
-                    <Button size="sm" variant="outline" onClick={onResetFilters}>Reset</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onResetFilters}
+                    >
+                      Reset
+                    </Button>
                   </div>
                 </div>
               ) : null}
@@ -355,147 +430,191 @@ export default function WatchMap({
 
         <FocusController focus={focusPoint} fallbackZoom={zoom} />
 
-        {reports
-          .map((r) => {
-            // Resolve coordinates from multiple possible shapes, including location_geog
-            const loc: any = (r as any)?.location ?? {};
-            let lat: number | undefined = undefined;
-            let lng: number | undefined = undefined;
+        {reports.map((r) => {
+          // Resolve coordinates from multiple possible shapes, including location_geog
+          const loc: any = (r as any)?.location ?? {};
+          let lat: number | undefined = undefined;
+          let lng: number | undefined = undefined;
 
-            const num = (v: any) => {
-              if (typeof v === 'number') return v;
-              if (typeof v === 'string') {
-                const n = Number(v);
-                return Number.isFinite(n) ? n : undefined;
-              }
-              return undefined;
-            };
-
-            // 1) Direct lat/lng on location
-            lat = num(loc?.lat);
-            lng = num(loc?.lng);
-
-            // 2) GeoJSON-like coordinates [lng, lat]
-            if ((lat === undefined || lng === undefined) && Array.isArray(loc?.coordinates) && loc.coordinates.length >= 2) {
-              const c0 = num(loc.coordinates[0]);
-              const c1 = num(loc.coordinates[1]);
-              if (c0 !== undefined && c1 !== undefined) {
-                lng = c0; lat = c1;
-              }
+          const num = (v: any) => {
+            if (typeof v === "number") return v;
+            if (typeof v === "string") {
+              const n = Number(v);
+              return Number.isFinite(n) ? n : undefined;
             }
+            return undefined;
+          };
 
-            // 3) coords array [lat, lng] (legacy JSON pattern)
-            if ((lat === undefined || lng === undefined) && Array.isArray(loc?.coords) && loc.coords.length >= 2) {
-              const c0 = num(loc.coords[0]);
-              const c1 = num(loc.coords[1]);
-              if (c0 !== undefined && c1 !== undefined) {
-                lat = c0; lng = c1;
-              }
+          // 1) Direct lat/lng on location
+          lat = num(loc?.lat);
+          lng = num(loc?.lng);
+
+          // 2) GeoJSON-like coordinates [lng, lat]
+          if (
+            (lat === undefined || lng === undefined) &&
+            Array.isArray(loc?.coordinates) &&
+            loc.coordinates.length >= 2
+          ) {
+            const c0 = num(loc.coordinates[0]);
+            const c1 = num(loc.coordinates[1]);
+            if (c0 !== undefined && c1 !== undefined) {
+              lng = c0;
+              lat = c1;
             }
+          }
 
-            // 4) x/y style
-            if ((lat === undefined || lng === undefined) && (num(loc?.y) !== undefined) && (num(loc?.x) !== undefined)) {
-              lat = num(loc?.y);
-              lng = num(loc?.x);
+          // 3) coords array [lat, lng] (legacy JSON pattern)
+          if (
+            (lat === undefined || lng === undefined) &&
+            Array.isArray(loc?.coords) &&
+            loc.coords.length >= 2
+          ) {
+            const c0 = num(loc.coords[0]);
+            const c1 = num(loc.coords[1]);
+            if (c0 !== undefined && c1 !== undefined) {
+              lat = c0;
+              lng = c1;
             }
+          }
 
-            // 5) location_geog from DB (object or WKT string)
-            if ((lat === undefined || lng === undefined)) {
-              const geog: any = (r as any)?.location_geog ?? (r as any)?.location_grog; // tolerate common typo
-              if (geog && typeof geog === 'object') {
-                // GeoJSON-like
-                if (Array.isArray(geog.coordinates) && geog.coordinates.length >= 2) {
-                  const c0 = num(geog.coordinates[0]);
-                  const c1 = num(geog.coordinates[1]);
-                  if (c0 !== undefined && c1 !== undefined) {
-                    lng = c0; lat = c1;
-                  }
+          // 4) x/y style
+          if (
+            (lat === undefined || lng === undefined) &&
+            num(loc?.y) !== undefined &&
+            num(loc?.x) !== undefined
+          ) {
+            lat = num(loc?.y);
+            lng = num(loc?.x);
+          }
+
+          // 5) location_geog from DB (object or WKT string)
+          if (lat === undefined || lng === undefined) {
+            const geog: any =
+              (r as any)?.location_geog ?? (r as any)?.location_grog; // tolerate common typo
+            if (geog && typeof geog === "object") {
+              // GeoJSON-like
+              if (
+                Array.isArray(geog.coordinates) &&
+                geog.coordinates.length >= 2
+              ) {
+                const c0 = num(geog.coordinates[0]);
+                const c1 = num(geog.coordinates[1]);
+                if (c0 !== undefined && c1 !== undefined) {
+                  lng = c0;
+                  lat = c1;
                 }
-                if ((lat === undefined || lng === undefined) && (num(geog?.y) !== undefined) && (num(geog?.x) !== undefined)) {
-                  lat = num(geog?.y);
-                  lng = num(geog?.x);
-                }
-                if ((lat === undefined || lng === undefined) && (num(geog?.lat) !== undefined) && (num(geog?.lng) !== undefined)) {
-                  lat = num(geog?.lat);
-                  lng = num(geog?.lng);
-                }
-              } else if (typeof geog === 'string') {
-                // Try parsing WKT-like: "POINT(lng lat)" or with SRID prefix
-                const m = geog.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
-                if (m) {
-                  const c0 = num(m[1]);
-                  const c1 = num(m[2]);
-                  if (c0 !== undefined && c1 !== undefined) {
-                    lng = c0; lat = c1;
-                  }
+              }
+              if (
+                (lat === undefined || lng === undefined) &&
+                num(geog?.y) !== undefined &&
+                num(geog?.x) !== undefined
+              ) {
+                lat = num(geog?.y);
+                lng = num(geog?.x);
+              }
+              if (
+                (lat === undefined || lng === undefined) &&
+                num(geog?.lat) !== undefined &&
+                num(geog?.lng) !== undefined
+              ) {
+                lat = num(geog?.lat);
+                lng = num(geog?.lng);
+              }
+            } else if (typeof geog === "string") {
+              // Try parsing WKT-like: "POINT(lng lat)" or with SRID prefix
+              const m = geog.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+              if (m) {
+                const c0 = num(m[1]);
+                const c1 = num(m[2]);
+                if (c0 !== undefined && c1 !== undefined) {
+                  lng = c0;
+                  lat = c1;
                 }
               }
             }
+          }
 
-            if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-              return null;
-            }
+          if (
+            typeof lat !== "number" ||
+            typeof lng !== "number" ||
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng)
+          ) {
+            return null;
+          }
 
-            const isConfirmed = Boolean((r as any)?.vet_method || (r as any)?.vet_notes);
-            const markerIcon = isConfirmed ? confirmedIcon : reportIcon;
-            return (
-              <Marker key={r.id} position={[lat, lng]} icon={markerIcon}>
-                <Popup maxWidth={220}>
-                  <div className="space-y-2">
-                    <div className="font-semibold text-sm">
-                      {Array.isArray(r.agency_type) && r.agency_type.length > 0
-                        ? r.agency_type.map(humanize).join(", ")
-                        : r.agency_other
-                          ? humanize(r.agency_other)
-                          : "Unknown presence"}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(r.timestamp).toLocaleString()}
-                    </div>
-                    {r.media_url && (
-                      <a
-                        href={r.media_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary underline text-xs block"
-                      >
-                        View Media
-                      </a>
-                    )}
-                    {effectiveMode === 'create' && onCreateDispatch ? (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="w-full"
-                        onClick={() => onCreateDispatch?.(r)}
-                      >
-                        Create Dispatch
-                      </Button>
-                    ) : effectiveMode === 'view' ? (
-                      (() => {
-                        const href = getViewHref?.(r);
-                        if (href) {
-                          return (
-                            <Button asChild size="sm" variant="secondary" className="w-full">
-                              <a href={href}>View Dispatch</a>
-                            </Button>
-                          );
-                        }
-                        if (onViewDispatch) {
-                          return (
-                            <Button size="sm" variant="secondary" className="w-full" onClick={() => onViewDispatch(r)}>
-                              View Dispatch
-                            </Button>
-                          );
-                        }
-                        return null;
-                      })()
-                    ) : null}
+          const isConfirmed = Boolean(
+            (r as any)?.vet_method || (r as any)?.vet_notes,
+          );
+          const markerIcon = isConfirmed ? confirmedIcon : reportIcon;
+          return (
+            <Marker key={r.id} position={[lat, lng]} icon={markerIcon}>
+              <Popup maxWidth={220}>
+                <div className="space-y-2">
+                  <div className="font-semibold text-sm">
+                    {Array.isArray(r.agency_type) && r.agency_type.length > 0
+                      ? r.agency_type.map(humanize).join(", ")
+                      : r.agency_other
+                        ? humanize(r.agency_other)
+                        : "Unknown presence"}
                   </div>
-                </Popup>
-              </Marker>
-            );
-          })}
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(r.timestamp).toLocaleString()}
+                  </div>
+                  {r.media_url && (
+                    <a
+                      href={r.media_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline text-xs block"
+                    >
+                      View Media
+                    </a>
+                  )}
+                  {effectiveMode === "create" && onCreateDispatch ? (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="w-full"
+                      onClick={() => onCreateDispatch?.(r)}
+                    >
+                      Create Dispatch
+                    </Button>
+                  ) : effectiveMode === "view" ? (
+                    (() => {
+                      const href = getViewHref?.(r);
+                      if (href) {
+                        return (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="secondary"
+                            className="w-full"
+                          >
+                            <a href={href}>View Dispatch</a>
+                          </Button>
+                        );
+                      }
+                      if (onViewDispatch) {
+                        return (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="w-full"
+                            onClick={() => onViewDispatch(r)}
+                          >
+                            View Dispatch
+                          </Button>
+                        );
+                      }
+                      return null;
+                    })()
+                  ) : null}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );

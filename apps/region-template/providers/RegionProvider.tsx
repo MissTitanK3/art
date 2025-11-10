@@ -11,7 +11,9 @@ export function RegionProvider({ children }: { children: React.ReactNode }) {
   // Choose data adapter based on auth provider for consistency
   const profileAdapter = useMemo(() => {
     const provider = getAuthProviderId();
-    return provider === "supabase" ? supabaseProfileAdapter : demoProfileAdapter;
+    return provider === "supabase"
+      ? supabaseProfileAdapter
+      : demoProfileAdapter;
   }, []);
 
   return (

@@ -4,7 +4,11 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { Card } from "../../card.tsx";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../collapsible.tsx";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../../collapsible.tsx";
 import { Label } from "../../label.tsx";
 import { Input } from "../../input.tsx";
 import { Button } from "../../button.tsx";
@@ -33,7 +37,9 @@ function isoToLocalParts(iso?: string) {
     return { date: "", time: "" };
   }
 
-  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60_000);
+  const local = new Date(
+    parsed.getTime() - parsed.getTimezoneOffset() * 60_000,
+  );
   const localIso = local.toISOString();
 
   return {
@@ -52,7 +58,8 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
   addButtonText = "Add Shift",
 }: Props<T>) {
   const [open, setOpen] = React.useState(defaultOpen);
-  const startIso = combineLocalDateTime(form.startDate, form.startTime) || undefined;
+  const startIso =
+    combineLocalDateTime(form.startDate, form.startTime) || undefined;
   const endIso = combineLocalDateTime(form.endDate, form.endTime) || undefined;
 
   const handleStartChange = React.useCallback(
@@ -83,7 +90,12 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
               aria-expanded={open}
             >
               {open ? "Hide" : "Show"}
-              <ChevronDown className={cn("h-4 w-4 transition-transform", open ? "rotate-180" : "rotate-0")} />
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  open ? "rotate-180" : "rotate-0",
+                )}
+              />
             </button>
           </CollapsibleTrigger>
         </div>
@@ -94,29 +106,38 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
             <Input
               id="label"
               value={form.label}
-              onChange={(e) => setForm((prev) => ({ ...prev, label: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, label: e.target.value }))
+              }
               placeholder="Morning Court Watch"
             />
 
             {/* Mobile‑friendly pickers */}
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="grid gap-1">
-
-                <DateTimePicker label="Starts At" value={startIso} onChange={handleStartChange} />
+                <DateTimePicker
+                  label="Starts At"
+                  value={startIso}
+                  onChange={handleStartChange}
+                />
               </div>
 
               <div className="grid gap-1">
-                <DateTimePicker label="Ends At" value={endIso} onChange={handleEndChange} />
-
+                <DateTimePicker
+                  label="Ends At"
+                  value={endIso}
+                  onChange={handleEndChange}
+                />
               </div>
-
             </div>
 
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
               value={form.location}
-              onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, location: e.target.value }))
+              }
               placeholder="e.g. King County Courthouse"
             />
 
@@ -128,7 +149,10 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
               value={form.headcount === 0 ? "" : String(form.headcount)}
               onChange={(e) => {
                 const val = e.target.value.trim();
-                const n = val === "" || Number.isNaN(Number(val)) ? 0 : Math.max(0, parseInt(val, 10));
+                const n =
+                  val === "" || Number.isNaN(Number(val))
+                    ? 0
+                    : Math.max(0, parseInt(val, 10));
                 setForm((prev) => ({ ...prev, headcount: n }));
               }}
             />

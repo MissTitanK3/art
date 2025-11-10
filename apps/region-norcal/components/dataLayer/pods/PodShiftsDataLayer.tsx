@@ -34,7 +34,9 @@ function mapRowToShift(row: any): Shift {
   };
 }
 
-async function fetchPodShiftsFromDatabase(slug: string): Promise<Shift[] | null> {
+async function fetchPodShiftsFromDatabase(
+  slug: string,
+): Promise<Shift[] | null> {
   try {
     const client = getSupabaseBrowserClient();
     const { data: pod, error: podErr } = await client
@@ -83,7 +85,10 @@ async function persistShiftToDatabase(shift: Shift): Promise<void> {
 async function deleteShiftFromDatabase(shiftId: string): Promise<void> {
   try {
     const client = getSupabaseBrowserClient();
-    const { error } = await client.from("pod_shifts").delete().eq("id", shiftId);
+    const { error } = await client
+      .from("pod_shifts")
+      .delete()
+      .eq("id", shiftId);
     if (error) throw error;
   } catch (e: any) {
     throw new Error(e?.message ?? "Failed to delete shift");
@@ -158,9 +163,9 @@ export default function PodShiftsDataLayer() {
         podId={undefined}
         form={form}
         setForm={setForm}
-        onAddShift={() => { }}
+        onAddShift={() => {}}
         shifts={[]}
-        onRemoveShift={() => { }}
+        onRemoveShift={() => {}}
         notFoundMessage={
           <p className="text-sm text-muted-foreground">Pod not found</p>
         }
@@ -238,7 +243,9 @@ export default function PodShiftsDataLayer() {
       console.warn("PodShiftsDataLayer: failed to delete shift", error);
     }
     removeShift(shiftId);
-    setRemoteShifts((prev) => (prev ? prev.filter((s) => s.id !== shiftId) : prev));
+    setRemoteShifts((prev) =>
+      prev ? prev.filter((s) => s.id !== shiftId) : prev,
+    );
   };
 
   const layoutProps: PodShiftsLayoutProps<ShiftFormState> = {

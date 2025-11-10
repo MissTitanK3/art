@@ -5,6 +5,6 @@
 if (typeof globalThis !== 'undefined') {
   // Only set if not already defined to keep idempotence in Fast Refresh/Hot Reload
   if (!(globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY) {
-    (globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY = 'notifications-store:region-socal';
+    (globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY = `notifications-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`;
   }
 }

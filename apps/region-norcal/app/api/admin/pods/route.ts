@@ -42,7 +42,6 @@ export async function POST(req: Request) {
       slug: slugify(name),
       area: body.area ?? 'Unassigned',
       channels: Array.isArray(body.channels) ? body.channels : [],
-      // Track creator so scoped management can allow them to edit/delete
       created_by: callerProfile?.id ?? null,
     };
 
@@ -66,14 +65,16 @@ export async function POST(req: Request) {
         });
       }
     } catch (e) {
-      // non-fatal; notify below still runs
       console.warn('[admin/pods] POST add-creator-as-lead exception:', e);
     }
 
     // Fire-and-forget: let admins know a pod was created
     (async () => {
       try {
-        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: 'system',
+        });
         if (recipients.length) {
           await notifyUsers({
             title: 'New Pod Created',

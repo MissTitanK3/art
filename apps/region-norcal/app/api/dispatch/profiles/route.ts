@@ -2,17 +2,17 @@ import { NextResponse } from 'next/server';
 import { jsonError } from '@/lib/api/responses';
 import { getProfiles, type ProfilesFilter, getProfileByUserId } from '@/lib/dal/admin';
 import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
-import { elevatedRoles } from '@workspace/store/utils/nav';
+import { podAdmins, elevatedRoles } from '@workspace/store/utils/nav';
 
 export async function GET(req: Request) {
   try {
-    // Authorization: roster managers (pod_leader, trainer, dispatcher_*, and region/national admins)
+    // Authorization: pod admins (dispatcher_basic/verified/admin + region/national admins)
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
     const callerProfile = await getProfileByUserId(userData.user.id);
     const callerAccessRole = callerProfile?.access_role as any | undefined;
-    const authorized = !!callerAccessRole && elevatedRoles.includes(callerAccessRole);
+    const authorized = !!callerAccessRole && podAdmins.includes(callerAccessRole);
     if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { searchParams } = new URL(req.url);
@@ -30,6 +30,7 @@ export async function GET(req: Request) {
       filter.availability = availability === 'true';
     }
 
+    // If a specific id is requested, return that profile (when authorized), bypassing elevatedRoles filter
     if (id) {
       const profiles = await getProfiles();
       const match = (profiles ?? []).find((p: any) => String(p.id) === String(id));

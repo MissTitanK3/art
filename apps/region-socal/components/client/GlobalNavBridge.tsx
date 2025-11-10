@@ -20,7 +20,11 @@ const ALLOWED_ROLES: NavRole[] = [
   "national_admin",
 ];
 
-export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) {
+export function GlobalNavBridge({
+  rightSlot,
+}: {
+  rightSlot?: React.ReactNode;
+}) {
   const { session, status } = useAuth();
   const { profileAdapter } = useRegionAdapters();
 

@@ -1,12 +1,15 @@
-import { notificationsStore } from '@workspace/store/useNotificationsStore';
-import { NOTIFICATION_CHANNELS, type NotificationChannel } from '@workspace/store/types/notifications';
-import { toast } from 'sonner';
+import { notificationsStore } from "@workspace/store/useNotificationsStore";
+import {
+  NOTIFICATION_CHANNELS,
+  type NotificationChannel,
+} from "@workspace/store/types/notifications";
+import { toast } from "sonner";
 
 export type NotifyOpts = {
   id?: string;
   title: string;
   body?: string;
-  level?: 'info' | 'success' | 'warning' | 'error';
+  level?: "info" | "success" | "warning" | "error";
   channel?: NotificationChannel | string;
   link?: string;
   sticky?: boolean;
@@ -17,7 +20,10 @@ export type NotifyOpts = {
 export function notify(opts: NotifyOpts) {
   // Narrow channel to a known, centralized union to satisfy store typings
   const channel: NotificationChannel | undefined =
-    opts.channel && (NOTIFICATION_CHANNELS as readonly string[]).includes(opts.channel as string)
+    opts.channel &&
+    (NOTIFICATION_CHANNELS as readonly string[]).includes(
+      opts.channel as string,
+    )
       ? (opts.channel as NotificationChannel)
       : undefined;
 
@@ -25,7 +31,7 @@ export function notify(opts: NotifyOpts) {
     id: opts.id,
     title: opts.title,
     body: opts.body,
-    level: opts.level ?? 'info',
+    level: opts.level ?? "info",
     channel,
     link: opts.link,
     sticky: opts.sticky,
@@ -33,18 +39,24 @@ export function notify(opts: NotifyOpts) {
     icon: opts.icon,
   });
   // Visual toast via Sonner (already used in apps)
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     const method =
-      opts.level === 'success'
+      opts.level === "success"
         ? toast.success
-        : opts.level === 'warning'
+        : opts.level === "warning"
           ? ((toast as any).warning ?? toast)
-          : opts.level === 'error'
+          : opts.level === "error"
             ? toast.error
             : toast; // info/default
     method(opts.title, { description: opts.body });
   }
-  void maybeBrowserNotify({ id, title: opts.title, body: opts.body, link: opts.link, icon: opts.icon });
+  void maybeBrowserNotify({
+    id,
+    title: opts.title,
+    body: opts.body,
+    link: opts.link,
+    icon: opts.icon,
+  });
   return id;
 }
 
@@ -55,20 +67,21 @@ export async function maybeBrowserNotify(opts: {
   link?: string;
   icon?: string;
 }) {
-  if (typeof document === 'undefined' || typeof window === 'undefined') return;
-  if (document.visibilityState === 'visible') return; // prefer in-app toast when focused
-  if (!('Notification' in window)) return;
+  if (typeof document === "undefined" || typeof window === "undefined") return;
+  if (document.visibilityState === "visible") return; // prefer in-app toast when focused
+  if (!("Notification" in window)) return;
 
   const perm: NotificationPermission =
-    (Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission) ??
-    'default';
+    (Notification.permission === "default"
+      ? await Notification.requestPermission()
+      : Notification.permission) ?? "default";
 
-  if (perm !== 'granted') return;
+  if (perm !== "granted") return;
 
   const n = new Notification(opts.title, {
-    body: opts.body ?? '',
+    body: opts.body ?? "",
     tag: opts.id,
-    icon: opts.icon ?? '/favicon.ico',
+    icon: opts.icon ?? "/favicon.ico",
   });
   n.onclick = () => {
     window.focus();

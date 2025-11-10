@@ -22,35 +22,64 @@ import {
 import { Badge } from "@workspace/ui/components/badge";
 import { Separator } from "@workspace/ui/components/separator";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@workspace/ui/components/collapsible";
-import { Menu, ChevronRight, ChevronLeft, ChevronDown, Circle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/collapsible";
+import {
+  Menu,
+  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
+  Circle,
+} from "lucide-react";
 import ThemeToggle from "./ThemeToggle.tsx";
 import { Bell } from "@workspace/ui/components/Bell";
 import { LinkLike } from "@workspace/store/types/global.ts";
-import { canSee, GlobalNavConfig, isActive, NavItem, NavRole } from "@workspace/store/utils/nav";
+import {
+  canSee,
+  GlobalNavConfig,
+  isActive,
+  NavItem,
+  NavRole,
+} from "@workspace/store/utils/nav";
 import DistanceUnitToggle from "../DistanceUnitToggle";
 
 // Keep the top bar compact on small screens
 const MOBILE_TOP_BAR_HEIGHT = 56;
 
-
-function filterNavTree(items: NavItem[], role?: NavRole, isAuthenticated = false): NavItem[] {
+function filterNavTree(
+  items: NavItem[],
+  role?: NavRole,
+  isAuthenticated = false,
+): NavItem[] {
   return items
     .map((item) => {
-      const nextChildren = item.children ? filterNavTree(item.children, role, isAuthenticated) : undefined;
+      const nextChildren = item.children
+        ? filterNavTree(item.children, role, isAuthenticated)
+        : undefined;
       const hasVisibleChildren = Boolean(nextChildren?.length);
       const selfVisible = canSee(item, role, isAuthenticated);
 
       if (!selfVisible && !hasVisibleChildren) return null;
-      if (item.children && !hasVisibleChildren && (!selfVisible || !item.href)) return null;
+      if (item.children && !hasVisibleChildren && (!selfVisible || !item.href))
+        return null;
 
       return { ...item, children: nextChildren };
     })
     .filter((v): v is NonNullable<typeof v> => Boolean(v));
 }
-
 
 export interface GlobalNavCoreProps {
   config: GlobalNavConfig;
@@ -80,11 +109,12 @@ export function GlobalNavCore({
   React.useEffect(() => {
     const t = setTimeout(() => {
       setPrimaryItems(filterNavTree(config.primary, role, isAuthenticated));
-      setSecondaryItems(filterNavTree(config.secondary ?? [], role, isAuthenticated));
+      setSecondaryItems(
+        filterNavTree(config.secondary ?? [], role, isAuthenticated),
+      );
     }, 50);
     return () => clearTimeout(t);
   }, [config.primary, config.secondary, role, isAuthenticated]);
-
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -172,7 +202,9 @@ function MobileTopBar({
         className="flex flex-1 items-center gap-2 overflow-hidden"
       >
         <BrandSymbol brand={config.brand} />
-        <span className="truncate text-sm font-semibold">{config.brand.name}</span>
+        <span className="truncate text-sm font-semibold">
+          {config.brand.name}
+        </span>
       </LinkComponent>
       {!isAuthenticated ? (
         <a href="/sign-in">
@@ -219,7 +251,6 @@ function DesktopSideNav({
       )}
     >
       <div className="flex h-10 items-center gap-2 border-b border-sidebar-border px-2">
-
         <LinkComponent
           href={config.brand.href ?? "/"}
           className={cn(
@@ -229,7 +260,9 @@ function DesktopSideNav({
         >
           <BrandSymbol brand={config.brand} />
           {!collapsed ? (
-            <span className="truncate text-sm font-semibold">{config.brand.name}</span>
+            <span className="truncate text-sm font-semibold">
+              {config.brand.name}
+            </span>
           ) : null}
         </LinkComponent>
         <Button
@@ -239,12 +272,21 @@ function DesktopSideNav({
           className="h-9 w-9 text-sidebar-foreground"
           onClick={onToggleCollapsed}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {collapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
           <span className="sr-only">Toggle navigation width</span>
         </Button>
       </div>
       <ScrollArea className="flex-1">
-        <div className={cn("mt-1 flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-start")}>
+        <div
+          className={cn(
+            "mt-1 flex items-center gap-2",
+            collapsed ? "justify-center flex-col" : "justify-start",
+          )}
+        >
           <ThemeToggle />
           <Bell popoverSide="right" popoverAlign="start" />
           <DistanceUnitToggle />
@@ -290,10 +332,8 @@ function DesktopSideNav({
                 />
               ))}
             </div>
-
           </>
         ) : null}
-
       </div>
     </aside>
   );
@@ -362,14 +402,22 @@ function DesktopNavItem({
             <TooltipContent side="right" className="z-[1400]">
               <span className="flex items-center gap-2">
                 {item.label}
-                {item.badge ? <Badge variant="secondary">{item.badge}</Badge> : null}
+                {item.badge ? (
+                  <Badge variant="secondary">{item.badge}</Badge>
+                ) : null}
               </span>
             </TooltipContent>
           </Tooltip>
-          <PopoverContent side="right" align="start" className="z-[1200] w-64 p-0">
+          <PopoverContent
+            side="right"
+            align="start"
+            className="z-[1200] w-64 p-0"
+          >
             <div className="flex items-center justify-between border-b border-sidebar-border px-3 py-2 text-sm font-semibold text-sidebar-foreground">
               <span>{item.label}</span>
-              {item.badge ? <Badge variant="secondary">{item.badge}</Badge> : null}
+              {item.badge ? (
+                <Badge variant="secondary">{item.badge}</Badge>
+              ) : null}
             </div>
             <div className="space-y-1 p-2">
               {visibleChildren.map((child) => {
@@ -423,7 +471,10 @@ function DesktopNavItem({
             <NavItemIcon item={item} className="h-8 w-8" />
             {item.badge ? (
               <span className="absolute -right-1 -top-1">
-                <Badge variant="secondary" className="px-1 py-0 text-[10px] leading-none">
+                <Badge
+                  variant="secondary"
+                  className="px-1 py-0 text-[10px] leading-none"
+                >
                   {item.badge}
                 </Badge>
               </span>
@@ -433,7 +484,9 @@ function DesktopNavItem({
         <TooltipContent side="right">
           <span className="flex items-center gap-2">
             {item.label}
-            {item.badge ? <Badge variant="secondary">{item.badge}</Badge> : null}
+            {item.badge ? (
+              <Badge variant="secondary">{item.badge}</Badge>
+            ) : null}
           </span>
         </TooltipContent>
       </Tooltip>
@@ -581,7 +634,9 @@ function MobileNav({
         <SheetHeader className="border-b border-sidebar-border p-4">
           <SheetTitle className="flex items-center gap-2">
             <BrandSymbol brand={config.brand} />
-            <span className="truncate text-sm font-semibold">{config.brand.name}</span>
+            <span className="truncate text-sm font-semibold">
+              {config.brand.name}
+            </span>
           </SheetTitle>
         </SheetHeader>
         <div className={cn("mt-1 flex justify-center")}>
@@ -685,7 +740,9 @@ function MobileNavItem({
                   onNavigate={onNavigate}
                   className={cn(
                     "flex items-center gap-2",
-                    childActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/70",
+                    childActive
+                      ? "text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground/70",
                   )}
                 >
                   <NavItemIcon item={child} className="h-5 w-5" />
@@ -753,7 +810,13 @@ function BrandSymbol({
   );
 }
 
-function NavItemIcon({ item, className }: { item: NavItem; className?: string }) {
+function NavItemIcon({
+  item,
+  className,
+}: {
+  item: NavItem;
+  className?: string;
+}) {
   const Icon = item.icon ?? Circle;
   return <Icon className={className} />;
 }
@@ -762,7 +825,9 @@ function navItemIsActive(item: NavItem, pathname: string): boolean {
   if (isActive(item.href, pathname)) {
     return true;
   }
-  return (item.children ?? []).some((child) => navItemIsActive(child, pathname));
+  return (item.children ?? []).some((child) =>
+    navItemIsActive(child, pathname),
+  );
 }
 
 /**

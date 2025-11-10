@@ -1,5 +1,5 @@
-import { ReportFormData } from '@/types/wizard';
-import { v4 as uuidv4 } from 'uuid';
+import { ReportFormData } from "@/types/wizard";
+import { v4 as uuidv4 } from "uuid";
 
 export type QueuedReport = ReportFormData & {
   id: string;
@@ -7,10 +7,10 @@ export type QueuedReport = ReportFormData & {
   synced?: boolean;
 };
 
-const STORAGE_KEY = 'reportQueue';
+const STORAGE_KEY = "reportQueue";
 
 export const getQueuedReports = (): QueuedReport[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   const raw = localStorage.getItem(STORAGE_KEY);
   return raw ? JSON.parse(raw) : [];
 };
@@ -44,7 +44,7 @@ export const syncQueuedReports = async () => {
     if (!report.synced) {
       try {
         // TODO: Replace with real Supabase/API logic
-        console.log('Syncing report:', report);
+        console.log("Syncing report:", report);
         // Simulate network delay
         await new Promise((res) => setTimeout(res, 500));
         markReportAsSynced(report.id);

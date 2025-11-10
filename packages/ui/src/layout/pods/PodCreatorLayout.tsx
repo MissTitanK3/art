@@ -75,7 +75,11 @@ export function PodCreatorLayout({
       <form id={formId} onSubmit={onSubmit} className="mt-4 grid gap-4">
         <div className="grid gap-1">
           <Label htmlFor="pod-name">Pod Name</Label>
-          <Input id="pod-name" placeholder="e.g., Downtown" {...fieldBindings.name} />
+          <Input
+            id="pod-name"
+            placeholder="e.g., Downtown"
+            {...fieldBindings.name}
+          />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
               Slug: <code className="select-all">{liveSlug || "—"}</code>
@@ -95,7 +99,10 @@ export function PodCreatorLayout({
             id="pod-area"
             placeholder="Neighborhood, district, or courthouse"
             {...fieldBindings.area}
-            className={cn(errors?.area ? "ring-1 ring-destructive" : undefined, "w-full")}
+            className={cn(
+              errors?.area ? "ring-1 ring-destructive" : undefined,
+              "w-full",
+            )}
           />
           {errors?.area ? (
             <p className="text-xs text-destructive">{errors.area}</p>
@@ -104,10 +111,16 @@ export function PodCreatorLayout({
 
         <div className="grid gap-1">
           <Label htmlFor="pod-channel">Primary Channel</Label>
-          <Select value={channelField.value} onValueChange={channelField.onChange}>
+          <Select
+            value={channelField.value}
+            onValueChange={channelField.onChange}
+          >
             <SelectTrigger
               id="pod-channel"
-              className={cn("w-[220px]", errors?.channel ? "ring-1 ring-destructive" : undefined)}
+              className={cn(
+                "w-[220px]",
+                errors?.channel ? "ring-1 ring-destructive" : undefined,
+              )}
             >
               <SelectValue placeholder="Select a channel…" />
             </SelectTrigger>
@@ -130,7 +143,10 @@ export function PodCreatorLayout({
             id="pod-channel-link"
             placeholder="https://signal.group/…"
             {...fieldBindings.channelLink}
-            className={cn(errors?.channelLink ? "ring-1 ring-destructive" : undefined, "w-full")}
+            className={cn(
+              errors?.channelLink ? "ring-1 ring-destructive" : undefined,
+              "w-full",
+            )}
           />
           {errors?.channelLink ? (
             <p className="text-xs text-destructive">{errors.channelLink}</p>

@@ -42,7 +42,7 @@ export function DateTimePicker({ label, value, onChange }: Props) {
               variant="outline"
               className={cn(
                 "justify-start text-left font-normal w-[200px]",
-                !date && "text-muted-foreground"
+                !date && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />

@@ -9,7 +9,6 @@ import { useRegionAdapters } from "@/providers/RegionProvider";
 import { Profile } from "@workspace/store/types/global.ts";
 import { UiCoverage } from "@workspace/store/types/profile";
 
-
 function toUiCoverage(input: string[] | undefined): UiCoverage[] {
   return (input ?? []).map((id) => ({ id, label: id }));
 }
@@ -19,12 +18,16 @@ function toStoreCoverage(input: unknown): string[] {
   if (Array.isArray(input)) {
     return input
       .map((z: any) => (typeof z === "string" ? z : z?.id))
-      .filter((v: unknown): v is string => typeof v === "string" && v.length > 0);
+      .filter(
+        (v: unknown): v is string => typeof v === "string" && v.length > 0,
+      );
   }
   return [];
 }
 
-async function fetchProfileFromDatabase(profileId: string): Promise<Profile | null> {
+async function fetchProfileFromDatabase(
+  profileId: string,
+): Promise<Profile | null> {
   console.log("Fetching profile from database for profileId:", profileId);
   // TODO: replace with real database integration.
   // Example:
@@ -56,7 +59,9 @@ export function ProfileDataLayer() {
   const clearProfile = useProfileStore((s) => s.clearProfile);
   const { profileAdapter } = useRegionAdapters();
 
-  const [remoteProfile, setRemoteProfile] = React.useState<Profile | null>(null);
+  const [remoteProfile, setRemoteProfile] = React.useState<Profile | null>(
+    null,
+  );
   const [loadingRemoteProfile, setLoadingRemoteProfile] = React.useState(false);
 
   const profileId = profile?.id;
@@ -130,14 +135,19 @@ export function ProfileDataLayer() {
               city: initial.city ?? "",
               availability: initial.availability ?? false,
               self_risk_acknowledged: initial.self_risk_acknowledged ?? false,
-              weekly_availability: initial.weekly_availability ?? { blocks: {} },
+              weekly_availability: initial.weekly_availability ?? {
+                blocks: {},
+              },
             };
             await saveProfileToDatabase(next);
             await profileAdapter.saveProfile(next);
             setProfile(next);
             return { ok: true };
           } catch (error: any) {
-            return { ok: false, err: error?.message ?? "Failed to save profile" };
+            return {
+              ok: false,
+              err: error?.message ?? "Failed to save profile",
+            };
           }
         }}
         onDeleteProfile={async (id) => {

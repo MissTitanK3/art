@@ -1,9 +1,15 @@
 // packages/ui/src/types/form-helpers.ts
 
-import { z, ZodObject, ZodTypeAny, ZodEffects, ZodFirstPartyTypeKind } from 'zod';
-import { useForm, UseFormProps, UseFormReturn } from 'react-hook-form';
-import { NavItem, NavRole } from './nav.ts';
-import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  z,
+  ZodObject,
+  ZodTypeAny,
+  ZodEffects,
+  ZodFirstPartyTypeKind,
+} from "zod";
+import { useForm, UseFormProps, UseFormReturn } from "react-hook-form";
+import { NavItem, NavRole } from "./nav.ts";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 /**
  * Example usage:
@@ -47,7 +53,7 @@ export const nullToEmptyString = () =>
     .string()
     .nullable()
     .optional()
-    .transform((v) => v ?? '');
+    .transform((v) => v ?? "");
 
 /** Normalize nullable boolean into false */
 export const nullToFalse = () =>
@@ -118,7 +124,9 @@ export type FormFieldConfig = {
 };
 
 /** Extract FormFieldConfig[] from a ZodObject for dynamic UI builders */
-function extractFieldConfigs<T extends ZodObject<any>>(schema: T): FormFieldConfig[] {
+function extractFieldConfigs<T extends ZodObject<any>>(
+  schema: T,
+): FormFieldConfig[] {
   const fields: FormFieldConfig[] = [];
 
   for (const key in schema.shape) {
@@ -129,10 +137,10 @@ function extractFieldConfigs<T extends ZodObject<any>>(schema: T): FormFieldConf
       name: key,
       label: def.description,
       type,
-      required: !('optional' in def || 'nullable' in def),
+      required: !("optional" in def || "nullable" in def),
     };
 
-    if (type === 'ZodEnum') {
+    if (type === "ZodEnum") {
       field.enumValues = def.values;
     }
 
@@ -182,9 +190,11 @@ export function formSchema<T extends ZodObject<any>>(schema: T) {
     fields: config,
     input: null! as Input,
     output: null! as Output,
-    useForm: (options?: Omit<UseFormProps<Input, any, Output>, 'resolver'>): UseFormReturn<Input, any, Output> => {
+    useForm: (
+      options?: Omit<UseFormProps<Input, any, Output>, "resolver">,
+    ): UseFormReturn<Input, any, Output> => {
       return useForm<Input, any, Output>({
-        mode: 'onChange',
+        mode: "onChange",
         resolver: zodResolver(schema), // 👈 force typing through schema
         defaultValues: defaults,
         ...options,
@@ -194,7 +204,7 @@ export function formSchema<T extends ZodObject<any>>(schema: T) {
 }
 
 export function toLocalInputValue(iso: string) {
-  if (!iso) return '';
+  if (!iso) return "";
   const d = new Date(iso);
   return d.toISOString().slice(0, 16);
 }

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { toast } from 'sonner';
-import type { ShipComponent } from '@/schemas/ship_components';
+import * as React from "react";
+import { toast } from "sonner";
+import type { ShipComponent } from "@/schemas/ship_components";
 
 type Kind = {
   id: string;
@@ -19,7 +19,9 @@ type Kind = {
 export function useShipComponents(profileId: string | null) {
   const [componentsLoading, setComponentsLoading] = React.useState(false);
   const [components, setComponents] = React.useState<ShipComponent[]>([]);
-  const [catalogKinds, setCatalogKinds] = React.useState<Record<ShipComponent['slot'], Kind[]>>({} as any);
+  const [catalogKinds, setCatalogKinds] = React.useState<
+    Record<ShipComponent["slot"], Kind[]>
+  >({} as any);
 
   // initial load
   React.useEffect(() => {
@@ -31,14 +33,14 @@ export function useShipComponents(profileId: string | null) {
       setComponentsLoading(true);
       try {
         const u = new URL(window.location.href);
-        u.pathname = '/api/ship/components';
-        u.searchParams.set('profile_id', profileId);
-        const res = await fetch(u.toString(), { cache: 'no-store' });
+        u.pathname = "/api/ship/components";
+        u.searchParams.set("profile_id", profileId);
+        const res = await fetch(u.toString(), { cache: "no-store" });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Failed to load components');
+        if (!res.ok) throw new Error(json.error || "Failed to load components");
         setComponents(Array.isArray(json.components) ? json.components : []);
       } catch (e: any) {
-        toast.error(e?.message || 'Failed to load components');
+        toast.error(e?.message || "Failed to load components");
         setComponents([]);
       } finally {
         setComponentsLoading(false);
@@ -51,7 +53,9 @@ export function useShipComponents(profileId: string | null) {
   React.useEffect(() => {
     const run = async () => {
       try {
-        const res = await fetch('/api/ship/components/catalog', { cache: 'no-store' });
+        const res = await fetch("/api/ship/components/catalog", {
+          cache: "no-store",
+        });
         const json = await res.json();
         if (res.ok) setCatalogKinds(json.catalog || {});
       } catch {}
@@ -63,49 +67,52 @@ export function useShipComponents(profileId: string | null) {
     if (!profileId) return;
     try {
       const u = new URL(window.location.href);
-      u.pathname = '/api/ship/components';
-      u.searchParams.set('profile_id', profileId);
-      const res = await fetch(u.toString(), { cache: 'no-store' });
+      u.pathname = "/api/ship/components";
+      u.searchParams.set("profile_id", profileId);
+      const res = await fetch(u.toString(), { cache: "no-store" });
       const json = await res.json();
-      if (res.ok) setComponents(Array.isArray(json.components) ? json.components : []);
+      if (res.ok)
+        setComponents(Array.isArray(json.components) ? json.components : []);
     } catch {}
   }, [profileId]);
 
   const doUpgrade = React.useCallback(
-    async (slot: ShipComponent['slot']) => {
+    async (slot: ShipComponent["slot"]) => {
       if (!profileId) return;
       try {
-        const res = await fetch('/api/ship/components/upgrade', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
+        const res = await fetch("/api/ship/components/upgrade", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
           body: JSON.stringify({ profile_id: profileId, slot }),
         });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Failed to upgrade');
-        toast.success('Component upgraded');
+        if (!res.ok) throw new Error(json.error || "Failed to upgrade");
+        toast.success("Component upgraded");
         refreshComponents();
       } catch (e: any) {
-        toast.error(e?.message || 'Failed to upgrade component');
+        toast.error(e?.message || "Failed to upgrade component");
       }
     },
     [profileId, refreshComponents],
   );
 
   const doReplace = React.useCallback(
-    async (slot: ShipComponent['slot'], kind: string) => {
+    async (slot: ShipComponent["slot"], kind: string) => {
       if (!profileId) return;
       try {
-        const res = await fetch('/api/ship/components/replace', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
+        const res = await fetch("/api/ship/components/replace", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
           body: JSON.stringify({ profile_id: profileId, slot, kind }),
         });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Failed to replace');
-        toast.success(json.created ? 'Component installed' : 'Component replaced');
+        if (!res.ok) throw new Error(json.error || "Failed to replace");
+        toast.success(
+          json.created ? "Component installed" : "Component replaced",
+        );
         refreshComponents();
       } catch (e: any) {
-        toast.error(e?.message || 'Failed to replace component');
+        toast.error(e?.message || "Failed to replace component");
       }
     },
     [profileId, refreshComponents],

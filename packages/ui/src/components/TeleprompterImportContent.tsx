@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectSeparator,
+} from "@workspace/ui/components/select";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
@@ -17,7 +24,9 @@ export type TeleprompterImportContentProps = {
   // Optional sections
   builtinScripts?: BuiltinScript[];
   onApplyBuiltin?: (id: string, text: string) => void;
-  onFetchDispatch?: (dispatchId: string) => Promise<{ text?: string; title?: string }>;
+  onFetchDispatch?: (
+    dispatchId: string,
+  ) => Promise<{ text?: string; title?: string }>;
   onFetchAcademy?: (slug: string) => Promise<{ text?: string; title?: string }>;
   // Optional: namespace used by the script builder for localStorage
   storageNamespace?: string;
@@ -34,8 +43,12 @@ export default function TeleprompterImportContent({
   // onFetchAcademy,
   storageNamespace = "teleprompter.builder",
 }: TeleprompterImportContentProps) {
-  const [builtinId, setBuiltinId] = React.useState<string>(builtinScripts?.[0]?.id ?? "");
-  const [builtinDraft, setBuiltinDraft] = React.useState<string>(builtinScripts?.[0]?.content ?? "");
+  const [builtinId, setBuiltinId] = React.useState<string>(
+    builtinScripts?.[0]?.id ?? "",
+  );
+  const [builtinDraft, setBuiltinDraft] = React.useState<string>(
+    builtinScripts?.[0]?.content ?? "",
+  );
   const [builtinQuery, setBuiltinQuery] = React.useState<string>("");
   const [pasteText, setPasteText] = React.useState<string>("");
   // const [dispatchId, setDispatchId] = React.useState<string>("");
@@ -44,7 +57,10 @@ export default function TeleprompterImportContent({
 
   // --- User-created scripts from the Script Builder (localStorage) ---
   type BuilderLine = { id?: string; text: string; cues?: string[] };
-  const ns = React.useCallback((k: string) => `${storageNamespace}.${k}`, [storageNamespace]);
+  const ns = React.useCallback(
+    (k: string) => `${storageNamespace}.${k}`,
+    [storageNamespace],
+  );
   const [userScripts, setUserScripts] = React.useState<BuiltinScript[]>([]);
   const [userId, setUserId] = React.useState<string>("");
   const [userDraft, setUserDraft] = React.useState<string>("");
@@ -54,14 +70,16 @@ export default function TeleprompterImportContent({
     try {
       return (lines || [])
         .map((item: any) => {
-          if (typeof item === 'string') return item;
-          if (item && typeof item.text === 'string') {
-            const cues = Array.isArray(item.cues) ? (item.cues as string[]) : [];
-            return `${item.text}${cues.length ? ' ' + cues.join(' ') : ''}`.trim();
+          if (typeof item === "string") return item;
+          if (item && typeof item.text === "string") {
+            const cues = Array.isArray(item.cues)
+              ? (item.cues as string[])
+              : [];
+            return `${item.text}${cues.length ? " " + cues.join(" ") : ""}`.trim();
           }
-          return '';
+          return "";
         })
-        .filter((s: string) => typeof s === 'string' && s.trim().length > 0);
+        .filter((s: string) => typeof s === "string" && s.trim().length > 0);
     } catch {
       return [];
     }
@@ -70,76 +88,132 @@ export default function TeleprompterImportContent({
   const loadUserScripts = React.useCallback(() => {
     const collected: BuiltinScript[] = [];
     try {
-      const draftNameRaw = window.localStorage.getItem(ns('name')) || '';
-      const draftLinesRaw = window.localStorage.getItem(ns('lines')) || '';
-      const draftName = draftNameRaw ? draftNameRaw.replace(/^"|"$/g, '') : '';
-      let draftContent = '';
+      const draftNameRaw = window.localStorage.getItem(ns("name")) || "";
+      const draftLinesRaw = window.localStorage.getItem(ns("lines")) || "";
+      const draftName = draftNameRaw ? draftNameRaw.replace(/^"|"$/g, "") : "";
+      let draftContent = "";
       if (draftLinesRaw) {
         try {
           const parsed = JSON.parse(draftLinesRaw);
           if (Array.isArray(parsed)) {
             const compiled = compileLines(parsed);
-            draftContent = compiled.join('\n\n');
+            draftContent = compiled.join("\n\n");
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
       if (draftContent.trim().length > 0) {
-        collected.push({ id: '__draft__', label: `Draft: ${draftName || 'Untitled'}`.trim(), content: draftContent });
+        collected.push({
+          id: "__draft__",
+          label: `Draft: ${draftName || "Untitled"}`.trim(),
+          content: draftContent,
+        });
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     try {
-      const savedRaw = window.localStorage.getItem(ns('saved')) || '[]';
+      const savedRaw = window.localStorage.getItem(ns("saved")) || "[]";
       const savedParsed = JSON.parse(savedRaw);
       if (Array.isArray(savedParsed)) {
         savedParsed.forEach((entry: any, idx: number) => {
-          const name: string = typeof entry?.name === 'string' ? entry.name : `Saved ${idx + 1}`;
-          const lines: BuilderLine[] = Array.isArray(entry?.lines) ? entry.lines as BuilderLine[] : [];
+          const name: string =
+            typeof entry?.name === "string" ? entry.name : `Saved ${idx + 1}`;
+          const lines: BuilderLine[] = Array.isArray(entry?.lines)
+            ? (entry.lines as BuilderLine[])
+            : [];
           const compiled = compileLines(lines);
-          const content = compiled.join('\n\n');
+          const content = compiled.join("\n\n");
           if (content.trim().length > 0) {
-            const id = typeof entry?.id === 'string' && entry.id ? entry.id : `saved_${idx}`;
+            const id =
+              typeof entry?.id === "string" && entry.id
+                ? entry.id
+                : `saved_${idx}`;
             collected.push({ id, label: name, content });
           }
         });
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     setUserScripts(collected);
     // sync selection to available list
     const first = collected[0];
-    const nextId = (userId && collected.some((s) => s.id === userId)) ? userId : (first?.id || '');
+    const nextId =
+      userId && collected.some((s) => s.id === userId)
+        ? userId
+        : first?.id || "";
     setUserId(nextId);
     const selected = collected.find((s) => s.id === nextId) || first;
-    setUserDraft(selected?.content || '');
+    setUserDraft(selected?.content || "");
   }, [compileLines, ns, userId]);
 
   React.useEffect(() => {
-    try { loadUserScripts(); } catch { void 0; }
+    try {
+      loadUserScripts();
+    } catch {
+      void 0;
+    }
   }, [loadUserScripts]);
 
   React.useEffect(() => {
     const handler = (e: StorageEvent) => {
       if (!e.key) return;
-      const watched = [ns('name'), ns('lines'), ns('saved')];
+      const watched = [ns("name"), ns("lines"), ns("saved")];
       if (watched.includes(e.key)) loadUserScripts();
     };
-    try { window.addEventListener('storage', handler); } catch { void 0; }
-    const onFocus = () => { try { loadUserScripts(); } catch { void 0; } };
-    const onVis = () => { if (document.visibilityState === 'visible') onFocus(); };
-    try { window.addEventListener('focus', onFocus); } catch { void 0; }
-    try { document.addEventListener('visibilitychange', onVis); } catch { void 0; }
+    try {
+      window.addEventListener("storage", handler);
+    } catch {
+      void 0;
+    }
+    const onFocus = () => {
+      try {
+        loadUserScripts();
+      } catch {
+        void 0;
+      }
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") onFocus();
+    };
+    try {
+      window.addEventListener("focus", onFocus);
+    } catch {
+      void 0;
+    }
+    try {
+      document.addEventListener("visibilitychange", onVis);
+    } catch {
+      void 0;
+    }
     return () => {
-      try { window.removeEventListener('storage', handler); } catch { void 0; }
-      try { window.removeEventListener('focus', onFocus); } catch { void 0; }
-      try { document.removeEventListener('visibilitychange', onVis); } catch { void 0; }
+      try {
+        window.removeEventListener("storage", handler);
+      } catch {
+        void 0;
+      }
+      try {
+        window.removeEventListener("focus", onFocus);
+      } catch {
+        void 0;
+      }
+      try {
+        document.removeEventListener("visibilitychange", onVis);
+      } catch {
+        void 0;
+      }
     };
   }, [loadUserScripts, ns]);
 
   React.useEffect(() => {
     if (!builtinScripts?.length) return;
     // keep draft in sync with selection
-    const sel = builtinScripts.find((s) => s.id === builtinId) ?? builtinScripts[0];
+    const sel =
+      builtinScripts.find((s) => s.id === builtinId) ?? builtinScripts[0];
     if (sel) setBuiltinDraft(sel.content);
   }, [builtinId, builtinScripts]);
 
@@ -151,14 +225,19 @@ export default function TeleprompterImportContent({
           <div className="grid gap-2">
             <Select
               value={userId}
-              onOpenChange={(open) => { if (open) setUserQuery(""); }}
+              onOpenChange={(open) => {
+                if (open) setUserQuery("");
+              }}
               onValueChange={(v) => {
                 setUserId(v);
-                const sel = userScripts.find((s) => s.id === v) ?? userScripts[0];
+                const sel =
+                  userScripts.find((s) => s.id === v) ?? userScripts[0];
                 if (sel) setUserDraft(sel.content);
               }}
             >
-              <SelectTrigger className="w-full"><SelectValue placeholder="Choose one of your scripts" /></SelectTrigger>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose one of your scripts" />
+              </SelectTrigger>
               <SelectContent>
                 <div className="p-1">
                   <Input
@@ -171,15 +250,26 @@ export default function TeleprompterImportContent({
                   .filter((s) => {
                     const q = userQuery.trim().toLowerCase();
                     if (!q) return true;
-                    return s.label.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
+                    return (
+                      s.label.toLowerCase().includes(q) ||
+                      s.id.toLowerCase().includes(q)
+                    );
                   })
                   .map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.label}
+                    </SelectItem>
                   ))}
               </SelectContent>
             </Select>
             <div className="flex justify-end">
-              <Button variant="outline" size="sm" onClick={() => loadUserScripts()}>Refresh</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadUserScripts()}
+              >
+                Refresh
+              </Button>
             </div>
             <Textarea
               className="h-40"
@@ -187,13 +277,27 @@ export default function TeleprompterImportContent({
               onChange={(e) => setUserDraft(e.target.value)}
             />
             <div className="flex items-center gap-2">
-              <Button onClick={() => { onApplyText(userDraft); }}>Apply</Button>
-              <Button variant="outline" onClick={() => {
-                const sel = userScripts.find((s) => s.id === userId) ?? userScripts[0];
-                if (sel) setUserDraft(sel.content);
-              }}>Reset</Button>
+              <Button
+                onClick={() => {
+                  onApplyText(userDraft);
+                }}
+              >
+                Apply
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const sel =
+                    userScripts.find((s) => s.id === userId) ?? userScripts[0];
+                  if (sel) setUserDraft(sel.content);
+                }}
+              >
+                Reset
+              </Button>
             </div>
-            <div className="text-xs text-muted-foreground">Loaded from your browser&#39;s script builder saves.</div>
+            <div className="text-xs text-muted-foreground">
+              Loaded from your browser&#39;s script builder saves.
+            </div>
           </div>
         </div>
       )}
@@ -204,14 +308,18 @@ export default function TeleprompterImportContent({
           <div className="grid gap-2">
             <Select
               value={builtinId}
-              onOpenChange={(open) => { if (open) setBuiltinQuery(""); }}
+              onOpenChange={(open) => {
+                if (open) setBuiltinQuery("");
+              }}
               onValueChange={(v) => {
                 setBuiltinId(v);
                 const sel = builtinScripts.find((s) => s.id === v);
                 if (sel) setBuiltinDraft(sel.content);
               }}
             >
-              <SelectTrigger className="w-full"><SelectValue placeholder="Choose a script" /></SelectTrigger>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose a script" />
+              </SelectTrigger>
               <SelectContent>
                 <div className="p-1">
                   <Input
@@ -225,11 +333,18 @@ export default function TeleprompterImportContent({
                   .filter((s) => {
                     const q = builtinQuery.trim().toLowerCase();
                     if (!q) return true;
-                    return s.label.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
+                    return (
+                      s.label.toLowerCase().includes(q) ||
+                      s.id.toLowerCase().includes(q)
+                    );
                   })
-                  .sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')))
+                  .sort((a, b) =>
+                    String(a.label ?? "").localeCompare(String(b.label ?? "")),
+                  )
                   .map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.label}
+                    </SelectItem>
                   ))}
               </SelectContent>
             </Select>
@@ -239,14 +354,26 @@ export default function TeleprompterImportContent({
               onChange={(e) => setBuiltinDraft(e.target.value)}
             />
             <div className="flex items-center gap-2">
-              <Button onClick={() => {
-                if (onApplyBuiltin && builtinId) onApplyBuiltin(builtinId, builtinDraft);
-                else onApplyText(builtinDraft);
-              }}>Apply</Button>
-              <Button variant="outline" onClick={() => {
-                const sel = builtinScripts.find((s) => s.id === builtinId) ?? builtinScripts[0];
-                if (sel) setBuiltinDraft(sel.content);
-              }}>Reset</Button>
+              <Button
+                onClick={() => {
+                  if (onApplyBuiltin && builtinId)
+                    onApplyBuiltin(builtinId, builtinDraft);
+                  else onApplyText(builtinDraft);
+                }}
+              >
+                Apply
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const sel =
+                    builtinScripts.find((s) => s.id === builtinId) ??
+                    builtinScripts[0];
+                  if (sel) setBuiltinDraft(sel.content);
+                }}
+              >
+                Reset
+              </Button>
             </div>
           </div>
         </div>
@@ -254,48 +381,76 @@ export default function TeleprompterImportContent({
 
       <div className="rounded-md border p-3">
         <p className="mb-2 text-sm font-medium">Upload builder .json</p>
-        <Input type="file" accept="application/json,.json" onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          try {
-            const raw = await file.text();
-            const data = JSON.parse(raw);
-            const name: string | undefined = data?.name;
-            const lines: any[] | undefined = data?.lines;
-            if (!Array.isArray(lines)) throw new Error('Invalid JSON: lines must be an array');
-            const compiled: string[] = lines.map((item) => {
-              if (typeof item === 'string') return item;
-              if (item && typeof item.text === 'string') {
-                const cues = Array.isArray(item.cues) ? item.cues as string[] : [];
-                return `${item.text}${cues.length ? ' ' + cues.join(' ') : ''}`.trim();
-              }
-              throw new Error('Invalid line item');
-            });
-            const joined = compiled.join('\n\n');
-            onApplyText(joined);
-            if (name) try { document.title = `${name} – Teleprompter`; } catch { void 0; }
-          } catch (err: any) {
-            setImportStatus(err?.message || 'Failed to import builder JSON.');
-          }
-        }} />
+        <Input
+          type="file"
+          accept="application/json,.json"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const raw = await file.text();
+              const data = JSON.parse(raw);
+              const name: string | undefined = data?.name;
+              const lines: any[] | undefined = data?.lines;
+              if (!Array.isArray(lines))
+                throw new Error("Invalid JSON: lines must be an array");
+              const compiled: string[] = lines.map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item.text === "string") {
+                  const cues = Array.isArray(item.cues)
+                    ? (item.cues as string[])
+                    : [];
+                  return `${item.text}${cues.length ? " " + cues.join(" ") : ""}`.trim();
+                }
+                throw new Error("Invalid line item");
+              });
+              const joined = compiled.join("\n\n");
+              onApplyText(joined);
+              if (name)
+                try {
+                  document.title = `${name} – Teleprompter`;
+                } catch {
+                  void 0;
+                }
+            } catch (err: any) {
+              setImportStatus(err?.message || "Failed to import builder JSON.");
+            }
+          }}
+        />
       </div>
 
       <div className="rounded-md border p-3">
         <p className="mb-2 text-sm font-medium">Upload .txt / .md</p>
-        <Input type="file" accept=".txt,.md,.markdown,.mdown" onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          const content = await file.text();
-          onApplyText(content);
-        }} />
+        <Input
+          type="file"
+          accept=".txt,.md,.markdown,.mdown"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const content = await file.text();
+            onApplyText(content);
+          }}
+        />
       </div>
 
       <div className="rounded-md border p-3">
         <p className="mb-2 text-sm font-medium">Paste text</p>
-        <Textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} className="h-40" />
+        <Textarea
+          value={pasteText}
+          onChange={(e) => setPasteText(e.target.value)}
+          className="h-40"
+        />
         <div className="mt-2 flex items-center gap-2">
-          <Button onClick={() => { onApplyText(pasteText); }}>Load</Button>
-          <Button variant="outline" onClick={() => setPasteText("")}>Clear</Button>
+          <Button
+            onClick={() => {
+              onApplyText(pasteText);
+            }}
+          >
+            Load
+          </Button>
+          <Button variant="outline" onClick={() => setPasteText("")}>
+            Clear
+          </Button>
         </div>
       </div>
 
@@ -351,10 +506,16 @@ export default function TeleprompterImportContent({
 
       <div className="flex items-center justify-between rounded-md border p-3 text-sm">
         <div className="flex items-center gap-2">
-          <Switch id="cache" checked={cacheEnabled} onCheckedChange={(v) => onCacheEnabledChange(!!v)} />
+          <Switch
+            id="cache"
+            checked={cacheEnabled}
+            onCheckedChange={(v) => onCacheEnabledChange(!!v)}
+          />
           <label htmlFor="cache">Cache this script for offline use</label>
         </div>
-        <Button variant="light" onClick={onSaveNow}>Save Now</Button>
+        <Button variant="light" onClick={onSaveNow}>
+          Save Now
+        </Button>
       </div>
     </div>
   );

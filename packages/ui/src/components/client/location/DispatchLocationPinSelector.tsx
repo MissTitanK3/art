@@ -35,15 +35,21 @@ type Props = {
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchLocationPinSelector({ submission, onUpdate }: Props) {
+export default function DispatchLocationPinSelector({
+  submission,
+  onUpdate,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [tempLat, setTempLat] = useState<number | null>(null);
   const [tempLng, setTempLng] = useState<number | null>(null);
-  const [MapComp, setMapComp] = useState<ComponentType<LazyMapProps> | null>(null);
+  const [MapComp, setMapComp] = useState<ComponentType<LazyMapProps> | null>(
+    null,
+  );
   const [mapProvider, setMapProvider] = useState<string>(
-    typeof navigator !== "undefined" && /iPad|iPhone|Macintosh/.test(navigator.userAgent)
+    typeof navigator !== "undefined" &&
+      /iPad|iPhone|Macintosh/.test(navigator.userAgent)
       ? "apple"
-      : "google"
+      : "google",
   );
 
   const currentLat = (submission.location as any)?.lat as number | undefined;
@@ -65,7 +71,10 @@ export default function DispatchLocationPinSelector({ submission, onUpdate }: Pr
     if (typeof window === "undefined") return;
     import("./LeafletPinMap")
       .then((mod) => {
-        if (mounted) setMapComp(() => (mod.default as unknown) as ComponentType<LazyMapProps>);
+        if (mounted)
+          setMapComp(
+            () => mod.default as unknown as ComponentType<LazyMapProps>,
+          );
       })
       .catch(() => {
         // ignore; fallback placeholder will remain
@@ -160,7 +169,19 @@ export default function DispatchLocationPinSelector({ submission, onUpdate }: Pr
                 <SelectItem value="bing">Bing Maps</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" variant="secondary" onClick={() => handleOpenInMaps()} disabled={!(typeof currentLat === "number" && typeof currentLng === "number")}>Open Maps</Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => handleOpenInMaps()}
+              disabled={
+                !(
+                  typeof currentLat === "number" &&
+                  typeof currentLng === "number"
+                )
+              }
+            >
+              Open Maps
+            </Button>
           </div>
           <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
             Set Pin
@@ -168,7 +189,12 @@ export default function DispatchLocationPinSelector({ submission, onUpdate }: Pr
         </div>
       </div>
 
-      <Drawer open={open} onOpenChange={setOpen} direction="right" dismissible={false}>
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        direction="right"
+        dismissible={false}
+      >
         <DrawerContent className="p-4 max-w-4xl bg-card text-card-foreground">
           <DrawerHeader>
             <DrawerTitle>Select Pin Location</DrawerTitle>
@@ -191,7 +217,10 @@ export default function DispatchLocationPinSelector({ submission, onUpdate }: Pr
                   lat={tempLat}
                   lng={tempLng}
                   open={open}
-                  onSelect={(lat: number, lng: number) => { setTempLat(lat); setTempLng(lng); }}
+                  onSelect={(lat: number, lng: number) => {
+                    setTempLat(lat);
+                    setTempLng(lng);
+                  }}
                 />
               ) : (
                 <div className="w-full h-full bg-muted" />
@@ -215,8 +244,15 @@ export default function DispatchLocationPinSelector({ submission, onUpdate }: Pr
               </Select>
               <Button
                 variant="secondary"
-                onClick={() => handleOpenInMaps(tempLat ?? undefined, tempLng ?? undefined)}
-                disabled={!(typeof (tempLat ?? currentLat) === "number" && typeof (tempLng ?? currentLng) === "number")}
+                onClick={() =>
+                  handleOpenInMaps(tempLat ?? undefined, tempLng ?? undefined)
+                }
+                disabled={
+                  !(
+                    typeof (tempLat ?? currentLat) === "number" &&
+                    typeof (tempLng ?? currentLng) === "number"
+                  )
+                }
               >
                 Open Maps
               </Button>

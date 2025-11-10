@@ -12,4 +12,3 @@ export default async function SignUpPage() {
     </main>
   );
 }
-

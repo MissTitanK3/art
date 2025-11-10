@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { DispatchStoreContext, useDispatchStore } from "@/providers/DispatchStoreProvider";
+import {
+  DispatchStoreContext,
+  useDispatchStore,
+} from "@/providers/DispatchStoreProvider";
 import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -12,21 +15,37 @@ function mapRowToDispatchShift(row: any): DispatchShift {
   return {
     id: String(row.id ?? crypto.randomUUID()),
     podId: typeof row?.pod_id === "string" ? row.pod_id : row?.podId,
-    volunteerId: typeof row?.volunteer_id === "string" ? row.volunteer_id : row?.volunteerId,
+    volunteerId:
+      typeof row?.volunteer_id === "string"
+        ? row.volunteer_id
+        : row?.volunteerId,
     // Prefer joined profile display_name for rendering in UI
-    volunteerName: typeof row?.profile?.display_name === "string" ? row.profile.display_name : row?.volunteerName,
-    startsAt: String(row?.starts_at ?? row?.startsAt ?? new Date().toISOString()),
-    endsAt: String(row?.ends_at ?? row?.endsAt ?? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()),
+    volunteerName:
+      typeof row?.profile?.display_name === "string"
+        ? row.profile.display_name
+        : row?.volunteerName,
+    startsAt: String(
+      row?.starts_at ?? row?.startsAt ?? new Date().toISOString(),
+    ),
+    endsAt: String(
+      row?.ends_at ??
+        row?.endsAt ??
+        new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    ),
     notes: typeof row?.notes === "string" ? row.notes : undefined,
   } as DispatchShift;
 }
 
-async function fetchDispatchShiftsFromDatabase(): Promise<DispatchShift[] | null> {
+async function fetchDispatchShiftsFromDatabase(): Promise<
+  DispatchShift[] | null
+> {
   try {
     const client = getSupabaseBrowserClient();
     const { data, error } = await client
       .from("dispatch_shifts")
-      .select("id, pod_id, volunteer_id, starts_at, ends_at, notes, profile:profiles(display_name)")
+      .select(
+        "id, pod_id, volunteer_id, starts_at, ends_at, notes, profile:profiles(display_name)",
+      )
       .order("starts_at", { ascending: true });
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
@@ -50,8 +69,11 @@ async function upsertDispatchShiftToDatabase(
     const fromPod = pod?.team?.find((m: any) => m.id === shift.volunteerId);
     const fromRoster = roster?.find?.((m: any) => m.id === shift.volunteerId);
     // If shift.volunteerId is a roster entry id, map to profile.id; otherwise use it if it's a UUID (profile id), else null
-    const uuidRe = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-    const byProfileId = roster.find((m: any) => m.profile?.id === shift.volunteerId)?.profile?.id;
+    const uuidRe =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    const byProfileId = roster.find(
+      (m: any) => m.profile?.id === shift.volunteerId,
+    )?.profile?.id;
     const fromRosterProfileFk = fromRoster?.profile_id as string | undefined;
     const fromPodProfileFk = (fromPod as any)?.profile_id as string | undefined;
     volunteer_profile_id =
@@ -62,18 +84,20 @@ async function upsertDispatchShiftToDatabase(
       fromPod?.profile?.id ??
       fromRoster?.profile?.id ??
       byProfileId ??
-      (uuidRe.test(String(shift.volunteerId)) ? String(shift.volunteerId) : null);
+      (uuidRe.test(String(shift.volunteerId))
+        ? String(shift.volunteerId)
+        : null);
 
     // As a final fallback, fetch the roster entry to resolve its profile_id directly
     if (!volunteer_profile_id) {
       try {
         const client2 = getSupabaseBrowserClient();
         const { data: r, error: rErr } = await client2
-          .from('roster_entries')
-          .select('profile_id')
-          .eq('id', shift.volunteerId)
+          .from("roster_entries")
+          .select("profile_id")
+          .eq("id", shift.volunteerId)
           .maybeSingle();
-        if (!rErr && r?.profile_id && typeof r.profile_id === 'string') {
+        if (!rErr && r?.profile_id && typeof r.profile_id === "string") {
           volunteer_profile_id = r.profile_id;
         }
       } catch {
@@ -103,7 +127,9 @@ async function deleteDispatchShiftFromDatabase(id: string): Promise<void> {
 export default function DispatchShiftsDataLayer() {
   const dispatchStore = React.useContext(DispatchStoreContext);
   if (!dispatchStore) {
-    throw new Error("DispatchShiftsDataLayer must be used within DispatchStoreProvider");
+    throw new Error(
+      "DispatchShiftsDataLayer must be used within DispatchStoreProvider",
+    );
   }
 
   const shifts = useDispatchStore((s) => s.shifts);
@@ -116,7 +142,9 @@ export default function DispatchShiftsDataLayer() {
   const removeShift = useDispatchStore((s) => s.removeShift);
   const isShiftActive = useDispatchStore((s) => s.isShiftActive);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [remoteShifts, setRemoteShifts] = React.useState<DispatchShift[] | null>(null);
+  const [remoteShifts, setRemoteShifts] = React.useState<
+    DispatchShift[] | null
+  >(null);
   const [loading, setLoading] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
@@ -137,7 +165,10 @@ export default function DispatchShiftsDataLayer() {
         }
       } catch (error) {
         if (!cancelled) {
-          console.warn("DispatchShiftsDataLayer: failed to fetch shifts", error);
+          console.warn(
+            "DispatchShiftsDataLayer: failed to fetch shifts",
+            error,
+          );
         }
       } finally {
         if (!cancelled) {
@@ -153,11 +184,16 @@ export default function DispatchShiftsDataLayer() {
   }, []);
 
   const mergedShifts = remoteShifts ?? shifts;
-  const activeShifts = remoteShifts ? remoteShifts.filter((shift) => isShiftActive(shift)) : getActiveShifts();
+  const activeShifts = remoteShifts
+    ? remoteShifts.filter((shift) => isShiftActive(shift))
+    : getActiveShifts();
   const upcomingShifts = remoteShifts
     ? remoteShifts
-      .filter((shift) => new Date(shift.startsAt) > new Date())
-      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+        .filter((shift) => new Date(shift.startsAt) > new Date())
+        .sort(
+          (a, b) =>
+            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+        )
     : getUpcomingShifts(24);
   // Use stable placeholder data until mounted to avoid hydration mismatches
   const effShifts = mounted ? mergedShifts : [];
@@ -190,7 +226,9 @@ export default function DispatchShiftsDataLayer() {
   const handleUpdateShift = React.useCallback(
     (id: string, updates: Partial<DispatchShift>) => {
       updateShift(id, updates);
-      const updated = dispatchStore.getState().shifts.find((shift) => shift.id === id);
+      const updated = dispatchStore
+        .getState()
+        .shifts.find((shift) => shift.id === id);
       if (updated) {
         upsertDispatchShiftToDatabase(updated, pods, roster).catch((e) => {
           if (process.env.NODE_ENV !== "production") {
@@ -198,7 +236,9 @@ export default function DispatchShiftsDataLayer() {
           }
         });
       }
-      setRemoteShifts((prev) => (prev && updated ? prev.map((s) => (s.id === id ? updated : s)) : prev));
+      setRemoteShifts((prev) =>
+        prev && updated ? prev.map((s) => (s.id === id ? updated : s)) : prev,
+      );
     },
     [dispatchStore, updateShift, pods, roster],
   );
@@ -212,7 +252,9 @@ export default function DispatchShiftsDataLayer() {
         }
       });
       removeShift(shiftId);
-      setRemoteShifts((prev) => (prev ? prev.filter((shift) => shift.id !== shiftId) : prev));
+      setRemoteShifts((prev) =>
+        prev ? prev.filter((shift) => shift.id !== shiftId) : prev,
+      );
     },
     [removeShift],
   );
@@ -230,13 +272,17 @@ export default function DispatchShiftsDataLayer() {
       isShiftActive={isShiftActive}
       addDrawerOpen={effDrawerOpen}
       onAddDrawerChange={setDrawerOpen}
-      loadingMessage={!mounted || loading ? "Loading shifts from database..." : undefined}
+      loadingMessage={
+        !mounted || loading ? "Loading shifts from database..." : undefined
+      }
       getVolunteersForPod={async (podId) => {
         try {
           const client = getSupabaseBrowserClient();
           const { data, error } = await client
             .from("roster_entries")
-            .select("id, profile_id, role, status, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*)")
+            .select(
+              "id, profile_id, role, status, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*)",
+            )
             .eq("pod_id", podId)
             .order("joined_at", { ascending: true });
           if (error) throw error;
@@ -244,7 +290,10 @@ export default function DispatchShiftsDataLayer() {
           // Map to RosterEntry shape used by UI
           return rows.map((row: any) => ({
             id: String(row.id),
-            profile_id: typeof row.profile_id === 'string' ? row.profile_id : row.profile?.id,
+            profile_id:
+              typeof row.profile_id === "string"
+                ? row.profile_id
+                : row.profile?.id,
             profile: row.profile,
             role: row.role,
             status: row.status,

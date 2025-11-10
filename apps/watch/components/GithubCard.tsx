@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { FaGithub } from 'react-icons/fa';
-import { useTranslations } from '@/lib/il8n/useTranslations';
+import { FaGithub } from "react-icons/fa";
+import { useTranslations } from "@/lib/il8n/useTranslations";
 
 export default function GitHubCard() {
   const { t } = useTranslations();
@@ -11,14 +11,17 @@ export default function GitHubCard() {
       <div className="flex items-center space-x-4">
         <FaGithub className="text-2xl" />
         <div>
-          <h3 className="text-lg font-semibold">{t('githubCardTitle')}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{t('githubCardText')}</p>
+          <h3 className="text-lg font-semibold">{t("githubCardTitle")}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {t("githubCardText")}
+          </p>
           <a
             href="https://github.com/MissTitanK3/art"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block mt-2 px-3 py-1 text-sm font-medium bg-black text-white rounded hover:bg-gray-800">
-            {t('githubCardLink')}
+            className="inline-block mt-2 px-3 py-1 text-sm font-medium bg-black text-white rounded hover:bg-gray-800"
+          >
+            {t("githubCardLink")}
           </a>
         </div>
       </div>

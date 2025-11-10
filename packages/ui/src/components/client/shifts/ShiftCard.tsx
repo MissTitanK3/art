@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Pencil, Trash } from "lucide-react";
@@ -74,7 +79,6 @@ export default function ShiftCard({
     toast.success("Shift deleted ✅");
   };
 
-
   return (
     <>
       <Card>
@@ -112,8 +116,16 @@ export default function ShiftCard({
         </CardHeader>
         <CardContent className="text-sm flex justify-evenly">
           <p>
-            ⏱ {new Date(shift.startsAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })} →{" "}
-            {new Date(shift.endsAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
+            ⏱{" "}
+            {new Date(shift.startsAt).toLocaleString(undefined, {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}{" "}
+            →{" "}
+            {new Date(shift.endsAt).toLocaleString(undefined, {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
           </p>
           {shift.notes && <p className="mt-1">📝 {shift.notes}</p>}
         </CardContent>

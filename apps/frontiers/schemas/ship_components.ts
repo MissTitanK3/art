@@ -1,7 +1,7 @@
 export type ShipComponent = {
   id: string;
   profile_id: string;
-  slot: 'hull' | 'engine' | 'comms' | 'aux' | 'scanner' | 'weapon';
+  slot: "hull" | "engine" | "comms" | "aux" | "scanner" | "weapon";
   kind: string;
   level: number;
   integrity: number; // 0..1

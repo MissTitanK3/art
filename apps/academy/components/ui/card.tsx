@@ -6,4 +6,4 @@ export {
   CardDescription,
   CardContent,
   CardAction,
-} from '@workspace/ui/components/card';
+} from "@workspace/ui/components/card";

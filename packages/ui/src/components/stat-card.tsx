@@ -12,11 +12,19 @@ type Props = {
   loading?: boolean;
 };
 
-export default function StatCard({ label, value, icon, className, loading }: Props) {
+export default function StatCard({
+  label,
+  value,
+  icon,
+  className,
+  loading,
+}: Props) {
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardDescription className="text-sm font-medium">{label}</CardDescription>
+        <CardDescription className="text-sm font-medium">
+          {label}
+        </CardDescription>
         {icon}
       </CardHeader>
       <CardContent>
@@ -31,4 +39,3 @@ export default function StatCard({ label, value, icon, className, loading }: Pro
     </Card>
   );
 }
-

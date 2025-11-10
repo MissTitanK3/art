@@ -12,7 +12,9 @@ type CreatePathwayClassDataLayerProps = {
   pathway: CourseBlueprint;
 };
 
-export function CreatePathwayClassDataLayer({ pathway }: CreatePathwayClassDataLayerProps) {
+export function CreatePathwayClassDataLayer({
+  pathway,
+}: CreatePathwayClassDataLayerProps) {
   const router = useRouter();
   const addAcademyClass = usePodStore((state) => state.addAcademyClass);
 

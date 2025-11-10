@@ -15,26 +15,34 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
 
   const target = React.useMemo(
     () => redirectTo ?? searchParams?.get("redirectTo") ?? FALLBACK_REDIRECT,
-    [redirectTo, searchParams]
+    [redirectTo, searchParams],
   );
 
-  const onSubmit = React.useCallback(async (email: string, password: string) => {
-    const session = await signInWithPassword({ email, password });
-    setSession(session);
-    try {
-      await fetch("/auth/callback", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          event: "SIGNED_IN",
-          session: { access_token: session.accessToken, refresh_token: session.refreshToken },
-        }),
-        keepalive: true,
-      });
-    } catch { /* ignore session sync errors */ }
-    await refresh();
-    router.push(target);
-  }, [signInWithPassword, setSession, refresh, router, target]);
+  const onSubmit = React.useCallback(
+    async (email: string, password: string) => {
+      const session = await signInWithPassword({ email, password });
+      setSession(session);
+      try {
+        await fetch("/auth/callback", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            event: "SIGNED_IN",
+            session: {
+              access_token: session.accessToken,
+              refresh_token: session.refreshToken,
+            },
+          }),
+          keepalive: true,
+        });
+      } catch {
+        /* ignore session sync errors */
+      }
+      await refresh();
+      router.push(target);
+    },
+    [signInWithPassword, setSession, refresh, router, target],
+  );
 
   return (
     <UiSignInCard
@@ -44,9 +52,14 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
       footer={
         <div className="flex w-full items-center justify-between gap-2 text-sm text-muted-foreground">
           <span>
-            Don’t have an account? <a className="underline" href="/sign-up">Create one</a>
+            Don’t have an account?{" "}
+            <a className="underline" href="/sign-up">
+              Create one
+            </a>
           </span>
-          <a className="underline" href="/forgot-password">Forgot password?</a>
+          <a className="underline" href="/forgot-password">
+            Forgot password?
+          </a>
         </div>
       }
     />

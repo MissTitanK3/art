@@ -1,14 +1,26 @@
 "use client";
 
-import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../card';
-import { Badge } from '../../badge';
-import { PageHeader } from '../../page-header';
-import { LoadingText, ErrorText, EmptyText } from '../../status-text';
-import { BugAreaSelect, BugStatusFilterSelect } from '../bug-report-selects';
-import type { BugArea, BugPriority, BugStatus } from '../bug-report-selects';
-import { BugPriorityBadge } from '../bug-report-badges';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../select';
+import * as React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../card";
+import { Badge } from "../../badge";
+import { PageHeader } from "../../page-header";
+import { LoadingText, ErrorText, EmptyText } from "../../status-text";
+import { BugAreaSelect, BugStatusFilterSelect } from "../bug-report-selects";
+import type { BugArea, BugPriority, BugStatus } from "../bug-report-selects";
+import { BugPriorityBadge } from "../bug-report-badges";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../select";
 
 export type BugReportRow = {
   id: string;
@@ -29,48 +41,67 @@ export interface BugReportListProps {
   area?: BugArea | undefined;
   onStatusChange: (s: BugStatus | undefined) => void;
   onAreaChange: (a: BugArea | undefined) => void;
-  sortBy: 'created_at' | 'priority' | 'status' | 'title';
-  sortDir: 'asc' | 'desc';
-  onSortByChange: (v: 'created_at' | 'priority' | 'status' | 'title') => void;
-  onSortDirChange: (v: 'asc' | 'desc') => void;
+  sortBy: "created_at" | "priority" | "status" | "title";
+  sortDir: "asc" | "desc";
+  onSortByChange: (v: "created_at" | "priority" | "status" | "title") => void;
+  onSortDirChange: (v: "asc" | "desc") => void;
 }
 
-export function BugReportList({ rows, loading, error, status, area, onStatusChange, onAreaChange, sortBy, sortDir, onSortByChange, onSortDirChange }: BugReportListProps) {
+export function BugReportList({
+  rows,
+  loading,
+  error,
+  status,
+  area,
+  onStatusChange,
+  onAreaChange,
+  sortBy,
+  sortDir,
+  onSortByChange,
+  onSortDirChange,
+}: BugReportListProps) {
   const grouped = React.useMemo(() => {
     const map = new Map<string, BugReportRow[]>();
     for (const r of rows) {
-      const key = r.status || 'open';
+      const key = r.status || "open";
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
     }
     // sort items in each group according to sortBy/sortDir
-    const priorityOrder: Record<string, number> = { critical: 3, high: 2, medium: 1, low: 0 };
+    const priorityOrder: Record<string, number> = {
+      critical: 3,
+      high: 2,
+      medium: 1,
+      low: 0,
+    };
     const compare = (a: BugReportRow, b: BugReportRow) => {
       let av: any;
       let bv: any;
       switch (sortBy) {
-        case 'created_at':
+        case "created_at":
           av = new Date(a.created_at).getTime();
           bv = new Date(b.created_at).getTime();
           break;
-        case 'priority':
-          av = priorityOrder[a.priority || 'low'] || 0;
-          bv = priorityOrder[b.priority || 'low'] || 0;
+        case "priority":
+          av = priorityOrder[a.priority || "low"] || 0;
+          bv = priorityOrder[b.priority || "low"] || 0;
           break;
-        case 'status':
+        case "status":
           av = a.status;
           bv = b.status;
           break;
-        case 'title':
+        case "title":
           av = a.title.toLowerCase();
           bv = b.title.toLowerCase();
           break;
       }
-      if (av < bv) return sortDir === 'asc' ? -1 : 1;
-      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      if (av < bv) return sortDir === "asc" ? -1 : 1;
+      if (av > bv) return sortDir === "asc" ? 1 : -1;
       return 0;
     };
-    return Array.from(map.entries()).map(([k, arr]) => [k, arr.slice().sort(compare)] as const);
+    return Array.from(map.entries()).map(
+      ([k, arr]) => [k, arr.slice().sort(compare)] as const,
+    );
   }, [rows, sortBy, sortDir]);
 
   return (
@@ -86,12 +117,21 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
           <div className="flex flex-wrap gap-3 items-center">
             <BugStatusFilterSelect value={status} onChange={onStatusChange} />
             <BugAreaSelect value={area} onChange={onAreaChange} />
-            <button className="text-sm underline text-muted-foreground" onClick={() => { onStatusChange(undefined); onAreaChange(undefined); }}>
+            <button
+              className="text-sm underline text-muted-foreground"
+              onClick={() => {
+                onStatusChange(undefined);
+                onAreaChange(undefined);
+              }}
+            >
               Reset
             </button>
             <div className="ml-auto flex gap-2 items-center">
               <div className="text-sm text-muted-foreground">Sort</div>
-              <Select value={sortBy} onValueChange={(v) => onSortByChange(v as any)}>
+              <Select
+                value={sortBy}
+                onValueChange={(v) => onSortByChange(v as any)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
@@ -102,7 +142,10 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
                   <SelectItem value="title">Title</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={sortDir} onValueChange={(v) => onSortDirChange(v as any)}>
+              <Select
+                value={sortDir}
+                onValueChange={(v) => onSortDirChange(v as any)}
+              >
                 <SelectTrigger className="w-28">
                   <SelectValue />
                 </SelectTrigger>
@@ -124,7 +167,7 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
           <Card key={stat}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span className="capitalize">{stat.replace('_', ' ')}</span>
+                <span className="capitalize">{stat.replace("_", " ")}</span>
                 <Badge variant="secondary">{items.length}</Badge>
               </CardTitle>
             </CardHeader>
@@ -143,9 +186,17 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
                   </thead>
                   <tbody>
                     {items.map((r) => (
-                      <tr key={r.id} className="border-t border-muted/50 hover:bg-muted/40 transition-colors">
+                      <tr
+                        key={r.id}
+                        className="border-t border-muted/50 hover:bg-muted/40 transition-colors"
+                      >
                         <td className="py-2 pr-4 align-top font-medium">
-                          <a className="text-blue-600 hover:underline" href={`/admin/bug-reports/${r.id}`}>{r.title}</a>
+                          <a
+                            className="text-blue-600 hover:underline"
+                            href={`/admin/bug-reports/${r.id}`}
+                          >
+                            {r.title}
+                          </a>
                         </td>
                         <td className="py-2 pr-4 align-top">
                           <Badge variant="outline" className="capitalize">
@@ -156,13 +207,19 @@ export function BugReportList({ rows, loading, error, status, area, onStatusChan
                           <BugPriorityBadge priority={r.priority} />
                         </td>
                         <td className="py-2 pr-4 align-top">
-                          <span className="font-mono text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {new Date(r.created_at).toLocaleString()}
+                          </span>
                         </td>
                         <td className="py-2 pr-4 align-top">
-                          <span className="font-mono text-xs text-muted-foreground">{r.created_by.slice(0, 8)}…</span>
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {r.created_by.slice(0, 8)}…
+                          </span>
                         </td>
                         <td className="py-2 pr-4 align-top">
-                          <span className="text-xs text-muted-foreground">{r.created_by_email || '—'}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {r.created_by_email || "—"}
+                          </span>
                         </td>
                       </tr>
                     ))}

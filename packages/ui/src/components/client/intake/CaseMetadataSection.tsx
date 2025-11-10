@@ -15,9 +15,7 @@ import { Input } from "../../input";
 import { DateTimePicker } from "../../DateTimePicker";
 import { DetailGrid, DetailItem } from "./DetailGrid";
 import { formatDateTime, formatText } from "./utils";
-import type {
-  DetaineeIntake,
-} from "@workspace/ui/types/missing-person-intake";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 interface BaseProps {
   title?: React.ReactNode;
@@ -58,14 +56,27 @@ export function CaseMetadataSection(props: CaseMetadataSectionProps) {
   return <CaseMetadataSectionEdit {...props} />;
 }
 
-function CaseMetadataSectionView({ title = "Case Metadata", description = "Basic identifying details about this detention.", data }: ViewProps) {
+function CaseMetadataSectionView({
+  title = "Case Metadata",
+  description = "Basic identifying details about this detention.",
+  data,
+}: ViewProps) {
   return (
     <FormSectionCard title={title} description={description}>
       <DetailGrid>
         <DetailItem label="Case ID" value={formatText(data.caseId)} />
-        <DetailItem label="Detention Date & Time" value={formatDateTime(data.detentionDateTime)} />
-        <DetailItem label="Detention Location" value={formatText(data.detentionLocation)} />
-        <DetailItem label="Arresting Agency" value={formatText(data.arrestingAgency)} />
+        <DetailItem
+          label="Detention Date & Time"
+          value={formatDateTime(data.detentionDateTime)}
+        />
+        <DetailItem
+          label="Detention Location"
+          value={formatText(data.detentionLocation)}
+        />
+        <DetailItem
+          label="Arresting Agency"
+          value={formatText(data.arrestingAgency)}
+        />
       </DetailGrid>
     </FormSectionCard>
   );
@@ -93,14 +104,17 @@ function CaseMetadataSectionEdit({
 
   const normalise = (s: string) => s.trim().replace(/\s+/g, "-").toUpperCase();
 
-  const parseSequenceFromCaseId = React.useCallback((caseId: string | null | undefined) => {
-    if (!caseId) return 0;
-    const text = normalise(caseId);
-    const m = text.match(/(\d+)$/);
-    if (!m || !m[1]) return 0;
-    const n = Number.parseInt(m[1], 10);
-    return Number.isFinite(n) && n >= 0 ? n : 0;
-  }, []);
+  const parseSequenceFromCaseId = React.useCallback(
+    (caseId: string | null | undefined) => {
+      if (!caseId) return 0;
+      const text = normalise(caseId);
+      const m = text.match(/(\d+)$/);
+      if (!m || !m[1]) return 0;
+      const n = Number.parseInt(m[1], 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    },
+    [],
+  );
 
   const buildCaseId = React.useCallback(
     (seq: number) => {
@@ -109,7 +123,7 @@ function CaseMetadataSectionEdit({
       const z = normalise(zoneInput || "ZONE");
       return `${r}-${z}-${year}-${month}-${padded}`;
     },
-    [region, zoneInput, year, month]
+    [region, zoneInput, year, month],
   );
 
   return (
@@ -146,11 +160,17 @@ function CaseMetadataSectionEdit({
               <FormLabel>Case ID</FormLabel>
               {region ? (
                 <FormDescription>
-                  Format <span className="font-mono text-xs">REGION-ZONE-YYYY-MM-NNNN</span>. Generate from last submitted case.
+                  Format{" "}
+                  <span className="font-mono text-xs">
+                    REGION-ZONE-YYYY-MM-NNNN
+                  </span>
+                  . Generate from last submitted case.
                 </FormDescription>
               ) : caseIdExamples ? (
                 <FormDescription>
-                  Format <span className="font-mono text-xs">ZONE-YYYY-NNN</span>. Use Generate to set ID.
+                  Format{" "}
+                  <span className="font-mono text-xs">ZONE-YYYY-NNN</span>. Use
+                  Generate to set ID.
                 </FormDescription>
               ) : null}
               <FormControl>
@@ -163,7 +183,9 @@ function CaseMetadataSectionEdit({
                           value={zoneInput}
                           onChange={(e) => {
                             const raw = e.target.value ?? "";
-                            const sanitised = raw.replace(/\s+/g, "-").toUpperCase();
+                            const sanitised = raw
+                              .replace(/\s+/g, "-")
+                              .toUpperCase();
                             setZoneInput(sanitised);
                           }}
                           placeholder="ZONE"
@@ -188,7 +210,10 @@ function CaseMetadataSectionEdit({
                               let seq = 0;
                               if (last) {
                                 seq = parseSequenceFromCaseId(last);
-                              } else if (existingCaseIds && existingCaseIds.length) {
+                              } else if (
+                                existingCaseIds &&
+                                existingCaseIds.length
+                              ) {
                                 const prefix = `${normalise(region ?? "REGION")}-${normalise(zoneInput)}-${year}-${month}-`;
                                 for (const id of existingCaseIds) {
                                   const n = normalise(id);
@@ -210,11 +235,19 @@ function CaseMetadataSectionEdit({
                         </Button>
                       </div>
                     </div>
-                    <Input value={field.value ?? ""} readOnly placeholder={`e.g. ${buildCaseId(1)}`} />
+                    <Input
+                      value={field.value ?? ""}
+                      readOnly
+                      placeholder={`e.g. ${buildCaseId(1)}`}
+                    />
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <Input value={field.value ?? ""} readOnly placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`} />
+                    <Input
+                      value={field.value ?? ""}
+                      readOnly
+                      placeholder={`e.g. ${caseIdExamples?.primary ?? "ZONE-2024-001"}`}
+                    />
                     {onGenerateCaseId || loadLastCaseId ? (
                       <Button
                         type="button"
@@ -275,7 +308,10 @@ function CaseMetadataSectionEdit({
           <FormItem>
             <FormLabel>Detention Location</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Street / facility / city / state" />
+              <Input
+                {...field}
+                placeholder="Street / facility / city / state"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

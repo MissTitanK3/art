@@ -44,7 +44,9 @@ export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
   emptyState,
 }: PodShiftsLayoutProps<TForm>) {
   if (!podId && notFoundMessage) {
-    return <section className="mx-auto w-full max-w-4xl">{notFoundMessage}</section>;
+    return (
+      <section className="mx-auto w-full max-w-4xl">{notFoundMessage}</section>
+    );
   }
 
   const hasShifts = shifts.length > 0;
@@ -55,11 +57,18 @@ export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">{shift.label || "Untitled shift"}</p>
-              <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+              <p
+                className="text-xs text-muted-foreground"
+                suppressHydrationWarning
+              >
                 {formatDateRange(shift.start, shift.end, shift.tz)}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => onRemoveShift(shift.id)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveShift(shift.id)}
+            >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
@@ -67,9 +76,9 @@ export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
       ))}
     </div>
   ) : (
-    emptyState ?? (
+    (emptyState ?? (
       <p className="text-sm text-muted-foreground">No shifts added yet.</p>
-    )
+    ))
   );
 
   return (

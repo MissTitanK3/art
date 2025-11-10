@@ -2,7 +2,13 @@ import * as React from "react";
 
 import { cn } from "../lib/utils";
 import { Button, type ButtonProps } from "./button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./card";
 
 interface FormArrayCardProps {
   label: React.ReactNode;
@@ -39,7 +45,14 @@ export function FormArrayCard({
         <CardTitle className="text-sm">{label}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" size="sm" variant="secondary" onClick={onAdd} className="w-fit" {...addButtonProps}>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={onAdd}
+            className="w-fit"
+            {...addButtonProps}
+          >
             {addLabel}
           </Button>
           {headerContent}

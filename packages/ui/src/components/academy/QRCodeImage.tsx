@@ -1,28 +1,28 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from "react"
-import { generateQRDataURL } from "@workspace/ui/lib/qrcode"
+import { useEffect, useState } from "react";
+import { generateQRDataURL } from "@workspace/ui/lib/qrcode";
 
 export function QRCodeImage({ value }: { value: string }) {
-  const [dataUrl, setDataUrl] = useState<string>("")
+  const [dataUrl, setDataUrl] = useState<string>("");
 
   useEffect(() => {
-    let active = true
+    let active = true;
 
     async function load() {
-      const url = await generateQRDataURL(value)
-      if (!active) return
-      setDataUrl(url)
+      const url = await generateQRDataURL(value);
+      if (!active) return;
+      setDataUrl(url);
     }
 
-    load()
+    load();
 
     return () => {
-      active = false
-    }
-  }, [value])
+      active = false;
+    };
+  }, [value]);
 
-  const linkLabel = value.replace(/^https?:\/\//, "")
+  const linkLabel = value.replace(/^https?:\/\//, "");
 
   return (
     <div className="mx-auto flex w-72 max-w-sm flex-col items-center space-y-3 rounded-lg border bg-slate-600 px-4 py-4 text-center shadow-md">
@@ -39,7 +39,12 @@ export function QRCodeImage({ value }: { value: string }) {
           Generating QR…
         </div>
       )}
-      <a href={value} className="w-full break-words text-xs text-gray-200" target="_blank" rel="noreferrer">
+      <a
+        href={value}
+        className="w-full break-words text-xs text-gray-200"
+        target="_blank"
+        rel="noreferrer"
+      >
         {linkLabel}
       </a>
       {dataUrl ? (
@@ -52,5 +57,5 @@ export function QRCodeImage({ value }: { value: string }) {
         </a>
       ) : null}
     </div>
-  )
+  );
 }

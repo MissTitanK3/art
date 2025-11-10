@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface Props {
   title: string;
@@ -12,8 +12,11 @@ export const CollapsibleSection: React.FC<Props> = ({ title, children }) => {
 
   return (
     <div className="border rounded mb-3">
-      <button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-2 hover:bg-gray-600 font-semibold">
-        {open ? '−' : '+'} {title}
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-left px-4 py-2 hover:bg-gray-600 font-semibold"
+      >
+        {open ? "−" : "+"} {title}
       </button>
       {open && <div className="p-4">{children}</div>}
     </div>

@@ -37,7 +37,10 @@ type ExportFormat = "pdf" | "json";
 export interface MissingPersonIntakeFormProps {
   seedRecords?: Iterable<DetaineeIntake>;
   defaultCaseZone?: string;
-  onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
+  onExportRecord?: (
+    record: DetaineeIntake,
+    format: ExportFormat,
+  ) => Promise<Blob | string | void>;
   onPersistRecord?: (record: DetaineeIntake) => Promise<void> | void;
   region?: string; // optional region code to enable REGION-ZONE-YYYY-MM-NNNN
   // Optional: fetch last submitted case's caseId from backend ordered by auto-increment id
@@ -96,14 +99,19 @@ export function MissingPersonIntakeForm({
   loadLastCaseId,
 }: MissingPersonIntakeFormProps) {
   const [lastJson, setLastJson] = React.useState<string>("");
-  const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
+  const [exportingFormat, setExportingFormat] =
+    React.useState<ExportFormat | null>(null);
   const [storedCaseIds, setStoredCaseIds] = React.useState<string[]>([]);
   const [storedIdsLoaded, setStoredIdsLoaded] = React.useState(false);
   const [caseIdInitialized, setCaseIdInitialized] = React.useState(false);
-  const [persistedCaseId, setPersistedCaseId] = React.useState<string | null>(null);
+  const [persistedCaseId, setPersistedCaseId] = React.useState<string | null>(
+    null,
+  );
 
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
-  const removeRecordFromStore = useMissingPersonStore((state) => state.removeRecord);
+  const removeRecordFromStore = useMissingPersonStore(
+    (state) => state.removeRecord,
+  );
   const hasRecord = useMissingPersonStore((state) => state.hasRecord);
   const storeRecords = useMissingPersonStore((state) => state.records);
 
@@ -111,16 +119,16 @@ export function MissingPersonIntakeForm({
 
   const caseIdExamplePrimary = React.useMemo(
     () => `${defaultCaseZone}-${currentYear}-001`,
-    [defaultCaseZone, currentYear]
+    [defaultCaseZone, currentYear],
   );
   const caseIdExampleSecondary = React.useMemo(
     () => `TX-${currentYear}-017`,
-    [currentYear]
+    [currentYear],
   );
 
   const seedCaseIds = React.useMemo(
     () => collectCaseIds(seedRecords ? Array.from(seedRecords) : []),
-    [seedRecords]
+    [seedRecords],
   );
 
   React.useEffect(() => {
@@ -133,7 +141,9 @@ export function MissingPersonIntakeForm({
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          setStoredCaseIds(parsed.filter((id): id is string => typeof id === "string"));
+          setStoredCaseIds(
+            parsed.filter((id): id is string => typeof id === "string"),
+          );
         }
       }
     } catch (error) {
@@ -143,7 +153,10 @@ export function MissingPersonIntakeForm({
     }
   }, []);
 
-  const storeCaseIds = React.useMemo(() => collectCaseIds(storeRecords), [storeRecords]);
+  const storeCaseIds = React.useMemo(
+    () => collectCaseIds(storeRecords),
+    [storeRecords],
+  );
 
   const allCaseIds = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -216,12 +229,15 @@ export function MissingPersonIntakeForm({
         console.warn("MissingPersonIntakeForm: remote persist failed", err);
       }
     },
-    [addRecordToStore, rememberCaseId, onPersistRecord]
+    [addRecordToStore, rememberCaseId, onPersistRecord],
   );
 
   const generateNewCaseId = React.useCallback(() => {
     const currentId = form.getValues("caseId");
-    const candidate = generateNextCaseId(defaultCaseZone, [...allCaseIds, currentId ?? ""]);
+    const candidate = generateNextCaseId(defaultCaseZone, [
+      ...allCaseIds,
+      currentId ?? "",
+    ]);
     form.setValue("caseId", candidate, { shouldDirty: true });
     form.clearErrors("caseId");
     setPersistedCaseId(null);
@@ -242,7 +258,7 @@ export function MissingPersonIntakeForm({
       }
       return null;
     },
-    [allCaseIds, persistedCaseId]
+    [allCaseIds, persistedCaseId],
   );
 
   const handleSubmit = async (values: DetaineeIntakeFormValues) => {
@@ -263,7 +279,9 @@ export function MissingPersonIntakeForm({
 
     await persistRecord(normalized, normalizedCaseId);
     setLastJson(JSON.stringify(normalized, null, 2));
-    toast.success("Intake saved locally. Refresh the directory to see the new record.");
+    toast.success(
+      "Intake saved locally. Refresh the directory to see the new record.",
+    );
   };
 
   const handleExport = async (format: ExportFormat) => {
@@ -335,15 +353,30 @@ export function MissingPersonIntakeForm({
           }}
         />
 
-        <ContactsSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
+        <ContactsSection
+          control={form.control}
+          onSave={() => form.handleSubmit(handleSubmit)()}
+        />
 
-        <IdentificationSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
+        <IdentificationSection
+          control={form.control}
+          onSave={() => form.handleSubmit(handleSubmit)()}
+        />
 
-        <DetentionDetailsSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
+        <DetentionDetailsSection
+          control={form.control}
+          onSave={() => form.handleSubmit(handleSubmit)()}
+        />
 
-        <LegalSupportSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
+        <LegalSupportSection
+          control={form.control}
+          onSave={() => form.handleSubmit(handleSubmit)()}
+        />
 
-        <VerificationSection control={form.control} onSave={() => form.handleSubmit(handleSubmit)()} />
+        <VerificationSection
+          control={form.control}
+          onSave={() => form.handleSubmit(handleSubmit)()}
+        />
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit">Submit Intake</Button>
@@ -355,7 +388,9 @@ export function MissingPersonIntakeForm({
                 onClick={() => handleExport("pdf")}
                 disabled={exportingFormat === "pdf"}
               >
-                {exportingFormat === "pdf" ? "Generating PDF..." : "Download PDF"}
+                {exportingFormat === "pdf"
+                  ? "Generating PDF..."
+                  : "Download PDF"}
               </Button>
               <Button
                 type="button"

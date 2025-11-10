@@ -1,1 +1,1 @@
-export { generateQRDataURL } from '@workspace/ui/lib/qrcode';
+export { generateQRDataURL } from "@workspace/ui/lib/qrcode";

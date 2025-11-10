@@ -9,22 +9,26 @@ type BeforeInstallPromptEvent = Event & {
 
 function isStandalone() {
   if (typeof window === "undefined") return false;
-  const mq = window.matchMedia && window.matchMedia("(display-mode: standalone)");
+  const mq =
+    window.matchMedia && window.matchMedia("(display-mode: standalone)");
   // iOS Safari
   // @ts-ignore
-  const iosStandalone = typeof navigator !== 'undefined' && (navigator as any).standalone;
+  const iosStandalone =
+    typeof navigator !== "undefined" && (navigator as any).standalone;
   return (mq && mq.matches) || iosStandalone;
 }
 
 export default function InstallPrompt() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (isStandalone()) return; // already installed
-    if (typeof window === 'undefined') return;
-    if (localStorage.getItem('pwaInstalled') === '1') return;
-    if (localStorage.getItem('pwaPromptDismissed') === '1') return;
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("pwaInstalled") === "1") return;
+    if (localStorage.getItem("pwaPromptDismissed") === "1") return;
 
     const onBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -32,17 +36,19 @@ export default function InstallPrompt() {
       setVisible(true);
     };
     const onAppInstalled = () => {
-      localStorage.setItem('pwaInstalled', '1');
+      localStorage.setItem("pwaInstalled", "1");
       setVisible(false);
       setDeferred(null);
-      try { console.info('PWA installed'); } catch {}
+      try {
+        console.info("PWA installed");
+      } catch {}
     };
 
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    window.addEventListener('appinstalled', onAppInstalled);
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onAppInstalled);
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', onAppInstalled);
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onAppInstalled);
     };
   }, []);
 
@@ -52,8 +58,8 @@ export default function InstallPrompt() {
     try {
       await deferred.prompt();
       const choice = await deferred.userChoice;
-      if (choice?.outcome === 'accepted') {
-        localStorage.setItem('pwaInstalled', '1');
+      if (choice?.outcome === "accepted") {
+        localStorage.setItem("pwaInstalled", "1");
       } else {
         // leave prompt available again later if dismissed by browser UI
       }
@@ -63,7 +69,7 @@ export default function InstallPrompt() {
   };
 
   const onDismiss = () => {
-    localStorage.setItem('pwaPromptDismissed', '1');
+    localStorage.setItem("pwaPromptDismissed", "1");
     setVisible(false);
   };
 
@@ -71,14 +77,19 @@ export default function InstallPrompt() {
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
       <div className="rounded-xl border border-border bg-card text-card-foreground shadow-lg px-4 py-3 flex items-center gap-3">
         <span className="text-sm">Install this app for quicker access</span>
-        <button onClick={onInstall} className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90">
+        <button
+          onClick={onInstall}
+          className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90"
+        >
           Install
         </button>
-        <button onClick={onDismiss} className="px-3 py-1.5 text-sm rounded-md border border-border hover:bg-accent hover:text-accent-foreground">
+        <button
+          onClick={onDismiss}
+          className="px-3 py-1.5 text-sm rounded-md border border-border hover:bg-accent hover:text-accent-foreground"
+        >
           Not now
         </button>
       </div>
     </div>
   );
 }
-

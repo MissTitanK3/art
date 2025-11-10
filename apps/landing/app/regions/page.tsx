@@ -1,13 +1,22 @@
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { ExternalLink, MapPin, MessagesSquare } from "lucide-react";
 import { REGIONS, regionUrl } from "./regions";
 
 export default function RegionsPage() {
-  const live = REGIONS.filter((r) => !r.disabled).sort((a, b) => a.name.localeCompare(b.name));
-  const planned = REGIONS.filter((r) => r.disabled).sort((a, b) => a.name.localeCompare(b.name));
+  const live = REGIONS.filter((r) => !r.disabled).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+  const planned = REGIONS.filter((r) => r.disabled).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -16,7 +25,10 @@ export default function RegionsPage() {
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <MapPin className="h-6 w-6 text-muted-foreground" /> Regions
           </h1>
-          <Link href="/" className="text-sm underline underline-offset-4 text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="text-sm underline underline-offset-4 text-muted-foreground hover:text-foreground"
+          >
             Back to landing
           </Link>
         </div>
@@ -34,20 +46,29 @@ export default function RegionsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div className="text-muted-foreground">
-                    <span className="text-foreground font-medium">Subdomain: </span>
+                    <span className="text-foreground font-medium">
+                      Subdomain:{" "}
+                    </span>
                     <code className="text-xs">{r.subdomain}</code>
                   </div>
                   <div className="text-muted-foreground">
-                    <span className="text-foreground font-medium">Coverage: </span>
+                    <span className="text-foreground font-medium">
+                      Coverage:{" "}
+                    </span>
                     {r.coverage}
                   </div>
-                  {r.notes ? (<div className="text-xs text-muted-foreground">{r.notes}</div>) : null}
+                  {r.notes ? (
+                    <div className="text-xs text-muted-foreground">
+                      {r.notes}
+                    </div>
+                  ) : null}
                   {r.signals && r.signals.length ? (
                     <div className="flex flex-wrap gap-2 pt-1">
                       {r.signals.map((s) => (
                         <Button key={s.url} asChild size="sm" variant="outline">
                           <a href={s.url} target="_blank" rel="noreferrer">
-                            <MessagesSquare className="mr-1.5 h-3.5 w-3.5" /> {s.name}
+                            <MessagesSquare className="mr-1.5 h-3.5 w-3.5" />{" "}
+                            {s.name}
                           </a>
                         </Button>
                       ))}
@@ -77,16 +98,27 @@ export default function RegionsPage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="text-muted-foreground">
-                  <span className="text-foreground font-medium">Coverage: </span>
+                  <span className="text-foreground font-medium">
+                    Coverage:{" "}
+                  </span>
                   {r.coverage}
                 </div>
-                {r.notes ? (<div className="text-xs text-muted-foreground">{r.notes}</div>) : null}
+                {r.notes ? (
+                  <div className="text-xs text-muted-foreground">{r.notes}</div>
+                ) : null}
                 {r.signals && r.signals.length ? (
                   <div className="flex flex-wrap gap-2 pt-1">
                     {r.signals.map((s) => (
-                      <Button key={s.url} asChild size="sm" variant="outline" disabled>
+                      <Button
+                        key={s.url}
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        disabled
+                      >
                         <a href={s.url} target="_blank" rel="noreferrer">
-                          <MessagesSquare className="mr-1.5 h-3.5 w-3.5" /> {s.name}
+                          <MessagesSquare className="mr-1.5 h-3.5 w-3.5" />{" "}
+                          {s.name}
                         </a>
                       </Button>
                     ))}

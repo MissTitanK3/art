@@ -6,7 +6,11 @@ interface DetailGridProps {
   className?: string;
 }
 
-export function DetailGrid({ columns = 2, children, className }: DetailGridProps) {
+export function DetailGrid({
+  columns = 2,
+  children,
+  className,
+}: DetailGridProps) {
   const columnClass = columns === 1 ? "grid-cols-1" : "sm:grid-cols-2";
   return (
     <div className={`grid gap-4 ${columnClass} ${className ?? ""}`.trim()}>
@@ -24,7 +28,9 @@ export function DetailItem({ label, value }: DetailItemProps) {
   return (
     <div className="space-y-1">
       <div className="text-sm font-medium text-foreground">{label}</div>
-      <div className="text-sm text-foreground" suppressHydrationWarning>{value}</div>
+      <div className="text-sm text-foreground" suppressHydrationWarning>
+        {value}
+      </div>
     </div>
   );
 }

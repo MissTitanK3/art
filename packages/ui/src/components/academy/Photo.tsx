@@ -6,12 +6,12 @@ export function Photo({
   height = 100,
   width = 100,
 }: {
-  src: string
-  alt: string
-  caption?: string
-  className?: string
-  height?: number
-  width?: number
+  src: string;
+  alt: string;
+  caption?: string;
+  className?: string;
+  height?: number;
+  width?: number;
 }) {
   return (
     <figure className={`my-6 text-center ${className}`}>
@@ -32,5 +32,5 @@ export function Photo({
         </figcaption>
       ) : null}
     </figure>
-  )
+  );
 }

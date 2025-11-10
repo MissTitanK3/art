@@ -12,8 +12,8 @@ export type PublicReport = {
   lat: number;
   lng: number;
   time: string; // ISO
-  category?: 'sighting' | 'checkpoint' | 'activity';
-  confidence?: 'low' | 'med' | 'high';
+  category?: "sighting" | "checkpoint" | "activity";
+  confidence?: "low" | "med" | "high";
 };
 
 export interface SelectedCounty {

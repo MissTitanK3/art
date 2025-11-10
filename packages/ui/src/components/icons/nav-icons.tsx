@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import * as L from 'lucide-react';
+import * as React from "react";
+import * as L from "lucide-react";
 
 export const navIconMap = {
   radio: L.Radio,
-  'map-pin': L.MapPin,
-  'graduation-cap': L.GraduationCap,
+  "map-pin": L.MapPin,
+  "graduation-cap": L.GraduationCap,
   shield: L.Shield,
   settings: L.Settings,
   book: L.Book,
@@ -14,11 +14,11 @@ export const navIconMap = {
   home: L.HomeIcon,
   new: L.PlusCircle,
   box: L.Box,
-  'file-search': L.FileSearch,
+  "file-search": L.FileSearch,
   users: L.Users,
   wharehouse: L.PackageCheck,
-  'log-out': L.LogOut,
-  'hand-heart': L.HandHeart,
+  "log-out": L.LogOut,
+  "hand-heart": L.HandHeart,
   // add more as needed
 } as const;
 

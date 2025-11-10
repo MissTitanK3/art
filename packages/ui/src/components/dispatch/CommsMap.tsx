@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@workspace/ui/components/card";
 
 export function CommsMap() {
   return (
@@ -17,4 +22,3 @@ export function CommsMap() {
 }
 
 export default CommsMap;
-

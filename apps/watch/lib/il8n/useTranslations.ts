@@ -1,5 +1,5 @@
-'use client';
-import { useLanguage } from './provider';
+"use client";
+import { useLanguage } from "./provider";
 
 export const useTranslations = () => {
   const { t } = useLanguage();

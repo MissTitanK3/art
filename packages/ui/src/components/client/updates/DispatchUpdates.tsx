@@ -21,7 +21,8 @@ export default function DispatchUpdates({
   onRemoveUpdate,
 }: DispatchUpdatesProps) {
   const displayName = useProfileStore((s) => s.profile?.display_name);
-  const resolvedAuthor = displayName && displayName.trim().length > 0 ? displayName : "Dispatcher";
+  const resolvedAuthor =
+    displayName && displayName.trim().length > 0 ? displayName : "Dispatcher";
   const [text, setText] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -69,7 +70,9 @@ export default function DispatchUpdates({
           className="flex-1 text-sm resize-y min-h-[80px]"
         />
         <div className="flex justify-end gap-2">
-          <label htmlFor="dispatch-attach" className="sr-only">Attach files</label>
+          <label htmlFor="dispatch-attach" className="sr-only">
+            Attach files
+          </label>
           <input
             id="dispatch-attach"
             type="file"
@@ -77,7 +80,12 @@ export default function DispatchUpdates({
             className="hidden"
             onChange={handleAttach}
           />
-          <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById('dispatch-attach')?.click()}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => document.getElementById("dispatch-attach")?.click()}
+          >
             <Paperclip className="h-4 w-4 mr-1" />
             Attach
           </Button>
@@ -130,10 +138,7 @@ export default function DispatchUpdates({
                   >
                     <X className="h-4 w-4 mr-1" /> Cancel
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleEditSave(u.id)}
-                  >
+                  <Button size="sm" onClick={() => handleEditSave(u.id)}>
                     <Check className="h-4 w-4 mr-1" /> Save
                   </Button>
                 </div>
@@ -144,7 +149,10 @@ export default function DispatchUpdates({
             {u.attachments?.length ? (
               <div className="mt-2 flex flex-col gap-2">
                 {u.attachments.map((a) => (
-                  <div key={a.id} className="flex items-start gap-2 flex-col w-full">
+                  <div
+                    key={a.id}
+                    className="flex items-start gap-2 flex-col w-full"
+                  >
                     {a.type.startsWith("image/") ? (
                       <img
                         src={a.url}

@@ -4,19 +4,21 @@ export interface SupabaseEnv {
   serviceRoleKey?: string;
 }
 
-export function ensureSupabaseEnv(target: 'server' | 'client' | 'admin' = 'server'): SupabaseEnv {
+export function ensureSupabaseEnv(
+  target: "server" | "client" | "admin" = "server",
+): SupabaseEnv {
   let url: string | undefined;
   let anonKey: string | undefined;
   let serviceRoleKey: string | undefined;
 
   switch (target) {
-    case 'admin':
+    case "admin":
       url = process.env.NEXT_PUBLIC_SUPABASE_URL_ADMIN;
       anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_ADMIN;
       serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY_ADMIN;
       break;
 
-    case 'client':
+    case "client":
       url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       break;
@@ -30,7 +32,9 @@ export function ensureSupabaseEnv(target: 'server' | 'client' | 'admin' = 'serve
   }
 
   if (!url || !anonKey) {
-    throw new Error(`Missing Supabase environment variables for ${target} environment.`);
+    throw new Error(
+      `Missing Supabase environment variables for ${target} environment.`,
+    );
   }
 
   return { url, anonKey, serviceRoleKey };

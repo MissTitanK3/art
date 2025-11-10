@@ -17,11 +17,15 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
 function mergeRecords(
   seed: DetaineeIntake[],
   remote: DetaineeIntake[] | null,
-  local: MissingPersonRecord[]
+  local: MissingPersonRecord[],
 ): DetaineeIntake[] {
   const merged = new Map<string, DetaineeIntake>();
 
-  const addRecord = (record: DetaineeIntake | MissingPersonRecord, index: number, origin: string) => {
+  const addRecord = (
+    record: DetaineeIntake | MissingPersonRecord,
+    index: number,
+    origin: string,
+  ) => {
     const key =
       record.caseId ??
       record.fullName ??
@@ -46,7 +50,9 @@ function mergeRecords(
 
 export default function MissingPersonsDataLayer() {
   const localRecords = useMissingPersonStore((state) => state.records);
-  const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[] | null>(null);
+  const [remoteRecords, setRemoteRecords] = React.useState<
+    DetaineeIntake[] | null
+  >(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -64,7 +70,9 @@ export default function MissingPersonsDataLayer() {
       } catch (err) {
         if (active) {
           console.warn("MissingPersonsDataLayer: failed to fetch records", err);
-          setError("Unable to load live missing person records. Showing demo data.");
+          setError(
+            "Unable to load live missing person records. Showing demo data.",
+          );
         }
       } finally {
         if (active) {
@@ -82,17 +90,17 @@ export default function MissingPersonsDataLayer() {
 
   const records = React.useMemo(
     () => mergeRecords(demoMissingPersons, remoteRecords, localRecords),
-    [localRecords, remoteRecords]
+    [localRecords, remoteRecords],
   );
 
   return (
     <div className="space-y-4" suppressHydrationWarning>
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading missing person directory…</p>
+        <p className="text-sm text-muted-foreground">
+          Loading missing person directory…
+        </p>
       ) : null}
-      {error ? (
-        <p className="text-sm text-amber-600">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-amber-600">{error}</p> : null}
       <MissingPersonsDirectory records={records} />
     </div>
   );

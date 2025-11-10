@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState } from 'react';
-import { ReportFormData } from '@/types/wizard';
+import { createContext, useContext, useState } from "react";
+import { ReportFormData } from "@/types/wizard";
 
 type WizardContextType = {
   step: number;
@@ -26,7 +26,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
   const [formData, setFormData] = useState<ReportFormData>({
     agency_type: [],
-    agency_other: '',
+    agency_other: "",
     location: null,
     media_url: null,
     lights_on: null,
@@ -45,8 +45,16 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
   };
 
   const finish = async () => {
-    const { agency_type, agency_other, location, media_url, lights_on, officer_direction, officer_moving, sirens_on } =
-      formData;
+    const {
+      agency_type,
+      agency_other,
+      location,
+      media_url,
+      lights_on,
+      officer_direction,
+      officer_moving,
+      sirens_on,
+    } = formData;
 
     const timestamp = new Date().toISOString();
     const report = {
@@ -63,27 +71,27 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     };
 
     const isOffline = !navigator.onLine;
-    const { addReportToQueue } = await import('@/utils/reportQueue');
-    const { supabase } = await import('@/utils/supabase/client');
+    const { addReportToQueue } = await import("@/utils/reportQueue");
+    const { supabase } = await import("@/utils/supabase/client");
 
     if (isOffline) {
       addReportToQueue(report);
-      window.location.href = '/report/wizard';
+      window.location.href = "/report/wizard";
       return;
     }
 
     try {
-      const { error } = await supabase.from('wizard').insert([report]);
+      const { error } = await supabase.from("wizard").insert([report]);
       if (error) {
-        console.error('Insert failed:', error);
+        console.error("Insert failed:", error);
         addReportToQueue(report);
       }
     } catch (err) {
-      console.error('Submission error:', err);
+      console.error("Submission error:", err);
       addReportToQueue(report);
     }
 
-    window.location.href = '/heatmap';
+    window.location.href = "/heatmap";
   };
 
   return (
@@ -100,7 +108,8 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
         testReportEnabled,
         setTestReportEnabled,
         finish,
-      }}>
+      }}
+    >
       {children}
     </WizardContext.Provider>
   );
@@ -108,6 +117,6 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
 export const useWizard = () => {
   const ctx = useContext(WizardContext);
-  if (!ctx) throw new Error('useWizard must be used within a WizardProvider');
+  if (!ctx) throw new Error("useWizard must be used within a WizardProvider");
   return ctx;
 };

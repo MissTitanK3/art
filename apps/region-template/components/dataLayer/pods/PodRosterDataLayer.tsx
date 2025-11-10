@@ -11,7 +11,7 @@ import {
 } from "@workspace/ui/layout/pods/PodRosterLayout";
 
 async function fetchPodRosterFromDatabase(
-  slug: string
+  slug: string,
 ): Promise<RosterEntry[] | null> {
   console.log("Fetching pod roster from database for slug:", slug);
   // TODO: swap with real database call when persistence is introduced.
@@ -24,7 +24,7 @@ async function fetchPodRosterFromDatabase(
 
 async function persistRosterEntryToDatabase(
   podId: string,
-  entry: RosterEntry
+  entry: RosterEntry,
 ): Promise<void> {
   console.log("Persisting roster entry to database for podId:", podId, entry);
   // TODO: implement proper persistence once a database is available.
@@ -33,8 +33,16 @@ async function persistRosterEntryToDatabase(
   await Promise.resolve();
 }
 
-async function deleteRosterEntryFromDatabase(podId: string, rosterId: string): Promise<void> {
-  console.log("Deleting roster entry from database for podId:", podId, "rosterId:", rosterId);
+async function deleteRosterEntryFromDatabase(
+  podId: string,
+  rosterId: string,
+): Promise<void> {
+  console.log(
+    "Deleting roster entry from database for podId:",
+    podId,
+    "rosterId:",
+    rosterId,
+  );
   // TODO: replace with real deletion once persistence is added.
   // Example:
   // await client.from("pod_roster").delete().eq("pod_id", podId).eq("id", rosterId);
@@ -53,7 +61,7 @@ export default function PodRosterDataLayer() {
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
-    null
+    null,
   );
   const [loadingRemoteRoster, setLoadingRemoteRoster] =
     React.useState<boolean>(false);
@@ -103,14 +111,16 @@ export default function PodRosterDataLayer() {
 
     const patched: RosterEntry = {
       ...entry,
-      profile_id: (entry as any).profile_id ?? (entry.profile?.id ? String(entry.profile.id) : undefined),
+      profile_id:
+        (entry as any).profile_id ??
+        (entry.profile?.id ? String(entry.profile.id) : undefined),
     };
     updatePod(pod.id, {
       team: pod.team.map((r) => (r.id === entry.id ? patched : r)),
     });
 
     setRemoteRoster((prev) =>
-      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev
+      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev,
     );
 
     setSelectedId(null); // close sheet after save
@@ -127,7 +137,9 @@ export default function PodRosterDataLayer() {
 
     const patched: RosterEntry = {
       ...entry,
-      profile_id: (entry as any).profile_id ?? (entry.profile?.id ? String(entry.profile.id) : undefined),
+      profile_id:
+        (entry as any).profile_id ??
+        (entry.profile?.id ? String(entry.profile.id) : undefined),
     };
     updatePod(pod.id, { team: [...pod.team, patched] });
     setRemoteRoster((prev) => (prev ? [...prev, patched] : prev));
@@ -145,11 +157,17 @@ export default function PodRosterDataLayer() {
     updatePod(pod.id, {
       team: pod.team.filter((r) => r.id !== memberId),
     });
-    setRemoteRoster((prev) => (prev ? prev.filter((r) => r.id !== memberId) : prev));
+    setRemoteRoster((prev) =>
+      prev ? prev.filter((r) => r.id !== memberId) : prev,
+    );
   };
 
   const addMemberAction = pod ? (
-    <AddMemberButton pod={pod} activeRoster={activeRoster} onAddMember={handleAddMember} />
+    <AddMemberButton
+      pod={pod}
+      activeRoster={activeRoster}
+      onAddMember={handleAddMember}
+    />
   ) : null;
 
   const layoutProps: PodRosterLayoutProps = {

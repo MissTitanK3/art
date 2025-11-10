@@ -18,7 +18,11 @@ type RemoveMemberButtonProps = {
   onRemoveMember: () => void;
 };
 
-export function RemoveMemberButton({ podName, member, onRemoveMember }: RemoveMemberButtonProps) {
+export function RemoveMemberButton({
+  podName,
+  member,
+  onRemoveMember,
+}: RemoveMemberButtonProps) {
   const [open, setOpen] = React.useState(false);
 
   const handleRemove = () => {
@@ -39,7 +43,9 @@ export function RemoveMemberButton({ podName, member, onRemoveMember }: RemoveMe
           <DialogDescription>
             Are you sure you want to remove{" "}
             <span className="font-semibold">
-              {member.profile?.display_name ?? member.handle ?? "Unknown member"}
+              {member.profile?.display_name ??
+                member.handle ??
+                "Unknown member"}
             </span>{" "}
             from <span className="font-mono">{podName}</span>? This action
             cannot be undone.

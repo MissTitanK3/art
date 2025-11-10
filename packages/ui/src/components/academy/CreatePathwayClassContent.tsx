@@ -1,29 +1,31 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
-import { TrackBadge } from '@workspace/ui/components/academy/TrackBadge';
-import { Button } from '@workspace/ui/components/button';
+import { TrackBadge } from "@workspace/ui/components/academy/TrackBadge";
+import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@workspace/ui/components/card';
-import { Input } from '@workspace/ui/components/input';
-import { Label } from '@workspace/ui/components/label';
+} from "@workspace/ui/components/card";
+import { Input } from "@workspace/ui/components/input";
+import { Label } from "@workspace/ui/components/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@workspace/ui/components/select';
-import { Textarea } from '@workspace/ui/components/textarea';
+} from "@workspace/ui/components/select";
+import { Textarea } from "@workspace/ui/components/textarea";
 
-import type { AcademyClass } from '@workspace/store/usePodStore';
-import type { CourseBlueprint } from '@workspace/ui/data/academy/course-blueprint';
+import type { AcademyClass } from "@workspace/store/usePodStore";
+import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
+import { useProfileStore } from "@workspace/store/useProfileStore";
+import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
 
 type CreatePathwayClassContentProps = {
   pathway: CourseBlueprint;
@@ -33,7 +35,7 @@ type CreatePathwayClassContentProps = {
 };
 
 function generateClassId() {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
   return `cls_${Math.random().toString(36).slice(2, 10)}`;
@@ -45,11 +47,23 @@ export function CreatePathwayClassContent({
   onBackToAcademy,
   onCancel,
 }: CreatePathwayClassContentProps) {
+  const profileFromStore = useProfileStore((s) => s.profile);
+  const profileRoles = React.useMemo(
+    () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
+    [profileFromStore?.access_role],
+  );
+  const effectiveCanManage = React.useMemo(
+    () => canManageInstructorsFromRoles(profileRoles),
+    [profileRoles],
+  );
   const defaultCourse = pathway.courses[0];
   const [submitting, setSubmitting] = React.useState(false);
 
   const totalTrackHours = React.useMemo(() => {
-    const total = pathway.courses.reduce((sum, course) => sum + (course.durationHours ?? 0), 0);
+    const total = pathway.courses.reduce(
+      (sum, course) => sum + (course.durationHours ?? 0),
+      0,
+    );
     if (total > 0) {
       return Number.parseFloat(total.toFixed(1));
     }
@@ -62,14 +76,14 @@ export function CreatePathwayClassContent({
   const [title, setTitle] = React.useState<string>(() =>
     defaultCourse ? `${pathway.label} · Cohort` : `${pathway.label} Class`,
   );
-  const [capacity, setCapacity] = React.useState<string>('18');
-  const [modality, setModality] = React.useState<'in_person' | 'online' | 'hybrid'>(
-    defaultCourse?.modality ?? 'online',
-  );
-  const [instructorType, setInstructorType] = React.useState<'dispatcher' | 'mentor' | 'expert'>(
-    defaultCourse?.instructorType ?? 'dispatcher',
-  );
-  const [notes, setNotes] = React.useState<string>('');
+  const [capacity, setCapacity] = React.useState<string>("18");
+  const [modality, setModality] = React.useState<
+    "in_person" | "online" | "hybrid"
+  >(defaultCourse?.modality ?? "online");
+  const [instructorType, setInstructorType] = React.useState<
+    "dispatcher" | "mentor" | "expert"
+  >(defaultCourse?.instructorType ?? "dispatcher");
+  const [notes, setNotes] = React.useState<string>("");
 
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -78,7 +92,8 @@ export function CreatePathwayClassContent({
       const classId = generateClassId();
       const parsedCapacity = Number.parseInt(capacity, 10) || 0;
       const description =
-        pathway.trackLabel ?? `Live cohort moving through the ${pathway.label} pathway together.`;
+        pathway.trackLabel ??
+        `Live cohort moving through the ${pathway.label} pathway together.`;
 
       const academyClass: AcademyClass = {
         id: classId,
@@ -98,7 +113,7 @@ export function CreatePathwayClassContent({
         sessions: [],
         sessionsScheduled: 0,
         nextSession: undefined,
-        status: 'needs_instructor',
+        status: "needs_instructor",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -129,10 +144,14 @@ export function CreatePathwayClassContent({
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 py-8">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Qualification pathway</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Qualification pathway
+          </p>
           <h1 className="mt-2 text-3xl font-semibold">{pathway.label}</h1>
           {pathway.trackLabel ? (
-            <p className="mt-3 text-sm text-muted-foreground">{pathway.trackLabel}</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {pathway.trackLabel}
+            </p>
           ) : null}
           {pathway.variant ? (
             <div className="mt-4">
@@ -151,11 +170,12 @@ export function CreatePathwayClassContent({
         <CardHeader>
           <CardTitle>Class details</CardTitle>
           <CardDescription>
-            Set up a cohort for ongoing sessions. You can add meeting dates, locations, and links later from
-            the cohort workspace.
+            Set up a cohort for ongoing sessions. You can add meeting dates,
+            locations, and links later from the cohort workspace.
           </CardDescription>
           <p className="mt-2 text-sm text-muted-foreground">
-            {pathway.courses.length} modules · approximately {totalTrackHours} hours of guided practice.
+            {pathway.courses.length} modules · approximately {totalTrackHours}{" "}
+            hours of guided practice.
           </p>
         </CardHeader>
         <CardContent>
@@ -181,7 +201,12 @@ export function CreatePathwayClassContent({
               </div>
               <div className="space-y-2">
                 <Label>Modality</Label>
-                <Select value={modality} onValueChange={(value) => setModality(value as typeof modality)}>
+                <Select
+                  value={modality}
+                  onValueChange={(value) =>
+                    setModality(value as typeof modality)
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -196,20 +221,26 @@ export function CreatePathwayClassContent({
                 <Label>Instructor focus</Label>
                 <Select
                   value={instructorType}
-                  onValueChange={(value) => setInstructorType(value as typeof instructorType)}
+                  onValueChange={(value) =>
+                    setInstructorType(value as typeof instructorType)
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="dispatcher">Dispatcher Instructor</SelectItem>
+                    <SelectItem value="dispatcher">
+                      Dispatcher Instructor
+                    </SelectItem>
                     <SelectItem value="mentor">Mentor</SelectItem>
                     <SelectItem value="expert">Subject Expert</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="sm:col-span-2 space-y-2">
-                <Label htmlFor="class-notes">Notes for mentors & coordinators</Label>
+                <Label htmlFor="class-notes">
+                  Notes for mentors & coordinators
+                </Label>
                 <Textarea
                   id="class-notes"
                   value={notes}
@@ -218,18 +249,26 @@ export function CreatePathwayClassContent({
                   placeholder="Outline preparation needs, resource links, and who will coordinate updates."
                 />
                 <p className="text-xs text-muted-foreground">
-                  Use the cohort workspace to schedule individual sessions, assign instructors, and share location
-                  details when ready.
+                  Use the cohort workspace to schedule individual sessions,
+                  assign instructors, and share location details when ready.
                 </p>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <Button type="button" variant="ghost" onClick={() => onCancel?.()}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onCancel?.()}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submitting} aria-busy={submitting}>
-                {submitting ? 'Saving…' : 'Save cohort'}
+              <Button
+                type="submit"
+                disabled={submitting || !effectiveCanManage}
+                aria-busy={submitting}
+              >
+                {submitting ? "Saving…" : "Save cohort"}
               </Button>
             </div>
           </form>

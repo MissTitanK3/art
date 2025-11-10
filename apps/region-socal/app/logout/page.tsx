@@ -14,11 +14,15 @@ export default function LogoutPage() {
       try {
         // Clear client-side session and local storage
         await signOut();
-      } catch { /* ignore signOut errors */ void 0; }
+      } catch {
+        /* ignore signOut errors */ void 0;
+      }
       try {
         // Also clear server-side Supabase cookies
         await fetch("/sign-out", { method: "GET", cache: "no-store" });
-      } catch { /* ignore sign-out route errors */ void 0; }
+      } catch {
+        /* ignore sign-out route errors */ void 0;
+      }
       if (!cancelled) router.replace("/sign-in");
     })();
     return () => {

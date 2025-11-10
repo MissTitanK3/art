@@ -1,7 +1,10 @@
 import TrainingClient from "@workspace/ui/layout/admin/training/training";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
-import type { AcademyTrainingSession, AcademyTrainingSessionParticipant } from "@workspace/store/types/academy";
+import type {
+  AcademyTrainingSession,
+  AcademyTrainingSessionParticipant,
+} from "@workspace/store/types/academy";
 import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 
 function mapRowToSession(
@@ -20,7 +23,10 @@ function mapRowToSession(
     instructorName: String(row.instructor_name ?? "TBD"),
     instructorType: row.instructor_type ?? "expert",
     status: row.status ?? "scheduled",
-    seats: typeof row.seats === "object" && row.seats !== null ? row.seats : { capacity: 0, confirmed: 0, waitlist: 0 },
+    seats:
+      typeof row.seats === "object" && row.seats !== null
+        ? row.seats
+        : { capacity: 0, confirmed: 0, waitlist: 0 },
     timezone: row.timezone ?? undefined,
     relatedTopic: row.related_topic ?? undefined,
     participants: bySession[String(row.id)] ?? [],
@@ -35,7 +41,12 @@ export default async function AdminTrainingDataLayer() {
       cookies: {
         getAll() {
           if (!store) return [] as { name: string; value: string }[];
-          return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
+          return store
+            .getAll()
+            .map(({ name, value }: { name: string; value: string }) => ({
+              name,
+              value,
+            }));
         },
         setAll(cookies) {
           if (!store) return;
@@ -43,13 +54,21 @@ export default async function AdminTrainingDataLayer() {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch { /* ignore cookie set errors */ void 0; }
+          } catch {
+            /* ignore cookie set errors */ void 0;
+          }
         },
       },
     });
 
-    const [{ data: sessions, error: sErr }, { data: participants, error: pErr }] = await Promise.all([
-      client.from("academy_sessions").select("*").order("start", { ascending: true }),
+    const [
+      { data: sessions, error: sErr },
+      { data: participants, error: pErr },
+    ] = await Promise.all([
+      client
+        .from("academy_sessions")
+        .select("*")
+        .order("start", { ascending: true }),
       client.from("academy_participants").select("*"),
     ]);
     if (sErr) throw sErr;
@@ -68,7 +87,9 @@ export default async function AdminTrainingDataLayer() {
       });
     }
 
-    const mapped = (sessions ?? []).map((row: any) => mapRowToSession(row, bySession));
+    const mapped = (sessions ?? []).map((row: any) =>
+      mapRowToSession(row, bySession),
+    );
     return <TrainingClient initialSessions={mapped} />;
   } catch (e) {
     // Fallback: no data if Supabase not configured

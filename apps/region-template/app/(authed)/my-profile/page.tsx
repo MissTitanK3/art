@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 // apps/region-template/app/(authed)/my-profile/page.tsx
 import Link from "next/link";
@@ -56,7 +56,10 @@ function ReasonBanner() {
         };
       default:
         return reason
-          ? { title: "Access limited", text: "You were redirected due to access restrictions." }
+          ? {
+              title: "Access limited",
+              text: "You were redirected due to access restrictions.",
+            }
           : null;
     }
   }, [reason]);
@@ -82,7 +85,9 @@ function ReasonBanner() {
             setHidden(true);
             const params = new URLSearchParams(searchParams.toString());
             params.delete("reason");
-            router.replace(`${pathname}${params.size ? `?${params.toString()}` : ""}`);
+            router.replace(
+              `${pathname}${params.size ? `?${params.toString()}` : ""}`,
+            );
           }}
         >
           Dismiss
@@ -124,7 +129,9 @@ function ProfilePageContent() {
     const params = new URLSearchParams(searchParams.toString());
     if (params.has("reason")) {
       params.delete("reason");
-      router.replace(`${pathname}${params.size ? `?${params.toString()}` : ""}`);
+      router.replace(
+        `${pathname}${params.size ? `?${params.toString()}` : ""}`,
+      );
     }
   }
 
@@ -158,9 +165,12 @@ function ProfilePageContent() {
             <div className="mt-4 rounded-md border border-emerald-300 bg-emerald-50 p-3 text-emerald-900">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="text-sm">
-                  <div className="font-semibold">Demo: Verify at highest level</div>
+                  <div className="font-semibold">
+                    Demo: Verify at highest level
+                  </div>
                   <div className="opacity-90">
-                    Mark your account as verified by an admin, acknowledge risk, and grant dispatch admin access.
+                    Mark your account as verified by an admin, acknowledge risk,
+                    and grant dispatch admin access.
                   </div>
                 </div>
                 <Button type="button" onClick={handleDemoVerifyAll}>

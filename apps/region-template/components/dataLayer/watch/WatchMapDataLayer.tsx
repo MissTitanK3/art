@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 import { fetchReports } from "@/lib/adapters/fetchReports";
 import { MapFocus, WizardReport } from "@workspace/store/types/watch.ts";
 import dynamic from "next/dynamic";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
 import WatchReportCard from "@workspace/ui/components/client/watch/WatchReportCard";
 import { useRouter } from "next/navigation";
 
 // Dynamically import WatchMap so Leaflet never loads during SSR
 const WatchMap = dynamic(
   () => import("@workspace/ui/components/client/watch/WatchMap"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const FOCUS_ZOOM = 11;
@@ -91,7 +96,8 @@ export default function WatchMapDataLayer() {
     });
   };
 
-  if (loading) return <div className="text-muted-foreground">Loading reports…</div>;
+  if (loading)
+    return <div className="text-muted-foreground">Loading reports…</div>;
   if (error) return <div className="text-destructive">{error}</div>;
 
   return (
@@ -122,7 +128,11 @@ export default function WatchMapDataLayer() {
 
         <TabsContent value="list" className="mt-4 space-y-3">
           {reports.map((r) => (
-            <WatchReportCard key={r.id} report={r} onViewOnMap={handleViewOnMap} />
+            <WatchReportCard
+              key={r.id}
+              report={r}
+              onViewOnMap={handleViewOnMap}
+            />
           ))}
         </TabsContent>
       </Tabs>

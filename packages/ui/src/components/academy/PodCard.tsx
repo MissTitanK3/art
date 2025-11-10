@@ -1,4 +1,4 @@
-import { QRCodeImage } from "@workspace/ui/components/academy/QRCodeImage"
+import { QRCodeImage } from "@workspace/ui/components/academy/QRCodeImage";
 
 export function PodCard({
   name,
@@ -6,10 +6,10 @@ export function PodCard({
   contact,
   coverage,
 }: {
-  name: string
-  link: string
-  contact: string
-  coverage: string
+  name: string;
+  link: string;
+  contact: string;
+  coverage: string;
 }) {
   return (
     <div className="mx-auto w-full max-w-md space-y-2 rounded-xl border p-4 text-sm shadow-sm">
@@ -19,7 +19,12 @@ export function PodCard({
       </p>
       <p>
         <strong>Join Link:</strong>{" "}
-        <a href={link} target="_blank" rel="noreferrer" className="break-words text-blue-600 underline">
+        <a
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+          className="break-words text-blue-600 underline"
+        >
           Tap to join
         </a>
       </p>
@@ -31,5 +36,5 @@ export function PodCard({
       </p>
       <QRCodeImage value={link} />
     </div>
-  )
+  );
 }

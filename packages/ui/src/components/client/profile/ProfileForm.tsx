@@ -18,7 +18,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
 import RoleSelector from "@workspace/ui/components/client/roles/RoleSelector";
 import { RiskSheet } from "@workspace/ui/components/client/profile/RiskSheet";
@@ -29,29 +29,36 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@workspace/ui/components/select";
 import { US_STATES } from "@workspace/ui/lib/constants/states";
 
 import { BasicImage } from "../../BasicImage.tsx";
-import { DeleteResult, DispatchProfileSchema, ProfileFormInput, ProfileFormOutput, SIGNAL_HANDLE_RE } from '@workspace/store/types/profile.ts'
+import {
+  DeleteResult,
+  DispatchProfileSchema,
+  ProfileFormInput,
+  ProfileFormOutput,
+  SIGNAL_HANDLE_RE,
+} from "@workspace/store/types/profile.ts";
 
-import { ImageComponent } from '@workspace/store/utils/image'
+import { ImageComponent } from "@workspace/store/utils/image";
 import {
   AccessRoleDescriptions,
   FieldRole,
   roleLabel,
   VerifiedByDescriptions,
-  verifierLabel
+  verifierLabel,
 } from "@workspace/store/types/roles.ts";
 import { useImage } from "../../../providers/ImageProvider.tsx";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@workspace/ui/components/label";
 
-
 export interface ProfileFormProps {
   initial: Partial<ProfileFormInput> & { id?: string };
-  onSubmit: (values: ProfileFormOutput) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
+  onSubmit: (
+    values: ProfileFormOutput,
+  ) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
   onDelete: () => Promise<DeleteResult> | DeleteResult;
   onDirtyChange?: (dirty: boolean) => void;
   onGenerateKey?: () => Promise<{ publicPem: string; privatePem: string }>;
@@ -61,7 +68,6 @@ export interface ProfileFormProps {
   ImageUrl?: string;
 }
 
-
 export function ProfileForm({
   initial,
   onSubmit,
@@ -70,7 +76,7 @@ export function ProfileForm({
   busy,
   disableDelete,
   ImageComponent: ImageProp,
-  ImageUrl
+  ImageUrl,
 }: ProfileFormProps) {
   const [isDeleting, startDelete] = React.useTransition();
   const [hasViewedSheet, setHasViewedSheet] = React.useState(false);
@@ -119,12 +125,15 @@ export function ProfileForm({
     }
   };
 
-
   return (
     // <Form {...form}>
-    <form id="edit-profile-entry-form" className="space-y-8" onSubmit={handleSubmit(submit, (errors) => {
-      console.log("validation errors", errors);
-    })}>
+    <form
+      id="edit-profile-entry-form"
+      className="space-y-8"
+      onSubmit={handleSubmit(submit, (errors) => {
+        console.log("validation errors", errors);
+      })}
+    >
       {/* Identity / status */}
       <div className="grid gap-4 md:grid-cols-3">
         <DumbField
@@ -144,8 +153,10 @@ export function ProfileForm({
             <div className="gap-2 flex flex-col">
               <Label>Available for dispatch?</Label>
               <div>
-
-                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                <Switch
+                  checked={!!field.value}
+                  onCheckedChange={field.onChange}
+                />
                 <span className="text-sm text-muted-foreground ml-2">
                   Toggle to indicate you’re actively available
                 </span>
@@ -165,8 +176,8 @@ export function ProfileForm({
               width={200}
               height={150}
               style={{
-                height: 'auto',
-                width: 'auto'
+                height: "auto",
+                width: "auto",
               }}
               className="object-cover"
               loading="lazy"
@@ -180,7 +191,11 @@ export function ProfileForm({
             render={({ field }) => (
               <>
                 <Label>Display name</Label>
-                <Input placeholder="Your handle or name" {...field} value={field.value ?? ""} />
+                <Input
+                  placeholder="Your handle or name"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </>
             )}
           />
@@ -199,7 +214,8 @@ export function ProfileForm({
                     // lightweight normalize on blur using the same schema piece
                     const v = e.currentTarget.value;
                     const ok = SIGNAL_HANDLE_RE.test(v);
-                    if (ok) field.onChange("@" + v.replace(/^@/, "").toLowerCase());
+                    if (ok)
+                      field.onChange("@" + v.replace(/^@/, "").toLowerCase());
                   }}
                   inputMode="text"
                   autoComplete="username"
@@ -217,7 +233,10 @@ export function ProfileForm({
             render={({ field }) => (
               <>
                 <Label>State</Label>
-                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your state" />
                   </SelectTrigger>
@@ -239,7 +258,11 @@ export function ProfileForm({
             render={({ field }) => (
               <>
                 <Label>City (optional)</Label>
-                <Input placeholder="e.g. Washington D.C" {...field} value={field.value ?? ""} />
+                <Input
+                  placeholder="e.g. Washington D.C"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </>
             )}
           />
@@ -250,7 +273,11 @@ export function ProfileForm({
             render={({ field }) => (
               <>
                 <Label>Coordination zone</Label>
-                <Input placeholder="e.g. PNW-Region-1" {...field} value={field.value ?? ""} />
+                <Input
+                  placeholder="e.g. PNW-Region-1"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </>
             )}
           />
@@ -260,13 +287,16 @@ export function ProfileForm({
             render={({ field }) => (
               <>
                 <Label>Affiliation (optional)</Label>
-                <Input placeholder="Partner org or pod" {...field} value={field.value ?? ""} />
+                <Input
+                  placeholder="Partner org or pod"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </>
             )}
           />
         </div>
       </div>
-
 
       {/* Roles / tags */}
       <div className="grid gap-6 mt-4">
@@ -275,7 +305,10 @@ export function ProfileForm({
           control={control}
           render={({ field }) => (
             <>
-              <RoleSelector selected={field.value ?? [] as FieldRole[]} onChange={field.onChange} />
+              <RoleSelector
+                selected={field.value ?? ([] as FieldRole[])}
+                onChange={field.onChange}
+              />
             </>
           )}
         />
@@ -306,10 +339,14 @@ export function ProfileForm({
               <Label>Self Risk Acknowledgment</Label>
               <div className="flex flex-wrap gap-3">
                 <span className="text-sm">
-                  I understand the risks of field work and will follow safety protocols
+                  I understand the risks of field work and will follow safety
+                  protocols
                 </span>
                 <span className="text-sm">
-                  In order to enable the toggle, please review the risk information below by opening the pop up. After you have reviewed it, you can acknowledge the risks by toggling the switch.
+                  In order to enable the toggle, please review the risk
+                  information below by opening the pop up. After you have
+                  reviewed it, you can acknowledge the risks by toggling the
+                  switch.
                 </span>
                 <Switch
                   checked={!!field.value}
@@ -336,9 +373,13 @@ export function ProfileForm({
           <>
             <Label>Weekly Unavailability</Label>
             <span className="text-sm text-muted-foreground">
-              Use this for when you <strong>know</strong> that you will <strong>not</strong> be available throughout the week.
+              Use this for when you <strong>know</strong> that you will{" "}
+              <strong>not</strong> be available throughout the week.
             </span>
-            <WeeklyAvailabilityEditor value={field.value ?? { blocks: {} }} onChange={field.onChange} />
+            <WeeklyAvailabilityEditor
+              value={field.value ?? { blocks: {} }}
+              onChange={field.onChange}
+            />
           </>
         )}
       />
@@ -351,20 +392,30 @@ export function ProfileForm({
         <div className="mx-auto flex w-full max-w-4xl gap-2">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button className="flex-1" type="button" variant="destructive" disabled={disableDelete || busy}>
+              <Button
+                className="flex-1"
+                type="button"
+                variant="destructive"
+                disabled={disableDelete || busy}
+              >
                 <Trash2 className="h-4 w-4" />
                 Purge
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete your profile & account?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Delete your profile & account?
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This permanently deletes your account and profile in this region. This action cannot be undone.
+                  This permanently deletes your account and profile in this
+                  region. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isDeleting || busy}>Cancel</AlertDialogCancel>
+                <AlertDialogCancel disabled={isDeleting || busy}>
+                  Cancel
+                </AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isDeleting || busy}
                   onClick={() =>
@@ -385,10 +436,7 @@ export function ProfileForm({
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button
-            className="flex-1"
-            type="submit"
-          >
+          <Button className="flex-1" type="submit">
             <Save className="h-4 w-4" />
             Save
           </Button>
@@ -405,7 +453,9 @@ export function ProfileForm({
 
 // If a previous schema used `state` as string[],
 // coerce `initial.state` into a single string for the UI.
-function coerceInitial(initial: Partial<ProfileFormInput>): Partial<ProfileFormInput> {
+function coerceInitial(
+  initial: Partial<ProfileFormInput>,
+): Partial<ProfileFormInput> {
   const next = { ...initial };
   const raw = (initial as any)?.state;
   if (Array.isArray(raw)) {

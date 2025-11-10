@@ -1,38 +1,40 @@
-import 'server-only';
-import type { Profile, RegionSettings } from '@workspace/store/types/global.ts';
-import type { Pod, RosterEntry } from '@workspace/store/types/pod.ts';
-import type { DispatchSubmission } from '@workspace/store/types/global.ts';
-import { AccessRole, VerifiedBy } from '@workspace/store/types/roles.ts';
-import type { TrustEntry } from '@workspace/store/types/trust.ts';
-import { createClient } from '@supabase/supabase-js';
-import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '../auth/supabase/utils';
-import { createSupabaseServerClient } from '../auth/supabase/server';
+import "server-only";
+import type { Profile, RegionSettings } from "@workspace/store/types/global.ts";
+import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
+import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import { AccessRole, VerifiedBy } from "@workspace/store/types/roles.ts";
+import type { TrustEntry } from "@workspace/store/types/trust.ts";
+import { createClient } from "@supabase/supabase-js";
+import { regionAdmins } from "@workspace/store/utils/nav";
+import { ensureSupabaseEnv } from "../auth/supabase/utils";
+import { createSupabaseServerClient } from "../auth/supabase/server";
 
 /**
  * Placeholder DAL for fetching a user's profile by auth user_id.
  * - When a real DB is wired, replace this with a query:
  *   SELECT * FROM profiles WHERE user_id = $1 LIMIT 1
  */
-export async function getProfileByUserId(userId: string): Promise<Profile | null> {
+export async function getProfileByUserId(
+  userId: string,
+): Promise<Profile | null> {
   try {
     const client = await createSupabaseServerClient();
 
     const { data, error } = await client
-      .from('profiles')
-      .select('*')
+      .from("profiles")
+      .select("*")
       .or(`user_id.eq.${userId},id.eq.${userId}`)
       // Prefer inserted_at for current schema; avoid joined_at
-      .order('inserted_at', { ascending: false })
+      .order("inserted_at", { ascending: false })
       .limit(1);
     if (error) {
-      console.warn('[dal/admin] getProfileByUserId supabase error', error);
+      console.warn("[dal/admin] getProfileByUserId supabase error", error);
       return null;
     }
     const row = Array.isArray(data) ? data[0] : (data as any);
     return (row as Profile) ?? null;
   } catch (e) {
-    console.warn('[dal/admin] getProfileByUserId supabase exception', e);
+    console.warn("[dal/admin] getProfileByUserId supabase exception", e);
     return null;
   }
 }
@@ -47,21 +49,25 @@ export type ProfilesFilter = {
 
 export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
   try {
-    const env = ensureSupabaseEnv('server');
+    const env = ensureSupabaseEnv("server");
     // If we have a service role key and the caller is authorized, bypass RLS
     const serviceKey = env.serviceRoleKey;
     if (serviceKey) {
       try {
         // Use the new server helper to get the current user
         const supabase = await createSupabaseServerClient();
-        const { data: userData, error: userError } = await supabase.auth.getUser();
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
         if (userError) throw userError;
 
         const user = userData?.user;
         let authorized = false;
         if (user) {
           // Align allowlist with /api/admin/profiles route (regionAdmins + dispatcher_admin)
-          const ADMIN_ALLOW = new Set<AccessRole>(['dispatcher_admin', ...(regionAdmins as unknown as AccessRole[])]);
+          const ADMIN_ALLOW = new Set<AccessRole>([
+            "dispatcher_admin",
+            ...(regionAdmins as unknown as AccessRole[]),
+          ]);
 
           // Some deployments may store a nav role on the user; trust it if in allowlist.
           const navRole = (user as any)?.role as AccessRole | undefined;
@@ -70,17 +76,21 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
           // Fall back to profile role check if needed
           if (!authorized) {
             const callerProfile = await getProfileByUserId(user.id);
-            authorized = !!callerProfile && ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
+            authorized =
+              !!callerProfile &&
+              ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
           }
         }
 
         if (authorized) {
           const adminClient = createClient(env.url, serviceKey);
-          let adminQuery = adminClient.from('profiles').select('*');
-          if (filter?.access_role) adminQuery = adminQuery.eq('access_role', filter.access_role);
-          if (filter?.verified_by) adminQuery = adminQuery.eq('verified_by', filter.verified_by);
-          if (typeof filter?.availability === 'boolean')
-            adminQuery = adminQuery.eq('availability', filter.availability);
+          let adminQuery = adminClient.from("profiles").select("*");
+          if (filter?.access_role)
+            adminQuery = adminQuery.eq("access_role", filter.access_role);
+          if (filter?.verified_by)
+            adminQuery = adminQuery.eq("verified_by", filter.verified_by);
+          if (typeof filter?.availability === "boolean")
+            adminQuery = adminQuery.eq("availability", filter.availability);
           const { data, error } = await adminQuery;
           if (error) throw error;
           const rows = Array.isArray(data) ? data : [];
@@ -88,23 +98,29 @@ export async function getProfiles(filter?: ProfilesFilter): Promise<Profile[]> {
         }
       } catch (e) {
         // If auth check fails (e.g., no session), fall back to scoped client below
-        console.warn('[dal/admin] getProfiles service-role path unavailable, falling back to anon client', e);
+        console.warn(
+          "[dal/admin] getProfiles service-role path unavailable, falling back to anon client",
+          e,
+        );
       }
     }
 
     // Fallback: use anon client with caller session cookies (RLS may restrict to own profile)
     const client = await createSupabaseServerClient();
 
-    let query = client.from('profiles').select('*');
-    if (filter?.access_role) query = query.eq('access_role', filter.access_role);
-    if (filter?.verified_by) query = query.eq('verified_by', filter.verified_by);
-    if (typeof filter?.availability === 'boolean') query = query.eq('availability', filter.availability);
+    let query = client.from("profiles").select("*");
+    if (filter?.access_role)
+      query = query.eq("access_role", filter.access_role);
+    if (filter?.verified_by)
+      query = query.eq("verified_by", filter.verified_by);
+    if (typeof filter?.availability === "boolean")
+      query = query.eq("availability", filter.availability);
     const { data, error } = await query;
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     return rows as unknown as Profile[];
   } catch (e) {
-    console.warn('[dal/admin] getProfiles supabase error', e);
+    console.warn("[dal/admin] getProfiles supabase error", e);
     return [];
   }
 }
@@ -121,28 +137,34 @@ export async function getPods(): Promise<Pod[]> {
       skills: Array.isArray(row.skills) ? row.skills : [],
       certs: Array.isArray(row.certs) ? row.certs : [],
       notes: row.notes ?? undefined,
-      handle: row.handle ?? row.profile?.display_name ?? '',
-      joinedAt: String(row.joined_at ?? row.joinedAt ?? new Date().toISOString()),
+      handle: row.handle ?? row.profile?.display_name ?? "",
+      joinedAt: String(
+        row.joined_at ?? row.joinedAt ?? new Date().toISOString(),
+      ),
       lastShiftAt: row.last_shift_at ?? row.lastShiftAt ?? undefined,
       signal_handle: row.signal_handle ?? undefined,
     } as RosterEntry;
   };
 
   try {
-    const env = ensureSupabaseEnv('server');
+    const env = ensureSupabaseEnv("server");
     const serviceKey = env.serviceRoleKey;
     if (serviceKey) {
       try {
         // Use the new server helper to get the current user
         const supabase = await createSupabaseServerClient();
-        const { data: userData, error: userError } = await supabase.auth.getUser();
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
         if (userError) throw userError;
 
         const user = userData?.user;
         let authorized = false;
         if (user) {
           // Admin allowlist aligned with /admin route access: dispatcher_admin + regionAdmins
-          const ADMIN_ALLOW = new Set<AccessRole>(['dispatcher_admin', ...(regionAdmins as unknown as AccessRole[])]);
+          const ADMIN_ALLOW = new Set<AccessRole>([
+            "dispatcher_admin",
+            ...(regionAdmins as unknown as AccessRole[]),
+          ]);
 
           // Some deployments may store a nav role on the user; trust it if in allowlist.
           const navRole = (user as any)?.role as AccessRole | undefined;
@@ -151,31 +173,38 @@ export async function getPods(): Promise<Pod[]> {
           // Fall back to profile role check if needed
           if (!authorized) {
             const callerProfile = await getProfileByUserId(user.id);
-            authorized = !!callerProfile && ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
+            authorized =
+              !!callerProfile &&
+              ADMIN_ALLOW.has(callerProfile.access_role as AccessRole);
           }
         }
 
         if (authorized) {
           const adminClient = createClient(env.url, serviceKey);
           const { data, error } = await adminClient
-            .from('pods')
+            .from("pods")
             .select(
-              'id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))',
+              "id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))",
             );
           if (error) throw error;
           const rows = Array.isArray(data) ? data : [];
           return rows.map((row: any) => ({
             id: String(row.id),
             slug: String(row.slug),
-            name: String(row.name ?? ''),
-            area: String(row.area ?? ''),
+            name: String(row.name ?? ""),
+            area: String(row.area ?? ""),
             channels: Array.isArray(row.channels) ? row.channels : [],
-            team: Array.isArray(row.team) ? row.team.map(mapRowToRosterEntry) : [],
+            team: Array.isArray(row.team)
+              ? row.team.map(mapRowToRosterEntry)
+              : [],
           })) as Pod[];
         }
       } catch (e) {
         // If auth check fails (e.g., no session), fall back to scoped client below
-        console.warn('[dal/admin] getPods service-role path unavailable, falling back to anon client', e);
+        console.warn(
+          "[dal/admin] getPods service-role path unavailable, falling back to anon client",
+          e,
+        );
       }
     }
 
@@ -183,36 +212,38 @@ export async function getPods(): Promise<Pod[]> {
     const client = await createSupabaseServerClient();
     try {
       const { data, error } = await client
-        .from('pods')
+        .from("pods")
         .select(
-          'id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))',
+          "id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))",
         );
       if (error) throw error;
       const rows = Array.isArray(data) ? data : [];
       return rows.map((row: any) => ({
         id: String(row.id),
         slug: String(row.slug),
-        name: String(row.name ?? ''),
-        area: String(row.area ?? ''),
+        name: String(row.name ?? ""),
+        area: String(row.area ?? ""),
         channels: Array.isArray(row.channels) ? row.channels : [],
         team: Array.isArray(row.team) ? row.team.map(mapRowToRosterEntry) : [],
       })) as Pod[];
     } catch (_e) {
       // If RLS prevents joining roster entries, fall back to pods-only
-      const { data, error } = await client.from('pods').select('id, slug, name, area, channels');
+      const { data, error } = await client
+        .from("pods")
+        .select("id, slug, name, area, channels");
       if (error) throw error;
       const rows = Array.isArray(data) ? data : [];
       return rows.map((row: any) => ({
         id: String(row.id),
         slug: String(row.slug),
-        name: String(row.name ?? ''),
-        area: String(row.area ?? ''),
+        name: String(row.name ?? ""),
+        area: String(row.area ?? ""),
         channels: Array.isArray(row.channels) ? row.channels : [],
         team: [],
       })) as Pod[];
     }
   } catch (e) {
-    console.warn('[dal/admin] getPods supabase error', e);
+    console.warn("[dal/admin] getPods supabase error", e);
     return [];
   }
 }
@@ -225,28 +256,33 @@ export type DispatchSummary = {
   recent: DispatchSubmission[]; // latest few
 };
 
-export async function getDispatchSummary(limitRecent = 5): Promise<DispatchSummary> {
+export async function getDispatchSummary(
+  limitRecent = 5,
+): Promise<DispatchSummary> {
   try {
-    const env = ensureSupabaseEnv('server');
+    const env = ensureSupabaseEnv("server");
     const serviceKey = env.serviceRoleKey;
     if (serviceKey) {
       // Prefer service role for aggregate summary across all rows
       const adminClient = createClient(env.url, serviceKey);
       const { data, error } = await adminClient
-        .from('dispatch_submissions')
-        .select('id, status, type, timestamp')
-        .order('timestamp', { ascending: false });
+        .from("dispatch_submissions")
+        .select("id, status, type, timestamp")
+        .order("timestamp", { ascending: false });
       if (error) throw error;
       const rows = (Array.isArray(data) ? data : []) as DispatchSubmission[];
       const byStatus: Record<string, number> = {};
       const byType: Record<string, number> = {};
       for (const d of rows) {
         byStatus[d.status] = (byStatus[d.status] ?? 0) + 1;
-        const t = (d as any).type ?? 'other';
+        const t = (d as any).type ?? "other";
         byType[t] = (byType[t] ?? 0) + 1;
       }
       const total = rows.length;
-      const active = rows.filter((d) => !['archived', 'completed', 'cancelled', 'expired'].includes(d.status)).length;
+      const active = rows.filter(
+        (d) =>
+          !["archived", "completed", "cancelled", "expired"].includes(d.status),
+      ).length;
       const recent = rows.slice(0, Math.max(0, limitRecent));
       return { total, active, byStatus, byType, recent };
     }
@@ -254,24 +290,27 @@ export async function getDispatchSummary(limitRecent = 5): Promise<DispatchSumma
     // Fallback to anon-scoped client (may be empty due to RLS)
     const client = await createSupabaseServerClient();
     const { data, error } = await client
-      .from('dispatch_submissions')
-      .select('id, status, type, timestamp')
-      .order('timestamp', { ascending: false });
+      .from("dispatch_submissions")
+      .select("id, status, type, timestamp")
+      .order("timestamp", { ascending: false });
     if (error) throw error;
     const rows = (Array.isArray(data) ? data : []) as DispatchSubmission[];
     const byStatus: Record<string, number> = {};
     const byType: Record<string, number> = {};
     for (const d of rows) {
       byStatus[d.status] = (byStatus[d.status] ?? 0) + 1;
-      const t = (d as any).type ?? 'other';
+      const t = (d as any).type ?? "other";
       byType[t] = (byType[t] ?? 0) + 1;
     }
     const total = rows.length;
-    const active = rows.filter((d) => !['archived', 'completed', 'cancelled', 'expired'].includes(d.status)).length;
+    const active = rows.filter(
+      (d) =>
+        !["archived", "completed", "cancelled", "expired"].includes(d.status),
+    ).length;
     const recent = rows.slice(0, Math.max(0, limitRecent));
     return { total, active, byStatus, byType, recent };
   } catch (e) {
-    console.warn('[dal/admin] getDispatchSummary supabase error', e);
+    console.warn("[dal/admin] getDispatchSummary supabase error", e);
     return { total: 0, active: 0, byStatus: {}, byType: {}, recent: [] };
   }
 }
@@ -287,20 +326,32 @@ export type AcademyStats = {
 export async function getAcademyStats(): Promise<AcademyStats> {
   try {
     const client = await createSupabaseServerClient();
-    const { data, error } = await client.from('academy_sessions').select('status');
+    const { data, error } = await client
+      .from("academy_sessions")
+      .select("status");
     if (error) throw error;
     const rows = Array.isArray(data) ? (data as any[]) : [];
     // Normalize null/undefined to 'scheduled' (treat missing status as scheduled)
-    const norm = rows.map((r) => ({ status: (r?.status ?? 'scheduled') as string }));
-    const active = norm.filter((r) => r.status !== 'archived');
-    const completed = active.filter((r) => r.status === 'completed').length;
-    const inProgress = active.filter((r) => r.status === 'in_progress').length;
-    const scheduled = active.filter((r) => r.status === 'scheduled').length;
+    const norm = rows.map((r) => ({
+      status: (r?.status ?? "scheduled") as string,
+    }));
+    const active = norm.filter((r) => r.status !== "archived");
+    const completed = active.filter((r) => r.status === "completed").length;
+    const inProgress = active.filter((r) => r.status === "in_progress").length;
+    const scheduled = active.filter((r) => r.status === "scheduled").length;
     const totalActive = active.length;
-    const completionPct = totalActive ? Math.round((completed / totalActive) * 100) : 0;
+    const completionPct = totalActive
+      ? Math.round((completed / totalActive) * 100)
+      : 0;
     return { totalActive, completed, inProgress, scheduled, completionPct };
   } catch (e) {
-    return { totalActive: 0, completed: 0, inProgress: 0, scheduled: 0, completionPct: 0 };
+    return {
+      totalActive: 0,
+      completed: 0,
+      inProgress: 0,
+      scheduled: 0,
+      completionPct: 0,
+    };
   }
 }
 
@@ -314,7 +365,7 @@ export type DbHealth = {
 export async function runDbCheck(): Promise<DbHealth> {
   // Demo values. Replace with real queries to pg_catalog, information_schema, and extension checks.
   return {
-    schemaVersion: '2025.10.24',
+    schemaVersion: "2025.10.24",
     postgisOk: true,
     geogSyncOk: true,
     auditTriggersOk: true,
@@ -326,20 +377,20 @@ export async function runDbCheck(): Promise<DbHealth> {
 export async function getTrustEntries(): Promise<TrustEntry[]> {
   try {
     const client = await createSupabaseServerClient();
-    const { data, error } = await client.from('trust_signatures').select('*');
+    const { data, error } = await client.from("trust_signatures").select("*");
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     return rows.map((r: any) => ({
       subjectId: String(r.subject_id),
       signerId: String(r.signer_id),
-      signer_role: r.signer_role ?? 'pod_leader',
-      signer_rot: r.signer_rot ?? '',
+      signer_role: r.signer_role ?? "pod_leader",
+      signer_rot: r.signer_rot ?? "",
       signed_at: String(r.signed_at ?? new Date().toISOString()),
-      signed_entry_hash: String(r.signed_entry_hash ?? ''),
-      status: r.status ?? 'active',
+      signed_entry_hash: String(r.signed_entry_hash ?? ""),
+      status: r.status ?? "active",
     })) as TrustEntry[];
   } catch (e) {
-    console.warn('[dal/admin] getTrustEntries supabase error', e);
+    console.warn("[dal/admin] getTrustEntries supabase error", e);
     return [];
   }
 }
@@ -347,13 +398,13 @@ export async function getTrustEntries(): Promise<TrustEntry[]> {
 // ---------- Region Settings (demo) ----------
 
 let DEMO_SETTINGS: RegionSettings = {
-  regionLabel: 'ART Region Template',
-  timezone: 'UTC',
-  coordination_zone: 'sector-001',
+  regionLabel: "ART Region Template",
+  timezone: "UTC",
+  coordination_zone: "sector-001",
   defaultDispatchRadiusKm: 10,
   cleanupIntervalsDays: 14,
-  integrationSignalGroup: 'https://signal.group/#example-demo',
-  federationEndpoint: 'https://federation.example.org/api',
+  integrationSignalGroup: "https://signal.group/#example-demo",
+  federationEndpoint: "https://federation.example.org/api",
   roleEscalationRules:
     '{\n  "promote": ["dispatcher_basic", "dispatcher_verified"],\n  "require": { "dispatcher_admin": ["verified_by:admin"] }\n}',
 };
@@ -362,6 +413,8 @@ export async function getRegionSettings(): Promise<RegionSettings> {
   return DEMO_SETTINGS;
 }
 
-export async function updateRegionSettings(next: RegionSettings): Promise<void> {
+export async function updateRegionSettings(
+  next: RegionSettings,
+): Promise<void> {
   DEMO_SETTINGS = next;
 }

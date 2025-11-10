@@ -5,10 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import {
-  RosterEntry,
-  rosterEntrySchema,
-} from "@workspace/store/types/pod.ts";
+import { RosterEntry, rosterEntrySchema } from "@workspace/store/types/pod.ts";
 import { Button } from "@workspace/ui/components/button";
 import LanguagePicker from "../language/LanguagePicker.tsx";
 import LanguageFluencyEditor from "../language/LanguageFluencyEditor.tsx";
@@ -36,14 +33,18 @@ export function EditRosterEntryForm({
 }) {
   // Treat an entry as registered when it links to a profile row
   const isRegistered =
-    Boolean((initial as any).profile_id && String((initial as any).profile_id).trim().length > 0) ||
-    initial.id.startsWith(REGISTERED_ID_PREFIX);
+    Boolean(
+      (initial as any).profile_id &&
+        String((initial as any).profile_id).trim().length > 0,
+    ) || initial.id.startsWith(REGISTERED_ID_PREFIX);
 
   const [loadedProfile, setLoadedProfile] = useState<any | null>(null);
   const [loadingProfile, setLoadingProfile] = useState<boolean>(false);
   const profileId: string | undefined = (initial as any).profile_id
     ? String((initial as any).profile_id)
-    : (initial.profile?.id ? String(initial.profile.id) : undefined);
+    : initial.profile?.id
+      ? String(initial.profile.id)
+      : undefined;
 
   const {
     register,
@@ -76,7 +77,10 @@ export function EditRosterEntryForm({
       if (initial.profile && String(initial.profile.id) === profileId) return;
       try {
         setLoadingProfile(true);
-        const res = await fetch(`/api/dispatch/profiles?id=${encodeURIComponent(profileId)}`, { credentials: 'include' });
+        const res = await fetch(
+          `/api/dispatch/profiles?id=${encodeURIComponent(profileId)}`,
+          { credentials: "include" },
+        );
         if (!res.ok) return;
         const json = await res.json();
         const p = Array.isArray(json?.profiles) ? json.profiles[0] : null;
@@ -95,17 +99,22 @@ export function EditRosterEntryForm({
       }
     }
     loadProfile();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isRegistered, profileId, initial.profile, setValue, watch]);
 
-  const registeredProfile = isRegistered ? (loadedProfile ?? initial.profile) : undefined;
+  const registeredProfile = isRegistered
+    ? (loadedProfile ?? initial.profile)
+    : undefined;
 
   // Dispatch access removed from this editor; managed in Admin.
 
   const [newCert, setNewCert] = useState("");
 
   const submit: SubmitHandler<FormOutput> = (vals) => {
-    const nextProfile = isRegistered && registeredProfile ? registeredProfile : initial.profile;
+    const nextProfile =
+      isRegistered && registeredProfile ? registeredProfile : initial.profile;
 
     const transformed: RosterEntry = {
       ...initial,
@@ -145,7 +154,10 @@ export function EditRosterEntryForm({
       return String(entry ?? "");
     };
 
-    const pushDetail = (label: string, value?: string | string[] | boolean | null | Record<string, unknown>[] ) => {
+    const pushDetail = (
+      label: string,
+      value?: string | string[] | boolean | null | Record<string, unknown>[],
+    ) => {
       if (value === undefined || value === null) return;
       if (Array.isArray(value)) {
         if (!value.length) return;
@@ -171,24 +183,39 @@ export function EditRosterEntryForm({
     pushDetail("Coordination Zone", registeredProfile.coordination_zone);
     pushDetail(
       "Field Roles",
-      (registeredProfile.field_roles as FieldRole[] | undefined)?.map((role: FieldRole) => humanize(role)),
+      (registeredProfile.field_roles as FieldRole[] | undefined)?.map(
+        (role: FieldRole) => humanize(role),
+      ),
     );
     pushDetail("Coverage Zones", registeredProfile.coverage_zones);
     pushDetail("Operating Counties", registeredProfile.operating_counties);
-    pushDetail("Availability", registeredProfile.availability ? "Available" : "Unavailable");
-    pushDetail("Verified By", registeredProfile.verified_by ? humanize(registeredProfile.verified_by) : "");
+    pushDetail(
+      "Availability",
+      registeredProfile.availability ? "Available" : "Unavailable",
+    );
+    pushDetail(
+      "Verified By",
+      registeredProfile.verified_by
+        ? humanize(registeredProfile.verified_by)
+        : "",
+    );
 
     return detailItems;
   }, [registeredProfile]);
 
   return (
-    <form id="edit-roster-entry-form" onSubmit={handleSubmit(submit)} className="grid gap-3">
+    <form
+      id="edit-roster-entry-form"
+      onSubmit={handleSubmit(submit)}
+      className="grid gap-3"
+    >
       {isRegistered ? (
         <section className="rounded-md border border-dashed bg-muted/40 p-3">
           <div className="mb-2">
             <h3 className="text-sm font-semibold">Registered Profile</h3>
             <p className="text-xs text-muted-foreground">
-              This volunteer is synced from their user profile. Details shown below reflect what they chose to share.
+              This volunteer is synced from their user profile. Details shown
+              below reflect what they chose to share.
             </p>
           </div>
           {loadingProfile && !registeredProfile ? (
@@ -204,7 +231,9 @@ export function EditRosterEntryForm({
               </div>
             ))}
             {sharedDetails.length === 0 ? (
-              <p className="text-muted-foreground">No shared details available.</p>
+              <p className="text-muted-foreground">
+                No shared details available.
+              </p>
             ) : null}
           </dl>
         </section>
@@ -225,7 +254,9 @@ export function EditRosterEntryForm({
             />
           )}
         />
-        {errors.role && <p className="text-xs text-destructive">{errors.role.message}</p>}
+        {errors.role && (
+          <p className="text-xs text-destructive">{errors.role.message}</p>
+        )}
       </div>
 
       {/* Status */}
@@ -243,13 +274,18 @@ export function EditRosterEntryForm({
             />
           )}
         />
-        {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
+        {errors.status && (
+          <p className="text-xs text-destructive">{errors.status.message}</p>
+        )}
       </div>
 
       {/* Dispatch Access removed; now managed in Admin */}
       <div className="grid gap-1">
         <Label>Signal Handle</Label>
-        <label htmlFor="signal_handle" className="text-xs text-muted-foreground">
+        <label
+          htmlFor="signal_handle"
+          className="text-xs text-muted-foreground"
+        >
           Must include the .00 suffix, e.g. @handle.12
         </label>
         <Controller
@@ -263,7 +299,11 @@ export function EditRosterEntryForm({
             />
           )}
         />
-        {errors.signal_handle && <p className="text-xs text-destructive">{errors.signal_handle.message}</p>}
+        {errors.signal_handle && (
+          <p className="text-xs text-destructive">
+            {errors.signal_handle.message}
+          </p>
+        )}
       </div>
 
       {/* Languages */}
@@ -278,7 +318,11 @@ export function EditRosterEntryForm({
           value={watch("langs") ?? []}
           onChange={(next) => setValue("langs", next)}
         />
-        {errors.langs && <p className="text-xs text-destructive">{errors.langs.message as string}</p>}
+        {errors.langs && (
+          <p className="text-xs text-destructive">
+            {errors.langs.message as string}
+          </p>
+        )}
       </div>
 
       {/* Skills */}
@@ -321,7 +365,11 @@ export function EditRosterEntryForm({
           value={watch("certs") ?? []}
           onChange={(next) => setValue("certs", next)}
         />
-        {errors.certs && <p className="text-xs text-destructive">{errors.certs.message as string}</p>}
+        {errors.certs && (
+          <p className="text-xs text-destructive">
+            {errors.certs.message as string}
+          </p>
+        )}
       </div>
 
       {/* Notes */}

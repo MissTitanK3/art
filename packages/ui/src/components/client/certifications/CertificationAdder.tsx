@@ -3,13 +3,20 @@
 import * as React from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import type { CertificationLevel, NormalizedCertification } from "@workspace/store/types/pod.ts";
+import type {
+  CertificationLevel,
+  NormalizedCertification,
+} from "@workspace/store/types/pod.ts";
 
 type CertificationAdderProps = {
   podId: string;
   rosterId: string;
   defaultLevel?: CertificationLevel;
-  onAddCertification: (podId: string, rosterId: string, certification: NormalizedCertification) => void;
+  onAddCertification: (
+    podId: string,
+    rosterId: string,
+    certification: NormalizedCertification,
+  ) => void;
 };
 
 export function CertificationAdder({

@@ -8,7 +8,7 @@ import type {
 import { SESSION_COOKIE, decodeSession } from "./common";
 
 function readCookieFromContext(
-  context: AuthServerContext | undefined
+  context: AuthServerContext | undefined,
 ): string | undefined {
   if (!context?.cookies) return undefined;
   const match = context.cookies
@@ -40,7 +40,7 @@ async function clearCookie(context?: AuthServerContext) {
 }
 
 export async function createDemoServerAdapter(
-  context?: AuthServerContext
+  context?: AuthServerContext,
 ): Promise<AuthServerAdapter> {
   const cookieValue =
     readCookieFromContext(context) ?? (await readCookieFromNext());

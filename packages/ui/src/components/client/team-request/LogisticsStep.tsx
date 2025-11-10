@@ -4,9 +4,18 @@ import { useState } from "react";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
-import { LogisticsItem, DispatchAttachment } from "@workspace/store/types/dispatch.ts";
+import {
+  LogisticsItem,
+  DispatchAttachment,
+} from "@workspace/store/types/dispatch.ts";
 
 interface LogisticsStepProps {
   initial?: {
@@ -18,8 +27,12 @@ interface LogisticsStepProps {
 }
 
 export function LogisticsStep({ initial, onBack, onNext }: LogisticsStepProps) {
-  const [logistics, setLogistics] = useState<LogisticsItem[]>(initial?.logistics ?? []);
-  const [attachments, setAttachments] = useState<DispatchAttachment[]>(initial?.attachments ?? []);
+  const [logistics, setLogistics] = useState<LogisticsItem[]>(
+    initial?.logistics ?? [],
+  );
+  const [attachments, setAttachments] = useState<DispatchAttachment[]>(
+    initial?.attachments ?? [],
+  );
 
   // Temporary new item fields
   const [description, setDescription] = useState("");
@@ -45,13 +58,15 @@ export function LogisticsStep({ initial, onBack, onNext }: LogisticsStepProps) {
 
   const handleFileUpload = (files: FileList | null) => {
     if (!files) return;
-    const newAttachments: DispatchAttachment[] = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      url: URL.createObjectURL(file), // temporary blob
-    }));
+    const newAttachments: DispatchAttachment[] = Array.from(files).map(
+      (file) => ({
+        id: crypto.randomUUID(),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file), // temporary blob
+      }),
+    );
     setAttachments((prev) => [...prev, ...newAttachments]);
   };
 
@@ -146,9 +161,7 @@ export function LogisticsStep({ initial, onBack, onNext }: LogisticsStepProps) {
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={() => onNext({ logistics, attachments })}>
-          Next
-        </Button>
+        <Button onClick={() => onNext({ logistics, attachments })}>Next</Button>
       </CardFooter>
     </Card>
   );

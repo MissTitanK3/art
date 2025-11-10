@@ -23,7 +23,14 @@ const defaultIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-export default function LeafletPinMap({ center, zoom, lat, lng, open, onSelect }: Props) {
+export default function LeafletPinMap({
+  center,
+  zoom,
+  lat,
+  lng,
+  open,
+  onSelect,
+}: Props) {
   return (
     <MapContainer
       center={center}
@@ -45,7 +52,11 @@ export default function LeafletPinMap({ center, zoom, lat, lng, open, onSelect }
   );
 }
 
-function ClickCapture({ onClick }: { onClick: (lat: number, lng: number) => void }) {
+function ClickCapture({
+  onClick,
+}: {
+  onClick: (lat: number, lng: number) => void;
+}) {
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
@@ -61,7 +72,9 @@ function InvalidateOnOpen({ open }: { open: boolean }) {
     const t = setTimeout(() => {
       try {
         map.invalidateSize();
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }, 150);
     return () => clearTimeout(t);
   }, [open, map]);

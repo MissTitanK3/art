@@ -15,7 +15,7 @@ export function Dot({
   size = "md",
   className,
 }: {
-  color?: string;        // Tailwind class, e.g. "bg-indigo-500"
+  color?: string; // Tailwind class, e.g. "bg-indigo-500"
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
@@ -31,7 +31,7 @@ export function Dot({
         "inline-block rounded-full border border-background/60",
         sizeMap[size],
         color,
-        className
+        className,
       )}
     />
   );

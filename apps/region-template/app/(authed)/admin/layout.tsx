@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   // Primary gate: session role includes region-level admins
   const role = session.user.role as any;
-  const allowed: string[] = ['dispatcher_admin', ...regionAdmins];
+  const allowed: string[] = ["dispatcher_admin", ...regionAdmins];
   if (!allowed.includes(role)) {
     // Fallback check via DAL: trust profile.access_role when session role is not in allowlist
     const profile = await getProfileByUserId(session.user.id);

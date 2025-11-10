@@ -14,8 +14,8 @@
 //   ): L.Layer;
 // }
 
-declare module 'leaflet.heat' {
-  import * as L from 'leaflet';
+declare module "leaflet.heat" {
+  import * as L from "leaflet";
 
   interface HeatLayerOptions {
     minOpacity?: number;
@@ -25,7 +25,10 @@ declare module 'leaflet.heat' {
     gradient?: { [key: number]: string };
   }
 
-  function heatLayer(latlngs: [number, number, number?][], options?: HeatLayerOptions): L.Layer;
+  function heatLayer(
+    latlngs: [number, number, number?][],
+    options?: HeatLayerOptions,
+  ): L.Layer;
 
   export { heatLayer };
 }

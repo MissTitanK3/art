@@ -15,9 +15,7 @@ import { Input } from "../../input";
 import { Switch } from "../../switch";
 import { DetailGrid, DetailItem } from "./DetailGrid";
 import { formatContacts, formatList, formatText } from "./utils";
-import type {
-  DetaineeIntake,
-} from "@workspace/ui/types/missing-person-intake";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 interface BaseProps {
   title?: React.ReactNode;
@@ -40,7 +38,9 @@ export type LegalSupportSectionProps = EditProps | ViewProps;
 
 export function LegalSupportSection(props: LegalSupportSectionProps) {
   const title = props.title ?? "Legal & Support";
-  const description = props.description ?? "Family contacts, legal representation, and urgent needs.";
+  const description =
+    props.description ??
+    "Family contacts, legal representation, and urgent needs.";
   const sectionName = props.sectionName ?? "Legal Details";
 
   if (props.mode === "view") {
@@ -48,15 +48,18 @@ export function LegalSupportSection(props: LegalSupportSectionProps) {
     return (
       <FormSectionCard title={title} description={description}>
         <div className="space-y-6">
-          <DetailItem label="Family Contacts" value={formatContacts(data.familyContacts)} />
+          <DetailItem
+            label="Family Contacts"
+            value={formatContacts(data.familyContacts)}
+          />
           <DetailGrid>
-            <DetailItem label="Prior Attorney" value={formatText(data.priorAttorney)} />
+            <DetailItem
+              label="Prior Attorney"
+              value={formatText(data.priorAttorney)}
+            />
             <DetailItem
               label="Interpreter Needed"
-              value={formatText(
-                data.interpreterNeeded ? "Yes" : "No",
-                "No"
-              )}
+              value={formatText(data.interpreterNeeded ? "Yes" : "No", "No")}
             />
           </DetailGrid>
           <DetailItem
@@ -111,10 +114,15 @@ export function LegalSupportSection(props: LegalSupportSectionProps) {
             <FormItem className="flex flex-row items-center justify-between gap-3 rounded-lg border p-4">
               <div className="space-y-1.5">
                 <FormLabel>Interpreter Needed</FormLabel>
-                <FormDescription>Toggle if interpretation is required for legal conversations.</FormDescription>
+                <FormDescription>
+                  Toggle if interpretation is required for legal conversations.
+                </FormDescription>
               </div>
               <FormControl>
-                <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
+                <Switch
+                  checked={field.value ?? false}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
             </FormItem>
           )}

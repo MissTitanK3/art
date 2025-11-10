@@ -1,6 +1,6 @@
-import type { NavRole } from '@workspace/store/utils/nav';
+import type { NavRole } from "@workspace/store/utils/nav";
 
-export type AuthProviderId = 'supabase';
+export type AuthProviderId = "supabase";
 
 export type AuthUser = {
   id: string;
@@ -19,7 +19,7 @@ export type AuthSession = {
   provider?: AuthProviderId | string;
 };
 
-export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
+export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 export type PasswordSignInPayload = {
   email: string;
@@ -45,13 +45,17 @@ export type AuthClientAdapter = {
   /** Username/password sign-in flow. */
   signInWithPassword?: (payload: PasswordSignInPayload) => Promise<AuthSession>;
   /** Username/password sign-up flow. Returns a session if auto-confirm is enabled, otherwise null. */
-  signUpWithPassword?: (payload: PasswordSignUpPayload) => Promise<AuthSession | null>;
+  signUpWithPassword?: (
+    payload: PasswordSignUpPayload,
+  ) => Promise<AuthSession | null>;
   /** Passwordless magic-link or OTP flow. */
   signInWithOtp?: (payload: OtpSignInPayload) => Promise<void>;
   /** Sign the current user out. */
   signOut: () => Promise<void>;
   /** Subscribe to session changes emitted by the provider SDK. */
-  onSessionChanged?: (callback: (session: AuthSession | null) => void) => () => void;
+  onSessionChanged?: (
+    callback: (session: AuthSession | null) => void,
+  ) => () => void;
 };
 
 export type AdapterCookie = {

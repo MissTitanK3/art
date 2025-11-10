@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
 import { FIELD_ROLE_OPTIONS } from "@workspace/store/types/roles.ts";
 import { useState } from "react";
-import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@workspace/ui/components/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer";
 import { Input } from "@workspace/ui/components/input";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Button } from "@workspace/ui/components/button";
@@ -38,7 +45,7 @@ export default function RolesEditorDrawer({
 
   // 🔍 Filtered roles list
   const filteredRoles = FIELD_ROLE_OPTIONS.filter((role) =>
-    role.toLowerCase().includes(query.toLowerCase())
+    role.toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
@@ -82,9 +89,7 @@ export default function RolesEditorDrawer({
                     type="number"
                     min={1}
                     value={rolesState[role]}
-                    onChange={(e) =>
-                      updateCount(role, Number(e.target.value))
-                    }
+                    onChange={(e) => updateCount(role, Number(e.target.value))}
                     className="w-16 text-center"
                   />
                 )}

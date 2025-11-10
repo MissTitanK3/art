@@ -2,7 +2,14 @@ import * as React from "react";
 
 import { cn } from "../lib/utils";
 import { Button, type ButtonProps } from "./button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./card";
 
 interface FormSectionCardProps {
   title: React.ReactNode;
@@ -36,14 +43,7 @@ export function FormSectionCard({
   contentClassName = "grid gap-6",
 }: FormSectionCardProps) {
   const computedSaveLabel =
-    saveLabel ??
-    (sectionName ? (
-      <>
-        Save {sectionName}
-      </>
-    ) : (
-      "Save Section"
-    ));
+    saveLabel ?? (sectionName ? <>Save {sectionName}</> : "Save Section");
 
   return (
     <Card>

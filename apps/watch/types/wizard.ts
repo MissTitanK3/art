@@ -7,7 +7,16 @@ export type ReportFormData = {
   } | null;
   media_url: File | null;
   officer_moving: boolean | null;
-  officer_direction: 'North' | 'NorthEast' | 'East' | 'SouthEast' | 'South' | 'SouthWest' | 'West' | 'NorthWest' | null;
+  officer_direction:
+    | "North"
+    | "NorthEast"
+    | "East"
+    | "SouthEast"
+    | "South"
+    | "SouthWest"
+    | "West"
+    | "NorthWest"
+    | null;
   lights_on: boolean | null;
   sirens_on: boolean | null;
   test: boolean | null;
@@ -24,7 +33,16 @@ export type Report = {
   media_url: string | null;
   timestamp: string;
   officer_moving: boolean | null;
-  officer_direction: 'North' | 'NorthEast' | 'East' | 'SouthEast' | 'South' | 'SouthWest' | 'West' | 'NorthWest' | null;
+  officer_direction:
+    | "North"
+    | "NorthEast"
+    | "East"
+    | "SouthEast"
+    | "South"
+    | "SouthWest"
+    | "West"
+    | "NorthWest"
+    | null;
   lights_on: boolean | null;
   sirens_on: boolean | null;
   submitted_by: string | null;

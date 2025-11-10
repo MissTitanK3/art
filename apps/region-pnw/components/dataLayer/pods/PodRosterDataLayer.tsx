@@ -14,7 +14,8 @@ import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {
     id: String(row.id),
-    profile_id: typeof row.profile_id === 'string' ? row.profile_id : row.profile?.id,
+    profile_id:
+      typeof row.profile_id === "string" ? row.profile_id : row.profile?.id,
     profile: row.profile,
     role: row.role,
     status: row.status,
@@ -29,7 +30,9 @@ function mapRowToRosterEntry(row: any): RosterEntry {
   };
 }
 
-async function fetchPodRosterFromDatabase(slug: string): Promise<RosterEntry[] | null> {
+async function fetchPodRosterFromDatabase(
+  slug: string,
+): Promise<RosterEntry[] | null> {
   try {
     const client = getSupabaseBrowserClient();
     // first fetch pod id from slug
@@ -54,7 +57,10 @@ async function fetchPodRosterFromDatabase(slug: string): Promise<RosterEntry[] |
   }
 }
 
-async function persistRosterEntryToDatabase(podId: string, entry: RosterEntry): Promise<void> {
+async function persistRosterEntryToDatabase(
+  podId: string,
+  entry: RosterEntry,
+): Promise<void> {
   try {
     const client = getSupabaseBrowserClient();
     const payload = {
@@ -80,10 +86,17 @@ async function persistRosterEntryToDatabase(podId: string, entry: RosterEntry): 
   }
 }
 
-async function deleteRosterEntryFromDatabase(podId: string, rosterId: string): Promise<void> {
+async function deleteRosterEntryFromDatabase(
+  podId: string,
+  rosterId: string,
+): Promise<void> {
   try {
     const client = getSupabaseBrowserClient();
-    const { error } = await client.from("roster_entries").delete().eq("pod_id", podId).eq("id", rosterId);
+    const { error } = await client
+      .from("roster_entries")
+      .delete()
+      .eq("pod_id", podId)
+      .eq("id", rosterId);
     if (error) throw error;
   } catch (e: any) {
     throw new Error(e?.message ?? "Failed to delete roster entry");
@@ -102,7 +115,7 @@ export default function PodRosterDataLayer() {
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
-    null
+    null,
   );
   const [loadingRemoteRoster, setLoadingRemoteRoster] =
     React.useState<boolean>(false);
@@ -152,14 +165,16 @@ export default function PodRosterDataLayer() {
 
     const patched: RosterEntry = {
       ...entry,
-      profile_id: entry.profile_id ?? (entry.profile?.id ? String(entry.profile.id) : undefined),
+      profile_id:
+        entry.profile_id ??
+        (entry.profile?.id ? String(entry.profile.id) : undefined),
     };
     updatePod(pod.id, {
       team: pod.team.map((r) => (r.id === entry.id ? patched : r)),
     });
 
     setRemoteRoster((prev) =>
-      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev
+      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev,
     );
 
     setSelectedId(null); // close sheet after save
@@ -176,7 +191,9 @@ export default function PodRosterDataLayer() {
 
     const patched: RosterEntry = {
       ...entry,
-      profile_id: entry.profile_id ?? (entry.profile?.id ? String(entry.profile.id) : undefined),
+      profile_id:
+        entry.profile_id ??
+        (entry.profile?.id ? String(entry.profile.id) : undefined),
     };
     updatePod(pod.id, { team: [...pod.team, patched] });
     setRemoteRoster((prev) => (prev ? [...prev, patched] : prev));
@@ -194,11 +211,17 @@ export default function PodRosterDataLayer() {
     updatePod(pod.id, {
       team: pod.team.filter((r) => r.id !== memberId),
     });
-    setRemoteRoster((prev) => (prev ? prev.filter((r) => r.id !== memberId) : prev));
+    setRemoteRoster((prev) =>
+      prev ? prev.filter((r) => r.id !== memberId) : prev,
+    );
   };
 
   const addMemberAction = pod ? (
-    <AddMemberButton pod={pod} activeRoster={activeRoster} onAddMember={handleAddMember} />
+    <AddMemberButton
+      pod={pod}
+      activeRoster={activeRoster}
+      onAddMember={handleAddMember}
+    />
   ) : null;
 
   const layoutProps: PodRosterLayoutProps = {

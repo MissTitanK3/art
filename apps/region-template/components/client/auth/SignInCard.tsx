@@ -36,7 +36,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
 
   const target = React.useMemo(
     () => redirectTo ?? searchParams?.get("redirectTo") ?? FALLBACK_REDIRECT,
-    [redirectTo, searchParams]
+    [redirectTo, searchParams],
   );
 
   const handleSubmit = React.useCallback(
@@ -60,7 +60,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
         // Supabase or real provider
         const session = await signInWithPassword({ email, password });
         setSession(session); // ✅ updates React context immediately
-        await refresh();     // ensures provider cookies and context stay in sync
+        await refresh(); // ensures provider cookies and context stay in sync
         router.push(target);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to sign in.");
@@ -68,7 +68,16 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
         setPending(false);
       }
     },
-    [email, password, providerId, setSession, signInWithPassword, refresh, router, target]
+    [
+      email,
+      password,
+      providerId,
+      setSession,
+      signInWithPassword,
+      refresh,
+      router,
+      target,
+    ],
   );
 
   const isLoading = pending;

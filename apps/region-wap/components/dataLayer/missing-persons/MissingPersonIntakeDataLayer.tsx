@@ -48,19 +48,29 @@ function toRow(record: DetaineeIntake) {
 
 export function MissingPersonIntakeDataLayer() {
   const handleExport = React.useCallback(exportLegalAidReport, []);
-  const handlePersistRemote = React.useCallback(async (record: DetaineeIntake) => {
-    try {
-      const client = getSupabaseBrowserClient();
-      const row = toRow(record);
-      const { error } = await client.from("missing_person_records").upsert(row);
-      if (error) throw error;
-    } catch (err) {
-      console.warn("[MissingPersonIntakeDataLayer] supabase upsert failed", err);
-    }
-  }, []);
+  const handlePersistRemote = React.useCallback(
+    async (record: DetaineeIntake) => {
+      try {
+        const client = getSupabaseBrowserClient();
+        const row = toRow(record);
+        const { error } = await client
+          .from("missing_person_records")
+          .upsert(row);
+        if (error) throw error;
+      } catch (err) {
+        console.warn(
+          "[MissingPersonIntakeDataLayer] supabase upsert failed",
+          err,
+        );
+      }
+    },
+    [],
+  );
 
   // Load existing case IDs from Supabase to help suggest next sequence
-  const [remoteSeedRecords, setRemoteSeedRecords] = React.useState<DetaineeIntake[] | undefined>(undefined);
+  const [remoteSeedRecords, setRemoteSeedRecords] = React.useState<
+    DetaineeIntake[] | undefined
+  >(undefined);
   React.useEffect(() => {
     let active = true;
     (async () => {
@@ -73,10 +83,16 @@ export function MissingPersonIntakeDataLayer() {
         if (!active) return;
         const mapped: DetaineeIntake[] = (data ?? [])
           .map((row: any) => ({ caseId: row?.case_id }))
-          .filter((r: DetaineeIntake) => typeof r.caseId === "string" && r.caseId.length > 0);
+          .filter(
+            (r: DetaineeIntake) =>
+              typeof r.caseId === "string" && r.caseId.length > 0,
+          );
         setRemoteSeedRecords(mapped);
       } catch (err) {
-        console.warn("[MissingPersonIntakeDataLayer] failed to load existing case IDs", err);
+        console.warn(
+          "[MissingPersonIntakeDataLayer] failed to load existing case IDs",
+          err,
+        );
         setRemoteSeedRecords(undefined);
       }
     })();
@@ -97,7 +113,10 @@ export function MissingPersonIntakeDataLayer() {
       const row = Array.isArray(data) && data.length > 0 ? data[0] : null;
       return row?.case_id ?? null;
     } catch (e) {
-      console.warn("[MissingPersonIntakeDataLayer] failed to load last case id", e);
+      console.warn(
+        "[MissingPersonIntakeDataLayer] failed to load last case id",
+        e,
+      );
       return null;
     }
   }, []);

@@ -1,11 +1,16 @@
-import type { CrewCatalog } from '@/schemas/crew';
+import type { CrewCatalog } from "@/schemas/crew";
 
-export type AutoStrategy = 'balanced' | 'max-repair' | 'max-signal' | 'max-morale';
+export type AutoStrategy =
+  | "balanced"
+  | "max-repair"
+  | "max-signal"
+  | "max-morale";
 
 function weightFor(strategy: AutoStrategy, key: string, v: number): number {
-  if (strategy === 'max-repair' && /repair|integrity/i.test(key)) return v * 1.5;
-  if (strategy === 'max-signal' && /signal/i.test(key)) return v * 1.5;
-  if (strategy === 'max-morale' && /morale|fatigue/i.test(key)) return v * 1.5;
+  if (strategy === "max-repair" && /repair|integrity/i.test(key))
+    return v * 1.5;
+  if (strategy === "max-signal" && /signal/i.test(key)) return v * 1.5;
+  if (strategy === "max-morale" && /morale|fatigue/i.test(key)) return v * 1.5;
   return v;
 }
 
@@ -18,10 +23,13 @@ export function computeCrewFit(
   const lines: string[] = [];
   const bon = m.bonuses || {};
   for (const [kk, vv] of Object.entries(bon)) {
-    if (typeof vv !== 'number') continue;
+    if (typeof vv !== "number") continue;
     const wv = weightFor(strategy, kk, vv);
     s += wv;
-    if (wv !== vv) lines.push(`${kk} ${Math.round(vv * 100)}% ×1.5 = ${Math.round(wv * 100)}%`);
+    if (wv !== vv)
+      lines.push(
+        `${kk} ${Math.round(vv * 100)}% ×1.5 = ${Math.round(wv * 100)}%`,
+      );
     else lines.push(`${kk} ${Math.round(vv * 100)}%`);
   }
   const fits = (m.allowed_positions || []).map(String);

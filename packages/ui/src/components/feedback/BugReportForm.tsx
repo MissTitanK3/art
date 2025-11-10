@@ -5,7 +5,10 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
-import { BugAreaSelect, type BugArea } from "@workspace/ui/components/admin/bug-report-selects";
+import {
+  BugAreaSelect,
+  type BugArea,
+} from "@workspace/ui/components/admin/bug-report-selects";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -38,7 +41,10 @@ export function BugReportForm({
   const [actual, setActual] = React.useState("");
   const [steps, setSteps] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
-  const [result, setResult] = React.useState<{ ok: boolean; message: string } | null>(null);
+  const [result, setResult] = React.useState<{
+    ok: boolean;
+    message: string;
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,50 +56,97 @@ export function BugReportForm({
         await onSubmit(payload);
       } else if (endpoint) {
         const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error(await safeErrorMessage(res));
       }
       setResult({ ok: true, message: successMessage });
-      setTitle(""); setArea(initialArea); setSteps(""); setExpected(""); setActual("");
+      setTitle("");
+      setArea(initialArea);
+      setSteps("");
+      setExpected("");
+      setActual("");
     } catch (err: any) {
-      setResult({ ok: false, message: err?.message || 'Failed to submit bug report' });
+      setResult({
+        ok: false,
+        message: err?.message || "Failed to submit bug report",
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <form className={cn("space-y-4 border rounded-md p-4 bg-card", className)} onSubmit={handleSubmit}>
+    <form
+      className={cn("space-y-4 border rounded-md p-4 bg-card", className)}
+      onSubmit={handleSubmit}
+    >
       <div className="grid gap-2">
         <Label htmlFor="bug-title">Title</Label>
-        <Input id="bug-title" placeholder="Short summary (e.g., Watch map fails to load)" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input
+          id="bug-title"
+          placeholder="Short summary (e.g., Watch map fails to load)"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
       </div>
 
-      <BugAreaSelect value={area} onChange={(v) => setArea((v ?? initialArea) as BugArea)} label="Area" includeAll={false} srOnlyLabel={false} className="min-w-full" triggerClassName="w-full" />
+      <BugAreaSelect
+        value={area}
+        onChange={(v) => setArea((v ?? initialArea) as BugArea)}
+        label="Area"
+        includeAll={false}
+        srOnlyLabel={false}
+        className="min-w-full"
+        triggerClassName="w-full"
+      />
 
       <div className="grid gap-2">
         <Label htmlFor="bug-steps">Steps to reproduce</Label>
-        <Textarea id="bug-steps" placeholder={'1. Go to ...\n2. Click ...\n3. See error ...'} value={steps} onChange={(e) => setSteps(e.target.value)} rows={4} />
+        <Textarea
+          id="bug-steps"
+          placeholder={"1. Go to ...\n2. Click ...\n3. See error ..."}
+          value={steps}
+          onChange={(e) => setSteps(e.target.value)}
+          rows={4}
+        />
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="bug-expected">Expected behavior</Label>
-        <Textarea id="bug-expected" placeholder="What did you expect to happen?" value={expected} onChange={(e) => setExpected(e.target.value)} rows={3} />
+        <Textarea
+          id="bug-expected"
+          placeholder="What did you expect to happen?"
+          value={expected}
+          onChange={(e) => setExpected(e.target.value)}
+          rows={3}
+        />
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="bug-actual">Actual behavior</Label>
-        <Textarea id="bug-actual" placeholder="What happened instead? Include any error messages." value={actual} onChange={(e) => setActual(e.target.value)} rows={3} />
+        <Textarea
+          id="bug-actual"
+          placeholder="What happened instead? Include any error messages."
+          value={actual}
+          onChange={(e) => setActual(e.target.value)}
+          rows={3}
+        />
       </div>
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit Report'}</Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? "Submitting…" : "Submit Report"}
+        </Button>
         {result && (
-          <span className={result.ok ? 'text-green-600 text-sm' : 'text-red-600 text-sm'}>
+          <span
+            className={
+              result.ok ? "text-green-600 text-sm" : "text-red-600 text-sm"
+            }
+          >
             {result.message}
           </span>
         )}
@@ -103,4 +156,3 @@ export function BugReportForm({
 }
 
 export default BugReportForm;
-

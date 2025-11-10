@@ -18,12 +18,12 @@ async function authz(podId?: string) {
   if (error || !data?.user) return false;
   const callerProfile = await getProfileByUserId(data.user.id);
   const callerAccessRole = callerProfile?.access_role as any | undefined;
-  const isGlobalAdmin = !!callerAccessRole && (
-    regionAdmins.includes(callerAccessRole) ||
-    callerAccessRole === 'dispatcher_admin' ||
-    callerAccessRole === 'dispatcher_verified' ||
-    callerAccessRole === 'dispatcher_basic'
-  );
+  const isGlobalAdmin =
+    !!callerAccessRole &&
+    (regionAdmins.includes(callerAccessRole) ||
+      callerAccessRole === 'dispatcher_admin' ||
+      callerAccessRole === 'dispatcher_verified' ||
+      callerAccessRole === 'dispatcher_basic');
   if (isGlobalAdmin) return true;
 
   if (!podId || !callerProfile?.id) return false;
@@ -77,7 +77,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     // Fire-and-forget: notify admins about important changes
     (async () => {
       try {
-        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: 'system',
+        });
         if (!recipients.length) return;
         const parts: string[] = [];
         if (typeof patch.name === 'string') parts.push(`name → ${row?.name}`);
@@ -113,7 +116,10 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     // Fire-and-forget: notify admins about deletion
     (async () => {
       try {
-        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: 'system',
+        });
         if (recipients.length) {
           await notifyUsers({
             title: 'Pod Deleted',

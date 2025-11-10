@@ -1,8 +1,12 @@
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert"
-import { Button } from "@workspace/ui/components/button"
-import { TestSonner } from "@workspace/ui/components/client/buttons/TestSonner"
-import { Terminal } from "lucide-react"
-import { toast } from "sonner"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert";
+import { Button } from "@workspace/ui/components/button";
+import { TestSonner } from "@workspace/ui/components/client/buttons/TestSonner";
+import { Terminal } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Page() {
   return (
@@ -20,5 +24,5 @@ export default function Page() {
         </Alert>
       </div>
     </div>
-  )
+  );
 }

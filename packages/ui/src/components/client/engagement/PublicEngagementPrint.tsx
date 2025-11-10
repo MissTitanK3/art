@@ -51,7 +51,12 @@ export function PublicEngagementPrint({ message }: { message: string }) {
           <h1 className="text-3xl font-bold">Urgent Call</h1>
           <p className="text-lg font-semibold">{message}</p>
           <div className="mt-4">
-            <QRCode value="https://region.domain.org/onboarding" size={120} bgColor="transparent" fgColor="#fff" />
+            <QRCode
+              value="https://region.domain.org/onboarding"
+              size={120}
+              bgColor="transparent"
+              fgColor="#fff"
+            />
             <p className="text-xs mt-2">Scan to get involved</p>
           </div>
         </div>

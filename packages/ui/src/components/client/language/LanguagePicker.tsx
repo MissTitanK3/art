@@ -4,7 +4,11 @@
 import * as React from "react";
 import { X } from "lucide-react";
 import { type NormalizedLanguage } from "@workspace/store/types/language.ts";
-import { canonicalKey, normalizeLanguage, tokenize } from '@workspace/store/utils/languages'
+import {
+  canonicalKey,
+  normalizeLanguage,
+  tokenize,
+} from "@workspace/store/utils/languages";
 import { ALIASES, SUGGESTIONS } from "@workspace/ui/lib/constants/language";
 // --- Component ---
 type Props = {
@@ -51,7 +55,9 @@ export default function LanguagePicker({
   }
 
   function setProf(tag: string, prof: NormalizedLanguage["proficiency"]) {
-    emit(items.map((it) => (it.tag === tag ? { ...it, proficiency: prof } : it)));
+    emit(
+      items.map((it) => (it.tag === tag ? { ...it, proficiency: prof } : it)),
+    );
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -78,17 +84,20 @@ export default function LanguagePicker({
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return SUGGESTIONS.filter((s) => !items.some((x) => x.tag === s.tag));
+    if (!q)
+      return SUGGESTIONS.filter((s) => !items.some((x) => x.tag === s.tag));
     const inAliases = Object.values(ALIASES).filter(
       (a, idx, arr) =>
         arr.findIndex((z) => z.tag === a.tag) === idx && // unique by tag
-        (a.display_name.toLowerCase().includes(q) || a.tag.toLowerCase().includes(q))
+        (a.display_name.toLowerCase().includes(q) ||
+          a.tag.toLowerCase().includes(q)),
     );
     const base = [...SUGGESTIONS, ...inAliases];
     // unique by tag & not already chosen
     const uniq = new Map<string, NormalizedLanguage>();
     base.forEach((b) => {
-      if (!items.some((x) => x.tag === b.tag) && !uniq.has(b.tag)) uniq.set(b.tag, b);
+      if (!items.some((x) => x.tag === b.tag) && !uniq.has(b.tag))
+        uniq.set(b.tag, b);
     });
     return Array.from(uniq.values()).slice(0, 20);
   }, [query, items]);
@@ -111,7 +120,7 @@ export default function LanguagePicker({
         tabIndex={0}
         onClick={() => inputRef.current?.focus()}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             inputRef.current?.focus();
           }
@@ -119,7 +128,10 @@ export default function LanguagePicker({
       >
         {/* Chips */}
         {items.map((lang) => (
-          <div key={lang.tag} className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm">
+          <div
+            key={lang.tag}
+            className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm"
+          >
             <span className="font-medium">{lang.display_name}</span>
             {!disabled && (
               <button
@@ -162,32 +174,38 @@ export default function LanguagePicker({
                 type="button"
                 className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted"
                 onMouseDown={(e) => e.preventDefault()} // prevent input blur before click
-                onClick={() => addOne(opt)}             // addOne closes list explicitly
+                onClick={() => addOne(opt)} // addOne closes list explicitly
               >
                 <div className="flex items-center justify-between">
                   <span>{opt.display_name}</span>
-                  <span className="text-xs text-muted-foreground">{opt.tag}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {opt.tag}
+                  </span>
                 </div>
               </button>
             ))}
 
             {/* Optional "use as typed" */}
-            {allowFreeText && query.trim() && normalizeLanguage(query) === null && (
-              <button
-                type="button"
-                className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                  addOne({ tag: `x-${canonicalKey(query)}`, display_name: query.trim() })
-                }
-              >
-                Use “{query.trim()}” as entered
-              </button>
-            )}
+            {allowFreeText &&
+              query.trim() &&
+              normalizeLanguage(query) === null && (
+                <button
+                  type="button"
+                  className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() =>
+                    addOne({
+                      tag: `x-${canonicalKey(query)}`,
+                      display_name: query.trim(),
+                    })
+                  }
+                >
+                  Use “{query.trim()}” as entered
+                </button>
+              )}
           </div>
         </div>
       )}
     </div>
   );
-
 }

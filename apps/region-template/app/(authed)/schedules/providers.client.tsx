@@ -1,8 +1,8 @@
 "use client";
 
-import type { PropsWithChildren } from 'react';
-import { PodStoreProvider } from '@/providers/PodStoreProvider';
-import { DispatchStoreProvider } from '@/providers/DispatchStoreProvider';
+import type { PropsWithChildren } from "react";
+import { PodStoreProvider } from "@/providers/PodStoreProvider";
+import { DispatchStoreProvider } from "@/providers/DispatchStoreProvider";
 
 export default function SchedulesClientLayout({ children }: PropsWithChildren) {
   return (
@@ -11,4 +11,3 @@ export default function SchedulesClientLayout({ children }: PropsWithChildren) {
     </DispatchStoreProvider>
   );
 }
-

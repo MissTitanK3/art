@@ -2,18 +2,55 @@
 
 import * as React from "react";
 import type { Profile } from "@workspace/store/types/global.ts";
-import { AccessRoles, VerifiedBy, roleLabel, VerifiedByDescriptions, verifierLabel } from "@workspace/store/types/roles.ts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
+import {
+  AccessRoles,
+  VerifiedBy,
+  roleLabel,
+  VerifiedByDescriptions,
+  verifierLabel,
+} from "@workspace/store/types/roles.ts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/table";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
 import { Switch } from "@workspace/ui/components/switch";
 import { Input } from "@workspace/ui/components/input";
 import { toast } from "sonner";
-import { Download, ShieldCheck, UserCheck, UserX, MoreVertical } from "lucide-react";
+import {
+  Download,
+  ShieldCheck,
+  UserCheck,
+  UserX,
+  MoreVertical,
+} from "lucide-react";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
+import { useProfileStore } from "@workspace/store/useProfileStore";
+import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
 
 function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
   // Dynamically assign distinct badge colors across all roles, including any newly added ones
@@ -36,8 +73,15 @@ function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
     "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
   ];
   const roleIndex = AccessRoles.indexOf(role as any);
-  const color = roleIndex >= 0 ? (palette[roleIndex] ?? palette[palette.length - 1]) : "bg-muted text-foreground/80 border-muted-foreground/20";
-  return <Badge variant="outline" className={`${color}`}>{roleLabel(role as any)}</Badge>;
+  const color =
+    roleIndex >= 0
+      ? (palette[roleIndex] ?? palette[palette.length - 1])
+      : "bg-muted text-foreground/80 border-muted-foreground/20";
+  return (
+    <Badge variant="outline" className={`${color}`}>
+      {roleLabel(role as any)}
+    </Badge>
+  );
 }
 
 function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
@@ -50,7 +94,11 @@ function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
           ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
           : "bg-muted text-foreground/80 border-muted-foreground/20";
   const label = verifierLabel(who as any);
-  return <Badge variant="outline" className={`${color}`}>{label}</Badge>;
+  return (
+    <Badge variant="outline" className={`${color}`}>
+      {label}
+    </Badge>
+  );
 }
 
 type Props = {
@@ -58,6 +106,15 @@ type Props = {
 };
 
 export default function ProfilesClient({ initialProfiles }: Props) {
+  const profileFromStore = useProfileStore((s) => s.profile);
+  const profileRoles = React.useMemo(
+    () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
+    [profileFromStore?.access_role],
+  );
+  const effectiveCanManage = React.useMemo(
+    () => canManageInstructorsFromRoles(profileRoles),
+    [profileRoles],
+  );
   const [query, setQuery] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("");
   const [verifierFilter, setVerifierFilter] = React.useState<string>("");
@@ -69,7 +126,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       if (roleFilter && p.access_role !== roleFilter) return false;
       if (verifierFilter && p.verified_by !== verifierFilter) return false;
       // Treat suspended state as not available for filtering purposes
-      if (availabilityOnly && (p.state === 'suspended')) return false;
+      if (availabilityOnly && p.state === "suspended") return false;
       if (query) {
         const q = query.toLowerCase();
         const hay = [
@@ -89,11 +146,15 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     });
   }, [rows, query, roleFilter, verifierFilter, availabilityOnly]);
 
-  async function apiUpdate(id: string, patch: Partial<Profile>, successLabel: string) {
+  async function apiUpdate(
+    id: string,
+    patch: Partial<Profile>,
+    successLabel: string,
+  ) {
     try {
       const res = await fetch(`/api/admin/profiles/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
       if (!res.ok) {
@@ -103,19 +164,25 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       const json = (await res.json()) as { profile?: Profile | null };
       const updated = json.profile ?? null;
       if (updated) {
-        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+        setRows((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, ...updated } : r)),
+        );
       } else {
-        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+        setRows((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        );
       }
       toast.success(successLabel);
     } catch (e: any) {
-      toast.error(e?.message ?? 'Update failed');
+      toast.error(e?.message ?? "Update failed");
     }
   }
 
   function exportJSON() {
     const data = filtered.map(redactSensitive);
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     triggerDownload(url, `profiles-export.json`);
   }
@@ -133,7 +200,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       "city",
     ] as const;
     const header = fields.join(",");
-    const lines = filtered.map((p) => fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(","));
+    const lines = filtered.map((p) =>
+      fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(","),
+    );
     const csv = [header, ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -157,7 +226,10 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Manage users, roles, and verification</CardTitle>
-          <CardDescription>Filter by role, verification, and availability. Actions are demo-only.</CardDescription>
+          <CardDescription>
+            Filter by role, verification, and availability. Actions are
+            demo-only.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 items-center mb-4">
@@ -167,8 +239,13 @@ export default function ProfilesClient({ initialProfiles }: Props) {
               placeholder="Search name, affiliation, Signal, zone..."
               className="w-[280px]"
             />
-            <Select value={roleFilter || undefined} onValueChange={(v) => setRoleFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[220px]"><SelectValue placeholder="Filter by role" /></SelectTrigger>
+            <Select
+              value={roleFilter || undefined}
+              onValueChange={(v) => setRoleFilter(v === "all" ? "" : v)}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All roles</SelectItem>
                 {AccessRoles.map((r) => (
@@ -178,8 +255,13 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={verifierFilter || undefined} onValueChange={(v) => setVerifierFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[220px]"><SelectValue placeholder="Filter by verification" /></SelectTrigger>
+            <Select
+              value={verifierFilter || undefined}
+              onValueChange={(v) => setVerifierFilter(v === "all" ? "" : v)}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Filter by verification" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All sources</SelectItem>
                 {VerifiedBy.map((v) => (
@@ -190,8 +272,14 @@ export default function ProfilesClient({ initialProfiles }: Props) {
               </SelectContent>
             </Select>
             <div className="flex items-center gap-2">
-              <Switch checked={availabilityOnly} onCheckedChange={setAvailabilityOnly} id="avail" />
-              <label htmlFor="avail" className="text-sm text-muted-foreground">Available only</label>
+              <Switch
+                checked={availabilityOnly}
+                onCheckedChange={setAvailabilityOnly}
+                id="avail"
+              />
+              <label htmlFor="avail" className="text-sm text-muted-foreground">
+                Available only
+              </label>
             </div>
           </div>
 
@@ -218,24 +306,47 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                         <div className="flex items-center gap-2">
                           <span>{p.display_name}</span>
                           {!p.user_id ? (
-                            <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30">
+                            <Badge
+                              variant="outline"
+                              className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                            >
                               Unregistered
                             </Badge>
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell><AccessRoleBadge role={p.access_role} /></TableCell>
-                      <TableCell><VerifiedBadge who={p.verified_by} /></TableCell>
                       <TableCell>
-                        {p.state === 'suspended' ? (
-                          <Badge variant="outline" className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30">Suspended</Badge>
+                        <AccessRoleBadge role={p.access_role} />
+                      </TableCell>
+                      <TableCell>
+                        <VerifiedBadge who={p.verified_by} />
+                      </TableCell>
+                      <TableCell>
+                        {p.state === "suspended" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                          >
+                            Suspended
+                          </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">Active</Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                          >
+                            Active
+                          </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="max-w-[220px] truncate">{p.affiliation ?? ""}</TableCell>
-                      <TableCell className="max-w-[180px] truncate">{p.contact_signal ?? ""}</TableCell>
-                      <TableCell className="max-w-[160px] truncate">{p.coordination_zone ?? p.city ?? ""}</TableCell>
+                      <TableCell className="max-w-[220px] truncate">
+                        {p.affiliation ?? ""}
+                      </TableCell>
+                      <TableCell className="max-w-[180px] truncate">
+                        {p.contact_signal ?? ""}
+                      </TableCell>
+                      <TableCell className="max-w-[160px] truncate">
+                        {p.coordination_zone ?? p.city ?? ""}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Popover>
                           <PopoverTrigger asChild>
@@ -246,15 +357,32 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                           <PopoverContent align="end" className="w-80 p-3">
                             <div className="space-y-3">
                               <div className="space-y-1">
-                                <div className="text-xs font-medium text-muted-foreground">Role</div>
+                                <div className="text-xs font-medium text-muted-foreground">
+                                  Role
+                                </div>
                                 <Select
                                   value={p.access_role}
                                   onValueChange={(val) => {
-                                    if (isUnregistered) return;
-                                    apiUpdate(p.id, { access_role: val as any }, 'Role updated');
+                                    if (isUnregistered || !effectiveCanManage) return;
+                                    apiUpdate(
+                                      p.id,
+                                      { access_role: val as any },
+                                      "Role updated",
+                                    );
                                   }}
                                 >
-                                  <SelectTrigger className="w-full" disabled={isUnregistered} aria-disabled={isUnregistered} title={isUnregistered ? "Register this user to change role" : undefined}>
+                                  <SelectTrigger
+                                    className="w-full"
+                                    disabled={isUnregistered || !effectiveCanManage}
+                                    aria-disabled={isUnregistered || !effectiveCanManage}
+                                    title={
+                                      isUnregistered
+                                        ? "Register this user to change role"
+                                        : !effectiveCanManage
+                                          ? "Insufficient permission"
+                                          : undefined
+                                    }
+                                  >
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent align="end">
@@ -268,39 +396,66 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                               </div>
 
                               <div className="space-y-2">
-                                <div className="text-xs font-medium text-muted-foreground">Coordination zone</div>
+                                <div className="text-xs font-medium text-muted-foreground">
+                                  Coordination zone
+                                </div>
                                 <form
                                   className="grid grid-cols-1 gap-2"
                                   onSubmit={(e) => {
                                     e.preventDefault();
                                     if (isUnregistered) return;
                                     const fd = new FormData(e.currentTarget);
-                                    const value = String(fd.get('coordination_zone') ?? '').trim();
+                                    const value = String(
+                                      fd.get("coordination_zone") ?? "",
+                                    ).trim();
                                     apiUpdate(
                                       p.id,
                                       { coordination_zone: value } as any,
-                                      value ? 'Zone updated' : 'Zone cleared'
+                                      value ? "Zone updated" : "Zone cleared",
                                     );
                                   }}
                                 >
                                   <Input
                                     name="coordination_zone"
                                     placeholder="e.g. sector-001"
-                                    defaultValue={p.coordination_zone ?? ''}
-                                    disabled={isUnregistered}
-                                    title={isUnregistered ? 'Register this user to change zone' : undefined}
+                                    defaultValue={p.coordination_zone ?? ""}
+                                    disabled={isUnregistered || !effectiveCanManage}
+                                    title={
+                                      isUnregistered
+                                        ? "Register this user to change zone"
+                                        : !effectiveCanManage
+                                          ? "Insufficient permission"
+                                          : undefined
+                                    }
                                   />
                                   <div className="flex items-center gap-2">
-                                    <Button type="submit" size="sm" disabled={isUnregistered}>
+                                    <Button
+                                      type="submit"
+                                      size="sm"
+                                      disabled={isUnregistered || !effectiveCanManage}
+                                    >
                                       Save
                                     </Button>
                                     <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
-                                      disabled={isUnregistered}
-                                      title={isUnregistered ? 'Register this user to change zone' : undefined}
-                                      onClick={() => apiUpdate(p.id, { coordination_zone: '' } as any, 'Zone cleared')}
+                                      disabled={isUnregistered || !effectiveCanManage}
+                                      title={
+                                        isUnregistered
+                                          ? "Register this user to change zone"
+                                          : !effectiveCanManage
+                                            ? "Insufficient permission"
+                                            : undefined
+                                      }
+                                      onClick={() =>
+                                        effectiveCanManage &&
+                                        apiUpdate(
+                                          p.id,
+                                          { coordination_zone: "" } as any,
+                                          "Zone cleared",
+                                        )
+                                      }
                                     >
                                       Clear
                                     </Button>
@@ -312,55 +467,132 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  disabled={isUnregistered}
-                                  title={isUnregistered ? "Register this user to verify" : undefined}
-                                  onClick={() => apiUpdate(p.id, { verified_by: 'admin' } as any, 'Verified by admin')}
+                                  disabled={isUnregistered || !effectiveCanManage}
+                                  title={
+                                    isUnregistered
+                                      ? "Register this user to verify"
+                                      : !effectiveCanManage
+                                        ? "Insufficient permission"
+                                        : undefined
+                                  }
+                                  onClick={() =>
+                                    effectiveCanManage &&
+                                    apiUpdate(
+                                      p.id,
+                                      { verified_by: "admin" } as any,
+                                      "Verified by admin",
+                                    )
+                                  }
                                 >
-                                  <ShieldCheck className="h-4 w-4 mr-2" /> Admin verify
+                                  <ShieldCheck className="h-4 w-4 mr-2" /> Admin
+                                  verify
                                 </Button>
 
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  disabled={isUnregistered}
-                                  title={isUnregistered ? "Register this user to verify" : undefined}
-                                  onClick={() => apiUpdate(p.id, { verified_by: 'partner_org' } as any, 'Verified by partner org')}
+                                  disabled={isUnregistered || !effectiveCanManage}
+                                  title={
+                                    isUnregistered
+                                      ? "Register this user to verify"
+                                      : !effectiveCanManage
+                                        ? "Insufficient permission"
+                                        : undefined
+                                  }
+                                  onClick={() =>
+                                    effectiveCanManage &&
+                                    apiUpdate(
+                                      p.id,
+                                      { verified_by: "partner_org" } as any,
+                                      "Verified by partner org",
+                                    )
+                                  }
                                 >
-                                  <UserCheck className="h-4 w-4 mr-2" /> Partner verify
+                                  <UserCheck className="h-4 w-4 mr-2" /> Partner
+                                  verify
                                 </Button>
 
                                 <Button
-                                  variant={p.verified_by === 'suspended' ? 'secondary' : 'destructive'}
+                                  variant={
+                                    p.verified_by === "suspended"
+                                      ? "secondary"
+                                      : "destructive"
+                                  }
                                   size="sm"
-                                  title={isUnregistered ? "Register this user to change verification" : undefined}
+                                  title={
+                                    isUnregistered
+                                      ? "Register this user to change verification"
+                                      : !effectiveCanManage
+                                        ? "Insufficient permission"
+                                        : undefined
+                                  }
                                   onClick={() => {
-                                    if (isUnregistered) return;
-                                    const next = p.verified_by === 'suspended' ? 'self' : 'suspended';
-                                    apiUpdate(p.id, { verified_by: next as any }, next === 'suspended' ? 'Suspended' : 'Reactivated');
+                                    if (isUnregistered || !effectiveCanManage) return;
+                                    const next =
+                                      p.verified_by === "suspended"
+                                        ? "self"
+                                        : "suspended";
+                                    apiUpdate(
+                                      p.id,
+                                      { verified_by: next as any },
+                                      next === "suspended"
+                                        ? "Suspended"
+                                        : "Reactivated",
+                                    );
                                   }}
                                 >
-                                  {p.verified_by === 'suspended' ? (
-                                    <><ShieldCheck className="h-4 w-4 mr-2" /> Activate</>
+                                  {p.verified_by === "suspended" ? (
+                                    <>
+                                      <ShieldCheck className="h-4 w-4 mr-2" />{' '}
+                                      Activate
+                                    </>
                                   ) : (
-                                    <><UserX className="h-4 w-4 mr-2" /> Suspend</>
+                                    <>
+                                      <UserX className="h-4 w-4 mr-2" /> Suspend
+                                    </>
                                   )}
                                 </Button>
 
                                 <Button
-                                  variant={p.verified_by === 'suspended' ? 'secondary' : 'outline'}
+                                  variant={
+                                    p.verified_by === "suspended"
+                                      ? "secondary"
+                                      : "outline"
+                                  }
                                   size="sm"
-                                  disabled={isUnregistered}
-                                  title={isUnregistered ? "Register this user to change verification" : undefined}
+                                  disabled={isUnregistered || !effectiveCanManage}
+                                  title={
+                                    isUnregistered
+                                      ? "Register this user to change verification"
+                                      : !effectiveCanManage
+                                        ? "Insufficient permission"
+                                        : undefined
+                                  }
                                   onClick={() => {
-                                    if (isUnregistered) return;
-                                    const next = p.verified_by === 'suspended' ? 'self' : 'suspended';
-                                    apiUpdate(p.id, { verified_by: next as any }, next === 'suspended' ? 'Marked suspended' : 'Marked self-verified');
+                                    if (isUnregistered || !effectiveCanManage) return;
+                                    const next =
+                                      p.verified_by === "suspended"
+                                        ? "self"
+                                        : "suspended";
+                                    apiUpdate(
+                                      p.id,
+                                      { verified_by: next as any },
+                                      next === "suspended"
+                                        ? "Marked suspended"
+                                        : "Marked self-verified",
+                                    );
                                   }}
                                 >
-                                  {p.verified_by === 'suspended' ? (
-                                    <><ShieldCheck className="h-4 w-4 mr-2" /> Unsuspend (verify self)</>
+                                  {p.verified_by === "suspended" ? (
+                                    <>
+                                      <ShieldCheck className="h-4 w-4 mr-2" />{' '}
+                                      Unsuspend (verify self)
+                                    </>
                                   ) : (
-                                    <><UserX className="h-4 w-4 mr-2" /> Mark suspended</>
+                                    <>
+                                      <UserX className="h-4 w-4 mr-2" /> Mark
+                                      suspended
+                                    </>
                                   )}
                                 </Button>
                               </div>
@@ -369,7 +601,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                         </Popover>
                       </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>

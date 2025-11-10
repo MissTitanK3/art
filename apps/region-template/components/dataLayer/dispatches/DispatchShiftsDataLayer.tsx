@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { DispatchStoreContext, useDispatchStore } from "@/providers/DispatchStoreProvider";
+import {
+  DispatchStoreContext,
+  useDispatchStore,
+} from "@/providers/DispatchStoreProvider";
 import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -11,15 +14,29 @@ function mapRowToShift(row: any): DispatchShift {
   return {
     id: String(row.id ?? crypto.randomUUID()),
     podId: typeof row?.pod_id === "string" ? row.pod_id : row?.podId,
-    volunteerId: typeof row?.volunteer_id === "string" ? row.volunteer_id : row?.volunteerId,
-    volunteerName: typeof row?.volunteer_name === "string" ? row.volunteer_name : row?.volunteerName,
-    startsAt: String(row?.starts_at ?? row?.startsAt ?? new Date().toISOString()),
-    endsAt: String(row?.ends_at ?? row?.endsAt ?? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()),
+    volunteerId:
+      typeof row?.volunteer_id === "string"
+        ? row.volunteer_id
+        : row?.volunteerId,
+    volunteerName:
+      typeof row?.volunteer_name === "string"
+        ? row.volunteer_name
+        : row?.volunteerName,
+    startsAt: String(
+      row?.starts_at ?? row?.startsAt ?? new Date().toISOString(),
+    ),
+    endsAt: String(
+      row?.ends_at ??
+        row?.endsAt ??
+        new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    ),
     notes: typeof row?.notes === "string" ? row.notes : undefined,
   } as DispatchShift;
 }
 
-async function fetchDispatchShiftsFromDatabase(): Promise<DispatchShift[] | null> {
+async function fetchDispatchShiftsFromDatabase(): Promise<
+  DispatchShift[] | null
+> {
   try {
     const client = getSupabaseBrowserClient();
     const { data, error } = await client
@@ -40,7 +57,9 @@ async function fetchDispatchShiftsFromDatabase(): Promise<DispatchShift[] | null
 export default function DispatchShiftsDataLayer() {
   const dispatchStore = React.useContext(DispatchStoreContext);
   if (!dispatchStore) {
-    throw new Error("DispatchShiftsDataLayer must be used within DispatchStoreProvider");
+    throw new Error(
+      "DispatchShiftsDataLayer must be used within DispatchStoreProvider",
+    );
   }
 
   const shifts = useDispatchStore((s) => s.shifts);
@@ -53,7 +72,9 @@ export default function DispatchShiftsDataLayer() {
   const removeShift = useDispatchStore((s) => s.removeShift);
   const isShiftActive = useDispatchStore((s) => s.isShiftActive);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [remoteShifts, setRemoteShifts] = React.useState<DispatchShift[] | null>(null);
+  const [remoteShifts, setRemoteShifts] = React.useState<
+    DispatchShift[] | null
+  >(null);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -68,7 +89,10 @@ export default function DispatchShiftsDataLayer() {
         }
       } catch (error) {
         if (!cancelled) {
-          console.warn("DispatchShiftsDataLayer: failed to fetch shifts", error);
+          console.warn(
+            "DispatchShiftsDataLayer: failed to fetch shifts",
+            error,
+          );
         }
       } finally {
         if (!cancelled) {
@@ -84,11 +108,16 @@ export default function DispatchShiftsDataLayer() {
   }, []);
 
   const mergedShifts = remoteShifts ?? shifts;
-  const activeShifts = remoteShifts ? remoteShifts.filter((shift) => isShiftActive(shift)) : getActiveShifts();
+  const activeShifts = remoteShifts
+    ? remoteShifts.filter((shift) => isShiftActive(shift))
+    : getActiveShifts();
   const upcomingShifts = remoteShifts
     ? remoteShifts
-      .filter((shift) => new Date(shift.startsAt) > new Date())
-      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+        .filter((shift) => new Date(shift.startsAt) > new Date())
+        .sort(
+          (a, b) =>
+            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+        )
     : getUpcomingShifts(24);
 
   const handleAddShift = React.useCallback(
@@ -97,7 +126,9 @@ export default function DispatchShiftsDataLayer() {
       setRemoteShifts((prev) => {
         if (!prev) return prev;
         const latest = dispatchStore.getState().shifts;
-        const added = latest.find((shift) => !prev.some((existing) => existing.id === shift.id));
+        const added = latest.find(
+          (shift) => !prev.some((existing) => existing.id === shift.id),
+        );
         return added ? [...prev, added] : prev;
       });
     },
@@ -109,7 +140,9 @@ export default function DispatchShiftsDataLayer() {
       updateShift(id, updates);
       setRemoteShifts((prev) => {
         if (!prev) return prev;
-        const updated = dispatchStore.getState().shifts.find((shift) => shift.id === id);
+        const updated = dispatchStore
+          .getState()
+          .shifts.find((shift) => shift.id === id);
         if (!updated) return prev;
         return prev.map((shift) => (shift.id === id ? updated : shift));
       });
@@ -120,7 +153,9 @@ export default function DispatchShiftsDataLayer() {
   const handleRemoveShift = React.useCallback(
     (shiftId: string) => {
       removeShift(shiftId);
-      setRemoteShifts((prev) => (prev ? prev.filter((shift) => shift.id !== shiftId) : prev));
+      setRemoteShifts((prev) =>
+        prev ? prev.filter((shift) => shift.id !== shiftId) : prev,
+      );
     },
     [removeShift],
   );

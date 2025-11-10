@@ -17,7 +17,10 @@ import {
 const schema = z.object({
   name: z.string().min(2).max(60),
   area: z.string().min(2),
-  slug: z.string().min(6).regex(/^pod-[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(6)
+    .regex(/^pod-[a-z0-9-]+$/),
   channelType: z.enum(["Signal", "Matrix", "LoRa"]),
   channelLink: z
     .string()
@@ -77,7 +80,7 @@ export default function PodManagementDataLayer() {
       channels: [{ type: "Signal" as Channel["type"], link: "" }],
       team: [],
     }),
-    [id]
+    [id],
   );
 
   const initialPod = storePod ?? fallbackPod;
@@ -135,7 +138,7 @@ export default function PodManagementDataLayer() {
               channelType: channel?.type ?? "Signal",
               channelLink: channel?.link ?? "",
             },
-            { keepDirty: false }
+            { keepDirty: false },
           );
         }
       } catch (error) {
@@ -205,7 +208,7 @@ export default function PodManagementDataLayer() {
       slug: register("slug"),
       channelLink: register("channelLink"),
     }),
-    [register]
+    [register],
   );
 
   const formErrors: PodManagementLayoutErrors = {

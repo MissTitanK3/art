@@ -20,12 +20,9 @@ function normalizePod(pod: Pod | PodsListLayoutPod): NormalizedPod {
       : [];
 
   const team: Pod["team"] =
-    "team" in pod && Array.isArray(pod.team)
-      ? (pod.team as Pod["team"])
-      : [];
+    "team" in pod && Array.isArray(pod.team) ? (pod.team as Pod["team"]) : [];
 
-  const area =
-    "area" in pod && typeof pod.area === "string" ? pod.area : "";
+  const area = "area" in pod && typeof pod.area === "string" ? pod.area : "";
 
   const normalized: NormalizedPod = {
     ...(pod as Record<string, unknown>),
@@ -60,7 +57,9 @@ async function fetchPodsFromDatabase(): Promise<PodsListLayoutPod[]> {
 
 export default function PodsListDataLayer() {
   const pods = usePodStore((state) => state.pods);
-  const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(null);
+  const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(
+    null,
+  );
   const [loadingRemotePods, setLoadingRemotePods] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -77,7 +76,10 @@ export default function PodsListDataLayer() {
           setRemotePods(result);
         }
       } catch (error) {
-        console.warn("PodsListDataLayer: failed to fetch pods from database", error);
+        console.warn(
+          "PodsListDataLayer: failed to fetch pods from database",
+          error,
+        );
       } finally {
         if (mounted) {
           setLoadingRemotePods(false);
@@ -98,18 +100,20 @@ export default function PodsListDataLayer() {
   return (
     <PodsListLayout
       pods={normalizedPods}
-      initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
+      initialUrlParams={Object.fromEntries(
+        (searchParams ?? new URLSearchParams()).entries(),
+      )}
       onUrlChange={(url) => router.replace(url)}
       persistKey="podsList.filters:region-template"
       emptyState={
         loadingRemotePods ? (
-          <p className="text-sm text-muted-foreground">Loading pods from database...</p>
+          <p className="text-sm text-muted-foreground">
+            Loading pods from database...
+          </p>
         ) : undefined
       }
       renderPod={({ pod, DefaultCard }) => (
-        <Link href={`/pods/${pod.slug}`}>
-          {DefaultCard}
-        </Link>
+        <Link href={`/pods/${pod.slug}`}>{DefaultCard}</Link>
       )}
     />
   );

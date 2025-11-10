@@ -1,9 +1,9 @@
 // Comms module shared types
 
-export type CommsMessageType = 'Routine' | 'Priority' | 'Emergency';
-export type CommsImportance = 'Low' | 'Normal' | 'High';
-export type StationType = 'Portable' | 'Mobile' | 'Base' | 'Relay' | 'Other';
-export type EncryptionMode = 'Clear' | 'AES-256' | 'Proprietary' | 'Other';
+export type CommsMessageType = "Routine" | "Priority" | "Emergency";
+export type CommsImportance = "Low" | "Normal" | "High";
+export type StationType = "Portable" | "Mobile" | "Base" | "Relay" | "Other";
+export type EncryptionMode = "Clear" | "AES-256" | "Proprietary" | "Other";
 
 export interface ComTeam {
   id: string;
@@ -26,9 +26,9 @@ export interface ComOperator {
   assigned_roles?: string[];
   linked_units?: string[];
   frequency?: string;
-  battery_status?: 'Full' | 'Good' | 'Low' | 'Critical';
-  coms_condition?: 'Clear' | 'Static' | 'Intermittent' | 'Down';
-  status?: 'Active' | 'Standby' | 'Offshift' | 'Unknown';
+  battery_status?: "Full" | "Good" | "Low" | "Critical";
+  coms_condition?: "Clear" | "Static" | "Intermittent" | "Down";
+  status?: "Active" | "Standby" | "Offshift" | "Unknown";
   check_in_interval_minutes?: number; // operator override
   last_check_in?: string | null; // ISO
   handoff_to?: string | null; // operator id

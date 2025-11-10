@@ -38,7 +38,9 @@ function AddLogisticsDrawer({ newItem, setNewItem, addItem }: any) {
             value={newItem.category}
             onValueChange={(v) => setNewItem({ ...newItem, category: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="transport">Transport</SelectItem>
               <SelectItem value="supply">Supply</SelectItem>
@@ -51,20 +53,26 @@ function AddLogisticsDrawer({ newItem, setNewItem, addItem }: any) {
           <Input
             placeholder="Description"
             value={newItem.description}
-            onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, description: e.target.value })
+            }
           />
 
           <Input
             placeholder="Quantity (e.g., 3 pallets, 50 units)"
             value={newItem.quantity}
-            onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, quantity: e.target.value })
+            }
           />
 
           <Select
             value={newItem.priority}
             onValueChange={(v) => setNewItem({ ...newItem, priority: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Priority" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="low">Low</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
@@ -77,7 +85,9 @@ function AddLogisticsDrawer({ newItem, setNewItem, addItem }: any) {
             value={newItem.status}
             onValueChange={(v) => setNewItem({ ...newItem, status: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
@@ -89,29 +99,39 @@ function AddLogisticsDrawer({ newItem, setNewItem, addItem }: any) {
           <Input
             placeholder="Responsible Party (name or leave blank)"
             value={newItem.responsible}
-            onChange={(e) => setNewItem({ ...newItem, responsible: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, responsible: e.target.value })
+            }
           />
 
           <Input
             placeholder="Warehouse Name"
             value={newItem.warehouseName}
-            onChange={(e) => setNewItem({ ...newItem, warehouseName: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, warehouseName: e.target.value })
+            }
           />
           <Input
             placeholder="Warehouse Location"
             value={newItem.warehouseLocation}
-            onChange={(e) => setNewItem({ ...newItem, warehouseLocation: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, warehouseLocation: e.target.value })
+            }
           />
           <Input
             placeholder="Warehouse Contact"
             value={newItem.warehouseContact}
-            onChange={(e) => setNewItem({ ...newItem, warehouseContact: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, warehouseContact: e.target.value })
+            }
           />
 
           <Textarea
             placeholder="Accountability notes"
             value={newItem.accountabilityNotes}
-            onChange={(e) => setNewItem({ ...newItem, accountabilityNotes: e.target.value })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, accountabilityNotes: e.target.value })
+            }
             className="resize-y"
           />
         </div>

@@ -14,7 +14,9 @@ import InstallPrompt from "@/components/client/InstallPrompt";
 
 // ---------- Metadata ----------
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
+  ),
   title: {
     default: "ART Region Template",
     template: "%s · ART Region Template",
@@ -41,15 +43,15 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "ART. Region Template",
     title: "ART. Region Template",
-    description:
-      "Siloed regional operations with cross‑region metadata only.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "ART. Region Template" }],
+    description: "Siloed regional operations with cross‑region metadata only.",
+    images: [
+      { url: "/og.png", width: 1200, height: 630, alt: "ART. Region Template" },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "ART. Region Template",
-    description:
-      "Siloed regional operations with cross‑region metadata only.",
+    description: "Siloed regional operations with cross‑region metadata only.",
     images: ["/og.png"],
     creator: "@alwaysreadytools",
   },
@@ -78,7 +80,11 @@ const fontSans = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 // ---------- Layout ----------
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await getServerSession();
 
   return (

@@ -1,36 +1,42 @@
 // components/ThemeToggle.tsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
-import { Check, Laptop, Moon, MoonStar, Sun, SunDim } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { Check, Laptop, Moon, MoonStar, Sun, SunDim } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@workspace/ui/components/dropdown-menu';
-import { Button } from '@workspace/ui/components/button';
-import { cn } from '@workspace/ui/lib/utils';
+} from "@workspace/ui/components/dropdown-menu";
+import { Button } from "@workspace/ui/components/button";
+import { cn } from "@workspace/ui/lib/utils";
 
 export const THEME_OPTIONS = [
-  { value: 'system', label: 'System', Icon: Laptop },
-  { value: 'light', label: 'Light', Icon: Sun },
-  { value: 'lofi', label: 'Lo-Fi', Icon: SunDim },
-  { value: 'dark', label: 'Dark', Icon: Moon },
-  { value: 'dim', label: 'Dim', Icon: MoonStar },
+  { value: "system", label: "System", Icon: Laptop },
+  { value: "light", label: "Light", Icon: Sun },
+  { value: "lofi", label: "Lo-Fi", Icon: SunDim },
+  { value: "dark", label: "Dark", Icon: Moon },
+  { value: "dim", label: "Dim", Icon: MoonStar },
 ] as const;
 
-export default function ThemeToggle({ className = '' }: { className?: string }) {
+export default function ThemeToggle({
+  className = "",
+}: {
+  className?: string;
+}) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
   if (!mounted) return null; // avoid hydration mismatch
 
-  const normalizedTheme = theme ?? 'system';
+  const normalizedTheme = theme ?? "system";
   const iconKey =
-    normalizedTheme === 'system' ? resolvedTheme ?? 'system' : normalizedTheme;
+    normalizedTheme === "system"
+      ? (resolvedTheme ?? "system")
+      : normalizedTheme;
   const ActiveIcon =
     THEME_OPTIONS.find((option) => option.value === iconKey)?.Icon ?? Sun;
 
@@ -40,7 +46,7 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
         <Button
           variant="outline"
           size="icon"
-          className={cn('h-9 w-9 rounded-2xl', className)}
+          className={cn("h-9 w-9 rounded-2xl", className)}
           aria-label="Select theme"
         >
           <ActiveIcon className="h-4 w-4" />

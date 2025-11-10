@@ -30,6 +30,7 @@ export async function GET(req: Request) {
       filter.availability = availability === 'true';
     }
 
+    // If a specific id is requested, return that profile (when authorized), bypassing elevatedRoles filter
     if (id) {
       const profiles = await getProfiles();
       const match = (profiles ?? []).find((p: any) => String(p.id) === String(id));

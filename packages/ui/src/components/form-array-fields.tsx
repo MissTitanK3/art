@@ -20,7 +20,13 @@ import {
   FormMessage,
 } from "./form";
 import { Input } from "./input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
 import { Textarea } from "./textarea";
 
 type SourceTypeOption = {
@@ -28,7 +34,10 @@ type SourceTypeOption = {
   label: string;
 };
 
-interface BaseArrayFieldProps<TFieldValues extends FieldValues, TName extends Path<TFieldValues>> {
+interface BaseArrayFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends Path<TFieldValues>,
+> {
   control: Control<TFieldValues>;
   name: TName;
   label: React.ReactNode;
@@ -59,7 +68,10 @@ export function StringArrayField<
   placeholder,
 }: StringArrayFieldProps<TFieldValues, TName>) {
   const fieldArrayName = name as FieldArrayPath<TFieldValues>;
-  const { fields, append, remove } = useFieldArray<TFieldValues, FieldArrayPath<TFieldValues>>({
+  const { fields, append, remove } = useFieldArray<
+    TFieldValues,
+    FieldArrayPath<TFieldValues>
+  >({
     control,
     name: fieldArrayName,
   });
@@ -70,7 +82,11 @@ export function StringArrayField<
       description={description}
       addLabel={addLabel}
       onAdd={() => append("" as unknown as never)}
-      emptyMessage={fields.length === 0 ? <p className="text-sm text-muted-foreground">{emptyMessage}</p> : null}
+      emptyMessage={
+        fields.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        ) : null
+      }
     >
       {fields.map((fieldItem, index) => (
         <div key={fieldItem.id} className="flex items-start gap-2">
@@ -93,7 +109,13 @@ export function StringArrayField<
               </FormItem>
             )}
           />
-          <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} className="mt-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => remove(index)}
+            className="mt-1"
+          >
             {removeLabel}
           </Button>
         </div>
@@ -139,7 +161,10 @@ export function ContactArrayField<
   badgeLabel = (index) => `Contact ${index + 1}`,
 }: ContactArrayFieldProps<TFieldValues, TName>) {
   const fieldArrayName = name as FieldArrayPath<TFieldValues>;
-  const { fields, append, remove } = useFieldArray<TFieldValues, FieldArrayPath<TFieldValues>>({
+  const { fields, append, remove } = useFieldArray<
+    TFieldValues,
+    FieldArrayPath<TFieldValues>
+  >({
     control,
     name: fieldArrayName,
   });
@@ -157,13 +182,22 @@ export function ContactArrayField<
           relation: "",
         } as unknown as never)
       }
-      emptyMessage={fields.length === 0 ? <p className="text-sm text-muted-foreground">{emptyMessage}</p> : null}
+      emptyMessage={
+        fields.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        ) : null
+      }
     >
       {fields.map((item, index) => (
         <div key={item.id} className="rounded-lg border p-4">
           <div className="flex items-center justify-between gap-3 pb-3">
             <Badge variant="outline">{badgeLabel(index)}</Badge>
-            <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => remove(index)}
+            >
               {removeLabel}
             </Button>
           </div>
@@ -214,7 +248,11 @@ export function ContactArrayField<
                 <FormItem>
                   <FormLabel>{emailLabel}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={emailPlaceholder} type="email" />
+                    <Input
+                      {...field}
+                      placeholder={emailPlaceholder}
+                      type="email"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -264,7 +302,10 @@ export function TransferArrayField<
   badgeLabel = (index) => `Transfer ${index + 1}`,
 }: TransferArrayFieldProps<TFieldValues, TName>) {
   const fieldArrayName = name as FieldArrayPath<TFieldValues>;
-  const { fields, append, remove } = useFieldArray<TFieldValues, FieldArrayPath<TFieldValues>>({
+  const { fields, append, remove } = useFieldArray<
+    TFieldValues,
+    FieldArrayPath<TFieldValues>
+  >({
     control,
     name: fieldArrayName,
   });
@@ -282,13 +323,22 @@ export function TransferArrayField<
           method: "",
         } as unknown as never)
       }
-      emptyMessage={fields.length === 0 ? <p className="text-sm text-muted-foreground">{emptyMessage}</p> : null}
+      emptyMessage={
+        fields.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        ) : null
+      }
     >
       {fields.map((item, index) => (
         <div key={item.id} className="rounded-lg border p-4">
           <div className="flex items-center justify-between gap-3 pb-3">
             <Badge variant="outline">{badgeLabel(index)}</Badge>
-            <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => remove(index)}
+            >
               {removeLabel}
             </Button>
           </div>
@@ -408,7 +458,10 @@ export function InfoSourceArrayField<
   maxConfidence = 5,
 }: InfoSourceArrayFieldProps<TFieldValues, TName>) {
   const fieldArrayName = name as FieldArrayPath<TFieldValues>;
-  const { fields, append, remove } = useFieldArray<TFieldValues, FieldArrayPath<TFieldValues>>({
+  const { fields, append, remove } = useFieldArray<
+    TFieldValues,
+    FieldArrayPath<TFieldValues>
+  >({
     control,
     name: fieldArrayName,
   });
@@ -432,13 +485,22 @@ export function InfoSourceArrayField<
           confidence: undefined,
         } as unknown as never)
       }
-      emptyMessage={fields.length === 0 ? <p className="text-sm text-muted-foreground">{emptyMessage}</p> : null}
+      emptyMessage={
+        fields.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        ) : null
+      }
     >
       {fields.map((item, index) => (
         <div key={item.id} className="rounded-lg border p-4">
           <div className="flex items-center justify-between gap-3 pb-3">
             <Badge variant="outline">{badgeLabel(index)}</Badge>
-            <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => remove(index)}
+            >
               {removeLabel}
             </Button>
           </div>
@@ -463,7 +525,10 @@ export function InfoSourceArrayField<
                 <FormItem>
                   <FormLabel>{sourceTypeLabel}</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value ?? defaultSourceTypeValue}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? defaultSourceTypeValue}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={sourceTypePlaceholder} />
                       </SelectTrigger>
@@ -499,7 +564,9 @@ export function InfoSourceArrayField<
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{confidenceLabel}</FormLabel>
-                  {confidenceHelpText ? <FormDescription>{confidenceHelpText}</FormDescription> : null}
+                  {confidenceHelpText ? (
+                    <FormDescription>{confidenceHelpText}</FormDescription>
+                  ) : null}
                   <FormControl>
                     <Input
                       {...field}
@@ -527,7 +594,11 @@ export function InfoSourceArrayField<
               <FormItem className="pt-3">
                 <FormLabel>{detailsLabel}</FormLabel>
                 <FormControl>
-                  <Textarea {...field} placeholder={detailsPlaceholder} rows={3} />
+                  <Textarea
+                    {...field}
+                    placeholder={detailsPlaceholder}
+                    rows={3}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

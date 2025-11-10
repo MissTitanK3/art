@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@workspace/ui/components/card";
 import { FIELD_ROLE_DETAILS } from "@workspace/store/types/roles.ts";
 import { humanize } from "@workspace/ui/lib/utils";
 import { SelectableRoleCard } from "@workspace/ui/components/SelectableRoleCard";
@@ -19,16 +25,23 @@ interface RolesStepProps {
   onNext: (data: RolesStepProps["initial"]) => void;
 }
 
-export function RolesStep({ initial, onBack, onNext, suggestedRoles }: RolesStepProps) {
-  const [roles, setRoles] = useState<string[]>(() => initial?.required_roles ?? []);
+export function RolesStep({
+  initial,
+  onBack,
+  onNext,
+  suggestedRoles,
+}: RolesStepProps) {
+  const [roles, setRoles] = useState<string[]>(
+    () => initial?.required_roles ?? [],
+  );
 
   const [rolesByType, setRolesByType] = useState<Record<string, number>>(
-    initial?.required_roles_by_type ?? {}
+    initial?.required_roles_by_type ?? {},
   );
 
   const toggleRole = (role: string) => {
     setRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   };
 
@@ -42,8 +55,6 @@ export function RolesStep({ initial, onBack, onNext, suggestedRoles }: RolesStep
       }
     });
   };
-
-
 
   return (
     <Card>
@@ -65,17 +76,21 @@ export function RolesStep({ initial, onBack, onNext, suggestedRoles }: RolesStep
               onCountChange={(val) => updateCount(r.role, val)}
               color={isSuggested ? "emerald" : "amber"}
             />
-
           );
         })}
-
-
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={() => onNext({ required_roles: roles, required_roles_by_type: rolesByType })}>
+        <Button
+          onClick={() =>
+            onNext({
+              required_roles: roles,
+              required_roles_by_type: rolesByType,
+            })
+          }
+        >
           Next
         </Button>
       </CardFooter>

@@ -22,19 +22,23 @@ export interface CreateMissingPersonStoreOptions {
   storageKey?: string;
 }
 
-const createMissingPersonStoreInitializer = (
-  initialRecords: MissingPersonRecord[]
-): StateCreator<MissingPersonStoreState> =>
+const createMissingPersonStoreInitializer =
+  (
+    initialRecords: MissingPersonRecord[],
+  ): StateCreator<MissingPersonStoreState> =>
   (set, get) => ({
     records: initialRecords,
     addRecord: (record) =>
       set((state) => ({
-        records: [record, ...state.records.filter((r) => r.caseId !== record.caseId)],
+        records: [
+          record,
+          ...state.records.filter((r) => r.caseId !== record.caseId),
+        ],
       })),
     updateRecord: (caseId, patch) =>
       set((state) => ({
         records: state.records.map((record) =>
-          record.caseId === caseId ? { ...record, ...patch } : record
+          record.caseId === caseId ? { ...record, ...patch } : record,
         ),
       })),
     removeRecord: (caseId) =>
@@ -49,7 +53,7 @@ const createMissingPersonStoreInitializer = (
 
 function withPersistence(
   initializer: StateCreator<MissingPersonStoreState>,
-  storageKey: string
+  storageKey: string,
 ) {
   return persist(initializer, {
     name: storageKey,
@@ -70,5 +74,6 @@ export function createMissingPersonStore({
 
 const store = createMissingPersonStore();
 
-export const useMissingPersonStore = <T>(selector: (state: MissingPersonStoreState) => T) =>
-  useStore(store, selector);
+export const useMissingPersonStore = <T>(
+  selector: (state: MissingPersonStoreState) => T,
+) => useStore(store, selector);

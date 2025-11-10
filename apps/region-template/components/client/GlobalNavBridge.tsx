@@ -8,7 +8,11 @@ import type { NavRole } from "@workspace/store/utils/nav";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import type { Profile } from "@workspace/store/types/global.ts";
 
-export function GlobalNavBridge({ rightSlot }: { rightSlot?: React.ReactNode }) {
+export function GlobalNavBridge({
+  rightSlot,
+}: {
+  rightSlot?: React.ReactNode;
+}) {
   const { session, status } = useAuth();
   const { profileAdapter } = useRegionAdapters();
 

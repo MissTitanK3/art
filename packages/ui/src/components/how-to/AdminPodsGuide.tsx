@@ -5,9 +5,9 @@ export default function AdminPodsGuide() {
     <section className="prose dark:prose-invert max-w-none">
       <h2>Admin – Pods</h2>
       <p>
-        Organize pods at the regional level. Create new pods, rename existing ones, archive old
-        pods, and jump into member management. Use search to quickly find pods by name, area, or
-        slug.
+        Organize pods at the regional level. Create new pods, rename existing
+        ones, archive old pods, and jump into member management. Use search to
+        quickly find pods by name, area, or slug.
       </p>
 
       <div className="my-4 flex gap-2">
@@ -29,35 +29,37 @@ export default function AdminPodsGuide() {
       <h3>Create, Rename, Archive</h3>
       <ul>
         <li>
-          Create Pod: prompts for a name and adds the pod to the region. Slug is generated
-          automatically.
+          Create Pod: prompts for a name and adds the pod to the region. Slug is
+          generated automatically.
         </li>
         <li>
-          Rename: opens a modal to update the pod name; slug updates to match for consistency.
+          Rename: opens a modal to update the pod name; slug updates to match
+          for consistency.
         </li>
         <li>
-          Archive: removes a pod from active lists after confirmation. Use for retired or merged
-          pods.
+          Archive: removes a pod from active lists after confirmation. Use for
+          retired or merged pods.
         </li>
       </ul>
 
       <h3>Manage Members</h3>
       <ul>
         <li>
-          Select Members to open the pod roster at <code>/pods/&lt;id&gt;/roster</code>, where you can
-          add or remove members and set leadership.
+          Select Members to open the pod roster at{" "}
+          <code>/pods/&lt;id&gt;/roster</code>, where you can add or remove
+          members and set leadership.
         </li>
         <li>
-          Channel badges display configured contact channels; manage channel details from the pod
-          workspace.
+          Channel badges display configured contact channels; manage channel
+          details from the pod workspace.
         </li>
       </ul>
 
       <h3>Permissions</h3>
       <p className="!mt-2">
-        Admin roles (dispatcher_admin, regional_admin, national_admin, admin) can create, rename,
-        and archive pods. Non‑admins can view and interact with pods from the Pods pages as
-        permitted by policy.
+        Admin roles (dispatcher_admin, regional_admin, national_admin, admin)
+        can create, rename, and archive pods. Non‑admins can view and interact
+        with pods from the Pods pages as permitted by policy.
       </p>
 
       <h3>Checklist</h3>

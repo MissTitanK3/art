@@ -1,11 +1,13 @@
 "use client";
 
-import type { PropsWithChildren } from 'react';
-import { DispatchStoreProvider } from '@/providers/DispatchStoreProvider';
-import { PodStoreProvider } from '@/providers/PodStoreProvider';
-import PodDataHydrator from '@/components/dataLayer/pods/PodDataHydrator';
+import type { PropsWithChildren } from "react";
+import { DispatchStoreProvider } from "@/providers/DispatchStoreProvider";
+import { PodStoreProvider } from "@/providers/PodStoreProvider";
+import PodDataHydrator from "@/components/dataLayer/pods/PodDataHydrator";
 
-export default function DispatchesClientLayout({ children }: PropsWithChildren) {
+export default function DispatchesClientLayout({
+  children,
+}: PropsWithChildren) {
   return (
     <PodStoreProvider>
       <PodDataHydrator />

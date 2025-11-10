@@ -18,9 +18,7 @@ export function LatestOutputSection({
     <FormSectionCard title={title} description={description}>
       {json ? (
         <ScrollArea className="h-64 rounded-md border bg-muted/40 p-4">
-          <pre className="text-xs leading-relaxed">
-            {json}
-          </pre>
+          <pre className="text-xs leading-relaxed">{json}</pre>
         </ScrollArea>
       ) : (
         <p className="text-sm text-muted-foreground">

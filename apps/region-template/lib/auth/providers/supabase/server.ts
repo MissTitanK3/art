@@ -18,7 +18,7 @@ async function resolveCookieStore() {
 
 function createCookiesBridge(
   store: Awaited<ReturnType<typeof resolveCookieStore>>,
-  context?: AuthServerContext
+  context?: AuthServerContext,
 ) {
   return {
     getAll(): AdapterCookie[] {
@@ -48,7 +48,7 @@ function createCookiesBridge(
 }
 
 export async function createSupabaseServerAdapter(
-  context?: AuthServerContext
+  context?: AuthServerContext,
 ): Promise<AuthServerAdapter> {
   const env = ensureSupabaseEnv("server");
   const store = await resolveCookieStore();

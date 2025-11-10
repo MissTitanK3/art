@@ -1,15 +1,15 @@
-import { useStore } from 'zustand';
-import { createStore, StateCreator, StoreApi } from 'zustand/vanilla';
-import { persist } from 'zustand/middleware';
+import { useStore } from "zustand";
+import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
+import { persist } from "zustand/middleware";
 
-export type NotificationLevel = 'info' | 'success' | 'warning' | 'error';
+export type NotificationLevel = "info" | "success" | "warning" | "error";
 
 export type AppNotification = {
   id: string;
   title: string;
   body?: string;
   level: NotificationLevel;
-  channel?: import('./types/notifications').NotificationChannel; // centralized channel type
+  channel?: import("./types/notifications").NotificationChannel; // centralized channel type
   link?: string;
   icon?: string;
   createdAt: string; // ISO string
@@ -22,7 +22,9 @@ export type AppNotification = {
 export type NotificationsStoreState = {
   items: AppNotification[];
   mutedChannels: Record<string, boolean>;
-  add: (n: Omit<AppNotification, 'id' | 'createdAt' | 'readAt'> & { id?: string }) => string;
+  add: (
+    n: Omit<AppNotification, "id" | "createdAt" | "readAt"> & { id?: string },
+  ) => string;
   markRead: (id: string) => void;
   markAllRead: () => void;
   remove: (id: string) => void;
@@ -39,36 +41,50 @@ export interface CreateNotificationsStoreOptions {
 }
 
 const genId = () =>
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+  typeof crypto !== "undefined" && "randomUUID" in crypto
     ? (crypto as any).randomUUID()
     : Math.random().toString(36).slice(2);
 
 const createNotificationsInitializer =
-  (initialItems: AppNotification[], initialMuted: Record<string, boolean>): StateCreator<NotificationsStoreState> =>
+  (
+    initialItems: AppNotification[],
+    initialMuted: Record<string, boolean>,
+  ): StateCreator<NotificationsStoreState> =>
   (set, get) => ({
     items: initialItems,
     mutedChannels: initialMuted,
     add: (n) => {
       const id = n.id ?? genId();
       const now = new Date().toISOString();
-      const chan = n.channel ?? 'system';
+      const chan = n.channel ?? "system";
       if (get().mutedChannels[chan]) return id;
-      set((s) => ({ items: [{ ...n, id, createdAt: now, readAt: null }, ...s.items] }));
+      set((s) => ({
+        items: [{ ...n, id, createdAt: now, readAt: null }, ...s.items],
+      }));
       return id;
     },
     markRead: (id) =>
       set((s) => ({
-        items: s.items.map((i) => (i.id === id ? { ...i, readAt: i.readAt ?? new Date().toISOString() } : i)),
+        items: s.items.map((i) =>
+          i.id === id
+            ? { ...i, readAt: i.readAt ?? new Date().toISOString() }
+            : i,
+        ),
       })),
     markAllRead: () =>
       set((s) => ({
-        items: s.items.map((i) => (i.readAt ? i : { ...i, readAt: new Date().toISOString() })),
+        items: s.items.map((i) =>
+          i.readAt ? i : { ...i, readAt: new Date().toISOString() },
+        ),
       })),
     remove: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
     clear: () => set({ items: [] }),
     toggleMute: (channel) =>
       set((s) => ({
-        mutedChannels: { ...s.mutedChannels, [channel]: !s.mutedChannels[channel] },
+        mutedChannels: {
+          ...s.mutedChannels,
+          [channel]: !s.mutedChannels[channel],
+        },
       })),
     sweep: () =>
       set((s) => {
@@ -84,26 +100,39 @@ const createNotificationsInitializer =
       }),
   });
 
-function withPersistence(initializer: StateCreator<NotificationsStoreState>, storageKey: string) {
+function withPersistence(
+  initializer: StateCreator<NotificationsStoreState>,
+  storageKey: string,
+) {
   return persist(initializer, {
     name: storageKey,
     version: 1,
     migrate: (persistedState: any) => persistedState as NotificationsStoreState,
-    partialize: (state) => ({ items: state.items, mutedChannels: state.mutedChannels }),
+    partialize: (state) => ({
+      items: state.items,
+      mutedChannels: state.mutedChannels,
+    }),
   });
 }
 
 export type NotificationsStore = StoreApi<NotificationsStoreState>;
 
-export function createNotificationsStore(options?: CreateNotificationsStoreOptions): NotificationsStore {
+export function createNotificationsStore(
+  options?: CreateNotificationsStoreOptions,
+): NotificationsStore {
   const {
     initialItems = [],
     initialMuted = {},
     persist: enablePersist = true,
-    storageKey = 'notifications-store-v1',
+    storageKey = "notifications-store-v1",
   } = options ?? {};
-  const initializer = createNotificationsInitializer(initialItems, initialMuted);
-  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+  const initializer = createNotificationsInitializer(
+    initialItems,
+    initialMuted,
+  );
+  const creator = enablePersist
+    ? withPersistence(initializer, storageKey)
+    : initializer;
   return createStore<NotificationsStoreState>(creator as any);
 }
 
@@ -111,13 +140,20 @@ export function createNotificationsStore(options?: CreateNotificationsStoreOptio
 // This helps isolate notifications per region/app when multiple Next.js apps share the same origin.
 // If a global store instance is provided, prefer it; else, use a storageKey override when available.
 const GLOBAL_STORE: NotificationsStore | undefined =
-  (typeof globalThis !== 'undefined' && (globalThis as any).__ART_NOTIFICATIONS_STORE) || undefined;
+  (typeof globalThis !== "undefined" &&
+    (globalThis as any).__ART_NOTIFICATIONS_STORE) ||
+  undefined;
 
 const GLOBAL_STORAGE_KEY: string | undefined =
-  (typeof globalThis !== 'undefined' && (globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY) || undefined;
+  (typeof globalThis !== "undefined" &&
+    (globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY) ||
+  undefined;
 
 const singletonNotificationsStore =
-  GLOBAL_STORE ?? createNotificationsStore({ storageKey: GLOBAL_STORAGE_KEY ?? 'notifications-store-v1' });
+  GLOBAL_STORE ??
+  createNotificationsStore({
+    storageKey: GLOBAL_STORAGE_KEY ?? "notifications-store-v1",
+  });
 export const notificationsStore = singletonNotificationsStore;
 
 export function useNotificationsStore<T>(

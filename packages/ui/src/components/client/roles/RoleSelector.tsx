@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { CheckCircle, Circle, ChevronDown, ChevronUp } from 'lucide-react';
-import { FIELD_ROLE_DETAILS, FIELD_ROLE_LABELS, FIELD_ROLE_OPTIONS, FieldRole } from '@workspace/store/types/roles.ts';
+import { useState } from "react";
+import { CheckCircle, Circle, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  FIELD_ROLE_DETAILS,
+  FIELD_ROLE_LABELS,
+  FIELD_ROLE_OPTIONS,
+  FieldRole,
+} from "@workspace/store/types/roles.ts";
 
 export default function RoleSelector({
   selected = [],
@@ -11,33 +16,38 @@ export default function RoleSelector({
   selected: FieldRole[];
   onChange: (roles: FieldRole[]) => void;
 }) {
-  const [expanded, setExpanded] = useState<Partial<Record<FieldRole, boolean>>>({});
+  const [expanded, setExpanded] = useState<Partial<Record<FieldRole, boolean>>>(
+    {},
+  );
 
   const toggle = (role: FieldRole) => {
-    onChange(selected.includes(role) ? selected.filter((r) => r !== role) : [...selected, role]);
+    onChange(
+      selected.includes(role)
+        ? selected.filter((r) => r !== role)
+        : [...selected, role],
+    );
   };
 
   const toggleExpand = (role: FieldRole) => {
     setExpanded((prev) => ({ ...prev, [role]: !prev[role] }));
   };
 
-  const detailMap = Object.fromEntries(FIELD_ROLE_DETAILS.map((d) => [d.role, d])) as Record<
-    FieldRole,
-    (typeof FIELD_ROLE_DETAILS)[number]
-  >;
+  const detailMap = Object.fromEntries(
+    FIELD_ROLE_DETAILS.map((d) => [d.role, d]),
+  ) as Record<FieldRole, (typeof FIELD_ROLE_DETAILS)[number]>;
 
   const riskIcons: Record<string, string> = {
-    low: '🟢',
-    medium: '🟡',
-    high: '🔴',
+    low: "🟢",
+    medium: "🟡",
+    high: "🔴",
   };
 
   return (
     <div data-slot="field-role-selector">
       <div className="block font-medium mb-2">Your Field Roles</div>
       <p className="text-sm mb-4">
-        Select the roles you&apos;re able to perform in the field. Tap or click a role to expand details. Risk level is
-        indicated with color.
+        Select the roles you&apos;re able to perform in the field. Tap or click
+        a role to expand details. Risk level is indicated with color.
       </p>
       <div className="grid grid-cols-1 gap-4">
         {FIELD_ROLE_OPTIONS.map((role) => {
@@ -52,22 +62,30 @@ export default function RoleSelector({
                 tabIndex={0}
                 onClick={() => toggle(role)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     toggle(role);
                   }
                 }}
-                className={`cursor-pointer w-full flex items-center justify-between px-4 py-2 rounded-t-lg font-medium transition ${isSelected ? 'bg-gray-900 text-slate-100' : 'bg-slate-300 text-slate-900 hover:bg-gray-50'
-                  }`}>
+                className={`cursor-pointer w-full flex items-center justify-between px-4 py-2 rounded-t-lg font-medium transition ${
+                  isSelected
+                    ? "bg-gray-900 text-slate-100"
+                    : "bg-slate-300 text-slate-900 hover:bg-gray-50"
+                }`}
+              >
                 <div className="flex flex-col text-left">
                   <span className="flex items-center gap-2">
                     {detail?.riskLevel && (
-                      <span title={`Risk: ${detail.riskLevel}`}>{riskIcons[detail.riskLevel]}</span>
+                      <span title={`Risk: ${detail.riskLevel}`}>
+                        {riskIcons[detail.riskLevel]}
+                      </span>
                     )}
                     {FIELD_ROLE_LABELS[role]}
                   </span>
                   {detail?.description && (
-                    <span className={`${isSelected ? 'text-xs text-gray-200' : 'text-xs text-gray-900'}`}>
+                    <span
+                      className={`${isSelected ? "text-xs text-gray-200" : "text-xs text-gray-900"}`}
+                    >
                       {detail.description.slice(0, 60)}...
                     </span>
                   )}
@@ -87,8 +105,13 @@ export default function RoleSelector({
                       toggleExpand(role);
                     }}
                     className="ml-2"
-                    aria-label="Expand role details">
-                    {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    aria-label="Expand role details"
+                  >
+                    {isOpen ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>

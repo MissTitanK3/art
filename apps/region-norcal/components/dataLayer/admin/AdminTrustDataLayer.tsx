@@ -7,8 +7,7 @@ export default async function AdminTrustDataLayer() {
     getProfiles(),
   ]);
   const nameById = Object.fromEntries(
-    profiles.map((p) => [p.id, p.display_name] as const)
+    profiles.map((p) => [p.id, p.display_name] as const),
   );
   return <TrustClient initialEntries={entries} nameById={nameById} />;
 }
-

@@ -19,7 +19,7 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
 
 function findRecordBySlug(
   slug: string,
-  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>
+  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>,
 ): DetaineeIntake | null {
   for (const collection of collections) {
     for (const item of collection) {
@@ -36,7 +36,9 @@ function findRecordBySlug(
 export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   const localRecords = useMissingPersonStore((state) => state.records);
   const router = useRouter();
-  const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[] | null>(null);
+  const [remoteRecords, setRemoteRecords] = React.useState<
+    DetaineeIntake[] | null
+  >(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const renderDirectoryLink = React.useCallback(
@@ -45,13 +47,19 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         {label}
       </Link>
     ),
-    []
+    [],
   );
   const handleDeleteSuccess = React.useCallback(
-    ({ directoryHref }: { caseId: string; record: DetaineeIntake; directoryHref: string }) => {
+    ({
+      directoryHref,
+    }: {
+      caseId: string;
+      record: DetaineeIntake;
+      directoryHref: string;
+    }) => {
       router.push(directoryHref);
     },
-    [router]
+    [router],
   );
 
   React.useEffect(() => {
@@ -67,7 +75,10 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         }
       } catch (err) {
         if (active) {
-          console.warn("MissingPersonDetailDataLayer: failed to fetch records", err);
+          console.warn(
+            "MissingPersonDetailDataLayer: failed to fetch records",
+            err,
+          );
           setError("Unable to load the latest record from the database.");
         }
       } finally {
@@ -91,7 +102,7 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         remoteRecords ?? [],
         demoMissingPersons,
       ]),
-    [slug, localRecords, remoteRecords]
+    [slug, localRecords, remoteRecords],
   );
 
   if (!record) {
@@ -108,9 +119,7 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-4">
-      {error ? (
-        <p className="text-sm text-amber-600">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-amber-600">{error}</p> : null}
       <MissingPersonDetail
         record={record}
         slug={slug}

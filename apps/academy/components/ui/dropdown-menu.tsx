@@ -1,1 +1,1 @@
-export * from '@workspace/ui/components/dropdown-menu';
+export * from "@workspace/ui/components/dropdown-menu";

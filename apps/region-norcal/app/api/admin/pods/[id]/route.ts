@@ -18,20 +18,16 @@ async function authz(podId?: string) {
   if (error || !data?.user) return false;
   const callerProfile = await getProfileByUserId(data.user.id);
   const callerAccessRole = callerProfile?.access_role as any | undefined;
-  // Global admins and dispatcher_* keep full access
-  const isGlobalAdmin = !!callerAccessRole && (
-    regionAdmins.includes(callerAccessRole) ||
-    callerAccessRole === 'dispatcher_admin' ||
-    callerAccessRole === 'dispatcher_verified' ||
-    callerAccessRole === 'dispatcher_basic'
-  );
+  const isGlobalAdmin =
+    !!callerAccessRole &&
+    (regionAdmins.includes(callerAccessRole) ||
+      callerAccessRole === 'dispatcher_admin' ||
+      callerAccessRole === 'dispatcher_verified' ||
+      callerAccessRole === 'dispatcher_basic');
   if (isGlobalAdmin) return true;
 
-  // Scoped: allow if caller is a lead of this pod OR the creator
   if (!podId || !callerProfile?.id) return false;
-
   try {
-    // Lead check via roster_entries (RLS allows selecting own roster row)
     const { data: leadRows, error: leadErr } = await supabase
       .from('roster_entries')
       .select('id')
@@ -41,17 +37,15 @@ async function authz(podId?: string) {
       .limit(1);
     if (!leadErr && Array.isArray(leadRows) && leadRows.length > 0) return true;
 
-    // Creator check via pods.created_by
     const { data: podRow, error: podErr } = await supabase
       .from('pods')
       .select('created_by')
       .eq('id', podId)
       .maybeSingle();
     if (!podErr && podRow && podRow.created_by && String(podRow.created_by) === String(callerProfile.id)) return true;
-  } catch {
-    // fall through to deny
+  } catch (e) {
+    // no-op
   }
-
   return false;
 }
 
@@ -83,7 +77,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     // Fire-and-forget: notify admins about important changes
     (async () => {
       try {
-        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: 'system',
+        });
         if (!recipients.length) return;
         const parts: string[] = [];
         if (typeof patch.name === 'string') parts.push(`name → ${row?.name}`);
@@ -119,7 +116,10 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     // Fire-and-forget: notify admins about deletion
     (async () => {
       try {
-        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: 'system',
+        });
         if (recipients.length) {
           await notifyUsers({
             title: 'Pod Deleted',

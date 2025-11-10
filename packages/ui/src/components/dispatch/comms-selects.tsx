@@ -1,6 +1,15 @@
 import * as React from "react";
-import type { CommsImportance, CommsMessageType } from "@workspace/store/types/comms.ts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import type {
+  CommsImportance,
+  CommsMessageType,
+} from "@workspace/store/types/comms.ts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 
 type BaseProps = {
   className?: string;
@@ -11,10 +20,19 @@ type TypeSelectProps = BaseProps & {
   onChange: (v: CommsMessageType) => void;
 };
 
-export function CommsTypeSelect({ value, onChange, className }: TypeSelectProps) {
+export function CommsTypeSelect({
+  value,
+  onChange,
+  className,
+}: TypeSelectProps) {
   return (
-    <Select value={value} onValueChange={(v) => onChange(v as CommsMessageType)}>
-      <SelectTrigger className={className}><SelectValue placeholder="Type" /></SelectTrigger>
+    <Select
+      value={value}
+      onValueChange={(v) => onChange(v as CommsMessageType)}
+    >
+      <SelectTrigger className={className}>
+        <SelectValue placeholder="Type" />
+      </SelectTrigger>
       <SelectContent>
         <SelectItem value="Routine">Routine</SelectItem>
         <SelectItem value="Priority">Priority</SelectItem>
@@ -29,10 +47,16 @@ type ImportanceSelectProps = BaseProps & {
   onChange: (v: CommsImportance) => void;
 };
 
-export function CommsImportanceSelect({ value, onChange, className }: ImportanceSelectProps) {
+export function CommsImportanceSelect({
+  value,
+  onChange,
+  className,
+}: ImportanceSelectProps) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as CommsImportance)}>
-      <SelectTrigger className={className}><SelectValue placeholder="Importance" /></SelectTrigger>
+      <SelectTrigger className={className}>
+        <SelectValue placeholder="Importance" />
+      </SelectTrigger>
       <SelectContent>
         <SelectItem value="Low">Low</SelectItem>
         <SelectItem value="Normal">Normal</SelectItem>
@@ -41,4 +65,3 @@ export function CommsImportanceSelect({ value, onChange, className }: Importance
     </Select>
   );
 }
-

@@ -11,10 +11,21 @@ export type KeyboardHintProps = {
   dismissLabel?: string;
 };
 
-export default function KeyboardHint({ show, onDismiss, className, children, dismissLabel = "Dismiss hint" }: KeyboardHintProps) {
+export default function KeyboardHint({
+  show,
+  onDismiss,
+  className,
+  children,
+  dismissLabel = "Dismiss hint",
+}: KeyboardHintProps) {
   if (!show) return null;
   return (
-    <div className={cn("absolute right-2 top-2 z-20 flex items-center gap-2 rounded-md border bg-background/80 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur", className)}>
+    <div
+      className={cn(
+        "absolute right-2 top-2 z-20 flex items-center gap-2 rounded-md border bg-background/80 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur",
+        className,
+      )}
+    >
       <span>{children}</span>
       <button
         type="button"

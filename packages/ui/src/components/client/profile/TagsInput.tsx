@@ -1,9 +1,9 @@
-"use client"
-import * as React from "react"
-import { X } from "lucide-react"
-import { cn } from "@workspace/ui/lib/utils"
-import { Badge } from "../../badge.tsx"
-import { Input } from "../../input.tsx"
+"use client";
+import * as React from "react";
+import { X } from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
+import { Badge } from "../../badge.tsx";
+import { Input } from "../../input.tsx";
 
 export function TagsInput({
   value,
@@ -13,29 +13,35 @@ export function TagsInput({
   description,
   max = 10,
 }: {
-  value: string[]
-  onChange: (next: string[]) => void
-  placeholder?: string
-  className?: string
-  description?: string
-  max?: number
+  value: string[];
+  onChange: (next: string[]) => void;
+  placeholder?: string;
+  className?: string;
+  description?: string;
+  max?: number;
 }) {
-  const [draft, setDraft] = React.useState("")
+  const [draft, setDraft] = React.useState("");
 
   const handleAdd = (raw: string) => {
-    const tag = raw.trim().toLowerCase().replace(/\s+/g, "-")
-    if (!tag) return
-    if (value.includes(tag)) return
-    if (value.length >= max) return
-    onChange([...value, tag])
-    setDraft("")
-  }
+    const tag = raw.trim().toLowerCase().replace(/\s+/g, "-");
+    if (!tag) return;
+    if (value.includes(tag)) return;
+    if (value.length >= max) return;
+    onChange([...value, tag]);
+    setDraft("");
+  };
 
   return (
     <div className="space-y-1">
-      <div className={cn("rounded-xl border p-2 flex flex-wrap gap-2", className)}>
+      <div
+        className={cn("rounded-xl border p-2 flex flex-wrap gap-2", className)}
+      >
         {value.map((tag, idx) => (
-          <Badge key={tag + idx} variant="secondary" className="flex items-center gap-1">
+          <Badge
+            key={tag + idx}
+            variant="secondary"
+            className="flex items-center gap-1"
+          >
             {tag}
             <button
               type="button"
@@ -52,10 +58,10 @@ export function TagsInput({
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === ",") {
-              e.preventDefault()
-              handleAdd(draft)
+              e.preventDefault();
+              handleAdd(draft);
             } else if (e.key === "Backspace" && !draft && value.length) {
-              onChange(value.slice(0, -1))
+              onChange(value.slice(0, -1));
             }
           }}
           placeholder={placeholder}
@@ -63,7 +69,9 @@ export function TagsInput({
           inputMode="text"
         />
       </div>
-      {description && <p className="text-xs text-muted-foreground px-1">{description}</p>}
+      {description && (
+        <p className="text-xs text-muted-foreground px-1">{description}</p>
+      )}
     </div>
-  )
+  );
 }

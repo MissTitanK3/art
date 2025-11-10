@@ -1,9 +1,9 @@
-import React from 'react'
-import { Card, CardContent, CardFooter, CardHeader } from '../../card.tsx'
+import React from "react";
+import { Card, CardContent, CardFooter, CardHeader } from "../../card.tsx";
 
 type Props = {
-  pod: any
-}
+  pod: any;
+};
 
 export default function PodCard({ pod }: Props) {
   return (
@@ -42,5 +42,5 @@ export default function PodCard({ pod }: Props) {
         )}
       </CardFooter>
     </Card>
-  )
+  );
 }

@@ -13,9 +13,7 @@ import { Input } from "../../input";
 import { InfoSourceArrayField } from "../../form-array-fields";
 import { DetailGrid, DetailItem } from "./DetailGrid";
 import { formatInfoSources, formatText } from "./utils";
-import type {
-  DetaineeIntake,
-} from "@workspace/ui/types/missing-person-intake";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 interface BaseProps {
   title?: React.ReactNode;
@@ -38,7 +36,9 @@ export type VerificationSectionProps = EditProps | ViewProps;
 
 export function VerificationSection(props: VerificationSectionProps) {
   const title = props.title ?? "Verification & Audit Trail";
-  const description = props.description ?? "How this information was verified and overall confidence.";
+  const description =
+    props.description ??
+    "How this information was verified and overall confidence.";
   const sectionName = props.sectionName ?? "Verification Details";
 
   if (props.mode === "view") {
@@ -46,14 +46,26 @@ export function VerificationSection(props: VerificationSectionProps) {
     return (
       <FormSectionCard title={title} description={description}>
         <div className="space-y-6">
-          <DetailItem label="Information Sources" value={formatInfoSources(data.informationSources)} />
+          <DetailItem
+            label="Information Sources"
+            value={formatInfoSources(data.informationSources)}
+          />
           <DetailGrid>
-            <DetailItem label="Last Updated" value={formatText(data.lastUpdated)} />
-            <DetailItem label="Confidence Rating" value={formatText(data.confidenceRating?.toString())} />
+            <DetailItem
+              label="Last Updated"
+              value={formatText(data.lastUpdated)}
+            />
+            <DetailItem
+              label="Confidence Rating"
+              value={formatText(data.confidenceRating?.toString())}
+            />
             <DetailItem label="Created At" value={formatText(data.createdAt)} />
             <DetailItem label="Created By" value={formatText(data.createdBy)} />
           </DetailGrid>
-          <DetailItem label="Version" value={formatText(data.version?.toString(), "Not versioned")} />
+          <DetailItem
+            label="Version"
+            value={formatText(data.version?.toString(), "Not versioned")}
+          />
         </div>
       </FormSectionCard>
     );

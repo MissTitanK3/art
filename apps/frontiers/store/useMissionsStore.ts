@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Campaign } from '@/schemas/campaigns';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { Campaign } from "@/schemas/campaigns";
 
 export type Mission = {
   id: string;
@@ -30,7 +30,13 @@ type MissionsState = {
   recordAction: (campaignId: string, action: string) => void;
   snapshotForSync: (
     profileId: string | null,
-  ) => { profile_id: string; campaign_id: string; mission_id: string; progress: any; completed_at: string | null }[];
+  ) => {
+    profile_id: string;
+    campaign_id: string;
+    mission_id: string;
+    progress: any;
+    completed_at: string | null;
+  }[];
   markSynced: () => void;
 };
 
@@ -41,15 +47,22 @@ export const useMissionsStore = create<MissionsState>()(
       dirty: false,
       registerMissions: (campaignId, missions) =>
         set((state) => {
-          const bucket = state.byCampaign[campaignId] || { missions: {}, progress: {} };
+          const bucket = state.byCampaign[campaignId] || {
+            missions: {},
+            progress: {},
+          };
           for (const m of missions) {
             bucket.missions[m.id] = m;
             if (!bucket.progress[m.id]) bucket.progress[m.id] = {};
           }
           // After registration, check completion in case prior actions already satisfy
           setTimeout(() => {
-            import('@/store/useAchievementsStore')
-              .then((m) => m.useAchievementsStore.getState().checkSeasonComplete(campaignId))
+            import("@/store/useAchievementsStore")
+              .then((m) =>
+                m.useAchievementsStore
+                  .getState()
+                  .checkSeasonComplete(campaignId),
+              )
               .catch(() => {});
           }, 0);
           return { byCampaign: { ...state.byCampaign, [campaignId]: bucket } };
@@ -63,20 +76,33 @@ export const useMissionsStore = create<MissionsState>()(
           for (const missionId of Object.keys(bucket.missions)) {
             const mission = bucket.missions[missionId];
             if (!mission) continue;
-            const required = (mission.required_actions || {}) as Record<string, number>;
-            if (required && typeof required[action] === 'number') {
+            const required = (mission.required_actions || {}) as Record<
+              string,
+              number
+            >;
+            if (required && typeof required[action] === "number") {
               const cur = nextProgress[missionId] || {};
-              nextProgress[missionId] = { ...cur, [action]: (cur[action] || 0) + 1 };
+              nextProgress[missionId] = {
+                ...cur,
+                [action]: (cur[action] || 0) + 1,
+              };
             }
           }
           // After updating, check if campaign is completed for achievements
           setTimeout(() => {
-            import('@/store/useAchievementsStore')
-              .then((m) => m.useAchievementsStore.getState().checkSeasonComplete(campaignId))
+            import("@/store/useAchievementsStore")
+              .then((m) =>
+                m.useAchievementsStore
+                  .getState()
+                  .checkSeasonComplete(campaignId),
+              )
               .catch(() => {});
           }, 0);
           return {
-            byCampaign: { ...state.byCampaign, [campaignId]: { ...bucket, progress: nextProgress } },
+            byCampaign: {
+              ...state.byCampaign,
+              [campaignId]: { ...bucket, progress: nextProgress },
+            },
             dirty: true,
           };
         }),
@@ -96,7 +122,10 @@ export const useMissionsStore = create<MissionsState>()(
             const mission = bucket.missions[missionId];
             if (!mission) continue;
             const prog = bucket.progress[missionId] || {};
-            const req = (mission.required_actions || {}) as Record<string, number>;
+            const req = (mission.required_actions || {}) as Record<
+              string,
+              number
+            >;
             // Completed if every required action meets threshold
             let completed = true;
             for (const [k, v] of Object.entries(req)) {
@@ -118,6 +147,6 @@ export const useMissionsStore = create<MissionsState>()(
       },
       markSynced: () => set({ dirty: false, lastSyncAt: Date.now() }),
     }),
-    { name: 'frontiers-missions' },
+    { name: "frontiers-missions" },
   ),
 );

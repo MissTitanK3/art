@@ -14,7 +14,9 @@ function mapRowToDetaineeIntake(row: any): DetaineeIntake {
     detentionDateTime: row.detention_datetime ?? undefined,
     detentionLocation: row.detention_location ?? undefined,
     arrestingAgency: row.arresting_agency ?? undefined,
-    witnessContacts: Array.isArray(row.witness_contacts) ? row.witness_contacts : undefined,
+    witnessContacts: Array.isArray(row.witness_contacts)
+      ? row.witness_contacts
+      : undefined,
     dispatcherContact: row.dispatcher_contact ?? undefined,
     fullName: row.full_name ?? undefined,
     aliases: Array.isArray(row.aliases) ? row.aliases : undefined,
@@ -22,27 +24,40 @@ function mapRowToDetaineeIntake(row: any): DetaineeIntake {
     countryOfBirth: row.country_of_birth ?? undefined,
     genderIdentity: row.gender_identity ?? undefined,
     pronouns: row.pronouns ?? undefined,
-    languagesSpoken: Array.isArray(row.languages_spoken) ? row.languages_spoken : undefined,
+    languagesSpoken: Array.isArray(row.languages_spoken)
+      ? row.languages_spoken
+      : undefined,
     aNumber: row.a_number ?? undefined,
     photoUrl: row.photo_url ?? undefined,
     physicalDescription: row.physical_description ?? undefined,
     lastKnownFacility: row.last_known_facility ?? undefined,
     lastKnownCity: row.last_known_city ?? undefined,
-    arrestingOfficers: Array.isArray(row.arresting_officers) ? row.arresting_officers : undefined,
+    arrestingOfficers: Array.isArray(row.arresting_officers)
+      ? row.arresting_officers
+      : undefined,
     statedReasonForDetention: row.stated_reason_for_detention ?? undefined,
-    knownTransfers: Array.isArray(row.known_transfers) ? row.known_transfers : undefined,
+    knownTransfers: Array.isArray(row.known_transfers)
+      ? row.known_transfers
+      : undefined,
     belongingsLeftBehind: row.belongings_left_behind ?? undefined,
     dependentsLeftBehind: row.dependents_left_behind ?? undefined,
-    familyContacts: Array.isArray(row.family_contacts) ? row.family_contacts : undefined,
+    familyContacts: Array.isArray(row.family_contacts)
+      ? row.family_contacts
+      : undefined,
     priorAttorney: row.prior_attorney ?? undefined,
     preferredLegalAidOrgs: Array.isArray(row.preferred_legal_aid_orgs)
       ? row.preferred_legal_aid_orgs
       : undefined,
     interpreterNeeded: row.interpreter_needed ?? undefined,
     urgentNeeds: Array.isArray(row.urgent_needs) ? row.urgent_needs : undefined,
-    informationSources: Array.isArray(row.information_sources) ? row.information_sources : undefined,
+    informationSources: Array.isArray(row.information_sources)
+      ? row.information_sources
+      : undefined,
     lastUpdated: row.last_updated ?? undefined,
-    confidenceRating: typeof row.confidence_rating === "number" ? row.confidence_rating : undefined,
+    confidenceRating:
+      typeof row.confidence_rating === "number"
+        ? row.confidence_rating
+        : undefined,
     createdAt: row.created_at ?? undefined,
     createdBy: row.created_by ?? undefined,
     version: typeof row.version === "number" ? row.version : undefined,
@@ -90,14 +105,17 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
           "created_at",
           "created_by",
           "version",
-        ].join(", ")
+        ].join(", "),
       )
       .order("last_updated", { ascending: false, nullsFirst: false });
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     return rows
       .map(mapRowToDetaineeIntake)
-      .filter((r): r is DetaineeIntake => typeof r.caseId === "string" && r.caseId.length > 0);
+      .filter(
+        (r): r is DetaineeIntake =>
+          typeof r.caseId === "string" && r.caseId.length > 0,
+      );
   } catch (e) {
     console.warn("[MissingPersonsDataLayer] supabase fetch error", e);
     return [];
@@ -106,11 +124,15 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
 
 function mergeRecords(
   remote: DetaineeIntake[] | null,
-  local: MissingPersonRecord[]
+  local: MissingPersonRecord[],
 ): DetaineeIntake[] {
   const merged = new Map<string, DetaineeIntake>();
 
-  const addRecord = (record: DetaineeIntake | MissingPersonRecord, index: number, origin: string) => {
+  const addRecord = (
+    record: DetaineeIntake | MissingPersonRecord,
+    index: number,
+    origin: string,
+  ) => {
     const key =
       record.caseId ??
       record.fullName ??
@@ -137,7 +159,9 @@ export default function MissingPersonsDataLayer({
   initialRemoteRecords?: DetaineeIntake[];
 }) {
   const localRecords = useMissingPersonStore((state) => state.records);
-  const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[] | null>(initialRemoteRecords ?? null);
+  const [remoteRecords, setRemoteRecords] = React.useState<
+    DetaineeIntake[] | null
+  >(initialRemoteRecords ?? null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -171,16 +195,19 @@ export default function MissingPersonsDataLayer({
     };
   }, []);
 
-  const records = React.useMemo(() => mergeRecords(remoteRecords, localRecords), [localRecords, remoteRecords]);
+  const records = React.useMemo(
+    () => mergeRecords(remoteRecords, localRecords),
+    [localRecords, remoteRecords],
+  );
 
   return (
     <div className="space-y-4" suppressHydrationWarning>
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading missing person directory…</p>
+        <p className="text-sm text-muted-foreground">
+          Loading missing person directory…
+        </p>
       ) : null}
-      {error ? (
-        <p className="text-sm text-amber-600">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-amber-600">{error}</p> : null}
       <MissingPersonsDirectory records={records} />
     </div>
   );

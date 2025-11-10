@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import TeleprompterViewer from "@workspace/ui/components/teleprompter-viewer";
-import { TransportControls, SpeedControl } from "@workspace/ui/components/teleprompter-controls";
+import {
+  TransportControls,
+  SpeedControl,
+} from "@workspace/ui/components/teleprompter-controls";
 
 const SAMPLE = [
   "Welcome team. We’ll start with a quick overview. [pause]",
@@ -16,20 +19,27 @@ export function TeleprompterDemo() {
   const [playing, setPlaying] = React.useState(false);
   const [speed, setSpeed] = React.useState(1);
   const [lineMs] = React.useState(1500);
-  const [lineStartedAt, setLineStartedAt] = React.useState<number | undefined>(undefined);
+  const [lineStartedAt, setLineStartedAt] = React.useState<number | undefined>(
+    undefined,
+  );
   const timer = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     if (!playing) return;
     if (timer.current) window.clearTimeout(timer.current);
     setLineStartedAt(Date.now());
-    timer.current = window.setTimeout(() => {
-      setIndex((i) => {
-        const lines = text.split(/\r?\n/);
-        return Math.min(lines.length - 1, i + 1);
-      });
-    }, Math.max(500, lineMs / Math.max(0.25, speed)));
-    return () => { if (timer.current) window.clearTimeout(timer.current); };
+    timer.current = window.setTimeout(
+      () => {
+        setIndex((i) => {
+          const lines = text.split(/\r?\n/);
+          return Math.min(lines.length - 1, i + 1);
+        });
+      },
+      Math.max(500, lineMs / Math.max(0.25, speed)),
+    );
+    return () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    };
   }, [playing, index, text, speed, lineMs]);
 
   const lines = React.useMemo(() => text.split(/\r?\n/), [text]);
@@ -41,15 +51,27 @@ export function TeleprompterDemo() {
         onPlayToggle={() => setPlaying((p) => !p)}
         onPrev={() => setIndex((i) => Math.max(0, i - 1))}
         onNext={() => setIndex((i) => Math.min(lines.length - 1, i + 1))}
-        onRewind={() => { setPlaying(false); setIndex(0); setLineStartedAt(undefined); }}
+        onRewind={() => {
+          setPlaying(false);
+          setIndex(0);
+          setLineStartedAt(undefined);
+        }}
       />
       <SpeedControl value={speed} onChange={setSpeed} />
       <TeleprompterViewer
         text={text}
         index={index}
         theme="studio"
-        font={{ sizeClass: "text-xl", lineHeightClass: "leading-8", face: "sans" }}
-        countdown={{ enabled: playing, totalMs: lineMs, startedAt: lineStartedAt }}
+        font={{
+          sizeClass: "text-xl",
+          lineHeightClass: "leading-8",
+          face: "sans",
+        }}
+        countdown={{
+          enabled: playing,
+          totalMs: lineMs,
+          startedAt: lineStartedAt,
+        }}
       />
     </div>
   );

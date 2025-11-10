@@ -5,8 +5,8 @@ export interface TrustAdapter {
   removeEntry(id: string): Promise<void>;
 }
 
-export type TrustStatus = 'active' | 'inactive';
-export type TrustRole = 'regional_admin' | 'pod_leader' | 'trainer';
+export type TrustStatus = "active" | "inactive";
+export type TrustRole = "regional_admin" | "pod_leader" | "trainer";
 
 export type TrustEntry = {
   subjectId: string; // required

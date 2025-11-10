@@ -91,7 +91,7 @@ export const supabaseClientAdapter: AuthClientAdapter = {
     const { data } = client.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         callback(mapSupabaseSession(session));
-      }
+      },
     );
     return () => {
       data.subscription.unsubscribe();

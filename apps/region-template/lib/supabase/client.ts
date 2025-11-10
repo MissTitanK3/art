@@ -18,4 +18,3 @@ export function getSupabaseBrowserClient(): SupabaseClient {
   });
   return browserClient;
 }
-

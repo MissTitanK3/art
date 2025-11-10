@@ -22,10 +22,8 @@ import { toast } from "sonner";
 import { FIPS_TO_POSTAL } from "@workspace/ui/lib/constants/states";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
-
-
 const POSTAL_TO_FIPS = Object.fromEntries(
-  Object.entries(FIPS_TO_POSTAL).map(([fips, postal]) => [postal, fips])
+  Object.entries(FIPS_TO_POSTAL).map(([fips, postal]) => [postal, fips]),
 );
 
 type DispatchLocationUpdaterProps = {
@@ -33,14 +31,17 @@ type DispatchLocationUpdaterProps = {
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchLocationUpdater({ submission, onUpdate }: DispatchLocationUpdaterProps) {
+export default function DispatchLocationUpdater({
+  submission,
+  onUpdate,
+}: DispatchLocationUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState(submission?.location_label ?? "");
   // store as FIPS internally, show as postal
   const [stateFips, setStateFips] = useState(
     submission?.state && POSTAL_TO_FIPS[submission.state]
       ? POSTAL_TO_FIPS[submission.state]
-      : ""
+      : "",
   );
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function DispatchLocationUpdater({ submission, onUpdate }: Dispat
     setStateFips(
       submission.state && POSTAL_TO_FIPS[submission.state]
         ? POSTAL_TO_FIPS[submission.state]
-        : ""
+        : "",
     );
   }, [submission.location_label, submission.state]);
 
@@ -66,15 +67,18 @@ export default function DispatchLocationUpdater({ submission, onUpdate }: Dispat
     <div className="space-y-2">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <p className="font-medium">Location:</p>
-        <p>{submission.location_label ?? "Unknown"} {
-          submission.state && (
-            <span className="text-muted-foreground ml-2">{submission.state}</span>
-          )}</p>
+        <p>
+          {submission.location_label ?? "Unknown"}{" "}
+          {submission.state && (
+            <span className="text-muted-foreground ml-2">
+              {submission.state}
+            </span>
+          )}
+        </p>
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
           Edit Location
         </Button>
       </div>
-
 
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
@@ -104,13 +108,13 @@ export default function DispatchLocationUpdater({ submission, onUpdate }: Dispat
                   <SelectValue placeholder="Select a state" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(FIPS_TO_POSTAL).sort(
-                    ([, a], [, b]) => a.localeCompare(b)
-                  ).map(([fips, postal]) => (
-                    <SelectItem key={fips} value={fips}>
-                      {postal}
-                    </SelectItem>
-                  ))}
+                  {Object.entries(FIPS_TO_POSTAL)
+                    .sort(([, a], [, b]) => a.localeCompare(b))
+                    .map(([fips, postal]) => (
+                      <SelectItem key={fips} value={fips}>
+                        {postal}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

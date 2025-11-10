@@ -1,12 +1,11 @@
-"use client"
+"use client";
 
-import { usePathname } from "next/navigation"
-import { Navbar } from "@/components/navbar"
+import { usePathname } from "next/navigation";
+import { Navbar } from "@/components/navbar";
 
 export function NavbarGate() {
-  const pathname = usePathname()
+  const pathname = usePathname();
   // Hide global navbar on the fullscreen map (home route)
-  if (pathname === "/") return null
-  return <Navbar />
+  if (pathname === "/") return null;
+  return <Navbar />;
 }
-

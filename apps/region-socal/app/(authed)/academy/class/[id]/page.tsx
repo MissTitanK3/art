@@ -1,6 +1,6 @@
-import { COURSE_BLUEPRINT } from '@workspace/ui/data/academy/course-blueprint';
-import { ClassAssignmentDataLayer } from '@/components/dataLayer/academy/ClassAssignmentDataLayer';
-import { CreatePathwayClassDataLayer } from '@/components/dataLayer/academy/CreatePathwayClassDataLayer';
+import { COURSE_BLUEPRINT } from "@workspace/ui/data/academy/course-blueprint";
+import { ClassAssignmentDataLayer } from "@/components/dataLayer/academy/ClassAssignmentDataLayer";
+import { CreatePathwayClassDataLayer } from "@/components/dataLayer/academy/CreatePathwayClassDataLayer";
 
 type PageProps = {
   params: Promise<{ id: string }>;

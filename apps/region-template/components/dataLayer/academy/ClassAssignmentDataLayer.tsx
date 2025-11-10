@@ -15,7 +15,9 @@ type ClassAssignmentDataLayerProps = {
   classId: string;
 };
 
-export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerProps) {
+export function ClassAssignmentDataLayer({
+  classId,
+}: ClassAssignmentDataLayerProps) {
   const router = useRouter();
   const academyClass = usePodStore(
     React.useCallback(
@@ -36,7 +38,9 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
         if (seen.has(member.id)) continue;
         seen.add(member.id);
 
-        const hasMentorLevel = member.certs?.some((cert) => cert.level === "mentor");
+        const hasMentorLevel = member.certs?.some(
+          (cert) => cert.level === "mentor",
+        );
         const dispatchCertified = member.certs?.some(
           (cert) => cert.id.startsWith("dispatch-") && cert.level !== "expired",
         );
@@ -44,7 +48,11 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
         options.push({
           id: member.id,
           name: member.profile.display_name,
-          type: hasMentorLevel ? "mentor" : dispatchCertified ? "dispatcher" : "expert",
+          type: hasMentorLevel
+            ? "mentor"
+            : dispatchCertified
+              ? "dispatcher"
+              : "expert",
           podName: pod.name,
           status: member.status,
         });
@@ -56,7 +64,9 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
 
   const modules = React.useMemo(() => {
     if (!academyClass) return [];
-    const blueprint = COURSE_BLUEPRINT.find((pathway) => pathway.id === academyClass.pathwayId);
+    const blueprint = COURSE_BLUEPRINT.find(
+      (pathway) => pathway.id === academyClass.pathwayId,
+    );
     return (blueprint?.courses ?? []).map((course) => ({
       slug: course.slug,
       title: course.title,

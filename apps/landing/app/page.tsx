@@ -45,8 +45,8 @@ interface FeatureItemProps {
   id?: string;
   nextId?: string;
   className?: string;
-  imageFit?: 'cover' | 'contain';
-  imageVariant?: 'default' | 'phone';
+  imageFit?: "cover" | "contain";
+  imageVariant?: "default" | "phone";
 }
 
 const FeatureItem: FC<FeatureItemProps> = ({
@@ -68,8 +68,8 @@ const FeatureItem: FC<FeatureItemProps> = ({
   id,
   nextId,
   className,
-  imageFit = 'cover',
-  imageVariant = 'default',
+  imageFit = "cover",
+  imageVariant = "default",
 }) => {
   const titlePrefix = (
     <span className="mr-2 inline-block align-middle">
@@ -80,7 +80,9 @@ const FeatureItem: FC<FeatureItemProps> = ({
   if (variant === "inline") {
     return (
       <div className="flex gap-3">
-        <div className="mt-0.5 text-muted-foreground">{icon ? icon : emoji}</div>
+        <div className="mt-0.5 text-muted-foreground">
+          {icon ? icon : emoji}
+        </div>
         <div>
           <h3 className="font-semibold leading-6 text-foreground">{title}</h3>
           <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
@@ -93,7 +95,9 @@ const FeatureItem: FC<FeatureItemProps> = ({
 
   if (variant === "tile") {
     return (
-      <div className={`h-full rounded-xl border border-input bg-card p-5 transition hover:shadow ${className ?? ""}`}>
+      <div
+        className={`h-full rounded-xl border border-input bg-card p-5 transition hover:shadow ${className ?? ""}`}
+      >
         <div className="mb-3 flex items-center gap-2 text-muted-foreground">
           {icon ? icon : emoji}
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
@@ -130,13 +134,23 @@ const FeatureItem: FC<FeatureItemProps> = ({
 
   if (variant === "section") {
     return (
-      <section id={id} data-feature-section className={`relative w-full min-h-[90dvh] flex items-center snap-start snap-always pb-20 md:pb-24 ${className ?? ""}`}>
+      <section
+        id={id}
+        data-feature-section
+        className={`relative w-full min-h-[90dvh] flex items-center snap-start snap-always pb-20 md:pb-24 ${className ?? ""}`}
+      >
         <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
-          <div className={`flex flex-col-reverse ${reverse ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-8 md:gap-12`}>
+          <div
+            className={`flex flex-col-reverse ${reverse ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-8 md:gap-12`}
+          >
             <div className="w-full md:w-1/2">
               <div className="mb-3 flex items-center gap-3">
-                <div className="text-muted-foreground">{icon ? icon : emoji}</div>
-                <h3 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h3>
+                <div className="text-muted-foreground">
+                  {icon ? icon : emoji}
+                </div>
+                <h3 className="text-3xl font-semibold tracking-tight text-foreground">
+                  {title}
+                </h3>
               </div>
               {(description || children) && (
                 <div className="mt-3 text-base leading-relaxed text-muted-foreground">
@@ -169,9 +183,9 @@ const FeatureItem: FC<FeatureItemProps> = ({
               {media ? (
                 <div
                   className={
-                    imageVariant === 'phone'
-                      ? 'relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-muted'
-                      : 'relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-muted'
+                    imageVariant === "phone"
+                      ? "relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-muted"
+                      : "relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-muted"
                   }
                 >
                   {media}
@@ -179,20 +193,22 @@ const FeatureItem: FC<FeatureItemProps> = ({
               ) : imageSrc ? (
                 <div
                   className={
-                    imageVariant === 'phone'
-                      ? 'relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-muted'
-                      : 'relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-muted'
+                    imageVariant === "phone"
+                      ? "relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-muted"
+                      : "relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-muted"
                   }
                 >
                   <Image
                     src={imageSrc}
                     alt={imageAlt ?? title}
                     fill
-                    className={imageFit === 'contain' ? 'object-contain' : 'object-cover'}
+                    className={
+                      imageFit === "contain" ? "object-contain" : "object-cover"
+                    }
                     sizes={
-                      imageVariant === 'phone'
-                        ? '(min-width: 1280px) 380px, (min-width: 768px) 340px, (min-width: 640px) 300px, 260px'
-                        : '(min-width: 1024px) 50vw, 100vw'
+                      imageVariant === "phone"
+                        ? "(min-width: 1280px) 380px, (min-width: 768px) 340px, (min-width: 640px) 300px, 260px"
+                        : "(min-width: 1024px) 50vw, 100vw"
                     }
                     priority={false}
                   />
@@ -200,9 +216,9 @@ const FeatureItem: FC<FeatureItemProps> = ({
               ) : (
                 <div
                   className={
-                    imageVariant === 'phone'
-                      ? 'relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10'
-                      : 'relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10'
+                    imageVariant === "phone"
+                      ? "relative mx-auto aspect-[9/19] w-[220px] sm:w-[240px] md:w-[260px] lg:w-[280px] overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10"
+                      : "relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-input bg-gradient-to-br from-muted to-muted-foreground/10"
                   }
                 />
               )}
@@ -223,7 +239,9 @@ const FeatureItem: FC<FeatureItemProps> = ({
   }
 
   return (
-    <div className={`rounded-2xl shadow p-6 bg-card flex flex-col justify-between ${className ?? ""}`}>
+    <div
+      className={`rounded-2xl shadow p-6 bg-card flex flex-col justify-between ${className ?? ""}`}
+    >
       <div>
         <h3 className="text-xl font-semibold mb-2">
           {titlePrefix}
@@ -271,12 +289,19 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="w-full min-h-[100dvh] flex items-center">
         <div className="mx-auto w-full max-w-4xl px-4 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Always Ready Tools</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+            Always Ready Tools
+          </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-6">
-            Decentralized dispatch, training, and incident reporting. Secure. Volunteer-run.
+            Decentralized dispatch, training, and incident reporting. Secure.
+            Volunteer-run.
           </p>
           <p className="text-base sm:text-lg text-muted-foreground">
-            Always Ready Tools should look like tomorrow’s emergency system built by the people. No marketing gloss—just clarity, security, and confidence. The goal is to make a donor say, “This is what real infrastructure looks like,” and make an organizer say, “We can use this today.”
+            Always Ready Tools should look like tomorrow’s emergency system
+            built by the people. No marketing gloss—just clarity, security, and
+            confidence. The goal is to make a donor say, “This is what real
+            infrastructure looks like,” and make an organizer say, “We can use
+            this today.”
           </p>
           <div className="mt-8 flex flex-col items-center gap-2">
             <Link
@@ -346,67 +371,178 @@ export default function LandingPage() {
 
       {/* Core Platforms (Showcase) */}
       <section className="w-full">
-        <FeatureItem imageSrc="/how-to-use.png" imageAlt="how to use screenshot" imageVariant="phone" imageFit="contain" id="feature-howto" nextId="feature-need" variant="section" icon={<BookOpen className="h-6 w-6" />} title="How to Use">
-          The How‑to guide is a built‑in reference for new and experienced users.
-          It explains common workflows step by step and links concepts across the platform so you can learn in context.
-          Short sections are designed for quick reading during live operations when time is limited.
-          Use it to discover features, clarify terminology, and share consistent practices across teams.
+        <FeatureItem
+          imageSrc="/how-to-use.png"
+          imageAlt="how to use screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-howto"
+          nextId="feature-need"
+          variant="section"
+          icon={<BookOpen className="h-6 w-6" />}
+          title="How to Use"
+        >
+          The How‑to guide is a built‑in reference for new and experienced
+          users. It explains common workflows step by step and links concepts
+          across the platform so you can learn in context. Short sections are
+          designed for quick reading during live operations when time is
+          limited. Use it to discover features, clarify terminology, and share
+          consistent practices across teams.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/watch.png" imageAlt="watch screenshot" imageVariant="phone" imageFit="contain" id="feature-watch" nextId="feature-confirmed-watch" variant="section" reverse icon={<Eye className="h-6 w-6" />} title="Watch">
+        <FeatureItem
+          imageSrc="/watch.png"
+          imageAlt="watch screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-watch"
+          nextId="feature-confirmed-watch"
+          variant="section"
+          reverse
+          icon={<Eye className="h-6 w-6" />}
+          title="Watch"
+        >
           Watch is a live map for situational awareness across your region.
-          Layers and filters help you focus on relevant reports, signals, and activity as conditions change.
-          It’s useful for real‑time monitoring, early triage, and spotting patterns before they turn into dispatches.
-          Teams can use Watch during operations briefings to align on what’s happening right now.
+          Layers and filters help you focus on relevant reports, signals, and
+          activity as conditions change. It’s useful for real‑time monitoring,
+          early triage, and spotting patterns before they turn into dispatches.
+          Teams can use Watch during operations briefings to align on what’s
+          happening right now.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/confirmed-watch.png" imageAlt="confirmed watch screenshot" imageVariant="phone" imageFit="contain" id="feature-confirmed-watch" nextId="feature-dispatches" variant="section" icon={<CheckCircle2 className="h-6 w-6" />} title="Confirmed Watch">
-          Confirmed Watch highlights reports that coordinators have reviewed and verified for accuracy.
-          This view reduces noise and uncertainty so on‑the‑ground teams can act with confidence.
-          It lives inside Watch as a filter or dedicated layer rather than a separate tool.
-          Use it when you need a trusted baseline for decisions or public communication.
+        <FeatureItem
+          imageSrc="/confirmed-watch.png"
+          imageAlt="confirmed watch screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-confirmed-watch"
+          nextId="feature-dispatches"
+          variant="section"
+          icon={<CheckCircle2 className="h-6 w-6" />}
+          title="Confirmed Watch"
+        >
+          Confirmed Watch highlights reports that coordinators have reviewed and
+          verified for accuracy. This view reduces noise and uncertainty so
+          on‑the‑ground teams can act with confidence. It lives inside Watch as
+          a filter or dedicated layer rather than a separate tool. Use it when
+          you need a trusted baseline for decisions or public communication.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/pods.png" imageAlt="pods screenshot" imageVariant="phone" imageFit="contain" id="feature-pods" nextId="feature-schedules" variant="section" reverse icon={<Users className="h-6 w-6" />} title="Pods">
-          Pods are teams organized around people, skills, and geography.
-          Use them to maintain rosters, define communication channels, and assign responsibilities to specific areas.
-          Pods make it easier to see who is available and how coverage changes over time.
-          Well‑structured pods reduce confusion during incidents and improve handoffs.
+        <FeatureItem
+          imageSrc="/pods.png"
+          imageAlt="pods screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-pods"
+          nextId="feature-schedules"
+          variant="section"
+          reverse
+          icon={<Users className="h-6 w-6" />}
+          title="Pods"
+        >
+          Pods are teams organized around people, skills, and geography. Use
+          them to maintain rosters, define communication channels, and assign
+          responsibilities to specific areas. Pods make it easier to see who is
+          available and how coverage changes over time. Well‑structured pods
+          reduce confusion during incidents and improve handoffs.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/dispatch.png" imageAlt="dispatches screenshot" imageVariant="phone" imageFit="contain" id="feature-dispatches" nextId="feature-howto" variant="section" icon={<ClipboardList className="h-6 w-6" />} title="Dispatches">
-          Dispatches is the intake‑to‑action pipeline that moves a report from first contact to resolution.
-          Coordinators triage submissions, set status, and record intended actions so everyone sees the current plan.
-          Roles and staffing needs are tracked here, and updates form the running incident log for handoffs.
-          Use Dispatches to keep decisions visible, responsibilities clear, and progress easy to audit.
+        <FeatureItem
+          imageSrc="/dispatch.png"
+          imageAlt="dispatches screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-dispatches"
+          nextId="feature-howto"
+          variant="section"
+          icon={<ClipboardList className="h-6 w-6" />}
+          title="Dispatches"
+        >
+          Dispatches is the intake‑to‑action pipeline that moves a report from
+          first contact to resolution. Coordinators triage submissions, set
+          status, and record intended actions so everyone sees the current plan.
+          Roles and staffing needs are tracked here, and updates form the
+          running incident log for handoffs. Use Dispatches to keep decisions
+          visible, responsibilities clear, and progress easy to audit.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/meet-a-need.png" imageAlt="meet a need screenshot" imageVariant="phone" imageFit="contain" id="feature-need" nextId="feature-missing" variant="section" reverse icon={<LifeBuoy className="h-6 w-6" />} title="Meet a Need">
-          Meet a Need is a guided intake for community requests that feeds directly into Dispatches.
-          The form collects the essential context up front so coordinators can prioritize quickly and respond appropriately.
-          It is suitable for demos and training, but it also supports real‑world requests when enabled.
-          Clear intake reduces back‑and‑forth and helps volunteers show up prepared.
+        <FeatureItem
+          imageSrc="/meet-a-need.png"
+          imageAlt="meet a need screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-need"
+          nextId="feature-missing"
+          variant="section"
+          reverse
+          icon={<LifeBuoy className="h-6 w-6" />}
+          title="Meet a Need"
+        >
+          Meet a Need is a guided intake for community requests that feeds
+          directly into Dispatches. The form collects the essential context up
+          front so coordinators can prioritize quickly and respond
+          appropriately. It is suitable for demos and training, but it also
+          supports real‑world requests when enabled. Clear intake reduces
+          back‑and‑forth and helps volunteers show up prepared.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/missing-persons.png" imageAlt="missing persons screenshot" imageVariant="phone" imageFit="contain" id="feature-missing" nextId="feature-profile" variant="section" icon={<Search className="h-6 w-6" />} title="Missing Persons">
-          Missing Persons provides structured intake and case tracking when someone is unaccounted for.
-          It captures critical details, contact information, and consent, then centralizes updates in one timeline.
-          The module supports coordination among pods and external partners while protecting sensitive data.
-          Use it to keep search efforts organized and to avoid duplicating work.
+        <FeatureItem
+          imageSrc="/missing-persons.png"
+          imageAlt="missing persons screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-missing"
+          nextId="feature-profile"
+          variant="section"
+          icon={<Search className="h-6 w-6" />}
+          title="Missing Persons"
+        >
+          Missing Persons provides structured intake and case tracking when
+          someone is unaccounted for. It captures critical details, contact
+          information, and consent, then centralizes updates in one timeline.
+          The module supports coordination among pods and external partners
+          while protecting sensitive data. Use it to keep search efforts
+          organized and to avoid duplicating work.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/academy.png" imageVariant="phone" imageAlt="academy screenshot" imageFit="contain" id="feature-academy" nextId="feature-admin" variant="section" reverse icon={<GraduationCap className="h-6 w-6" />} title="Academy Hub">
-          The Academy Hub is your training hub for learning how this platform and your region operate.
-          Courses are self‑paced and cover both fundamentals and role‑specific practices so you can onboard quickly.
-          As you complete modules, you earn credentials that unlock permissions and responsibilities in other areas of the app.
-          Returning users can use the Academy Hub for refreshers or to track progress toward advanced qualifications.
+        <FeatureItem
+          imageSrc="/academy.png"
+          imageVariant="phone"
+          imageAlt="academy screenshot"
+          imageFit="contain"
+          id="feature-academy"
+          nextId="feature-admin"
+          variant="section"
+          reverse
+          icon={<GraduationCap className="h-6 w-6" />}
+          title="Academy Hub"
+        >
+          The Academy Hub is your training hub for learning how this platform
+          and your region operate. Courses are self‑paced and cover both
+          fundamentals and role‑specific practices so you can onboard quickly.
+          As you complete modules, you earn credentials that unlock permissions
+          and responsibilities in other areas of the app. Returning users can
+          use the Academy Hub for refreshers or to track progress toward
+          advanced qualifications.
         </FeatureItem>
 
-        <FeatureItem imageSrc="/my-profile.png" imageAlt="my profile screenshot" imageVariant="phone" imageFit="contain" id="feature-profile" nextId="feature-pods" variant="section" icon={<User className="h-6 w-6" />} title="My Profile">
-          My Profile is where you keep your information accurate and discoverable.
-          Update contact details, languages, and skills so coordinators can match you to the right roles.
-          You control map visibility and availability preferences to respect your boundaries.
-          Keeping this current improves response speed and reduces coordination overhead.
+        <FeatureItem
+          imageSrc="/my-profile.png"
+          imageAlt="my profile screenshot"
+          imageVariant="phone"
+          imageFit="contain"
+          id="feature-profile"
+          nextId="feature-pods"
+          variant="section"
+          icon={<User className="h-6 w-6" />}
+          title="My Profile"
+        >
+          My Profile is where you keep your information accurate and
+          discoverable. Update contact details, languages, and skills so
+          coordinators can match you to the right roles. You control map
+          visibility and availability preferences to respect your boundaries.
+          Keeping this current improves response speed and reduces coordination
+          overhead.
         </FeatureItem>
 
         {/* <FeatureItem imageSrc="/admin.png" imageAlt="admin screenshot" imageVariant="phone" id="feature-admin" nextId="feature-watch" variant="section" reverse icon={<Shield className="h-6 w-6" />} title="Admin">
@@ -442,21 +578,37 @@ export default function LandingPage() {
             title="This project lives in the public repo"
           >
             <div className="text-left">
-              <p className="text-sm uppercase tracking-wide text-muted-foreground">Open Source</p>
+              <p className="text-sm uppercase tracking-wide text-muted-foreground">
+                Open Source
+              </p>
               <p className="text-muted-foreground mt-1">
-                Open source means the software’s “recipe” (the code) is public and free to use. Anyone can see how it
-                works, help improve it, and hold us accountable.
+                Open source means the software’s “recipe” (the code) is public
+                and free to use. Anyone can see how it works, help improve it,
+                and hold us accountable.
               </p>
               <ul className="mt-3 text-sm text-muted-foreground space-y-2">
-                <li>👀 <strong>Transparency:</strong> Read the code yourself or ask a trusted tech friend to review it.</li>
-                <li>🛡️ <strong>Safety:</strong> Many eyes can spot issues and help fix them quickly.</li>
-                <li>🙋 <strong>Participation:</strong> Share ideas or report issues — no coding required (a free GitHub account helps).</li>
+                <li>
+                  👀 <strong>Transparency:</strong> Read the code yourself or
+                  ask a trusted tech friend to review it.
+                </li>
+                <li>
+                  🛡️ <strong>Safety:</strong> Many eyes can spot issues and help
+                  fix them quickly.
+                </li>
+                <li>
+                  🙋 <strong>Participation:</strong> Share ideas or report
+                  issues — no coding required (a free GitHub account helps).
+                </li>
               </ul>
               <p className="text-xs text-muted-foreground mt-3">
                 Free to use under the {""}
-                <Link href="https://github.com/MissTitanK3/art/blob/main/LICENSE" className="underline underline-offset-4">
+                <Link
+                  href="https://github.com/MissTitanK3/art/blob/main/LICENSE"
+                  className="underline underline-offset-4"
+                >
                   LICENSE
-                </Link>.
+                </Link>
+                .
               </p>
             </div>
             <div className="flex gap-3 flex-wrap mt-4">
@@ -486,7 +638,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-
       {/* Project Overview */}
       <section className="mx-auto mt-16 max-w-3xl px-4">
         <h2 className="text-2xl font-semibold mb-4">Why Always Ready Tools</h2>
@@ -494,48 +645,99 @@ export default function LandingPage() {
         <div className="space-y-4">
           <FeatureItem variant="card" emoji="🎯" title="Purpose">
             <p>
-              Always Ready Tools (ART) is an open-source, decentralized suite for real-world community defense, mutual aid, and rapid response.
-              It provides secure coordination, reporting, and training infrastructure for networks that already exist on the ground — activists, medics, organizers, and neighbors.
-              It’s live and usable today, with public demos and deployable regional instances.
+              Always Ready Tools (ART) is an open-source, decentralized suite
+              for real-world community defense, mutual aid, and rapid response.
+              It provides secure coordination, reporting, and training
+              infrastructure for networks that already exist on the ground —
+              activists, medics, organizers, and neighbors. It’s live and usable
+              today, with public demos and deployable regional instances.
             </p>
           </FeatureItem>
 
           <FeatureItem variant="card" emoji="⚙️" title="Design Philosophy">
             <ul className="list-disc pl-6 space-y-1">
-              <li><strong>Privacy First:</strong> Each region owns its database; nothing is centralized.</li>
-              <li><strong>Transparency:</strong> The code is public and auditable.</li>
-              <li><strong>Resilience:</strong> Works offline, syncs when possible.</li>
-              <li><strong>Autonomy:</strong> Volunteer-run and community-governed.</li>
-              <li><strong>Extensible:</strong> Modular React and Supabase stack, ready for forks and integrations.</li>
+              <li>
+                <strong>Privacy First:</strong> Each region owns its database;
+                nothing is centralized.
+              </li>
+              <li>
+                <strong>Transparency:</strong> The code is public and auditable.
+              </li>
+              <li>
+                <strong>Resilience:</strong> Works offline, syncs when possible.
+              </li>
+              <li>
+                <strong>Autonomy:</strong> Volunteer-run and community-governed.
+              </li>
+              <li>
+                <strong>Extensible:</strong> Modular React and Supabase stack,
+                ready for forks and integrations.
+              </li>
             </ul>
           </FeatureItem>
 
           <FeatureItem variant="card" emoji="📣" title="Why It Matters">
             <p>
-              Grassroots networks already protect communities. They just need reliable infrastructure. ART replaces chaos — lost spreadsheets, fragmented chats — with tools designed for crisis-ready collaboration.
-              It’s not hypothetical. You can log in and use it now.
+              Grassroots networks already protect communities. They just need
+              reliable infrastructure. ART replaces chaos — lost spreadsheets,
+              fragmented chats — with tools designed for crisis-ready
+              collaboration. It’s not hypothetical. You can log in and use it
+              now.
             </p>
           </FeatureItem>
 
           <FeatureItem variant="card" emoji="❤️" title="Support">
             <p>
-              Funding keeps hosting sustainable and ensures regional independence. Donations cover infrastructure, training content, and hardware for field deployment (PocketServer mesh nodes). Supporting ART means building civil resilience and data sovereignty from the ground up.
+              Funding keeps hosting sustainable and ensures regional
+              independence. Donations cover infrastructure, training content,
+              and hardware for field deployment (PocketServer mesh nodes).
+              Supporting ART means building civil resilience and data
+              sovereignty from the ground up.
             </p>
           </FeatureItem>
 
           <FeatureItem variant="card" emoji="🌐" title="Open Access">
             <ul className="space-y-1">
-              <li>Code: <Link href="https://github.com/MissTitanK3/art" className="underline underline-offset-4">github.com/MissTitanK3/art</Link></li>
-              <li>Demo Region: <Link href="https://demo.alwaysreadytools.org" className="underline underline-offset-4">demo.alwaysreadytools.org</Link></li>
-              <li>Watch: <Link href="https://watch.alwaysreadytools.org" className="underline underline-offset-4">watch.alwaysreadytools.org</Link></li>
-              <li>Academy Hub: <Link href="https://academy.alwaysreadytools.org" className="underline underline-offset-4">academy.alwaysreadytools.org</Link></li>
+              <li>
+                Code:{" "}
+                <Link
+                  href="https://github.com/MissTitanK3/art"
+                  className="underline underline-offset-4"
+                >
+                  github.com/MissTitanK3/art
+                </Link>
+              </li>
+              <li>
+                Demo Region:{" "}
+                <Link
+                  href="https://demo.alwaysreadytools.org"
+                  className="underline underline-offset-4"
+                >
+                  demo.alwaysreadytools.org
+                </Link>
+              </li>
+              <li>
+                Watch:{" "}
+                <Link
+                  href="https://watch.alwaysreadytools.org"
+                  className="underline underline-offset-4"
+                >
+                  watch.alwaysreadytools.org
+                </Link>
+              </li>
+              <li>
+                Academy Hub:{" "}
+                <Link
+                  href="https://academy.alwaysreadytools.org"
+                  className="underline underline-offset-4"
+                >
+                  academy.alwaysreadytools.org
+                </Link>
+              </li>
             </ul>
           </FeatureItem>
-
-
         </div>
       </section>
-
 
       <section
         id="origins"
@@ -553,11 +755,11 @@ export default function LandingPage() {
               <CardContent className="p-6 sm:p-8 space-y-4 leading-relaxed">
                 <p>
                   In February 2025, while fleeing the South and pausing in
-                  Colorado, I (T) witnessed what felt like the disintegration of the
-                  United States Constitution. As a military member, I was torn
-                  between my oath to protect citizens from all enemies, foreign
-                  and domestic, and my inability to act within that moment’s
-                  limits.
+                  Colorado, I (T) witnessed what felt like the disintegration of
+                  the United States Constitution. As a military member, I was
+                  torn between my oath to protect citizens from all enemies,
+                  foreign and domestic, and my inability to act within that
+                  moment’s limits.
                 </p>
 
                 <p>
@@ -566,13 +768,14 @@ export default function LandingPage() {
                   <span className="font-semibold">
                     Next Generation Constitution (NGC)
                   </span>
-                  . A document outlining what I would fight for in 2025 and beyond.
+                  . A document outlining what I would fight for in 2025 and
+                  beyond.
                 </p>
 
                 <p>
-                  The NGC became a tool for mental stability and purpose. If I can
-                  envision a future where it exists, then working toward that
-                  future makes the fight worthwhile.
+                  The NGC became a tool for mental stability and purpose. If I
+                  can envision a future where it exists, then working toward
+                  that future makes the fight worthwhile.
                 </p>
 
                 <p>
@@ -588,7 +791,10 @@ export default function LandingPage() {
       </section>
 
       {/* NGC Intro Section */}
-      <section aria-labelledby="ngc-intro" className="mx-auto mt-14 max-w-5xl px-4">
+      <section
+        aria-labelledby="ngc-intro"
+        className="mx-auto mt-14 max-w-5xl px-4"
+      >
         <div className="rounded-2xl border border-input bg-card p-6 shadow">
           <div className="mb-4 flex-col md:flex-row items-center justify-between gap-4">
             <h2 id="ngc-intro" className="text-2xl font-semibold">
@@ -604,7 +810,6 @@ export default function LandingPage() {
 
           <div>
             <p>Background on this document.</p>
-
           </div>
 
           <div className="space-y-4">
@@ -620,7 +825,10 @@ export default function LandingPage() {
             </ol>
 
             <div className="pt-2">
-              <Link href="/ngc" className="text-sm font-medium underline underline-offset-4">
+              <Link
+                href="/ngc"
+                className="text-sm font-medium underline underline-offset-4"
+              >
                 Continue to the complete text →
               </Link>
             </div>
@@ -668,9 +876,8 @@ export default function LandingPage() {
       </section>
 
       <BackToTopButton />
-
     </main>
   );
-};
+}
 
 // FeatureItem component above unifies both card and inline presentations

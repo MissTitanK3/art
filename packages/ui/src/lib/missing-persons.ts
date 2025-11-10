@@ -26,5 +26,7 @@ export function getMissingPersonSlug(record: DetaineeIntake): string {
     return encodeSlug(`${FALLBACK_PREFIX}${record.createdAt}`);
   }
 
-  return encodeSlug(`${FALLBACK_PREFIX}${Math.random().toString(36).slice(2, 8)}`);
+  return encodeSlug(
+    `${FALLBACK_PREFIX}${Math.random().toString(36).slice(2, 8)}`,
+  );
 }

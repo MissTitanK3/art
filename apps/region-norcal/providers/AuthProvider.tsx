@@ -19,25 +19,20 @@ type AuthContextValue = {
   status: AuthStatus;
   setSession: (session: AuthSession | null) => void;
   refresh: () => Promise<AuthSession | null>;
-  signInWithPassword: (
-    payload: PasswordSignInPayload
-  ) => Promise<AuthSession>;
+  signInWithPassword: (payload: PasswordSignInPayload) => Promise<AuthSession>;
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
   signUpWithPassword: (
-    payload: PasswordSignUpPayload
+    payload: PasswordSignUpPayload,
   ) => Promise<AuthSession | null>;
   /** Send a password reset email. */
-  requestPasswordReset: (
-    email: string,
-    redirectTo?: string
-  ) => Promise<void>;
+  requestPasswordReset: (email: string, redirectTo?: string) => Promise<void>;
   /** Complete a password reset for the current recovery session. */
   updatePassword: (newPassword: string) => Promise<void>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 type AuthProviderProps = {
@@ -49,15 +44,20 @@ function toStatus(session: AuthSession | null): AuthStatus {
   return session ? "authenticated" : "unauthenticated";
 }
 
-export function AuthProvider({ children, initialSession = null }: AuthProviderProps) {
+export function AuthProvider({
+  children,
+  initialSession = null,
+}: AuthProviderProps) {
   const providerId = React.useMemo<AuthProviderId>(() => "supabase", []);
-  const supabaseRef = React.useRef<ReturnType<typeof getSupabaseBrowserClient> | null>(null);
+  const supabaseRef = React.useRef<ReturnType<
+    typeof getSupabaseBrowserClient
+  > | null>(null);
 
   const [session, setSession] = React.useState<AuthSession | null>(
-    initialSession
+    initialSession,
   );
   const [status, setStatus] = React.useState<AuthStatus>(
-    toStatus(initialSession)
+    toStatus(initialSession),
   );
 
   const ensureClient = React.useCallback(() => {
@@ -74,7 +74,9 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       user: {
         id: u.id,
         email: u.email ?? "",
-        role: ((u as any)?.user_metadata?.role ?? (u as any)?.role ?? "guest") as any,
+        role: ((u as any)?.user_metadata?.role ??
+          (u as any)?.role ??
+          "guest") as any,
         fullName: (u as any)?.user_metadata?.full_name ?? undefined,
         avatarUrl: (u as any)?.user_metadata?.avatar_url ?? undefined,
         metadata: (u as any)?.user_metadata ?? undefined,
@@ -95,9 +97,9 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
           event,
           session: s
             ? {
-              access_token: (s as any)?.access_token ?? null,
-              refresh_token: (s as any)?.refresh_token ?? null,
-            }
+                access_token: (s as any)?.access_token ?? null,
+                refresh_token: (s as any)?.refresh_token ?? null,
+              }
             : null,
         }),
         cache: "no-store",
@@ -183,16 +185,18 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       // onAuthStateChange will also fire, but we return immediately
       return next as AuthSession;
     },
-    [ensureClient]
+    [ensureClient],
   );
 
   const signInWithOtp = React.useCallback(
     async (payload: OtpSignInPayload) => {
       const supabase = ensureClient();
-      const { error } = await supabase.auth.signInWithOtp({ email: payload.email });
+      const { error } = await supabase.auth.signInWithOtp({
+        email: payload.email,
+      });
       if (error) throw error;
     },
-    [ensureClient]
+    [ensureClient],
   );
 
   const signUpWithPassword = React.useCallback(
@@ -216,7 +220,7 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       }
       return next;
     },
-    [ensureClient]
+    [ensureClient],
   );
 
   const requestPasswordReset = React.useCallback(
@@ -226,7 +230,8 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
         if (redirectTo) return redirectTo;
         const base = process.env.NEXT_PUBLIC_SITE_URL;
         if (base) return `${base.replace(/\/$/, "")}/auth/reset-password`;
-        if (typeof window !== "undefined") return `${window.location.origin}/auth/reset-password`;
+        if (typeof window !== "undefined")
+          return `${window.location.origin}/auth/reset-password`;
         return undefined;
       })();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -234,7 +239,7 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       });
       if (error) throw error;
     },
-    [ensureClient]
+    [ensureClient],
   );
 
   const updatePassword = React.useCallback(
@@ -247,7 +252,10 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       try {
         // Keep local state and SSR cookies in sync after password change
         const refreshed = await supabase.auth.getSession();
-        await postAuthCallback("USER_UPDATED", refreshed.data.session as unknown as SupabaseSession);
+        await postAuthCallback(
+          "USER_UPDATED",
+          refreshed.data.session as unknown as SupabaseSession,
+        );
         const next = mapSupabaseSession(refreshed.data.session);
         setSession(next);
         setStatus(toStatus(next));
@@ -255,7 +263,7 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
         // ignore
       }
     },
-    [ensureClient]
+    [ensureClient],
   );
 
   const signOut = React.useCallback(async () => {
@@ -279,7 +287,18 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       requestPasswordReset,
       updatePassword,
     }),
-    [providerId, session, status, refresh, signInWithPassword, signInWithOtp, signOut, signUpWithPassword, requestPasswordReset, updatePassword]
+    [
+      providerId,
+      session,
+      status,
+      refresh,
+      signInWithPassword,
+      signInWithOtp,
+      signOut,
+      signUpWithPassword,
+      requestPasswordReset,
+      updatePassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

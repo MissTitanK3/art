@@ -12,19 +12,19 @@ We pledge to act and interact in ways that contribute to an open, welcoming, saf
 
 Examples of behavior that contributes to a positive environment for our community include:
 
-- Demonstrating empathy and kindness toward others  
-- Respecting differing opinions, viewpoints, and experiences  
-- Giving and gracefully accepting constructive feedback  
-- Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience  
-- Focusing on what is best for the community, not just for ourselves  
+- Demonstrating empathy and kindness toward others
+- Respecting differing opinions, viewpoints, and experiences
+- Giving and gracefully accepting constructive feedback
+- Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience
+- Focusing on what is best for the community, not just for ourselves
 
 Examples of unacceptable behavior include:
 
-- The use of sexualized language or imagery, and sexual attention or advances  
-- Trolling, insulting or derogatory comments, and personal or political attacks  
-- Public or private harassment  
-- Publishing others’ private information, such as a physical or email address, without their explicit permission  
-- Other conduct which could reasonably be considered inappropriate in a professional, community, or activist setting  
+- The use of sexualized language or imagery, and sexual attention or advances
+- Trolling, insulting or derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others’ private information, such as a physical or email address, without their explicit permission
+- Other conduct which could reasonably be considered inappropriate in a professional, community, or activist setting
 
 ---
 
@@ -60,18 +60,22 @@ All community leaders are obligated to respect the privacy and security of the r
 Community leaders will follow these guidelines in determining the consequences for any action they deem in violation of this Code of Conduct:
 
 ### 1. Correction
+
 **Impact:** Use of inappropriate language or other behavior deemed unprofessional or unwelcome.  
 **Consequence:** A private, written warning from community leaders, providing clarity about the nature of the violation and explaining why the behavior was inappropriate.
 
 ### 2. Warning
+
 **Impact:** A violation through a single incident or series of actions.  
 **Consequence:** A warning with consequences for continued behavior. No interaction with the people involved, including unsolicited interaction with those enforcing the Code of Conduct, for a specified period of time.
 
 ### 3. Temporary Ban
+
 **Impact:** A serious violation of community standards, including sustained inappropriate behavior.  
 **Consequence:** A temporary ban from any sort of interaction or public communication with the community for a specified period of time.
 
 ### 4. Permanent Ban
+
 **Impact:** Demonstrating a pattern of violation of community standards, or acting with intent to disrupt or harm the community.  
 **Consequence:** A permanent ban from any sort of interaction within the community.
 
@@ -79,7 +83,7 @@ Community leaders will follow these guidelines in determining the consequences f
 
 ## Attribution
 
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1.  
+This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1.
 
 Community Impact Guidelines were inspired by [Mozilla’s code of conduct enforcement ladder](https://github.com/mozilla/diversity).
 

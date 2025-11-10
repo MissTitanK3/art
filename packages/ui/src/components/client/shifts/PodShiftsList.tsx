@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Card,
@@ -7,22 +7,22 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from '@workspace/ui/components/card'
-import { Button } from '@workspace/ui/components/button'
+} from "@workspace/ui/components/card";
+import { Button } from "@workspace/ui/components/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetClose,
-} from '@workspace/ui/components/sheet'
-import { ExternalLink, Pencil, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+} from "@workspace/ui/components/sheet";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
 
-import { EditShiftForm } from './EditShiftForm.tsx'
-import { Shift } from '@workspace/store/types/pod.ts'
-import { Separator } from '../../separator.tsx'
-import { fmtRange } from '@workspace/store/utils/form-helpers'
+import { EditShiftForm } from "./EditShiftForm.tsx";
+import { Shift } from "@workspace/store/types/pod.ts";
+import { Separator } from "../../separator.tsx";
+import { fmtRange } from "@workspace/store/utils/form-helpers";
 
 type PodShiftsListProps = {
   podShifts: Shift[];
@@ -35,11 +35,11 @@ export default function PodShiftsList({
   onRemoveShift,
   onUpdateShift,
 }: PodShiftsListProps) {
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const editing = podShifts.find((s) => s.id === editingId) ?? null
-  const now = Date.now()
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editing = podShifts.find((s) => s.id === editingId) ?? null;
+  const now = Date.now();
 
-  const filtered = podShifts.filter((s) => new Date(s.end).getTime() >= now)
+  const filtered = podShifts.filter((s) => new Date(s.end).getTime() >= now);
 
   return (
     <>
@@ -50,23 +50,23 @@ export default function PodShiftsList({
       <div className="grid gap-3">
         {filtered
           .sort((a, b) => {
-            const aStart = new Date(a.start).getTime()
-            const bStart = new Date(b.start).getTime()
-            const aEnd = new Date(a.end).getTime()
-            const bEnd = new Date(b.end).getTime()
+            const aStart = new Date(a.start).getTime();
+            const bStart = new Date(b.start).getTime();
+            const aEnd = new Date(a.end).getTime();
+            const bEnd = new Date(b.end).getTime();
 
-            const aActive = aStart <= now && now <= aEnd
-            const bActive = bStart <= now && now <= bEnd
+            const aActive = aStart <= now && now <= aEnd;
+            const bActive = bStart <= now && now <= bEnd;
 
-            if (aActive && !bActive) return -1
-            if (bActive && !aActive) return 1
-            return aStart - bStart
+            if (aActive && !bActive) return -1;
+            if (bActive && !aActive) return 1;
+            return aStart - bStart;
           })
           .map((s) => (
             <Card key={s.id} className="rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-base font-semibold">
-                  {s.label || 'Unnamed shift'}
+                  {s.label || "Unnamed shift"}
                 </CardTitle>
               </CardHeader>
               <Separator />
@@ -74,7 +74,7 @@ export default function PodShiftsList({
               <CardContent className="text-sm">
                 <div className="text-muted-foreground">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span>📍 {s.location || '—'}</span>
+                    <span>📍 {s.location || "—"}</span>
                     <span>•</span>
                     <span>👥 {s.headcount} needed</span>
                   </div>
@@ -107,11 +107,11 @@ export default function PodShiftsList({
                     <Trash2 className="mr-2 h-4 w-6" />
                     Remove
                   </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditingId(s.id)}
-                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingId(s.id)}
+                  >
                     <Pencil className="mr-2 h-4 w-6" />
                     Edit
                   </Button>
@@ -139,8 +139,8 @@ export default function PodShiftsList({
                 key={editing.id}
                 initial={editing}
                 onSave={(vals) => {
-                  onUpdateShift(editing.id, vals)
-                  setEditingId(null)
+                  onUpdateShift(editing.id, vals);
+                  setEditingId(null);
                 }}
               />
             )}
@@ -157,5 +157,5 @@ export default function PodShiftsList({
         </SheetContent>
       </Sheet>
     </>
-  )
+  );
 }

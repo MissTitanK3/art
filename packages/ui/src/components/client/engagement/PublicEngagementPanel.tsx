@@ -1,14 +1,30 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/ui/components/tabs";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@workspace/ui/components/card";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@workspace/ui/components/tabs";
 import { Button } from "@workspace/ui/components/button";
 import { toast } from "sonner";
 import { Copy, Download } from "lucide-react";
 import { MultiTierMessages } from "./MultiTierMessages.tsx";
 import { generateMessages } from "@workspace/ui/lib/messageFormatter";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import QRCode from "react-qr-code";
 import { chunkMessage } from "@workspace/ui/lib/utils";
 import * as htmlToImage from "html-to-image";
@@ -68,7 +84,9 @@ function printFlyer() {
   if (!win) return;
 
   // Copy <link> and <style> tags from parent into print window
-  const styles = Array.from(document.querySelectorAll("link[rel=stylesheet], style"))
+  const styles = Array.from(
+    document.querySelectorAll("link[rel=stylesheet], style"),
+  )
     .map((el) => el.outerHTML)
     .join("\n");
 
@@ -96,12 +114,8 @@ function printFlyer() {
   }, 500);
 }
 
-
-
-
 export const REGION_PUBLIC_CHAT_URL =
   "https://signal.group/#public_example_region_chat";
-
 
 function CopyButton({ text }: { text: string }) {
   const copy = async () => {
@@ -119,11 +133,17 @@ type PublicEngagementPanelProps = {
   submission: DispatchSubmission;
 };
 
-export default function PublicEngagementPanel({ submission }: PublicEngagementPanelProps) {
+export default function PublicEngagementPanel({
+  submission,
+}: PublicEngagementPanelProps) {
   const [urgency, setUrgency] = useState("Within the Week");
-  const [selectedTier, setSelectedTier] = useState<keyof ReturnType<typeof generateMessages>>("callout");
+  const [selectedTier, setSelectedTier] =
+    useState<keyof ReturnType<typeof generateMessages>>("callout");
 
-  const msgs = useMemo(() => generateMessages(submission, urgency), [submission, urgency]);
+  const msgs = useMemo(
+    () => generateMessages(submission, urgency),
+    [submission, urgency],
+  );
   const publicChatUrl = useMemo(() => {
     if (submission.public_signal_link) return submission.public_signal_link;
     try {
@@ -164,8 +184,10 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
           </CardHeader>
           <CardContent className="space-y-6 flex flex-col items-center">
             <Select
-              onValueChange={value =>
-                setSelectedTier(value as keyof ReturnType<typeof generateMessages>)
+              onValueChange={(value) =>
+                setSelectedTier(
+                  value as keyof ReturnType<typeof generateMessages>,
+                )
               }
               value={selectedTier}
             >
@@ -186,7 +208,10 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                 onClick={async () => {
                   const nodes = document.querySelectorAll(".share-card");
                   nodes.forEach((node, idx) => {
-                    downloadCardAsPng(node as HTMLElement, `${selectedTier}-card-${idx + 1}.png`);
+                    downloadCardAsPng(
+                      node as HTMLElement,
+                      `${selectedTier}-card-${idx + 1}.png`,
+                    );
                   });
                 }}
               >
@@ -196,11 +221,13 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
 
             {/* Multi-card for callout & detailed */}
             {(selectedTier === "callout" || selectedTier === "detailed") &&
-              (selectedTier === "callout" ? msgs.calloutSections : msgs.detailedSections).map(
-                (section, idx, arr) => (
-                  <div
-                    key={idx}
-                    className="
+              (selectedTier === "callout"
+                ? msgs.calloutSections
+                : msgs.detailedSections
+              ).map((section, idx, arr) => (
+                <div
+                  key={idx}
+                  className="
                       share-card
                       w-full max-w-[500px]   /* responsive: shrink to screen, cap at 500px */
                       aspect-square          /* keep square ratio */
@@ -209,47 +236,51 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                       rounded-2xl shadow-2xl
                       p-6 text-center text-white
                     "
-                  >
-                    <div className="flex-1 flex flex-col justify-center items-center">
-                      <h2 className="text-lg font-extrabold mb-4 drop-shadow-md">{section.title}</h2>
-                      <p className="text-sm leading-snug font-semibold whitespace-pre-wrap max-w-[90%]">
-                        {section.body}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <QRCode
-                        value={publicChatUrl}
-                        size={60}
-                        bgColor="transparent"
-                        fgColor="#ffffff"
-                      />
-                      <span className="text-xs opacity-80">Scan to join public chat</span>
-                      <span className="text-xs mt-2 opacity-70">
-                        Card {idx + 1} of {arr.length}
-                      </span>
-                      {/* 🚫 excluded from export */}
-                      <Button
-                        size="sm"
-                        className="mt-2 no-export"
-                        onClick={() =>
-                          downloadOrShareCard(
-                            document.querySelectorAll(".share-card")[idx] as HTMLElement,
-                            `${selectedTier}-card-${idx + 1}.png`
-                          )
-                        }
-                      >
-                        📲 Download / Share
-                      </Button>
-
-                    </div>
+                >
+                  <div className="flex-1 flex flex-col justify-center items-center">
+                    <h2 className="text-lg font-extrabold mb-4 drop-shadow-md">
+                      {section.title}
+                    </h2>
+                    <p className="text-sm leading-snug font-semibold whitespace-pre-wrap max-w-[90%]">
+                      {section.body}
+                    </p>
                   </div>
-                )
-              )}
-
+                  <div className="flex flex-col items-center gap-1">
+                    <QRCode
+                      value={publicChatUrl}
+                      size={60}
+                      bgColor="transparent"
+                      fgColor="#ffffff"
+                    />
+                    <span className="text-xs opacity-80">
+                      Scan to join public chat
+                    </span>
+                    <span className="text-xs mt-2 opacity-70">
+                      Card {idx + 1} of {arr.length}
+                    </span>
+                    {/* 🚫 excluded from export */}
+                    <Button
+                      size="sm"
+                      className="mt-2 no-export"
+                      onClick={() =>
+                        downloadOrShareCard(
+                          document.querySelectorAll(".share-card")[
+                            idx
+                          ] as HTMLElement,
+                          `${selectedTier}-card-${idx + 1}.png`,
+                        )
+                      }
+                    >
+                      📲 Download / Share
+                    </Button>
+                  </div>
+                </div>
+              ))}
 
             {/* Single-card for medium & tldr */}
             {(selectedTier === "medium" || selectedTier === "tldr") && (
-              <div className="
+              <div
+                className="
                   share-card
                   w-full max-w-[500px]   /* responsive: shrink to screen, cap at 500px */
                   aspect-square          /* keep square ratio */
@@ -257,7 +288,8 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                   bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
                   rounded-2xl shadow-2xl
                   p-6 text-center text-white
-                ">
+                "
+              >
                 <div className="flex-1 flex flex-col justify-center items-center">
                   <p className="text-lg leading-snug font-semibold whitespace-pre-wrap max-w-[90%]">
                     {selectedTier === "medium" ? msgs.medium : msgs.tldr}
@@ -270,7 +302,9 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                     bgColor="transparent"
                     fgColor="#ffffff"
                   />
-                  <span className="text-xs opacity-80">Scan to join public chat</span>
+                  <span className="text-xs opacity-80">
+                    Scan to join public chat
+                  </span>
                   <span className="text-xs mt-2 opacity-70">1 of 1</span>
                   {/* 🚫 excluded from export */}
                   <Button
@@ -279,17 +313,15 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                     onClick={() =>
                       downloadOrShareCard(
                         document.querySelector(".share-card") as HTMLElement,
-                        `${selectedTier}-card.png`
+                        `${selectedTier}-card.png`,
                       )
                     }
                   >
                     📲 Download / Share
                   </Button>
-
                 </div>
               </div>
             )}
-
           </CardContent>
         </Card>
       </TabsContent>
@@ -352,7 +384,8 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                 <section>
                   <h2 className="text-2xl font-bold mb-2">Roles Needed</h2>
                   <p className="whitespace-pre-wrap">
-                    {msgs.calloutSections?.[3]?.body || msgs.detailedSections?.[3]?.body}
+                    {msgs.calloutSections?.[3]?.body ||
+                      msgs.detailedSections?.[3]?.body}
                   </p>
                 </section>
 
@@ -360,7 +393,8 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
                 <section>
                   <h2 className="text-2xl font-bold mb-2">How to Join</h2>
                   <p className="whitespace-pre-wrap">
-                    {msgs.calloutSections?.[4]?.body || msgs.detailedSections?.[4]?.body}
+                    {msgs.calloutSections?.[4]?.body ||
+                      msgs.detailedSections?.[4]?.body}
                   </p>
                 </section>
               </main>
@@ -384,7 +418,6 @@ export default function PublicEngagementPanel({ submission }: PublicEngagementPa
           </CardContent>
         </Card>
       </TabsContent>
-
     </Tabs>
   );
 }

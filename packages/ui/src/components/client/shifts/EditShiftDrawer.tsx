@@ -45,8 +45,13 @@ export default function EditShiftDrawer({
   const [podId, setPodId] = useState<string | undefined>(shift.podId);
   const [volunteerId, setVolunteerId] = useState(shift.volunteerId ?? "");
   const [volunteerName, setVolunteerName] = useState(shift.volunteerName ?? "");
-  const [volunteerMode, setVolunteerMode] = useState<"none" | "roster" | "custom">(() => {
-    if (shift.volunteerId && roster.some((member) => member.id === shift.volunteerId)) {
+  const [volunteerMode, setVolunteerMode] = useState<
+    "none" | "roster" | "custom"
+  >(() => {
+    if (
+      shift.volunteerId &&
+      roster.some((member) => member.id === shift.volunteerId)
+    ) {
       return "roster";
     }
     if (shift.volunteerName) {
@@ -83,7 +88,9 @@ export default function EditShiftDrawer({
     }
 
     if (volunteerMode === "roster" && volunteerId) {
-      return availableVolunteers.some((member) => member.id === volunteerId) ? volunteerId : "__none__";
+      return availableVolunteers.some((member) => member.id === volunteerId)
+        ? volunteerId
+        : "__none__";
     }
 
     return "__none__";
@@ -91,7 +98,9 @@ export default function EditShiftDrawer({
 
   useEffect(() => {
     if (volunteerMode === "roster" && volunteerId) {
-      const stillAvailable = availableVolunteers.some((member) => member.id === volunteerId);
+      const stillAvailable = availableVolunteers.some(
+        (member) => member.id === volunteerId,
+      );
       if (!stillAvailable) {
         setVolunteerMode("none");
         setVolunteerId("");
@@ -106,10 +115,17 @@ export default function EditShiftDrawer({
       setPodId(shift.podId);
       setVolunteerId(shift.volunteerId ?? "");
       setVolunteerName(shift.volunteerName ?? "");
-      if (shift.volunteerId && roster.some((member) => member.id === shift.volunteerId)) {
+      if (
+        shift.volunteerId &&
+        roster.some((member) => member.id === shift.volunteerId)
+      ) {
         setVolunteerMode("roster");
         const member = roster.find((m) => m.id === shift.volunteerId);
-        const display = member?.profile?.display_name || member?.handle || shift.volunteerName || "";
+        const display =
+          member?.profile?.display_name ||
+          member?.handle ||
+          shift.volunteerName ||
+          "";
         setVolunteerName(display);
       } else if (shift.volunteerName) {
         setVolunteerMode("custom");
@@ -203,7 +219,10 @@ export default function EditShiftDrawer({
                   if (!shift.volunteerName) {
                     setVolunteerName("");
                   }
-                  if (!shift.volunteerId || roster.some((member) => member.id === shift.volunteerId)) {
+                  if (
+                    !shift.volunteerId ||
+                    roster.some((member) => member.id === shift.volunteerId)
+                  ) {
                     setVolunteerId("");
                   }
                   return;
@@ -211,7 +230,8 @@ export default function EditShiftDrawer({
                 setVolunteerMode("roster");
                 setVolunteerId(value);
                 const member = availableVolunteers.find((m) => m.id === value);
-                const display = member?.profile?.display_name || member?.handle || "";
+                const display =
+                  member?.profile?.display_name || member?.handle || "";
                 setVolunteerName(display);
               }}
             >
@@ -232,7 +252,9 @@ export default function EditShiftDrawer({
             {volunteerMode === "custom" ? (
               <div className="mt-3 space-y-2 rounded-md border border-dashed border-border bg-background/60 p-3">
                 <div className="space-y-1">
-                  <Label htmlFor="edit-custom-volunteer-name">Volunteer name</Label>
+                  <Label htmlFor="edit-custom-volunteer-name">
+                    Volunteer name
+                  </Label>
                   <Input
                     id="edit-custom-volunteer-name"
                     value={volunteerName}
@@ -241,7 +263,9 @@ export default function EditShiftDrawer({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="edit-custom-volunteer-id">Volunteer identifier (optional)</Label>
+                  <Label htmlFor="edit-custom-volunteer-id">
+                    Volunteer identifier (optional)
+                  </Label>
                   <Input
                     id="edit-custom-volunteer-id"
                     value={volunteerId}

@@ -15,7 +15,11 @@ import VolunteerStatusBadge from "../status/VolunteerStatusBadge.tsx";
 import { DispatchPersonnelStatus } from "@workspace/ui/lib/constants/dispatch";
 import { VolunteerStatusUpdater } from "../status/VolunteerStatusUpdater.tsx";
 import CopySignalHandleButton from "../buttons/CopySignalHandleButton.tsx";
-import { RosterEntry, PodRole, PodMemberStatus } from "@workspace/store/types/pod.ts";
+import {
+  RosterEntry,
+  PodRole,
+  PodMemberStatus,
+} from "@workspace/store/types/pod.ts";
 import ManageRoleDrawer from "./ManageRoleDrawer.tsx";
 import RolesEditorDrawer from "./RolesEditorDrawer.tsx";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
@@ -35,10 +39,14 @@ export default function DispatchRolesManager({
   const [openRole, setOpenRole] = useState<string | null>(null);
   const [openRolesEditor, setOpenRolesEditor] = useState(false);
   const [loadingRoster, setLoadingRoster] = useState(false);
-  const [rosterOptions, setRosterOptions] = useState<RosterEntry[] | null>(null);
+  const [rosterOptions, setRosterOptions] = useState<RosterEntry[] | null>(
+    null,
+  );
   // Role-filtered roster for the currently opened role drawer
   const [loadingRoleRoster, setLoadingRoleRoster] = useState(false);
-  const [roleRosterOptions, setRoleRosterOptions] = useState<RosterEntry[] | null>(null);
+  const [roleRosterOptions, setRoleRosterOptions] = useState<
+    RosterEntry[] | null
+  >(null);
 
   type AssignedVolunteer = Partial<RosterEntry> & {
     volunteer?: {
@@ -47,7 +55,8 @@ export default function DispatchRolesManager({
     };
   };
 
-  const assignedVolunteers = (submission.assigned_volunteers ?? []) as AssignedVolunteer[];
+  const assignedVolunteers = (submission.assigned_volunteers ??
+    []) as AssignedVolunteer[];
 
   // Convert a plain profile into a synthetic RosterEntry for selection, similar to AddMemberButton
   const profileToRosterEntry = (profile: any): RosterEntry => ({
@@ -71,7 +80,9 @@ export default function DispatchRolesManager({
     async function loadProfiles() {
       setLoadingRoster(true);
       try {
-        const res = await fetch('/api/dispatch/profiles', { credentials: 'include' });
+        const res = await fetch("/api/dispatch/profiles", {
+          credentials: "include",
+        });
         if (res.ok) {
           const json = await res.json();
           const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
@@ -88,7 +99,9 @@ export default function DispatchRolesManager({
             if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
           }
           const merged = Array.from(mapByProfile.values()).sort((a, b) =>
-            (a.profile?.display_name ?? '').localeCompare(b.profile?.display_name ?? '')
+            (a.profile?.display_name ?? "").localeCompare(
+              b.profile?.display_name ?? "",
+            ),
           );
           if (!cancelled) setRosterOptions(merged);
           return;
@@ -102,11 +115,16 @@ export default function DispatchRolesManager({
       if (!cancelled) setRosterOptions(providedRoster);
     }
     loadProfiles();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(providedRoster.map(r => r.profile?.id))]);
+  }, [JSON.stringify(providedRoster.map((r) => r.profile?.id))]);
 
-  const allRoster = useMemo(() => rosterOptions ?? providedRoster, [rosterOptions, providedRoster]);
+  const allRoster = useMemo(
+    () => rosterOptions ?? providedRoster,
+    [rosterOptions, providedRoster],
+  );
 
   // When managing a specific role, fetch only profiles eligible for that role (based on public.profile.field_roles)
   useEffect(() => {
@@ -118,7 +136,10 @@ export default function DispatchRolesManager({
       }
       setLoadingRoleRoster(true);
       try {
-        const res = await fetch(`/api/dispatch/profiles?field_role=${encodeURIComponent(openRole)}`, { credentials: 'include' });
+        const res = await fetch(
+          `/api/dispatch/profiles?field_role=${encodeURIComponent(openRole)}`,
+          { credentials: "include" },
+        );
         if (res.ok) {
           const json = await res.json();
           const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
@@ -139,7 +160,9 @@ export default function DispatchRolesManager({
             if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
           }
           const merged = Array.from(mapByProfile.values()).sort((a, b) =>
-            (a.profile?.display_name ?? '').localeCompare(b.profile?.display_name ?? '')
+            (a.profile?.display_name ?? "").localeCompare(
+              b.profile?.display_name ?? "",
+            ),
           );
           if (!cancelled) setRoleRosterOptions(merged);
           return;
@@ -151,13 +174,17 @@ export default function DispatchRolesManager({
       }
 
       // Fallback: filter provided roster by field_roles if available
-      const filteredProvided = providedRoster.filter((r) =>
-        Array.isArray((r.profile as any)?.field_roles) && ((r.profile as any).field_roles as string[]).includes(openRole!)
+      const filteredProvided = providedRoster.filter(
+        (r) =>
+          Array.isArray((r.profile as any)?.field_roles) &&
+          ((r.profile as any).field_roles as string[]).includes(openRole!),
       );
       if (!cancelled) setRoleRosterOptions(filteredProvided);
     }
     loadEligibleForRole();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [openRole, providedRoster]);
 
   const handleSaveAssignments = (
@@ -173,12 +200,16 @@ export default function DispatchRolesManager({
           const rosterEntry = allRoster.find((r) => r.id === rosterId);
           return rosterEntry
             ? {
-              id: rosterEntry.id,
-              profile: rosterEntry.profile,
-              role: role as PodRole,
-              status: "active" as PodMemberStatus,
-            }
-            : { id: rosterId, role: role as PodRole, status: "active" as PodMemberStatus };
+                id: rosterEntry.id,
+                profile: rosterEntry.profile,
+                role: role as PodRole,
+                status: "active" as PodMemberStatus,
+              }
+            : {
+                id: rosterId,
+                role: role as PodRole,
+                status: "active" as PodMemberStatus,
+              };
         }),
       ...manualVolunteers
         .filter((m) => selected.includes(m.id))
@@ -201,7 +232,10 @@ export default function DispatchRolesManager({
     setOpenRolesEditor(false);
   };
 
-  const handleStatusChange = (volunteerId: string | undefined, status: DispatchPersonnelStatus) => {
+  const handleStatusChange = (
+    volunteerId: string | undefined,
+    status: DispatchPersonnelStatus,
+  ) => {
     if (!volunteerId) {
       return;
     }
@@ -212,11 +246,12 @@ export default function DispatchRolesManager({
   };
 
   const hasRoleTypes =
-    submission.required_roles_by_type && Object.keys(submission.required_roles_by_type).length > 0;
+    submission.required_roles_by_type &&
+    Object.keys(submission.required_roles_by_type).length > 0;
 
   const roles = hasRoleTypes
     ? Object.keys(submission.required_roles_by_type!)
-    : submission.required_roles ?? [];
+    : (submission.required_roles ?? []);
 
   return (
     <Card suppressHydrationWarning>
@@ -261,10 +296,7 @@ export default function DispatchRolesManager({
                       const rosterEntry = allRoster.find((r) => r.id === v.id);
 
                       return (
-                        <li
-                          key={v.id}
-                          className="text-muted-foreground"
-                        >
+                        <li key={v.id} className="text-muted-foreground">
                           <div
                             className="
       flex flex-col items-center gap-4 w-full
@@ -272,9 +304,14 @@ export default function DispatchRolesManager({
     "
                           >
                             <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
-                              <Badge variant="outline" className="text-[10px] capitalize">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] capitalize"
+                              >
                                 {rosterEntry?.role ??
-                                  (v.id?.startsWith("manual-") ? "manual" : "unknown")}
+                                  (v.id?.startsWith("manual-")
+                                    ? "manual"
+                                    : "unknown")}
                               </Badge>
 
                               <span className="font-medium text-foreground text-center md:text-left">
@@ -284,26 +321,34 @@ export default function DispatchRolesManager({
                                   "Unknown Volunteer"}
                               </span>
 
-                              {(rosterEntry?.profile.contact_signal ?? v.profile?.contact_signal ?? v.volunteer?.contact_signal) && (
+                              {(rosterEntry?.profile.contact_signal ??
+                                v.profile?.contact_signal ??
+                                v.volunteer?.contact_signal) && (
                                 <CopySignalHandleButton
-                                  handle={(rosterEntry?.profile.contact_signal ?? v.profile?.contact_signal ?? v.volunteer?.contact_signal)!}
+                                  handle={
+                                    (rosterEntry?.profile.contact_signal ??
+                                      v.profile?.contact_signal ??
+                                      v.volunteer?.contact_signal)!
+                                  }
                                 />
                               )}
                             </div>
 
                             <div className="flex flex-col items-center gap-2 md:flex-row md:gap-3">
-                              <VolunteerStatusBadge status={v.status as DispatchPersonnelStatus} />
+                              <VolunteerStatusBadge
+                                status={v.status as DispatchPersonnelStatus}
+                              />
                               <VolunteerStatusUpdater
                                 current={v.status as DispatchPersonnelStatus}
-                                onChange={(newStatus) => handleStatusChange(v.id, newStatus)}
+                                onChange={(newStatus) =>
+                                  handleStatusChange(v.id, newStatus)
+                                }
                               />
                             </div>
                           </div>
                         </li>
-
                       );
                     })}
-
                   </ul>
                 ) : (
                   <p className="text-xs text-muted-foreground">
@@ -333,15 +378,15 @@ export default function DispatchRolesManager({
         <ManageRoleDrawer
           role={openRole}
           submissionId={submission.id}
-          assigned={assignedVolunteers.filter((v) => v.role === openRole).map((v) => v.id ?? "")}
-          manualAssigned={
-            assignedVolunteers
-              .filter((v) => v.role === openRole && v.id?.startsWith("manual-"))
-              .map((v) => ({
-                volunteer_id: v.id ?? "",
-                name: v.profile?.display_name ?? v.volunteer?.display_name,
-              }))
-          }
+          assigned={assignedVolunteers
+            .filter((v) => v.role === openRole)
+            .map((v) => v.id ?? "")}
+          manualAssigned={assignedVolunteers
+            .filter((v) => v.role === openRole && v.id?.startsWith("manual-"))
+            .map((v) => ({
+              volunteer_id: v.id ?? "",
+              name: v.profile?.display_name ?? v.volunteer?.display_name,
+            }))}
           onClose={() => setOpenRole(null)}
           onSave={handleSaveAssignments}
           allRoster={roleRosterOptions ?? allRoster}

@@ -6,9 +6,22 @@ import { getMissingPersonSlug } from "../../lib/missing-persons";
 
 import { Badge } from "../badge";
 import { Button } from "../button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../card";
 import { Input } from "../input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../select";
 
 type UrgencyFilter = "all" | "urgent" | "none";
 
@@ -22,7 +35,11 @@ export interface MissingPersonsDirectoryProps {
    * Allows callers to customise the anchor element used for the view-details button.
    * Defaults to a simple anchor tag to avoid coupling to a routing library.
    */
-  renderRecordLink?: (href: string, record: DetaineeIntake, label: string) => React.ReactNode;
+  renderRecordLink?: (
+    href: string,
+    record: DetaineeIntake,
+    label: string,
+  ) => React.ReactNode;
 }
 
 function formatDate(value?: string): string {
@@ -61,11 +78,14 @@ function formatRelativeDate(value?: string): string {
   return `Updated ${Math.floor(diffDays / 7)} weeks ago`;
 }
 
-const defaultRecordHref = (record: DetaineeIntake) => `/missing-persons/${getMissingPersonSlug(record)}`;
+const defaultRecordHref = (record: DetaineeIntake) =>
+  `/missing-persons/${getMissingPersonSlug(record)}`;
 
-const defaultRenderRecordLink = (href: string, _record: DetaineeIntake, label: string) => (
-  <a href={href}>{label}</a>
-);
+const defaultRenderRecordLink = (
+  href: string,
+  _record: DetaineeIntake,
+  label: string,
+) => <a href={href}>{label}</a>;
 
 export function MissingPersonsDirectory({
   records,
@@ -73,7 +93,8 @@ export function MissingPersonsDirectory({
   renderRecordLink = defaultRenderRecordLink,
 }: MissingPersonsDirectoryProps) {
   const [query, setQuery] = React.useState("");
-  const [urgencyFilter, setUrgencyFilter] = React.useState<UrgencyFilter>("all");
+  const [urgencyFilter, setUrgencyFilter] =
+    React.useState<UrgencyFilter>("all");
 
   const searchableRecords = React.useMemo(() => records ?? [], [records]);
 
@@ -107,7 +128,10 @@ export function MissingPersonsDirectory({
         ...(record.urgentNeeds ?? []),
         ...(record.languagesSpoken ?? []),
       ]
-        .filter((value): value is string => typeof value === "string" && value.length > 0)
+        .filter(
+          (value): value is string =>
+            typeof value === "string" && value.length > 0,
+        )
         .join(" ")
         .toLowerCase();
 
@@ -129,7 +153,10 @@ export function MissingPersonsDirectory({
             />
           </div>
 
-          <Select value={urgencyFilter} onValueChange={(value) => setUrgencyFilter(value as UrgencyFilter)}>
+          <Select
+            value={urgencyFilter}
+            onValueChange={(value) => setUrgencyFilter(value as UrgencyFilter)}
+          >
             <SelectTrigger className="sm:w-[220px]">
               <SelectValue placeholder="Urgency filter" />
             </SelectTrigger>
@@ -141,7 +168,11 @@ export function MissingPersonsDirectory({
           </Select>
         </div>
 
-        <Button variant="ghost" onClick={() => setQuery("")} className="self-start md:self-auto">
+        <Button
+          variant="ghost"
+          onClick={() => setQuery("")}
+          className="self-start md:self-auto"
+        >
           Clear search
         </Button>
       </div>
@@ -157,7 +188,8 @@ export function MissingPersonsDirectory({
             const slug = getMissingPersonSlug(record);
             const viewHref = getRecordHref(record);
             const urgentNeeds = record.urgentNeeds ?? [];
-            const displayName = record.fullName?.trim() || "Unidentified individual";
+            const displayName =
+              record.fullName?.trim() || "Unidentified individual";
             const lastLocation =
               record.lastKnownFacility ||
               record.lastKnownCity ||
@@ -169,48 +201,77 @@ export function MissingPersonsDirectory({
               <Badge variant="outline">Interpreter needed</Badge>
             ) : null;
             return (
-              <Card key={record.caseId ?? slug} className="flex h-full flex-col border-border/70">
+              <Card
+                key={record.caseId ?? slug}
+                className="flex h-full flex-col border-border/70"
+              >
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg">{displayName}</CardTitle>
                   <CardDescription className="space-y-1 text-sm">
-                    <div className="font-medium text-foreground">{record.caseId ?? "Pending case ID"}</div>
+                    <div className="font-medium text-foreground">
+                      {record.caseId ?? "Pending case ID"}
+                    </div>
                     {record.detentionDateTime ? (
                       <div>Detained {formatDate(record.detentionDateTime)}</div>
                     ) : null}
-                    {record.aNumber ? <div>A-Number {record.aNumber}</div> : null}
+                    {record.aNumber ? (
+                      <div>A-Number {record.aNumber}</div>
+                    ) : null}
                   </CardDescription>
                 </CardHeader>
 
                 <CardContent className="flex flex-1 flex-col gap-4">
                   <div className="space-y-1 text-sm">
-                    <div className="text-xs uppercase text-muted-foreground">Last known location</div>
-                    <div className="font-medium text-foreground">{lastLocation}</div>
+                    <div className="text-xs uppercase text-muted-foreground">
+                      Last known location
+                    </div>
+                    <div className="font-medium text-foreground">
+                      {lastLocation}
+                    </div>
                     {record.arrestingAgency ? (
-                      <div className="text-muted-foreground">{record.arrestingAgency}</div>
+                      <div className="text-muted-foreground">
+                        {record.arrestingAgency}
+                      </div>
                     ) : null}
                     {record.knownTransfers?.length ? (
                       <div className="text-xs text-muted-foreground">
                         Last transfer{" "}
-                        {formatDate(record.knownTransfers[record.knownTransfers.length - 1]?.transferDate)}
+                        {formatDate(
+                          record.knownTransfers[
+                            record.knownTransfers.length - 1
+                          ]?.transferDate,
+                        )}
                       </div>
                     ) : null}
                   </div>
 
                   <div className="space-y-1 text-sm">
-                    <div className="text-xs uppercase text-muted-foreground">Profile</div>
+                    <div className="text-xs uppercase text-muted-foreground">
+                      Profile
+                    </div>
                     <div className="text-muted-foreground">
                       {record.pronouns ? `Pronouns: ${record.pronouns}` : null}
-                      {record.pronouns && record.languagesSpoken?.length ? " · " : null}
-                      {record.languagesSpoken?.length ? `Languages: ${record.languagesSpoken.join(", ")}` : null}
+                      {record.pronouns && record.languagesSpoken?.length
+                        ? " · "
+                        : null}
+                      {record.languagesSpoken?.length
+                        ? `Languages: ${record.languagesSpoken.join(", ")}`
+                        : null}
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {interpreterBadge}
-                      {confidence ? <Badge variant="secondary">Confidence {confidence}/5</Badge> : null}
+                      {confidence ? (
+                        <Badge variant="secondary">
+                          Confidence {confidence}/5
+                        </Badge>
+                      ) : null}
                     </div>
                   </div>
 
                   <div className="space-y-1 text-sm">
-                    <div className="text-xs uppercase text-muted-foreground">Urgent needs</div>
+                    <div className="text-xs uppercase text-muted-foreground">
+                      Urgent needs
+                    </div>
                     {urgentNeeds.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {urgentNeeds.slice(0, 3).map((need) => (
@@ -219,11 +280,15 @@ export function MissingPersonsDirectory({
                           </Badge>
                         ))}
                         {urgentNeeds.length > 3 ? (
-                          <Badge variant="outline">+{urgentNeeds.length - 3} more</Badge>
+                          <Badge variant="outline">
+                            +{urgentNeeds.length - 3} more
+                          </Badge>
                         ) : null}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">None flagged</span>
+                      <span className="text-muted-foreground">
+                        None flagged
+                      </span>
                     )}
                   </div>
                 </CardContent>
@@ -231,7 +296,11 @@ export function MissingPersonsDirectory({
                 <CardFooter className="flex items-center justify-between gap-3 border-t pt-4 text-sm text-muted-foreground">
                   <div className="space-y-1">
                     <div>{formatRelativeDate(record.lastUpdated)}</div>
-                    {record.lastUpdated ? <div className="text-xs">{formatDate(record.lastUpdated)}</div> : null}
+                    {record.lastUpdated ? (
+                      <div className="text-xs">
+                        {formatDate(record.lastUpdated)}
+                      </div>
+                    ) : null}
                   </div>
                   <Button asChild size="sm">
                     {renderRecordLink(viewHref, record, "View details")}

@@ -1,12 +1,12 @@
 export type AdvocacyGroupType =
-  | 'legal_aid'
-  | 'civil_rights'
-  | 'immigrant_justice'
-  | 'media_advocacy'
-  | 'public_defender'
-  | 'other';
+  | "legal_aid"
+  | "civil_rights"
+  | "immigrant_justice"
+  | "media_advocacy"
+  | "public_defender"
+  | "other";
 
-export type AdvocacyPreferredFormat = 'pdf' | 'web' | 'feed';
+export type AdvocacyPreferredFormat = "pdf" | "web" | "feed";
 
 export type AdvocacyGroup = {
   id: string;
@@ -22,7 +22,7 @@ export type AdvocacyGroup = {
   updated_at?: string | null;
 };
 
-export type AdvocacyDeliveryStatus = 'queued' | 'sent' | 'failed' | 'skipped';
+export type AdvocacyDeliveryStatus = "queued" | "sent" | "failed" | "skipped";
 
 export type AdvocacyDeliveryLog = {
   id: string;
@@ -33,4 +33,3 @@ export type AdvocacyDeliveryLog = {
   details: Record<string, unknown> | null;
   attempted_at?: string | null;
 };
-

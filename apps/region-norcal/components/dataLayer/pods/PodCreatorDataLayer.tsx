@@ -19,7 +19,10 @@ const schema = z.object({
     .string()
     .min(3, "Name must be at least 3 characters")
     .max(50, "Keep it under 50 characters")
-    .regex(/^[\p{L}\p{N}\s'’-]+$/u, "Only letters, numbers, spaces, and - ’ allowed"),
+    .regex(
+      /^[\p{L}\p{N}\s'’-]+$/u,
+      "Only letters, numbers, spaces, and - ’ allowed",
+    ),
   area: z
     .string()
     .min(3, "Coverage area is required")
@@ -100,7 +103,7 @@ export default function PodCreatorDataLayer() {
       area: register("area"),
       channelLink: register("channelLink"),
     }),
-    [register]
+    [register],
   );
 
   const formErrors: PodCreatorLayoutErrors = {

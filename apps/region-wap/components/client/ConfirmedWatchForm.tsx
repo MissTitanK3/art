@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import { useAuthContext } from "@/providers/AuthProvider";
-import { ConfirmedWatchForm as UIConfirmedWatchForm, type ConfirmedWatchPayload } from "@workspace/ui/components/client/watch/ConfirmedWatchForm";
+import {
+  ConfirmedWatchForm as UIConfirmedWatchForm,
+  type ConfirmedWatchPayload,
+} from "@workspace/ui/components/client/watch/ConfirmedWatchForm";
 import { toast } from "sonner";
 
 export default function ConfirmedWatchForm() {
@@ -21,10 +24,6 @@ export default function ConfirmedWatchForm() {
     toast.success("Confirmed report submitted");
   }, []);
   return (
-    <UIConfirmedWatchForm
-      submittedBy={user?.id ?? null}
-      onSubmit={onSubmit}
-    />
+    <UIConfirmedWatchForm submittedBy={user?.id ?? null} onSubmit={onSubmit} />
   );
 }
-

@@ -3,7 +3,7 @@ import { getAuthProviderId } from "./adapter";
 import type { AuthServerAdapter, AuthServerContext } from "./types";
 
 export async function loadServerAdapter(
-  context?: AuthServerContext
+  context?: AuthServerContext,
 ): Promise<AuthServerAdapter> {
   const provider = getAuthProviderId();
   switch (provider) {

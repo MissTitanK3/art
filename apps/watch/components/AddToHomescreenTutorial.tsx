@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function AddToHomescreenTutorial() {
   return (
     <div className="prose prose-invert max-w-2xl mx-auto p-4 space-y-8">
       <h1>📱 Add ART to Your Homescreen</h1>
       <p>
-        You can install <strong>ART Watch</strong> directly onto your phone
-        like an app! It’s faster, easier to access, and more private.
+        You can install <strong>ART Watch</strong> directly onto your phone like
+        an app! It’s faster, easier to access, and more private.
       </p>
 
       <section>
@@ -18,7 +18,12 @@ export default function AddToHomescreenTutorial() {
           <ul>
             <li className="flex flex-col">
               <span>Watch</span>
-              <Link href="https://watch.alwaysreadytools.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+              <Link
+                href="https://watch.alwaysreadytools.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
                 https://watch.alwaysreadytools.org
               </Link>
             </li>
@@ -40,7 +45,12 @@ export default function AddToHomescreenTutorial() {
           <ul>
             <li className="flex flex-col">
               <span>Watch</span>
-              <Link href="https://watch.alwaysreadytools.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+              <Link
+                href="https://watch.alwaysreadytools.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
                 https://watch.alwaysreadytools.org
               </Link>
             </li>
@@ -67,4 +77,3 @@ export default function AddToHomescreenTutorial() {
     </div>
   );
 }
-

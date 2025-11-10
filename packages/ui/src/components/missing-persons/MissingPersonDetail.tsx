@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft, Download, FileJson, Pencil, Printer, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  FileJson,
+  Pencil,
+  Printer,
+  Trash2,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -32,14 +39,22 @@ import {
 } from "../client/intake";
 import { Form } from "../form";
 import { deepCompact } from "../../lib/utils";
-import { CASE_ID_STORAGE_KEY, normaliseCaseId } from "../../lib/missing-person-case-id";
-import type { DetaineeIntake, DetaineeIntakeFormValues } from "../../types/missing-person-intake";
+import {
+  CASE_ID_STORAGE_KEY,
+  normaliseCaseId,
+} from "../../lib/missing-person-case-id";
+import type {
+  DetaineeIntake,
+  DetaineeIntakeFormValues,
+} from "../../types/missing-person-intake";
 
 type ExportFormat = "pdf" | "json";
 
 const DEFAULT_DIRECTORY_HREF = "/missing-persons";
 
-const defaultRenderDirectoryLink = (href: string, label: React.ReactNode) => <a href={href}>{label}</a>;
+const defaultRenderDirectoryLink = (href: string, label: React.ReactNode) => (
+  <a href={href}>{label}</a>
+);
 
 const navigateToHref = (href: string) => {
   if (typeof window === "undefined") return;
@@ -53,13 +68,26 @@ const navigateToHref = (href: string) => {
 export interface MissingPersonDetailProps {
   record: DetaineeIntake;
   slug: string;
-  onExportRecord?: (record: DetaineeIntake, format: ExportFormat) => Promise<Blob | string | void>;
+  onExportRecord?: (
+    record: DetaineeIntake,
+    format: ExportFormat,
+  ) => Promise<Blob | string | void>;
   onFinalizeRecord?: (record: DetaineeIntake) => Promise<void> | void;
   directoryHref?: string;
-  renderDirectoryLink?: (href: string, label: React.ReactNode) => React.ReactNode;
-  onDeleteSuccess?: (details: { caseId: string; record: DetaineeIntake; directoryHref: string }) => void;
+  renderDirectoryLink?: (
+    href: string,
+    label: React.ReactNode,
+  ) => React.ReactNode;
+  onDeleteSuccess?: (details: {
+    caseId: string;
+    record: DetaineeIntake;
+    directoryHref: string;
+  }) => void;
   onSaveRecord?: (record: DetaineeIntake) => Promise<void> | void;
-  onDeleteRecord?: (caseId: string, record: DetaineeIntake) => Promise<void> | void;
+  onDeleteRecord?: (
+    caseId: string,
+    record: DetaineeIntake,
+  ) => Promise<void> | void;
 }
 
 export function MissingPersonDetail({
@@ -74,11 +102,16 @@ export function MissingPersonDetail({
   onDeleteRecord,
 }: MissingPersonDetailProps) {
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
-  const updateRecordInStore = useMissingPersonStore((state) => state.updateRecord);
-  const removeRecordFromStore = useMissingPersonStore((state) => state.removeRecord);
+  const updateRecordInStore = useMissingPersonStore(
+    (state) => state.updateRecord,
+  );
+  const removeRecordFromStore = useMissingPersonStore(
+    (state) => state.removeRecord,
+  );
   const hasRecordInStore = useMissingPersonStore((state) => state.hasRecord);
 
-  const [currentRecord, setCurrentRecord] = React.useState<DetaineeIntake>(record);
+  const [currentRecord, setCurrentRecord] =
+    React.useState<DetaineeIntake>(record);
   const [isEditing, setIsEditing] = React.useState(false);
   const [exporting, setExporting] = React.useState<ExportFormat | null>(null);
   const [deleting, setDeleting] = React.useState(false);
@@ -96,12 +129,12 @@ export function MissingPersonDetail({
 
   const normalizedCaseId = React.useMemo(
     () => (currentRecord.caseId ? normaliseCaseId(currentRecord.caseId) : null),
-    [currentRecord.caseId]
+    [currentRecord.caseId],
   );
 
   const isDeletable = React.useMemo(
     () => (normalizedCaseId ? hasRecordInStore(normalizedCaseId) : false),
-    [normalizedCaseId, hasRecordInStore]
+    [normalizedCaseId, hasRecordInStore],
   );
 
   const rememberCaseId = React.useCallback((caseId: string) => {
@@ -109,17 +142,25 @@ export function MissingPersonDetail({
     try {
       const raw = window.localStorage.getItem(CASE_ID_STORAGE_KEY);
       if (!raw) {
-        window.localStorage.setItem(CASE_ID_STORAGE_KEY, JSON.stringify([caseId]));
+        window.localStorage.setItem(
+          CASE_ID_STORAGE_KEY,
+          JSON.stringify([caseId]),
+        );
         return;
       }
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         const exists = parsed.some(
-          (id: unknown) => typeof id === "string" && normaliseCaseId(id) === normaliseCaseId(caseId)
+          (id: unknown) =>
+            typeof id === "string" &&
+            normaliseCaseId(id) === normaliseCaseId(caseId),
         );
         if (!exists) {
           parsed.push(caseId);
-          window.localStorage.setItem(CASE_ID_STORAGE_KEY, JSON.stringify(parsed));
+          window.localStorage.setItem(
+            CASE_ID_STORAGE_KEY,
+            JSON.stringify(parsed),
+          );
         }
       }
     } catch (error) {
@@ -135,9 +176,14 @@ export function MissingPersonDetail({
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return;
       const remaining = parsed.filter(
-        (id: unknown) => typeof id === "string" && normaliseCaseId(id) !== normaliseCaseId(caseId)
+        (id: unknown) =>
+          typeof id === "string" &&
+          normaliseCaseId(id) !== normaliseCaseId(caseId),
       );
-      window.localStorage.setItem(CASE_ID_STORAGE_KEY, JSON.stringify(remaining));
+      window.localStorage.setItem(
+        CASE_ID_STORAGE_KEY,
+        JSON.stringify(remaining),
+      );
     } catch (error) {
       console.warn("Failed to remove case ID from storage", error);
     }
@@ -162,7 +208,11 @@ export function MissingPersonDetail({
       removeCaseIdFromStorage(normalizedCaseId);
       toast.success("Intake deleted. Redirecting to directory…");
       if (onDeleteSuccess) {
-        onDeleteSuccess({ caseId: normalizedCaseId, record: currentRecord, directoryHref });
+        onDeleteSuccess({
+          caseId: normalizedCaseId,
+          record: currentRecord,
+          directoryHref,
+        });
       } else {
         navigateToHref(directoryHref);
       }
@@ -209,12 +259,14 @@ export function MissingPersonDetail({
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to export report. Try again after checking the record.");
+        toast.error(
+          "Failed to export report. Try again after checking the record.",
+        );
       } finally {
         setExporting(null);
       }
     },
-    [currentRecord, onExportRecord, slug]
+    [currentRecord, onExportRecord, slug],
   );
 
   const handleSubmit = React.useCallback(
@@ -240,7 +292,9 @@ export function MissingPersonDetail({
         createdAt: compacted.createdAt ?? currentRecord.createdAt ?? timestamp,
       };
 
-      const previousCaseId = currentRecord.caseId ? normaliseCaseId(currentRecord.caseId) : nextCaseId;
+      const previousCaseId = currentRecord.caseId
+        ? normaliseCaseId(currentRecord.caseId)
+        : nextCaseId;
 
       if (previousCaseId && previousCaseId !== nextCaseId) {
         removeRecordFromStore(previousCaseId);
@@ -272,10 +326,13 @@ export function MissingPersonDetail({
       removeRecordFromStore,
       updateRecordInStore,
       onSaveRecord,
-    ]
+    ],
   );
 
-  const submit = React.useMemo(() => form.handleSubmit(handleSubmit), [form, handleSubmit]);
+  const submit = React.useMemo(
+    () => form.handleSubmit(handleSubmit),
+    [form, handleSubmit],
+  );
 
   const startEditing = React.useCallback(() => {
     form.reset(toFormValues(currentRecord));
@@ -312,7 +369,7 @@ export function MissingPersonDetail({
 
   const latestJson = React.useMemo(
     () => JSON.stringify(deepCompact(currentRecord), null, 2),
-    [currentRecord]
+    [currentRecord],
   );
 
   return (
@@ -326,19 +383,27 @@ export function MissingPersonDetail({
                   directoryHref,
                   <span className="inline-flex items-center gap-1">
                     <ArrowLeft className="h-4 w-4" /> Back to directory
-                  </span>
+                  </span>,
                 )}
               </Button>
-              <span>Last updated {formatRelativeDate(currentRecord.lastUpdated ?? currentRecord.createdAt)}</span>
+              <span>
+                Last updated{" "}
+                {formatRelativeDate(
+                  currentRecord.lastUpdated ?? currentRecord.createdAt,
+                )}
+              </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                {currentRecord.fullName || currentRecord.caseId || "Missing person intake"}
+                {currentRecord.fullName ||
+                  currentRecord.caseId ||
+                  "Missing person intake"}
               </h1>
               {headerBadges}
             </div>
             <p className="text-sm text-muted-foreground">
-              Case ID: {currentRecord.caseId || "Not assigned"} · Created {formatDate(currentRecord.createdAt)}
+              Case ID: {currentRecord.caseId || "Not assigned"} · Created{" "}
+              {formatDate(currentRecord.createdAt)}
             </p>
           </div>
 
@@ -368,45 +433,55 @@ export function MissingPersonDetail({
                       {exporting === "json" ? "Copying…" : "Copy JSON"}
                     </Button>
                   </>
-            ) : null}
-            {onFinalizeRecord ? (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={async () => {
-                  try {
-                    setFinalizing(true);
-                    await onFinalizeRecord(currentRecord);
-                    toast.success('Finalized and notifications queued');
-                  } catch (e) {
-                    toast.error('Failed to finalize');
-                  } finally {
-                    setFinalizing(false);
-                  }
-                }}
-                disabled={finalizing}
-                className="w-full sm:w-auto"
-              >
-                {finalizing ? 'Finalizing…' : 'Finalize & Notify'}
-              </Button>
-            ) : null}
-            <Button type="button" onClick={startEditing} className="w-full sm:w-auto">
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
+                ) : null}
+                {onFinalizeRecord ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        setFinalizing(true);
+                        await onFinalizeRecord(currentRecord);
+                        toast.success("Finalized and notifications queued");
+                      } catch (e) {
+                        toast.error("Failed to finalize");
+                      } finally {
+                        setFinalizing(false);
+                      }
+                    }}
+                    disabled={finalizing}
+                    className="w-full sm:w-auto"
+                  >
+                    {finalizing ? "Finalizing…" : "Finalize & Notify"}
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  onClick={startEditing}
+                  className="w-full sm:w-auto"
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
               </>
             ) : null}
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button type="button" variant="destructive" disabled={deleting} className="w-full sm:w-auto">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleting}
+                  className="w-full sm:w-auto"
+                >
                   <Trash2 className="mr-2 h-4 w-4" /> Delete
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className='bg-accent text-accent-foreground max-w-xs'>
+              <AlertDialogContent className="bg-accent text-accent-foreground max-w-xs">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this intake?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. The intake will be removed from local storage.
+                    This action cannot be undone. The intake will be removed
+                    from local storage.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -426,16 +501,38 @@ export function MissingPersonDetail({
           <form className="grid gap-6" onSubmit={submit}>
             <CaseMetadataSection
               mode="edit"
-              region='Demo'
+              region="Demo"
               control={form.control}
               onSave={submit}
-              caseIdExamples={{ primary: currentRecord.caseId || "ZONE-2024-001" }}
+              caseIdExamples={{
+                primary: currentRecord.caseId || "ZONE-2024-001",
+              }}
             />
-            <ContactsSection mode="edit" control={form.control} onSave={submit} />
-            <IdentificationSection mode="edit" control={form.control} onSave={submit} />
-            <DetentionDetailsSection mode="edit" control={form.control} onSave={submit} />
-            <LegalSupportSection mode="edit" control={form.control} onSave={submit} />
-            <VerificationSection mode="edit" control={form.control} onSave={submit} />
+            <ContactsSection
+              mode="edit"
+              control={form.control}
+              onSave={submit}
+            />
+            <IdentificationSection
+              mode="edit"
+              control={form.control}
+              onSave={submit}
+            />
+            <DetentionDetailsSection
+              mode="edit"
+              control={form.control}
+              onSave={submit}
+            />
+            <LegalSupportSection
+              mode="edit"
+              control={form.control}
+              onSave={submit}
+            />
+            <VerificationSection
+              mode="edit"
+              control={form.control}
+              onSave={submit}
+            />
 
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={cancelEditing}>
@@ -447,7 +544,7 @@ export function MissingPersonDetail({
         </Form>
       ) : (
         <div className="grid gap-6">
-          <CaseMetadataSection mode="view" data={currentRecord} region='Demo' />
+          <CaseMetadataSection mode="view" data={currentRecord} region="Demo" />
           <ContactsSection mode="view" data={currentRecord} />
           <IdentificationSection mode="view" data={currentRecord} />
           <DetentionDetailsSection mode="view" data={currentRecord} />

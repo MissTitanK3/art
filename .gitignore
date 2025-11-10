@@ -36,3 +36,5 @@ npm-debug.log*
 *.pem
 
 .logs
+
+.check-unaligned-region

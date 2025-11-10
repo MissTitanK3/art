@@ -6,12 +6,12 @@ import { ToolsLoader } from "@workspace/ui/components/client/Loader";
 const CountySelectDataLayer = dynamic(
   () =>
     import("@/components/dataLayer/profile/CountySelectDataLayer").then(
-      (m) => m.CountySelectDataLayer
+      (m) => m.CountySelectDataLayer,
     ),
   {
     ssr: false,
     loading: () => <ToolsLoader label="map" />,
-  }
+  },
 );
 
 export default function ProfileMapPage() {

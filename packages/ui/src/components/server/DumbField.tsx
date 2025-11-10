@@ -1,8 +1,21 @@
 // DumbField.tsx
-import { Info } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../tooltip.tsx";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../tooltip.tsx";
 
-export function DumbField({ label, value, tooltip }: { label: string; value: string; tooltip?: string }) {
+export function DumbField({
+  label,
+  value,
+  tooltip,
+}: {
+  label: string;
+  value: string;
+  tooltip?: string;
+}) {
   return (
     <div className="space-y-1">
       <div className="text-sm text-muted-foreground flex items-center gap-1">

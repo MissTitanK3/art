@@ -8,19 +8,19 @@ export function normaliseCaseId(caseId: string): string {
 
 export function buildCaseIdPrefix(
   zone: string = DEFAULT_CASE_ZONE,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): string {
   return `${normaliseCaseId(zone)}-${now.getFullYear()}`;
 }
 
 export function nextCaseId(
   prefix: string,
-  existingIds: Iterable<string>
+  existingIds: Iterable<string>,
 ): string {
   const normalisedPrefix = normaliseCaseId(prefix);
   const regex = new RegExp(
     `^${normalisedPrefix}-([0-9]{${SEQUENCE_LENGTH}})$`,
-    "i"
+    "i",
   );
 
   let maxSequence = 0;
@@ -44,14 +44,14 @@ export function nextCaseId(
 export function generateNextCaseId(
   zone: string,
   existingIds: Iterable<string>,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): string {
   const prefix = buildCaseIdPrefix(zone, now);
   return nextCaseId(prefix, existingIds);
 }
 
 export function collectCaseIds(
-  records: Iterable<{ caseId?: string | null }>
+  records: Iterable<{ caseId?: string | null }>,
 ): string[] {
   const seen = new Map<string, string>();
   for (const record of records) {
@@ -67,7 +67,7 @@ export function collectCaseIds(
 
 export function isCaseIdDuplicate(
   caseId: string,
-  existingIds: Iterable<string>
+  existingIds: Iterable<string>,
 ): boolean {
   const target = normaliseCaseId(caseId);
   for (const id of existingIds) {

@@ -2,9 +2,20 @@ import * as React from "react";
 
 import { cn } from "@workspace/ui/lib/utils";
 import { Label } from "@workspace/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 
-export type BugStatus = "open" | "triage" | "in_progress" | "resolved" | "closed";
+export type BugStatus =
+  | "open"
+  | "triage"
+  | "in_progress"
+  | "resolved"
+  | "closed";
 export type BugPriority = "low" | "medium" | "high" | "critical" | null;
 export type BugArea =
   | "general"
@@ -33,7 +44,13 @@ type StatusProps = BaseProps & {
   label?: React.ReactNode;
 };
 
-export function BugStatusSelect({ value, onChange, className, triggerClassName, label = "Status" }: StatusProps) {
+export function BugStatusSelect({
+  value,
+  onChange,
+  className,
+  triggerClassName,
+  label = "Status",
+}: StatusProps) {
   return (
     <div className={cn("grid gap-2", className)}>
       <Label>{label}</Label>
@@ -60,14 +77,23 @@ type PriorityProps = BaseProps & {
   includeNone?: boolean;
 };
 
-export function BugPrioritySelect({ value, onChange, className, triggerClassName, label = "Priority", includeNone = true }: PriorityProps) {
+export function BugPrioritySelect({
+  value,
+  onChange,
+  className,
+  triggerClassName,
+  label = "Priority",
+  includeNone = true,
+}: PriorityProps) {
   const computedValue = value ?? (includeNone ? "none" : "");
   return (
     <div className={cn("grid gap-2", className)}>
       <Label>{label}</Label>
       <Select
         value={computedValue as string}
-        onValueChange={(v) => onChange(v === "none" ? null : (v as Exclude<BugPriority, null>))}
+        onValueChange={(v) =>
+          onChange(v === "none" ? null : (v as Exclude<BugPriority, null>))
+        }
       >
         <SelectTrigger className={cn("w-60", triggerClassName)}>
           <SelectValue placeholder={includeNone ? "None" : undefined} />
@@ -90,12 +116,23 @@ type StatusFilterProps = BaseProps & {
   label?: React.ReactNode;
 };
 
-export function BugStatusFilterSelect({ value, onChange, className, triggerClassName, label = "Status" }: StatusFilterProps) {
+export function BugStatusFilterSelect({
+  value,
+  onChange,
+  className,
+  triggerClassName,
+  label = "Status",
+}: StatusFilterProps) {
   const computedValue = value ?? "all";
   return (
     <div className={cn("min-w-48", className)}>
       <Label className="sr-only">{label}</Label>
-      <Select value={computedValue} onValueChange={(v) => onChange(v === "all" ? undefined : (v as BugStatus))}>
+      <Select
+        value={computedValue}
+        onValueChange={(v) =>
+          onChange(v === "all" ? undefined : (v as BugStatus))
+        }
+      >
         <SelectTrigger className={cn("w-48", triggerClassName)}>
           <SelectValue placeholder={label} />
         </SelectTrigger>
@@ -120,12 +157,25 @@ type AreaSelectProps = BaseProps & {
   srOnlyLabel?: boolean;
 };
 
-export function BugAreaSelect({ value, onChange, className, triggerClassName, label = "Area", includeAll = true, srOnlyLabel = true }: AreaSelectProps) {
+export function BugAreaSelect({
+  value,
+  onChange,
+  className,
+  triggerClassName,
+  label = "Area",
+  includeAll = true,
+  srOnlyLabel = true,
+}: AreaSelectProps) {
   const computedValue = value ?? (includeAll ? "all" : "");
   return (
     <div className={cn("min-w-48", className)}>
       <Label className={srOnlyLabel ? "sr-only" : undefined}>{label}</Label>
-      <Select value={computedValue as string} onValueChange={(v) => onChange(v === "all" ? undefined : (v as BugArea))}>
+      <Select
+        value={computedValue as string}
+        onValueChange={(v) =>
+          onChange(v === "all" ? undefined : (v as BugArea))
+        }
+      >
         <SelectTrigger className={cn("w-48", triggerClassName)}>
           <SelectValue placeholder={label} />
         </SelectTrigger>

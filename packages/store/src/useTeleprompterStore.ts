@@ -1,6 +1,6 @@
-import { persist } from 'zustand/middleware';
-import { createStore, type StateCreator, type StoreApi } from 'zustand/vanilla';
-import { useStore } from 'zustand';
+import { persist } from "zustand/middleware";
+import { createStore, type StateCreator, type StoreApi } from "zustand/vanilla";
+import { useStore } from "zustand";
 
 // A lightweight, app-agnostic store for the Teleprompter UI preferences and content.
 // Note: keeps types generic (string/number) to avoid coupling with app unions.
@@ -61,22 +61,22 @@ export interface CreateTeleprompterStoreOptions {
   initial?: Partial<
     Pick<
       TeleprompterStoreState,
-      | 'scriptId'
-      | 'text'
-      | 'speed'
-      | 'defaultSpeed'
-      | 'fontSize'
-      | 'lineHeight'
-      | 'fontFace'
-      | 'preset'
-      | 'mirrorH'
-      | 'mirrorV'
-      | 'customTextColor'
-      | 'customBgColor'
-      | 'customHighlightColor'
-      | 'overlayColor'
-      | 'overlayOpacity'
-      | 'cacheEnabled'
+      | "scriptId"
+      | "text"
+      | "speed"
+      | "defaultSpeed"
+      | "fontSize"
+      | "lineHeight"
+      | "fontFace"
+      | "preset"
+      | "mirrorH"
+      | "mirrorV"
+      | "customTextColor"
+      | "customBgColor"
+      | "customHighlightColor"
+      | "overlayColor"
+      | "overlayOpacity"
+      | "cacheEnabled"
     >
   >;
   persist?: boolean;
@@ -85,59 +85,61 @@ export interface CreateTeleprompterStoreOptions {
 
 const DEFAULTS: Omit<
   TeleprompterStoreState,
-  | 'setScriptId'
-  | 'setText'
-  | 'setSpeed'
-  | 'setDefaultSpeed'
-  | 'setFontSize'
-  | 'setLineHeight'
-  | 'setFontFace'
-  | 'setPreset'
-  | 'setMirrorH'
-  | 'setMirrorV'
-  | 'setCustomTextColor'
-  | 'setCustomBgColor'
-  | 'setCustomHighlightColor'
-  | 'setOverlayColor'
-  | 'setOverlayOpacity'
-  | 'setCacheEnabled'
-  | 'bumpRev'
+  | "setScriptId"
+  | "setText"
+  | "setSpeed"
+  | "setDefaultSpeed"
+  | "setFontSize"
+  | "setLineHeight"
+  | "setFontFace"
+  | "setPreset"
+  | "setMirrorH"
+  | "setMirrorV"
+  | "setCustomTextColor"
+  | "setCustomBgColor"
+  | "setCustomHighlightColor"
+  | "setOverlayColor"
+  | "setOverlayOpacity"
+  | "setCacheEnabled"
+  | "bumpRev"
 > = {
   scriptId: null,
-  text: '',
+  text: "",
   speed: 1,
   defaultSpeed: 1,
-  fontSize: 'text-xl',
-  lineHeight: 'leading-8',
-  fontFace: 'sans',
-  preset: 'briefing',
+  fontSize: "text-xl",
+  lineHeight: "leading-8",
+  fontFace: "sans",
+  preset: "briefing",
   mirrorH: false,
   mirrorV: false,
-  customTextColor: '#e5e7eb',
-  customBgColor: '#0b0f18',
-  customHighlightColor: '#22d3ee',
-  overlayColor: '#000000',
+  customTextColor: "#e5e7eb",
+  customBgColor: "#0b0f18",
+  customHighlightColor: "#22d3ee",
+  overlayColor: "#000000",
   overlayOpacity: 0,
   cacheEnabled: true,
   rev: 0,
 };
 
 const createTeleprompterInitializer =
-  (initial: Partial<TeleprompterStoreState>): StateCreator<TeleprompterStoreState> =>
+  (
+    initial: Partial<TeleprompterStoreState>,
+  ): StateCreator<TeleprompterStoreState> =>
   (set, get) => {
     // Legacy hydration from old localStorage keys (browser only)
     let legacy: Partial<TeleprompterStoreState> = {};
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
-        const raw = window.localStorage.getItem('teleprompter:last');
+        const raw = window.localStorage.getItem("teleprompter:last");
         if (raw) {
           const { text, fontSize, lineHeight, preset } = JSON.parse(raw);
-          if (typeof text === 'string') legacy.text = text;
-          if (typeof fontSize === 'string') legacy.fontSize = fontSize;
-          if (typeof lineHeight === 'string') legacy.lineHeight = lineHeight;
-          if (typeof preset === 'string') legacy.preset = preset;
+          if (typeof text === "string") legacy.text = text;
+          if (typeof fontSize === "string") legacy.fontSize = fontSize;
+          if (typeof lineHeight === "string") legacy.lineHeight = lineHeight;
+          if (typeof preset === "string") legacy.preset = preset;
         }
-        const dsRaw = window.localStorage.getItem('teleprompter:defaultSpeed');
+        const dsRaw = window.localStorage.getItem("teleprompter:defaultSpeed");
         const ds = dsRaw ? Number(dsRaw) : NaN;
         if (!Number.isNaN(ds) && ds >= 0.25 && ds <= 2) {
           legacy.defaultSpeed = ds;
@@ -146,14 +148,25 @@ const createTeleprompterInitializer =
       } catch {}
     }
 
-    const base = { ...DEFAULTS, ...legacy, ...initial } as TeleprompterStoreState;
+    const base = {
+      ...DEFAULTS,
+      ...legacy,
+      ...initial,
+    } as TeleprompterStoreState;
 
     return {
       ...base,
       setScriptId: (id) => set({ scriptId: id }),
       setText: (t) => set({ text: t }),
-      setSpeed: (v) => set({ speed: Math.max(0.25, Math.min(2, Number(v.toFixed ? Number(v.toFixed(2)) : v))) }),
-      setDefaultSpeed: (v) => set({ defaultSpeed: Math.max(0.25, Math.min(2, v)) }),
+      setSpeed: (v) =>
+        set({
+          speed: Math.max(
+            0.25,
+            Math.min(2, Number(v.toFixed ? Number(v.toFixed(2)) : v)),
+          ),
+        }),
+      setDefaultSpeed: (v) =>
+        set({ defaultSpeed: Math.max(0.25, Math.min(2, v)) }),
       setFontSize: (v) => set({ fontSize: v }),
       setLineHeight: (v) => set({ lineHeight: v }),
       setFontFace: (v) => set({ fontFace: v }),
@@ -164,13 +177,17 @@ const createTeleprompterInitializer =
       setCustomBgColor: (v) => set({ customBgColor: v }),
       setCustomHighlightColor: (v) => set({ customHighlightColor: v }),
       setOverlayColor: (v) => set({ overlayColor: v }),
-      setOverlayOpacity: (v) => set({ overlayOpacity: Math.max(0, Math.min(0.95, v)) }),
+      setOverlayOpacity: (v) =>
+        set({ overlayOpacity: Math.max(0, Math.min(0.95, v)) }),
       setCacheEnabled: (v) => set({ cacheEnabled: v }),
       bumpRev: () => set((s) => ({ rev: s.rev + 1 })),
     };
   };
 
-function withPersistence(initializer: StateCreator<TeleprompterStoreState>, storageKey: string) {
+function withPersistence(
+  initializer: StateCreator<TeleprompterStoreState>,
+  storageKey: string,
+) {
   return persist(initializer, {
     name: storageKey,
     version: 1,
@@ -193,7 +210,7 @@ function withPersistence(initializer: StateCreator<TeleprompterStoreState>, stor
       cacheEnabled: state.cacheEnabled,
       scriptId: state.scriptId,
       // Only persist full text if caching is enabled
-      text: state.cacheEnabled ? state.text : '',
+      text: state.cacheEnabled ? state.text : "",
       // Include rev to allow manual bump/save triggers
       rev: state.rev,
     }),
@@ -202,10 +219,20 @@ function withPersistence(initializer: StateCreator<TeleprompterStoreState>, stor
 
 export type TeleprompterStore = StoreApi<TeleprompterStoreState>;
 
-export function createTeleprompterStore(opts: CreateTeleprompterStoreOptions = {}): TeleprompterStore {
-  const { initial = {}, persist: enablePersist = true, storageKey = 'teleprompter-store' } = opts;
-  const initializer = createTeleprompterInitializer(initial as TeleprompterStoreState);
-  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+export function createTeleprompterStore(
+  opts: CreateTeleprompterStoreOptions = {},
+): TeleprompterStore {
+  const {
+    initial = {},
+    persist: enablePersist = true,
+    storageKey = "teleprompter-store",
+  } = opts;
+  const initializer = createTeleprompterInitializer(
+    initial as TeleprompterStoreState,
+  );
+  const creator = enablePersist
+    ? withPersistence(initializer, storageKey)
+    : initializer;
   return createStore<TeleprompterStoreState>(creator as any);
 }
 

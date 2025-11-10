@@ -1,25 +1,26 @@
-'use client'
+"use client";
 
-import { Button } from "@workspace/ui/components/button"
-import { Download } from "lucide-react"
+import { Button } from "@workspace/ui/components/button";
+import { Download } from "lucide-react";
 
 export function DownloadFile({
   file,
   label,
 }: {
-  file: string
-  label?: string
+  file: string;
+  label?: string;
 }) {
   const handleDownload = () => {
-    const link = document.createElement("a")
-    link.href = file
-    link.download = file.split("/").pop() ?? "download"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = file;
+    link.download = file.split("/").pop() ?? "download";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  const inferredLabel = label ?? `Download ${file.toUpperCase().includes(".ZIP") ? "ZIP" : "File"}`
+  const inferredLabel =
+    label ?? `Download ${file.toUpperCase().includes(".ZIP") ? "ZIP" : "File"}`;
 
   return (
     <Button
@@ -29,5 +30,5 @@ export function DownloadFile({
       <Download className="h-4 w-4" />
       {inferredLabel}
     </Button>
-  )
+  );
 }

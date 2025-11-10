@@ -1,30 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin as supabase } from "@/lib/supabaseAdmin";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
-type Strategy = 'balanced' | 'max-repair' | 'max-signal' | 'max-morale';
+type Strategy = "balanced" | "max-repair" | "max-signal" | "max-morale";
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   const { id: shipId } = await context.params;
-  const body = (await req.json().catch(() => ({}))) as { profile_id?: string; strategy?: Strategy };
+  const body = (await req.json().catch(() => ({}))) as {
+    profile_id?: string;
+    strategy?: Strategy;
+  };
   const profileId = body.profile_id;
-  const strategy: Strategy = body.strategy || 'balanced';
-  if (!profileId) return NextResponse.json({ error: 'profile_id required' }, { status: 400 });
+  const strategy: Strategy = body.strategy || "balanced";
+  if (!profileId)
+    return NextResponse.json({ error: "profile_id required" }, { status: 400 });
 
   // Load template
   const { data: template, error: e1 } = await supabase
-    .from('ship_position_templates')
-    .select('position_id, slots, shifts')
-    .eq('ship_id', shipId);
+    .from("ship_position_templates")
+    .select("position_id, slots, shifts")
+    .eq("ship_id", shipId);
   if (e1) return NextResponse.json({ error: e1.message }, { status: 500 });
 
   // Load hired crew
   const { data: hired, error: e2 } = await supabase
-    .from('profile_crew')
-    .select('crew_id, crew:crew_catalog(*)')
-    .eq('profile_id', profileId)
-    .eq('status', 'active');
+    .from("profile_crew")
+    .select("crew_id, crew:crew_catalog(*)")
+    .eq("profile_id", profileId)
+    .eq("status", "active");
   if (e2) return NextResponse.json({ error: e2.message }, { status: 500 });
 
   const pool = (hired || []).map((h) => h.crew).filter(Boolean) as any[];
@@ -32,21 +39,29 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   // Simple scoring by strategy and allowed_positions match
   const scoreCrew = (positionId: string, crew: any) => {
     let score = 0;
-    if (Array.isArray(crew.allowed_positions) && crew.allowed_positions.includes(positionId)) score += 3;
+    if (
+      Array.isArray(crew.allowed_positions) &&
+      crew.allowed_positions.includes(positionId)
+    )
+      score += 3;
     const b = crew.bonuses || {};
     switch (strategy) {
-      case 'max-repair':
+      case "max-repair":
         score += (b.repair_bonus || 0) * 100;
         break;
-      case 'max-signal':
+      case "max-signal":
         score += ((b.signal_yield || 0) + (b.signal_clarity || 0)) * 100;
         break;
-      case 'max-morale':
+      case "max-morale":
         score += (b.morale_recovery || 0) * 100;
         break;
       default:
         score +=
-          ((b.repair_bonus || 0) + (b.route_efficiency || 0) + (b.signal_yield || 0) + (b.morale_recovery || 0)) * 50;
+          ((b.repair_bonus || 0) +
+            (b.route_efficiency || 0) +
+            (b.signal_yield || 0) +
+            (b.morale_recovery || 0)) *
+          50;
     }
     // prefer higher tier
     score += (crew.tier || 1) * 0.5;
@@ -84,9 +99,12 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   if (upserts.length === 0) return NextResponse.json({ ok: true, assigned: 0 });
 
   const { error } = await supabase
-    .from('profile_ship_positions')
-    .upsert(upserts, { onConflict: 'profile_id,ship_id,position_id,slot_index,shift' });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    .from("profile_ship_positions")
+    .upsert(upserts, {
+      onConflict: "profile_id,ship_id,position_id,slot_index,shift",
+    });
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, assigned: upserts.length });
 }

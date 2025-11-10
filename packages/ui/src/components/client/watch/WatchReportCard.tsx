@@ -40,7 +40,9 @@ export default function WatchReportCard({
   return (
     <div className="rounded-2xl border p-4 space-y-2">
       <div className="font-semibold">
-        {report.agency_type?.join(", ") || report.agency_other || "Unknown presence"}
+        {report.agency_type?.join(", ") ||
+          report.agency_other ||
+          "Unknown presence"}
       </div>
 
       <div className="text-sm text-muted-foreground">
@@ -77,7 +79,11 @@ export default function WatchReportCard({
           )}
 
           {onCreateDispatch && (
-            <Button size="sm" className="w-full" onClick={() => onCreateDispatch(report)}>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => onCreateDispatch(report)}
+            >
               Create Dispatch
             </Button>
           )}

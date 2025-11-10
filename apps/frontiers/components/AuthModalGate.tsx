@@ -1,34 +1,46 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useAuth } from "@/hooks/useAuth"
-import { usePathname, useRouter } from "next/navigation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
-import { Button } from "@workspace/ui/components/button"
-import { SignInForm } from "@/components/auth/SignInForm"
-import { SignUpForm } from "@/components/auth/SignUpForm"
-import { ResetPasswordRequestForm } from "@/components/auth/ResetPasswordRequestForm"
+import * as React from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog";
+import { Button } from "@workspace/ui/components/button";
+import { SignInForm } from "@/components/auth/SignInForm";
+import { SignUpForm } from "@/components/auth/SignUpForm";
+import { ResetPasswordRequestForm } from "@/components/auth/ResetPasswordRequestForm";
 
 export function AuthModalGate() {
-  const { status } = useAuth()
-  const pathname = usePathname()
-  const router = useRouter()
-  const [mode, setMode] = React.useState<"signin" | "signup" | "forgot">("signin")
+  const { status } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [mode, setMode] = React.useState<"signin" | "signup" | "forgot">(
+    "signin",
+  );
 
   // Only show once auth status is known and user is unauthenticated
-  const onAuthRoute = pathname?.startsWith("/auth")
-  const open = status === "unauthenticated" && !onAuthRoute
+  const onAuthRoute = pathname?.startsWith("/auth");
+  const open = status === "unauthenticated" && !onAuthRoute;
 
   // Redirect to home when authenticated
   React.useEffect(() => {
     if (status === "authenticated") {
-      if (pathname !== "/") router.push("/")
+      if (pathname !== "/") router.push("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  }, [status]);
 
   return (
-    <Dialog open={open} onOpenChange={() => { /* locked until authenticated */ }}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        /* locked until authenticated */
+      }}
+    >
       <DialogContent
         className="sm:max-w-md bg-card text-card-foreground p-6 rounded-lg shadow-lg"
         onInteractOutside={(e) => e.preventDefault()}
@@ -58,17 +70,33 @@ export function AuthModalGate() {
           </Button>
           <div className="ml-auto">
             {mode !== "forgot" && (
-              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setMode("forgot")}>Forgot?</Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => setMode("forgot")}
+              >
+                Forgot?
+              </Button>
             )}
             {mode === "forgot" && (
-              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setMode("signin")}>Back</Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => setMode("signin")}
+              >
+                Back
+              </Button>
             )}
           </div>
         </div>
-        {mode === "signin" && <SignInForm embedded onForgot={() => setMode("forgot")} />}
+        {mode === "signin" && (
+          <SignInForm embedded onForgot={() => setMode("forgot")} />
+        )}
         {mode === "signup" && <SignUpForm embedded />}
         {mode === "forgot" && <ResetPasswordRequestForm />}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

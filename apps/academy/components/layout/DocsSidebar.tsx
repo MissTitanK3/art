@@ -1,4 +1,4 @@
-import DocsSidebarServer from './DocsSidebarServer';
+import DocsSidebarServer from "./DocsSidebarServer";
 
 export async function DocsSidebar() {
   return (

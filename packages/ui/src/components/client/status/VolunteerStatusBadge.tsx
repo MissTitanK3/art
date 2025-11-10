@@ -1,7 +1,15 @@
 import { Badge } from "@workspace/ui/components/badge";
-import { DispatchPersonnelStatus, STATUS_COLOR_CLASSES, STATUS_INFO } from "@workspace/ui/lib/constants/dispatch";
+import {
+  DispatchPersonnelStatus,
+  STATUS_COLOR_CLASSES,
+  STATUS_INFO,
+} from "@workspace/ui/lib/constants/dispatch";
 
-export default function VolunteerStatusBadge({ status }: { status: DispatchPersonnelStatus }) {
+export default function VolunteerStatusBadge({
+  status,
+}: {
+  status: DispatchPersonnelStatus;
+}) {
   const info = STATUS_INFO[status];
   const classes = STATUS_COLOR_CLASSES[status];
 
@@ -11,4 +19,3 @@ export default function VolunteerStatusBadge({ status }: { status: DispatchPerso
 
   return <Badge className={classes}>{info.label}</Badge>;
 }
-

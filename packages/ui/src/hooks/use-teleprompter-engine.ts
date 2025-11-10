@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 export type ComputeLineMs = (line: string, speed: number) => number;
 
@@ -18,13 +18,18 @@ export type TeleprompterEngine = {
   lineStartedAt: number | null;
 };
 
-export function useTeleprompterEngine(text: string, speed: number, computeLineMs: ComputeLineMs): TeleprompterEngine {
-  const lines = React.useMemo(() => (text ?? '').split(/\r?\n/), [text]);
+export function useTeleprompterEngine(
+  text: string,
+  speed: number,
+  computeLineMs: ComputeLineMs,
+): TeleprompterEngine {
+  const lines = React.useMemo(() => (text ?? "").split(/\r?\n/), [text]);
   const [index, setIndex] = React.useState(0);
   const [playing, setPlaying] = React.useState(false);
   const [elapsedMs, setElapsedMs] = React.useState(0);
   const [startedAt, setStartedAt] = React.useState<number | null>(null);
-  const [plannedMsForCurrentLine, setPlannedMsForCurrentLine] = React.useState(0);
+  const [plannedMsForCurrentLine, setPlannedMsForCurrentLine] =
+    React.useState(0);
   const [lineStartedAt, setLineStartedAt] = React.useState<number | null>(null);
 
   const playTimer = React.useRef<number | null>(null);
@@ -48,7 +53,7 @@ export function useTeleprompterEngine(text: string, speed: number, computeLineMs
         window.clearTimeout(playTimer.current);
         playTimer.current = null;
       }
-      const line = lines[fromIdx] ?? '';
+      const line = lines[fromIdx] ?? "";
       if (fromIdx >= lines.length - 1) {
         setPlaying(false);
         setLineStartedAt(null);
@@ -66,7 +71,7 @@ export function useTeleprompterEngine(text: string, speed: number, computeLineMs
 
   // keep planned time up-to-date when index/speed change
   React.useEffect(() => {
-    const ln = lines[index] ?? '';
+    const ln = lines[index] ?? "";
     const ms = computeLineMs(ln, speed);
     setPlannedMsForCurrentLine(ms);
     if (!playing) setLineStartedAt(null);
@@ -86,7 +91,10 @@ export function useTeleprompterEngine(text: string, speed: number, computeLineMs
     if (playing) {
       const start = startedAt ?? Date.now();
       if (!startedAt) setStartedAt(start);
-      timeTicker.current = window.setInterval(() => setElapsedMs(Date.now() - start), 250);
+      timeTicker.current = window.setInterval(
+        () => setElapsedMs(Date.now() - start),
+        250,
+      );
     }
     return () => {
       if (timeTicker.current) window.clearInterval(timeTicker.current);

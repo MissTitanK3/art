@@ -20,7 +20,10 @@ type DispatchSignalLinkUpdaterProps = {
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchSignalLinkUpdater({ submission, onUpdate }: DispatchSignalLinkUpdaterProps) {
+export default function DispatchSignalLinkUpdater({
+  submission,
+  onUpdate,
+}: DispatchSignalLinkUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(submission?.signal_link ?? "");
 
@@ -72,15 +75,17 @@ export default function DispatchSignalLinkUpdater({ submission, onUpdate }: Disp
         </Button>
       </div>
 
-
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
           <DrawerHeader>
             <DrawerTitle>
-              {submission.signal_link ? "Edit Private Dispatch Link" : "Add Private Dispatch Link"}
+              {submission.signal_link
+                ? "Edit Private Dispatch Link"
+                : "Add Private Dispatch Link"}
             </DrawerTitle>
             <DrawerDescription>
-              Provide the private Signal group link for coordinators/assigned volunteers.
+              Provide the private Signal group link for coordinators/assigned
+              volunteers.
             </DrawerDescription>
           </DrawerHeader>
 

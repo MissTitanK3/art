@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import DonutChart from "@workspace/ui/components/charts/DonutChart";
 import StatCard from "@workspace/ui/components/stat-card";
@@ -10,7 +16,18 @@ import NavTile from "@workspace/ui/components/nav-tile";
 import KeyValueItem from "@workspace/ui/components/key-value-item";
 import { percent } from "@workspace/ui/lib/utils";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
-import { FileChartLine, MapPin, Settings, ShieldCheck, Users2, Users, Package, GraduationCap, Handshake, Database } from "lucide-react";
+import {
+  FileChartLine,
+  MapPin,
+  Settings,
+  ShieldCheck,
+  Users2,
+  Users,
+  Package,
+  GraduationCap,
+  Handshake,
+  Database,
+} from "lucide-react";
 
 import { TraingingSessionsDemoData } from "@/data/demoAcademy";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
@@ -22,7 +39,10 @@ import { toast } from "sonner";
 import { useMemo } from "react";
 
 // Map component (client-only)
-const WatchMap = dynamic(() => import("@workspace/ui/components/client/watch/WatchMap"), { ssr: false });
+const WatchMap = dynamic(
+  () => import("@workspace/ui/components/client/watch/WatchMap"),
+  { ssr: false },
+);
 
 export default function AdminPage() {
   const router = useRouter();
@@ -39,13 +59,20 @@ export default function AdminPage() {
 
   const activeDispatches = React.useMemo(() => {
     const list = submissions ?? [];
-    return list.filter((d) => !["archived", "completed", "cancelled", "expired"].includes(d.status as string)).length;
+    return list.filter(
+      (d) =>
+        !["archived", "completed", "cancelled", "expired"].includes(
+          d.status as string,
+        ),
+    ).length;
   }, [submissions]);
 
   const podsCount = pods?.length ?? 0;
 
   const trainingCounts = React.useMemo(() => {
-    const all = TraingingSessionsDemoData.filter((s) => s.status !== "archived");
+    const all = TraingingSessionsDemoData.filter(
+      (s) => s.status !== "archived",
+    );
     const completed = all.filter((s) => s.status === "completed").length;
     const scheduled = all.filter((s) => s.status === "scheduled").length;
     const inProgress = all.filter((s) => s.status === "in_progress").length;
@@ -55,7 +82,10 @@ export default function AdminPage() {
   const trainingPct = percent(trainingCounts.completed, trainingCounts.all);
 
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
-  const { reports, idMap } = React.useMemo(() => toWatchReports(submissions ?? []), [submissions]);
+  const { reports, idMap } = React.useMemo(
+    () => toWatchReports(submissions ?? []),
+    [submissions],
+  );
 
   const handleView = (r: WizardReport) => {
     const id = idMap[r.id];
@@ -101,7 +131,10 @@ export default function AdminPage() {
     const res = await fetch(`/api/admin/pods/${firstPod.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ area: firstPod.area || "Unassigned", name: firstPod.name + " •" }),
+      body: JSON.stringify({
+        area: firstPod.area || "Unassigned",
+        name: firstPod.name + " •",
+      }),
     });
     if (!res.ok) {
       toast.error("Failed to update pod");
@@ -116,24 +149,34 @@ export default function AdminPage() {
     const res = await fetch(`/api/admin/trust`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subjectId: trustPair.subjectId, signerId: trustPair.signerId, status: "active" }),
+      body: JSON.stringify({
+        subjectId: trustPair.subjectId,
+        signerId: trustPair.signerId,
+        status: "active",
+      }),
     });
     if (!res.ok) return toast.error("Failed to add trust signature");
     toast.success("Trust signature added");
   };
   const deactivateTrust = async () => {
     if (!trustPair) return;
-    const res = await fetch(`/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "inactive" }),
-    });
+    const res = await fetch(
+      `/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "inactive" }),
+      },
+    );
     if (!res.ok) return toast.error("Failed to update trust signature");
     toast.success("Trust signature set inactive");
   };
   const deleteTrust = async () => {
     if (!trustPair) return;
-    const res = await fetch(`/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`, { method: "DELETE" });
+    const res = await fetch(
+      `/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`,
+      { method: "DELETE" },
+    );
     if (!res.ok) return toast.error("Failed to delete trust signature");
     toast.success("Trust signature deleted");
   };
@@ -144,7 +187,10 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold">Regional Admin</h1>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm">
-            <a href="/admin/settings" className="inline-flex items-center gap-2">
+            <a
+              href="/admin/settings"
+              className="inline-flex items-center gap-2"
+            >
               <Settings className="h-4 w-4" /> Settings
             </a>
           </Button>
@@ -153,29 +199,68 @@ export default function AdminPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total Profiles" value={uniqueProfiles} icon={<Users2 className="h-4 w-4 text-muted-foreground" />} />
+        <StatCard
+          label="Total Profiles"
+          value={uniqueProfiles}
+          icon={<Users2 className="h-4 w-4 text-muted-foreground" />}
+        />
         <StatCard
           label="Active Dispatches"
           value={activeDispatches}
           icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
         />
-        <StatCard label="Pods" value={podsCount} icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />} />
-        <StatCard label="Training Completed" value={`${trainingPct}%`} icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />} />
+        <StatCard
+          label="Pods"
+          value={podsCount}
+          icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          label="Training Completed"
+          value={`${trainingPct}%`}
+          icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />}
+        />
       </div>
 
       {/* Quick navigation */}
       <Card>
         <CardHeader>
           <CardTitle>Admin Sections</CardTitle>
-          <CardDescription>Jump into a specific management area</CardDescription>
+          <CardDescription>
+            Jump into a specific management area
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            <NavTile href="/admin/profiles" icon={<Users className="h-5 w-5" />} label="Profiles" description="Manage users, roles, verification" />
-            <NavTile href="/admin/pods" icon={<Package className="h-5 w-5" />} label="Pods" description="Organize pods and rosters" />
-            <NavTile href="/admin/dispatch" icon={<MapPin className="h-5 w-5" />} label="Dispatch" description="Review and audit dispatches" />
-            <NavTile href="/admin/training" icon={<GraduationCap className="h-5 w-5" />} label="Training" description="Classes, sessions, participants" />
-            <NavTile href="/admin/trust" icon={<Handshake className="h-5 w-5" />} label="Trust" description="Manage trust signatures" />
+            <NavTile
+              href="/admin/profiles"
+              icon={<Users className="h-5 w-5" />}
+              label="Profiles"
+              description="Manage users, roles, verification"
+            />
+            <NavTile
+              href="/admin/pods"
+              icon={<Package className="h-5 w-5" />}
+              label="Pods"
+              description="Organize pods and rosters"
+            />
+            <NavTile
+              href="/admin/dispatch"
+              icon={<MapPin className="h-5 w-5" />}
+              label="Dispatch"
+              description="Review and audit dispatches"
+            />
+            <NavTile
+              href="/admin/training"
+              icon={<GraduationCap className="h-5 w-5" />}
+              label="Training"
+              description="Classes, sessions, participants"
+            />
+            <NavTile
+              href="/admin/trust"
+              icon={<Handshake className="h-5 w-5" />}
+              label="Trust"
+              description="Manage trust signatures"
+            />
           </div>
         </CardContent>
       </Card>
@@ -186,7 +271,9 @@ export default function AdminPage() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Active Dispatches (Map)</CardTitle>
-            <CardDescription>Spatial view of recent dispatch activity</CardDescription>
+            <CardDescription>
+              Spatial view of recent dispatch activity
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[420px] overflow-hidden">
@@ -205,7 +292,8 @@ export default function AdminPage() {
           <CardHeader>
             <CardTitle>Training Progress</CardTitle>
             <CardDescription>
-              {trainingCounts.completed} completed of {trainingCounts.all} active sessions
+              {trainingCounts.completed} completed of {trainingCounts.all}{" "}
+              active sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -226,45 +314,79 @@ export default function AdminPage() {
               showLegend
             />
 
-            <div className="mt-4 text-sm text-muted-foreground">Percentage completed is across non-archived sessions.</div>
+            <div className="mt-4 text-sm text-muted-foreground">
+              Percentage completed is across non-archived sessions.
+            </div>
           </CardContent>
         </Card>
       </div>
-
 
       {/* Admin Actions (demo UI) */}
       {canMutate && (
         <Card>
           <CardHeader>
             <CardTitle>Admin Actions</CardTitle>
-            <CardDescription>Minimal end-to-end checks for Supabase routes</CardDescription>
+            <CardDescription>
+              Minimal end-to-end checks for Supabase routes
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={toggleFlagged} disabled={!firstSubmission} variant="outline" size="sm">
+              <Button
+                onClick={toggleFlagged}
+                disabled={!firstSubmission}
+                variant="outline"
+                size="sm"
+              >
                 Toggle flagged on most recent submission
               </Button>
-              <Button onClick={renameFirstPod} disabled={!firstPod} variant="outline" size="sm">
+              <Button
+                onClick={renameFirstPod}
+                disabled={!firstPod}
+                variant="outline"
+                size="sm"
+              >
                 Update first pod name/area
               </Button>
-              <Button onClick={addTrust} disabled={!trustPair} variant="outline" size="sm">
+              <Button
+                onClick={addTrust}
+                disabled={!trustPair}
+                variant="outline"
+                size="sm"
+              >
                 Add trust (first 2 roster profiles)
               </Button>
-              <Button onClick={deactivateTrust} disabled={!trustPair} variant="outline" size="sm">
+              <Button
+                onClick={deactivateTrust}
+                disabled={!trustPair}
+                variant="outline"
+                size="sm"
+              >
                 Set trust inactive
               </Button>
-              <Button onClick={deleteTrust} disabled={!trustPair} variant="destructive" size="sm">
+              <Button
+                onClick={deleteTrust}
+                disabled={!trustPair}
+                variant="destructive"
+                size="sm"
+              >
                 Delete trust
               </Button>
             </div>
             {!firstSubmission && (
-              <p className="mt-2 text-sm text-muted-foreground">No submissions found to toggle flagged.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                No submissions found to toggle flagged.
+              </p>
             )}
             {!firstPod && (
-              <p className="text-sm text-muted-foreground">No pods found to update.</p>
+              <p className="text-sm text-muted-foreground">
+                No pods found to update.
+              </p>
             )}
             {!trustPair && (
-              <p className="text-sm text-muted-foreground">Need at least 2 roster profiles to demo trust actions.</p>
+              <p className="text-sm text-muted-foreground">
+                Need at least 2 roster profiles to demo trust actions.
+              </p>
             )}
           </CardContent>
         </Card>

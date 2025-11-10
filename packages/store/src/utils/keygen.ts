@@ -7,11 +7,11 @@ export async function generateRsaKeyPairPEM(modulusLength = 4096) {
       hash: "SHA-256",
     },
     true,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   );
 
   const [spki, pkcs8] = await Promise.all([
-    crypto.subtle.exportKey("spki", keyPair.publicKey),   // ArrayBuffer
+    crypto.subtle.exportKey("spki", keyPair.publicKey), // ArrayBuffer
     crypto.subtle.exportKey("pkcs8", keyPair.privateKey), // ArrayBuffer
   ]);
 
@@ -27,7 +27,7 @@ function derToPem(buf: ArrayBuffer, label: string) {
 }
 
 function arrayBufferToBase64(buf: ArrayBuffer) {
-  const bytes = new Uint8Array(buf); 
+  const bytes = new Uint8Array(buf);
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]!);

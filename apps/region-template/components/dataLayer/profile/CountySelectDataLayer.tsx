@@ -1,23 +1,28 @@
 // apps/.../CountySelectDataLayer.tsx
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { useProfileStore } from '@workspace/store/useProfileStore';
-import type { CountySelectMapProps } from '@workspace/ui/components/maps/CountySelectMap';
-import { CountyProps, SelectedCounty } from '@workspace/store/types/maps.ts';
-import { GEO_TO_FIPS } from '@workspace/store/utils/map';
-import { CountySelectLayout } from '@workspace/ui/layout/profile/CountySelectLayout';
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { useProfileStore } from "@workspace/store/useProfileStore";
+import type { CountySelectMapProps } from "@workspace/ui/components/maps/CountySelectMap";
+import { CountyProps, SelectedCounty } from "@workspace/store/types/maps.ts";
+import { GEO_TO_FIPS } from "@workspace/store/utils/map";
+import { CountySelectLayout } from "@workspace/ui/layout/profile/CountySelectLayout";
 
 const CountySelectMap = dynamic<CountySelectMapProps>(
-  () => import('@workspace/ui/components/maps/CountySelectMap'),
-  { ssr: false, loading: () => <div className="h-96 w-full" /> }
+  () => import("@workspace/ui/components/maps/CountySelectMap"),
+  { ssr: false, loading: () => <div className="h-96 w-full" /> },
 );
 
-async function fetchOperatingCountiesFromDatabase(profileId: string): Promise<string[] | null> {
-  console.log("Fetching operating counties from database for profileId:", profileId);
+async function fetchOperatingCountiesFromDatabase(
+  profileId: string,
+): Promise<string[] | null> {
+  console.log(
+    "Fetching operating counties from database for profileId:",
+    profileId,
+  );
   // TODO: replace with real database integration.
   // Example:
   // const { data } = await client.from("operating_counties").select("counties").eq("profile_id", profileId).single();
@@ -26,8 +31,16 @@ async function fetchOperatingCountiesFromDatabase(profileId: string): Promise<st
   return null;
 }
 
-async function saveOperatingCountiesToDatabase(profileId: string, fipsList: string[]): Promise<void> {
-  console.log("Saving operating counties to database for profileId:", profileId, "fipsList:", fipsList);
+async function saveOperatingCountiesToDatabase(
+  profileId: string,
+  fipsList: string[],
+): Promise<void> {
+  console.log(
+    "Saving operating counties to database for profileId:",
+    profileId,
+    "fipsList:",
+    fipsList,
+  );
   // TODO: replace with real persistence logic.
   // Example:
   // await client.from("operating_counties").upsert({ profile_id: profileId, counties: fipsList });
@@ -36,13 +49,16 @@ async function saveOperatingCountiesToDatabase(profileId: string, fipsList: stri
 
 export function CountySelectDataLayer() {
   const router = useRouter();
-  const profile = useProfileStore(s => s.profile);
-  const setOperating = useProfileStore(s => s.setOperatingCounties);
+  const profile = useProfileStore((s) => s.profile);
+  const setOperating = useProfileStore((s) => s.setOperatingCounties);
 
-  const [selectedCounties, setSelectedCounties] = React.useState<SelectedCounty[]>([]);
-  const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(null);
+  const [selectedCounties, setSelectedCounties] = React.useState<
+    SelectedCounty[]
+  >([]);
+  const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(
+    null,
+  );
   const [isSaving, setIsSaving] = React.useState(false);
-
 
   // --- NEW: protect against hydration clobbering user clicks
   const didHydrateRef = React.useRef(false);
@@ -53,21 +69,28 @@ export function CountySelectDataLayer() {
 
     (async () => {
       try {
-        const res = await fetch('/us-counties.json', { cache: 'force-cache' });
-        const data = await res.json() as {
-          type: 'FeatureCollection';
+        const res = await fetch("/us-counties.json", { cache: "force-cache" });
+        const data = (await res.json()) as {
+          type: "FeatureCollection";
           features: Array<{ properties: CountyProps }>;
         };
 
         const byFips = new Map<string, SelectedCounty>();
         for (const f of data.features) {
           const p = f.properties;
-          const fips = `${p.STATE}${p.COUNTY}`.padStart(5, '0');
-          byFips.set(fips, { GEO_ID: p.GEO_ID, NAME: p.NAME, STATE: p.STATE, ZONE: [] });
+          const fips = `${p.STATE}${p.COUNTY}`.padStart(5, "0");
+          byFips.set(fips, {
+            GEO_ID: p.GEO_ID,
+            NAME: p.NAME,
+            STATE: p.STATE,
+            ZONE: [],
+          });
         }
         if (!alive) return;
 
-        const remoteFips = profile?.id ? await fetchOperatingCountiesFromDatabase(profile.id) : null;
+        const remoteFips = profile?.id
+          ? await fetchOperatingCountiesFromDatabase(profile.id)
+          : null;
         const sourceFips = remoteFips ?? profile?.operating_counties ?? [];
 
         if (remoteFips) {
@@ -76,8 +99,8 @@ export function CountySelectDataLayer() {
 
         // Only apply once, and never overwrite if user already interacted
         if (!didHydrateRef.current) {
-          setSelectedCounties(prev => {
-            const seen = new Set(prev.map(c => c.GEO_ID));
+          setSelectedCounties((prev) => {
+            const seen = new Set(prev.map((c) => c.GEO_ID));
             const merged = [...prev];
             for (const fips of sourceFips) {
               const c = byFips.get(fips);
@@ -87,7 +110,6 @@ export function CountySelectDataLayer() {
           });
           didHydrateRef.current = true;
         }
-
       } catch {
         if (!alive) return;
         // don't clobber existing selection on error either
@@ -97,8 +119,10 @@ export function CountySelectDataLayer() {
       }
     })();
 
-    return () => { alive = false; };
-  }, [profile?.id, profile?.operating_counties?.join('|'), setOperating]);
+    return () => {
+      alive = false;
+    };
+  }, [profile?.id, profile?.operating_counties?.join("|"), setOperating]);
 
   // --- helper: reconcile prev selection with possibly-delta "next"
   const reconcileSelection = React.useCallback(
@@ -113,7 +137,9 @@ export function CountySelectDataLayer() {
         const item = next[0];
         if (!item) return prev;
         const idx = prev.findIndex((c) => c.GEO_ID === item.GEO_ID);
-        return idx >= 0 ? prev.filter((c) => c.GEO_ID !== item.GEO_ID) : [...prev, item];
+        return idx >= 0
+          ? prev.filter((c) => c.GEO_ID !== item.GEO_ID)
+          : [...prev, item];
       }
 
       // length >= 2 => authoritative list from the map
@@ -126,62 +152,69 @@ export function CountySelectDataLayer() {
       });
       return authoritative;
     },
-    []
+    [],
   );
 
-
   // map -> parent (controlled, but resilient to delta emissions)
-  const handleMapChange = React.useCallback((next: SelectedCounty[]) => {
-    setSelectedCounties((prev) => {
-      const merged = reconcileSelection(prev, next);
-      setActiveCounty((prevActive) =>
-        prevActive && !merged.some((c) => c.GEO_ID === prevActive.GEO_ID) ? null : prevActive
-      );
-      return merged;
-    });
-  }, [reconcileSelection]);
+  const handleMapChange = React.useCallback(
+    (next: SelectedCounty[]) => {
+      setSelectedCounties((prev) => {
+        const merged = reconcileSelection(prev, next);
+        setActiveCounty((prevActive) =>
+          prevActive && !merged.some((c) => c.GEO_ID === prevActive.GEO_ID)
+            ? null
+            : prevActive,
+        );
+        return merged;
+      });
+    },
+    [reconcileSelection],
+  );
 
   // list actions
   const toggleEditCounty = React.useCallback((county: SelectedCounty) => {
-    setActiveCounty(prev => (prev?.GEO_ID === county.GEO_ID ? null : county));
+    setActiveCounty((prev) => (prev?.GEO_ID === county.GEO_ID ? null : county));
   }, []);
 
-  const handleUpdateZones = React.useCallback((geoId: string, zones: number[]) => {
-    setSelectedCounties(prev =>
-      prev.map(c => (c.GEO_ID === geoId ? { ...c, ZONE: zones } : c))
-    );
-  }, []);
+  const handleUpdateZones = React.useCallback(
+    (geoId: string, zones: number[]) => {
+      setSelectedCounties((prev) =>
+        prev.map((c) => (c.GEO_ID === geoId ? { ...c, ZONE: zones } : c)),
+      );
+    },
+    [],
+  );
 
   const handleRemoveCounty = React.useCallback((geoId: string) => {
-    setSelectedCounties(prev => prev.filter(c => c.GEO_ID !== geoId));
-    setActiveCounty(prev => (prev?.GEO_ID === geoId ? null : prev));
+    setSelectedCounties((prev) => prev.filter((c) => c.GEO_ID !== geoId));
+    setActiveCounty((prev) => (prev?.GEO_ID === geoId ? null : prev));
   }, []);
 
-  const handleDone = React.useCallback(async (e?: React.MouseEvent) => {
-    e?.preventDefault();
+  const handleDone = React.useCallback(
+    async (e?: React.MouseEvent) => {
+      e?.preventDefault();
 
-    const fipsList = selectedCounties
-      .map(c => GEO_TO_FIPS(c.GEO_ID))
-      .filter((v): v is string => !!v)
-      .sort();
+      const fipsList = selectedCounties
+        .map((c) => GEO_TO_FIPS(c.GEO_ID))
+        .filter((v): v is string => !!v)
+        .sort();
 
-    setIsSaving(true);
-    (async () => {
-      try {
-        setOperating(fipsList);
-        if (profile?.id) {
-          await saveOperatingCountiesToDatabase(profile.id, fipsList);
+      setIsSaving(true);
+      (async () => {
+        try {
+          setOperating(fipsList);
+          if (profile?.id) {
+            await saveOperatingCountiesToDatabase(profile.id, fipsList);
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          router.push("/my-profile");
+        } finally {
+          setIsSaving(false);
         }
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        router.push('/my-profile');
-      } finally {
-        setIsSaving(false);
-      }
-    })();
-  }, [profile?.id, router, selectedCounties, setOperating]);
-
-
-
+      })();
+    },
+    [profile?.id, router, selectedCounties, setOperating],
+  );
 
   if (!profile) {
     return (
@@ -189,11 +222,11 @@ export function CountySelectDataLayer() {
         profileMissing
         selectedCounties={[]}
         activeCounty={null}
-        onMapChange={() => { }}
-        onToggleEditCounty={() => { }}
-        onRemoveCounty={() => { }}
-        onUpdateZones={() => { }}
-        onDone={() => { }}
+        onMapChange={() => {}}
+        onToggleEditCounty={() => {}}
+        onRemoveCounty={() => {}}
+        onUpdateZones={() => {}}
+        onDone={() => {}}
         isSaving={false}
         MapComponent={CountySelectMap}
         noProfileContent={
@@ -223,7 +256,9 @@ export function CountySelectDataLayer() {
       onDone={handleDone}
       isSaving={isSaving}
       MapComponent={CountySelectMap}
-      loadingMessage={!didHydrateRef.current ? "Loading counties..." : undefined}
+      loadingMessage={
+        !didHydrateRef.current ? "Loading counties..." : undefined
+      }
     />
   );
 }

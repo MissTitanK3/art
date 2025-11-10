@@ -73,11 +73,13 @@ export function SelectableCard({
         "flex items-center justify-between w-full rounded-lg border p-3 text-left transition",
         selected
           ? `${palette.border} ${palette.bg} ${palette.text} shadow-sm`
-          : `border-gray-300 ${palette.hover}`
+          : `border-gray-300 ${palette.hover}`,
       )}
     >
-      <div className="grid gap-2 grid-cols-[1fr_auto] w-full items-center" style={{ gridTemplateColumns: '1fr auto' }}>
-
+      <div
+        className="grid gap-2 grid-cols-[1fr_auto] w-full items-center"
+        style={{ gridTemplateColumns: "1fr auto" }}
+      >
         <span className="text-sm">{label}</span>
         {selected && <Check className={cn("h-8 w-8", palette.check)} />}
       </div>

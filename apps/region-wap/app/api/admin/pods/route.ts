@@ -71,7 +71,10 @@ export async function POST(req: Request) {
     // Fire-and-forget: let admins know a pod was created
     (async () => {
       try {
-        const recipients = await resolveRecipientsByRoles({ roles: ADMIN_GROUP_ROLES, channel: 'system' });
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: 'system',
+        });
         if (recipients.length) {
           await notifyUsers({
             title: 'New Pod Created',

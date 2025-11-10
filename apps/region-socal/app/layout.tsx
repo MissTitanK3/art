@@ -16,7 +16,9 @@ export const revalidate = 0;
 
 // ---------- Metadata ----------
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
+  ),
   title: {
     default: "ART Region SOCAL",
     template: "%s · ART Region SOCAL",
@@ -43,15 +45,15 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "ART. Region SOCAL",
     title: "ART. Region SOCAL",
-    description:
-      "Siloed regional operations with cross‑region metadata only.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "ART. Region SOCAL" }],
+    description: "Siloed regional operations with cross‑region metadata only.",
+    images: [
+      { url: "/og.png", width: 1200, height: 630, alt: "ART. Region SOCAL" },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "ART. Region SOCAL",
-    description:
-      "Siloed regional operations with cross‑region metadata only.",
+    description: "Siloed regional operations with cross‑region metadata only.",
     images: ["/og.png"],
     creator: "@alwaysreadytools",
   },
@@ -80,7 +82,11 @@ const fontSans = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 // ---------- Layout ----------
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // Build our AuthSession from Supabase server auth
   const supabase = await createSupabaseServerClient();
   const [{ data: supaUser }, { data: supaSession }] = await Promise.all([
@@ -88,23 +94,29 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     supabase.auth.getSession(),
   ]);
 
-  const session: AuthSession | null = supaUser?.user && supaSession?.session
-    ? {
-      user: {
-        id: supaUser.user.id,
-        email: supaUser.user.email ?? "",
-        // Prefer explicit metadata role, fallback to any server-provided role, else guest
-        role: ((supaUser.user as any)?.user_metadata?.role ?? (supaUser.user as any)?.role ?? "guest") as any,
-        fullName: (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
-        avatarUrl: (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
-        metadata: (supaUser.user as any)?.user_metadata ?? undefined,
-      },
-      accessToken: (supaSession.session as any)?.access_token ?? "",
-      refreshToken: (supaSession.session as any)?.refresh_token ?? undefined,
-      expiresAt: (supaSession.session as any)?.expires_at ?? null,
-      provider: "supabase",
-    }
-    : null;
+  const session: AuthSession | null =
+    supaUser?.user && supaSession?.session
+      ? {
+          user: {
+            id: supaUser.user.id,
+            email: supaUser.user.email ?? "",
+            // Prefer explicit metadata role, fallback to any server-provided role, else guest
+            role: ((supaUser.user as any)?.user_metadata?.role ??
+              (supaUser.user as any)?.role ??
+              "guest") as any,
+            fullName:
+              (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
+            avatarUrl:
+              (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
+            metadata: (supaUser.user as any)?.user_metadata ?? undefined,
+          },
+          accessToken: (supaSession.session as any)?.access_token ?? "",
+          refreshToken:
+            (supaSession.session as any)?.refresh_token ?? undefined,
+          expiresAt: (supaSession.session as any)?.expires_at ?? null,
+          provider: "supabase",
+        }
+      : null;
 
   return (
     <html lang="en" suppressHydrationWarning>

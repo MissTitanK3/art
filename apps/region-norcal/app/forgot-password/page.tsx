@@ -3,7 +3,13 @@
 import * as React from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@workspace/ui/components/card";
 import { Label } from "@workspace/ui/components/label";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
@@ -23,9 +29,13 @@ export default function ForgotPasswordPage() {
     setPending(true);
     try {
       await requestPasswordReset(email);
-      setInfo("Check your email for a reset link. It will open a page to set a new password.");
+      setInfo(
+        "Check your email for a reset link. It will open a page to set a new password.",
+      );
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to send reset email.");
+      setError(
+        err instanceof Error ? err.message : "Failed to send reset email.",
+      );
     } finally {
       setPending(false);
     }
@@ -36,13 +46,21 @@ export default function ForgotPasswordPage() {
       <Card>
         <CardHeader>
           <CardTitle>Forgot your password?</CardTitle>
-          <CardDescription>Enter your email and we’ll send you a reset link.</CardDescription>
+          <CardDescription>
+            Enter your email and we’ll send you a reset link.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-1">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             {info && <p className="text-sm text-muted-foreground">{info}</p>}

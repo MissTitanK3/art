@@ -14,9 +14,7 @@ import { Textarea } from "../../textarea";
 import { StringArrayField } from "../../form-array-fields";
 import { DetailGrid, DetailItem } from "./DetailGrid";
 import { formatList, formatText } from "./utils";
-import type {
-  DetaineeIntake,
-} from "@workspace/ui/types/missing-person-intake";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 interface BaseProps {
   title?: React.ReactNode;
@@ -39,7 +37,8 @@ export type IdentificationSectionProps = EditProps | ViewProps;
 
 export function IdentificationSection(props: IdentificationSectionProps) {
   const title = props.title ?? "Identification";
-  const description = props.description ?? "Subject identifiers and personal details.";
+  const description =
+    props.description ?? "Subject identifiers and personal details.";
   const sectionName = props.sectionName ?? "Identification";
 
   if (props.mode === "view") {
@@ -49,15 +48,30 @@ export function IdentificationSection(props: IdentificationSectionProps) {
         <div className="space-y-6">
           <DetailGrid>
             <DetailItem label="Full Name" value={formatText(data.fullName)} />
-            <DetailItem label="Date of Birth" value={formatText(data.dateOfBirth)} />
-            <DetailItem label="Country of Birth" value={formatText(data.countryOfBirth)} />
+            <DetailItem
+              label="Date of Birth"
+              value={formatText(data.dateOfBirth)}
+            />
+            <DetailItem
+              label="Country of Birth"
+              value={formatText(data.countryOfBirth)}
+            />
             <DetailItem label="A-Number" value={formatText(data.aNumber)} />
-            <DetailItem label="Gender Identity" value={formatText(data.genderIdentity)} />
+            <DetailItem
+              label="Gender Identity"
+              value={formatText(data.genderIdentity)}
+            />
             <DetailItem label="Pronouns" value={formatText(data.pronouns)} />
           </DetailGrid>
           <DetailItem label="Aliases" value={formatList(data.aliases)} />
-          <DetailItem label="Languages Spoken" value={formatList(data.languagesSpoken)} />
-          <DetailItem label="Physical Description" value={formatText(data.physicalDescription)} />
+          <DetailItem
+            label="Languages Spoken"
+            value={formatList(data.languagesSpoken)}
+          />
+          <DetailItem
+            label="Physical Description"
+            value={formatText(data.physicalDescription)}
+          />
         </div>
       </FormSectionCard>
     );
@@ -133,7 +147,10 @@ export function IdentificationSection(props: IdentificationSectionProps) {
             <FormItem>
               <FormLabel>Gender Identity</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Self-described gender identity" />
+                <Input
+                  {...field}
+                  placeholder="Self-described gender identity"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,7 +193,11 @@ export function IdentificationSection(props: IdentificationSectionProps) {
           <FormItem>
             <FormLabel>Physical Description</FormLabel>
             <FormControl>
-              <Textarea {...field} rows={4} placeholder="Appearance, distinguishing features, clothing..." />
+              <Textarea
+                {...field}
+                rows={4}
+                placeholder="Appearance, distinguishing features, clothing..."
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

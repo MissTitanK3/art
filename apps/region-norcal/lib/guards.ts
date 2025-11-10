@@ -8,27 +8,13 @@ import {
   completeOnboarding,
   elevatedRoles,
   localAdmins,
-  regionAdmins,
-  nationalAdmins,
   verifiedAdmins,
 } from '@workspace/store/utils/nav';
 
+import { isSuspended, isVerified, hasRole } from '@workspace/store/utils/access';
+
 // Access control is driven by public.profiles.access_role
 // AccessRole is unified with NavRole across the app
-
-function isSuspended(state?: string | null) {
-  return state === 'suspended';
-}
-
-function isVerified(verified_by?: string | null) {
-  // Consider anything other than 'self' as verified by a third party/admin
-  return verified_by && verified_by !== 'self';
-}
-
-function hasRole(role: NavRole | undefined, allowed: NavRole[]) {
-  if (!role) return false;
-  return allowed.includes(role);
-}
 
 export async function requireVerifiedProfileActive() {
   const supabase = await createSupabaseServerClient();

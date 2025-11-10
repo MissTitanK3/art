@@ -30,13 +30,13 @@ function TeamRequestContent() {
     }
 
     const location =
-      lat !== undefined && lng !== undefined
-        ? { lat, lng }
-        : undefined;
+      lat !== undefined && lng !== undefined ? { lat, lng } : undefined;
 
     const locationLabel =
       label ??
-      (location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : undefined);
+      (location
+        ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+        : undefined);
 
     if (!location && !locationLabel) {
       return undefined;
@@ -53,7 +53,9 @@ function TeamRequestContent() {
       actions: {
         intended_action_preset: "scout_check",
         intended_actions: preset.actions,
-        intended_action_notes: agency ? `Reported agency presence: ${agency}` : undefined,
+        intended_action_notes: agency
+          ? `Reported agency presence: ${agency}`
+          : undefined,
       },
       rolesNeeded: {
         required_roles: Object.keys(preset.roles),
@@ -65,11 +67,15 @@ function TeamRequestContent() {
   return (
     <section className="max-w-7xl">
       <h1 className="text-2xl font-bold">Team Request</h1>
-      <p className="text-muted-foreground mb-4">Submit a request for support (dummy-only).</p>
+      <p className="text-muted-foreground mb-4">
+        Submit a request for support (dummy-only).
+      </p>
       <div className="grid gap-3">
         <TeamRequestForm
           onCreateSubmission={addSubmission}
-          onSubmitted={(submission) => router.push(`/dispatches/submission/${submission.id}`)}
+          onSubmitted={(submission) =>
+            router.push(`/dispatches/submission/${submission.id}`)
+          }
           initialData={initialFormData}
         />
       </div>
@@ -79,7 +85,13 @@ function TeamRequestContent() {
 
 export default function TeamRequestPage() {
   return (
-    <Suspense fallback={<p className="px-4 text-sm text-muted-foreground">Loading team request…</p>}>
+    <Suspense
+      fallback={
+        <p className="px-4 text-sm text-muted-foreground">
+          Loading team request…
+        </p>
+      }
+    >
       <TeamRequestContent />
     </Suspense>
   );

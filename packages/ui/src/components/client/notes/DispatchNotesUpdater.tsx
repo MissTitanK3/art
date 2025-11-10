@@ -19,7 +19,10 @@ type DispatchNotesUpdaterProps = {
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchNotesUpdater({ submission, onUpdate }: DispatchNotesUpdaterProps) {
+export default function DispatchNotesUpdater({
+  submission,
+  onUpdate,
+}: DispatchNotesUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(submission?.intended_action_notes ?? "");
 
@@ -42,15 +45,12 @@ export default function DispatchNotesUpdater({ submission, onUpdate }: DispatchN
             {submission.intended_action_notes}
           </p>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No notes added yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No notes added yet.</p>
         )}
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
           Edit Notes
         </Button>
       </div>
-
 
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">

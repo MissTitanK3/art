@@ -5,4 +5,3 @@ import AdvocacyGroupsDataLayer from "@/components/dataLayer/advocacy/AdvocacyGro
 export default function AdvocacyGroupsAdminPage() {
   return <AdvocacyGroupsDataLayer />;
 }
-

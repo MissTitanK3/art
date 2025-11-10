@@ -19,7 +19,9 @@ function mapRowToDetaineeIntake(row: any): DetaineeIntake {
     detentionDateTime: row.detention_datetime ?? undefined,
     detentionLocation: row.detention_location ?? undefined,
     arrestingAgency: row.arresting_agency ?? undefined,
-    witnessContacts: Array.isArray(row.witness_contacts) ? row.witness_contacts : undefined,
+    witnessContacts: Array.isArray(row.witness_contacts)
+      ? row.witness_contacts
+      : undefined,
     dispatcherContact: row.dispatcher_contact ?? undefined,
     fullName: row.full_name ?? undefined,
     aliases: Array.isArray(row.aliases) ? row.aliases : undefined,
@@ -27,27 +29,40 @@ function mapRowToDetaineeIntake(row: any): DetaineeIntake {
     countryOfBirth: row.country_of_birth ?? undefined,
     genderIdentity: row.gender_identity ?? undefined,
     pronouns: row.pronouns ?? undefined,
-    languagesSpoken: Array.isArray(row.languages_spoken) ? row.languages_spoken : undefined,
+    languagesSpoken: Array.isArray(row.languages_spoken)
+      ? row.languages_spoken
+      : undefined,
     aNumber: row.a_number ?? undefined,
     photoUrl: row.photo_url ?? undefined,
     physicalDescription: row.physical_description ?? undefined,
     lastKnownFacility: row.last_known_facility ?? undefined,
     lastKnownCity: row.last_known_city ?? undefined,
-    arrestingOfficers: Array.isArray(row.arresting_officers) ? row.arresting_officers : undefined,
+    arrestingOfficers: Array.isArray(row.arresting_officers)
+      ? row.arresting_officers
+      : undefined,
     statedReasonForDetention: row.stated_reason_for_detention ?? undefined,
-    knownTransfers: Array.isArray(row.known_transfers) ? row.known_transfers : undefined,
+    knownTransfers: Array.isArray(row.known_transfers)
+      ? row.known_transfers
+      : undefined,
     belongingsLeftBehind: row.belongings_left_behind ?? undefined,
     dependentsLeftBehind: row.dependents_left_behind ?? undefined,
-    familyContacts: Array.isArray(row.family_contacts) ? row.family_contacts : undefined,
+    familyContacts: Array.isArray(row.family_contacts)
+      ? row.family_contacts
+      : undefined,
     priorAttorney: row.prior_attorney ?? undefined,
     preferredLegalAidOrgs: Array.isArray(row.preferred_legal_aid_orgs)
       ? row.preferred_legal_aid_orgs
       : undefined,
     interpreterNeeded: row.interpreter_needed ?? undefined,
     urgentNeeds: Array.isArray(row.urgent_needs) ? row.urgent_needs : undefined,
-    informationSources: Array.isArray(row.information_sources) ? row.information_sources : undefined,
+    informationSources: Array.isArray(row.information_sources)
+      ? row.information_sources
+      : undefined,
     lastUpdated: row.last_updated ?? undefined,
-    confidenceRating: typeof row.confidence_rating === "number" ? row.confidence_rating : undefined,
+    confidenceRating:
+      typeof row.confidence_rating === "number"
+        ? row.confidence_rating
+        : undefined,
     createdAt: row.created_at ?? undefined,
     createdBy: row.created_by ?? undefined,
     version: typeof row.version === "number" ? row.version : undefined,
@@ -95,14 +110,17 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
           "created_at",
           "created_by",
           "version",
-        ].join(", ")
+        ].join(", "),
       )
       .order("last_updated", { ascending: false, nullsFirst: false });
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     return rows
       .map(mapRowToDetaineeIntake)
-      .filter((r): r is DetaineeIntake => typeof r.caseId === "string" && r.caseId.length > 0);
+      .filter(
+        (r): r is DetaineeIntake =>
+          typeof r.caseId === "string" && r.caseId.length > 0,
+      );
   } catch (e) {
     console.warn("[MissingPersonDetailDataLayer] supabase fetch error", e);
     return [];
@@ -111,7 +129,7 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
 
 function findRecordBySlug(
   slug: string,
-  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>
+  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>,
 ): DetaineeIntake | null {
   for (const collection of collections) {
     for (const item of collection) {
@@ -128,7 +146,9 @@ function findRecordBySlug(
 export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   const localRecords = useMissingPersonStore((state) => state.records);
   const router = useRouter();
-  const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[] | null>(null);
+  const [remoteRecords, setRemoteRecords] = React.useState<
+    DetaineeIntake[] | null
+  >(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const renderDirectoryLink = React.useCallback(
@@ -137,13 +157,19 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         {label}
       </Link>
     ),
-    []
+    [],
   );
   const handleDeleteSuccess = React.useCallback(
-    ({ directoryHref }: { caseId: string; record: DetaineeIntake; directoryHref: string }) => {
+    ({
+      directoryHref,
+    }: {
+      caseId: string;
+      record: DetaineeIntake;
+      directoryHref: string;
+    }) => {
       router.push(directoryHref);
     },
-    [router]
+    [router],
   );
   const handleSaveRemote = React.useCallback(async (record: DetaineeIntake) => {
     try {
@@ -187,16 +213,25 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
       const { error } = await client.from("missing_person_records").upsert(row);
       if (error) throw error;
     } catch (err) {
-      console.warn("[MissingPersonDetailDataLayer] supabase upsert failed", err);
+      console.warn(
+        "[MissingPersonDetailDataLayer] supabase upsert failed",
+        err,
+      );
     }
   }, []);
   const handleDeleteRemote = React.useCallback(async (caseId: string) => {
     try {
       const client = getSupabaseBrowserClient();
-      const { error } = await client.from("missing_person_records").delete().eq("case_id", caseId);
+      const { error } = await client
+        .from("missing_person_records")
+        .delete()
+        .eq("case_id", caseId);
       if (error) throw error;
     } catch (err) {
-      console.warn("[MissingPersonDetailDataLayer] supabase delete failed", err);
+      console.warn(
+        "[MissingPersonDetailDataLayer] supabase delete failed",
+        err,
+      );
     }
   }, []);
 
@@ -213,7 +248,10 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         }
       } catch (err) {
         if (active) {
-          console.warn("MissingPersonDetailDataLayer: failed to fetch records", err);
+          console.warn(
+            "MissingPersonDetailDataLayer: failed to fetch records",
+            err,
+          );
           setError("Unable to load the latest record from the database.");
         }
       } finally {
@@ -232,7 +270,7 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
 
   const record = React.useMemo(
     () => findRecordBySlug(slug, [localRecords, remoteRecords ?? []]),
-    [slug, localRecords, remoteRecords]
+    [slug, localRecords, remoteRecords],
   );
 
   if (!record) {
@@ -249,9 +287,7 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-4">
-      {error ? (
-        <p className="text-sm text-amber-600">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-amber-600">{error}</p> : null}
       <MissingPersonDetail
         record={record}
         slug={slug}
@@ -259,20 +295,23 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         onExportRecord={exportLegalAidReport}
         onFinalizeRecord={async (rec) => {
           try {
-            const res = await fetch('/api/missing-persons/finalize', {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ record: { caseId: rec.caseId, fullName: rec.fullName ?? null }, slug }),
+            const res = await fetch("/api/missing-persons/finalize", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                record: { caseId: rec.caseId, fullName: rec.fullName ?? null },
+                slug,
+              }),
             });
             if (!res.ok) {
-              toast.error('Finalize failed');
+              toast.error("Finalize failed");
             } else {
-              toast.success('Shared with active advocacy groups');
+              toast.success("Shared with active advocacy groups");
             }
           } catch (e) {
-            console.warn('Finalize notify failed', e);
-            toast.error('Finalize failed');
+            console.warn("Finalize notify failed", e);
+            toast.error("Finalize failed");
             throw e;
           }
         }}

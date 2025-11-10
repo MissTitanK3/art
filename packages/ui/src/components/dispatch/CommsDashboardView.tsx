@@ -8,8 +8,18 @@ import type {
   ComLog,
   ComAlert,
 } from "@workspace/store/types/comms.ts";
-import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/ui/components/tabs";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@workspace/ui/components/card";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@workspace/ui/components/tabs";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
@@ -30,12 +40,18 @@ type Props = {
   setGlobalCheckInMinutes: (n: number) => void;
   addLog: React.ComponentProps<typeof CommsLogView>["onAddLog"];
   checkInTeam: (id: string) => void | Promise<unknown>;
-  createTeam?: (team: Omit<ComTeam, 'id'>) => void | Promise<unknown>;
+  createTeam?: (team: Omit<ComTeam, "id">) => void | Promise<unknown>;
   updateTeam?: (id: string, patch: Partial<ComTeam>) => void | Promise<void>;
   deleteTeam?: (id: string) => void | Promise<void>;
   upsertBriefing?: (patch: Partial<ComBriefing>) => void | Promise<void>;
-  createAlert?: (input: { direction: string; description: string }) => Promise<string> | string | void;
-  updateAlert?: (id: string, patch: Partial<{ direction: string; description: string }>) => Promise<void> | void;
+  createAlert?: (input: {
+    direction: string;
+    description: string;
+  }) => Promise<string> | string | void;
+  updateAlert?: (
+    id: string,
+    patch: Partial<{ direction: string; description: string }>,
+  ) => Promise<void> | void;
   deleteAlert?: (id: string) => Promise<void> | void;
 };
 
@@ -91,7 +107,9 @@ export function CommsDashboardView({
           <CardContent>
             <div className="mb-3 space-y-3">
               <div className="text-center">
-                <Label htmlFor="global-checkin" className="text-sm">Default check-in (minutes)</Label>
+                <Label htmlFor="global-checkin" className="text-sm">
+                  Default check-in (minutes)
+                </Label>
               </div>
               <div className="flex items-end justify-center gap-2">
                 <Input
@@ -102,7 +120,11 @@ export function CommsDashboardView({
                   onChange={(e) => setCheckInInput(e.target.value)}
                   className="h-8 w-24 text-center text-sm"
                 />
-                <Button onClick={applyGlobalInterval} size="sm" variant="outline">
+                <Button
+                  onClick={applyGlobalInterval}
+                  size="sm"
+                  variant="outline"
+                >
                   Apply
                 </Button>
               </div>
@@ -132,7 +154,11 @@ export function CommsDashboardView({
           </TabsContent>
           <TabsContent value="alerts" className="flex-1">
             <CommsAlertsCard
-              alerts={alerts?.map((a) => ({ id: a.id, direction: a.direction, description: a.description }))}
+              alerts={alerts?.map((a) => ({
+                id: a.id,
+                direction: a.direction,
+                description: a.description,
+              }))}
               onCreateAlert={createAlert}
               onUpdateAlert={updateAlert}
               onDeleteAlert={deleteAlert}

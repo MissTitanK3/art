@@ -4,10 +4,7 @@ import { getPods, getProfiles } from "@/lib/dal/admin";
 import type { Profile } from "@workspace/store/types/global.ts";
 
 export default async function AdminProfilesDataLayer() {
-  const [profilesDb, pods] = await Promise.all([
-    getProfiles(),
-    getPods(),
-  ]);
+  const [profilesDb, pods] = await Promise.all([getProfiles(), getPods()]);
 
   // Collect pod-level roster profiles (may include unregistered users)
   const podProfiles: Profile[] = [];
@@ -31,7 +28,9 @@ export default async function AdminProfilesDataLayer() {
         weekly_availability: p.weekly_availability ?? undefined,
         self_risk_acknowledged: Boolean(p.self_risk_acknowledged ?? false),
         city: p.city ?? undefined,
-        operating_counties: Array.isArray(p.operating_counties) ? p.operating_counties : [],
+        operating_counties: Array.isArray(p.operating_counties)
+          ? p.operating_counties
+          : [],
       };
       podProfiles.push(mapped);
     }

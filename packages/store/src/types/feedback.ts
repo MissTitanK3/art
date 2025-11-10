@@ -1,5 +1,10 @@
-export type BugReportStatus = 'open' | 'triage' | 'in_progress' | 'resolved' | 'closed';
-export type BugReportPriority = 'low' | 'medium' | 'high' | 'critical' | null;
+export type BugReportStatus =
+  | "open"
+  | "triage"
+  | "in_progress"
+  | "resolved"
+  | "closed";
+export type BugReportPriority = "low" | "medium" | "high" | "critical" | null;
 
 export type BugReport = {
   id: string;
@@ -14,4 +19,3 @@ export type BugReport = {
   priority: BugReportPriority;
   metadata?: Record<string, any> | null;
 };
-

@@ -1,19 +1,32 @@
-'use client';
+"use client";
 
-import { MDXProvider } from '@mdx-js/react';
-import type { MDXComponents } from 'mdx/types.js';
-import { Children, isValidElement, useMemo, type ComponentPropsWithoutRef, type ReactNode } from 'react';
-import { cn } from '@workspace/ui/lib/utils';
-import { Callout } from '@workspace/ui/components/academy/Callout';
-import { Photo } from '@workspace/ui/components/academy/Photo';
-import { QRCodeImage } from '@workspace/ui/components/academy/QRCodeImage';
-import { PodCard } from '@workspace/ui/components/academy/PodCard';
-import { DownloadFile } from '@workspace/ui/components/academy/DownloadFile';
-import { TrackBadge } from '@workspace/ui/components/academy/TrackBadge';
-import { Mermaid } from '@workspace/ui/components/academy/Mermaid';
+import { MDXProvider } from "@mdx-js/react";
+import type { MDXComponents } from "mdx/types.js";
+import {
+  Children,
+  isValidElement,
+  useMemo,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+} from "react";
+import { cn } from "@workspace/ui/lib/utils";
+import { Callout } from "@workspace/ui/components/academy/Callout";
+import { Photo } from "@workspace/ui/components/academy/Photo";
+import { QRCodeImage } from "@workspace/ui/components/academy/QRCodeImage";
+import { PodCard } from "@workspace/ui/components/academy/PodCard";
+import { DownloadFile } from "@workspace/ui/components/academy/DownloadFile";
+import { TrackBadge } from "@workspace/ui/components/academy/TrackBadge";
+import { Mermaid } from "@workspace/ui/components/academy/Mermaid";
 
 // Heuristic to detect leaked YAML frontmatter rendered into the MDX output
-const FRONTMATTER_KEYS = ['title:', 'slug:', 'description:', 'type:', 'readingTime:', 'version:'] as const;
+const FRONTMATTER_KEYS = [
+  "title:",
+  "slug:",
+  "description:",
+  "type:",
+  "readingTime:",
+  "version:",
+] as const;
 function looksLikeFrontmatter(text: string, minMatches = 2): boolean {
   const lc = text.toLowerCase();
   const matches = FRONTMATTER_KEYS.filter((k) => lc.includes(k)).length;
@@ -28,7 +41,7 @@ const baseComponents: MDXComponents = {
   DownloadFile,
   TrackBadge,
   Mermaid,
-  p: (props: ComponentPropsWithoutRef<'p'>) => {
+  p: (props: ComponentPropsWithoutRef<"p">) => {
     const { className, children, ...rest } = props;
     const text = toText(children).trim();
     if (text && looksLikeFrontmatter(text, 2)) return null;
@@ -38,22 +51,22 @@ const baseComponents: MDXComponents = {
       </p>
     );
   },
-  h1: (props: ComponentPropsWithoutRef<'h1'>) => Heading('h1', props),
-  h2: (props: ComponentPropsWithoutRef<'h2'>) => Heading('h2', props),
-  h3: (props: ComponentPropsWithoutRef<'h3'>) => Heading('h3', props),
-  table: (props: ComponentPropsWithoutRef<'table'>) => {
+  h1: (props: ComponentPropsWithoutRef<"h1">) => Heading("h1", props),
+  h2: (props: ComponentPropsWithoutRef<"h2">) => Heading("h2", props),
+  h3: (props: ComponentPropsWithoutRef<"h3">) => Heading("h3", props),
+  table: (props: ComponentPropsWithoutRef<"table">) => {
     const { className, children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <div className="not-prose overflow-x-auto w-full my-8">
         <table
           className={cn(
             // Force an overflow on small screens so scroll is visible
-            'min-w-[640px] w-max max-w-none',
+            "min-w-[640px] w-max max-w-none",
             // Table base styles
-            'text-sm border-collapse caption-bottom',
+            "text-sm border-collapse caption-bottom",
             className,
           )}
           {...rest}
@@ -63,16 +76,16 @@ const baseComponents: MDXComponents = {
       </div>
     );
   },
-  caption: (props: ComponentPropsWithoutRef<'caption'>) => {
+  caption: (props: ComponentPropsWithoutRef<"caption">) => {
     const { className, children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <caption
         className={cn(
           // Subtle, compact caption styling
-          'text-sm text-muted-foreground mt-2',
+          "text-sm text-muted-foreground mt-2",
           className,
         )}
         {...rest}
@@ -81,16 +94,16 @@ const baseComponents: MDXComponents = {
       </caption>
     );
   },
-  thead: (props: ComponentPropsWithoutRef<'thead'>) => {
+  thead: (props: ComponentPropsWithoutRef<"thead">) => {
     const { children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <thead
         className={cn(
           // Sticky header for long tables
-          'sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40',
+          "sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40",
         )}
         {...rest}
       >
@@ -98,10 +111,10 @@ const baseComponents: MDXComponents = {
       </thead>
     );
   },
-  tbody: (props: ComponentPropsWithoutRef<'tbody'>) => {
+  tbody: (props: ComponentPropsWithoutRef<"tbody">) => {
     const { children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <tbody className="divide-y divide-border" {...rest}>
@@ -109,10 +122,10 @@ const baseComponents: MDXComponents = {
       </tbody>
     );
   },
-  tfoot: (props: ComponentPropsWithoutRef<'tfoot'>) => {
+  tfoot: (props: ComponentPropsWithoutRef<"tfoot">) => {
     const { children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <tfoot className="border-t border-border bg-muted/30" {...rest}>
@@ -120,10 +133,10 @@ const baseComponents: MDXComponents = {
       </tfoot>
     );
   },
-  tr: (props: ComponentPropsWithoutRef<'tr'>) => {
+  tr: (props: ComponentPropsWithoutRef<"tr">) => {
     const { children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <tr className="hover:bg-muted/40 transition-colors" {...rest}>
@@ -131,20 +144,20 @@ const baseComponents: MDXComponents = {
       </tr>
     );
   },
-  th: (props: ComponentPropsWithoutRef<'th'>) => {
+  th: (props: ComponentPropsWithoutRef<"th">) => {
     const { className, children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <th
         className={cn(
           // Sticky cells to keep headers visible
-          'sticky top-0 z-10 bg-muted/60',
+          "sticky top-0 z-10 bg-muted/60",
           // Cell layout
-          'px-3 py-2 text-left font-semibold border-b border-border align-bottom',
+          "px-3 py-2 text-left font-semibold border-b border-border align-bottom",
           // Normalize inner spacing for block children
-          '[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-0 [&>ul]:my-0 [&>ol]:my-0 [&>pre]:my-0 [&>blockquote]:my-0',
+          "[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-0 [&>ul]:my-0 [&>ol]:my-0 [&>pre]:my-0 [&>blockquote]:my-0",
           className,
         )}
         {...rest}
@@ -153,17 +166,17 @@ const baseComponents: MDXComponents = {
       </th>
     );
   },
-  td: (props: ComponentPropsWithoutRef<'td'>) => {
+  td: (props: ComponentPropsWithoutRef<"td">) => {
     const { className, children, ...rest } = props;
     const clean = Children.toArray(children).filter(
-      (c) => !(typeof c === 'string' && /^\s*$/.test(c as string))
+      (c) => !(typeof c === "string" && /^\s*$/.test(c as string)),
     );
     return (
       <td
         className={cn(
-          'px-3 py-2 align-top border-b border-border',
+          "px-3 py-2 align-top border-b border-border",
           // Normalize block element margins inside cells
-          '[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-0 [&>ul]:my-0 [&>ol]:my-0 [&>pre]:my-0 [&>blockquote]:my-0',
+          "[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-0 [&>ul]:my-0 [&>ol]:my-0 [&>pre]:my-0 [&>blockquote]:my-0",
           className,
         )}
         {...rest}
@@ -172,11 +185,17 @@ const baseComponents: MDXComponents = {
       </td>
     );
   },
-  pre: (props: ComponentPropsWithoutRef<'pre'>) => {
+  pre: (props: ComponentPropsWithoutRef<"pre">) => {
     const { className, children, ...rest } = props;
     return (
       <div className="not-prose overflow-x-auto w-full">
-        <pre className={cn('w-max max-w-none rounded-md bg-muted p-3 text-xs', className)} {...rest}>
+        <pre
+          className={cn(
+            "w-max max-w-none rounded-md bg-muted p-3 text-xs",
+            className,
+          )}
+          {...rest}
+        >
           {children}
         </pre>
       </div>
@@ -192,7 +211,11 @@ type MDXWrapperProps = {
   components?: MDXComponents;
 };
 
-export function MDXWrapper({ children, className, components }: MDXWrapperProps) {
+export function MDXWrapper({
+  children,
+  className,
+  components,
+}: MDXWrapperProps) {
   const mergedComponents = { ...baseComponents, ...components };
 
   // Some MDX courses may accidentally render their YAML frontmatter as a paragraph
@@ -204,9 +227,12 @@ export function MDXWrapper({ children, className, components }: MDXWrapperProps)
     // Find the first content block (p or heading) and drop it if it looks like frontmatter
     for (let i = 0; i < arr.length; i++) {
       const node = arr[i] as ReactNode;
-      if (isValidElement<{ children?: ReactNode }>(node) && typeof node.type === 'string') {
+      if (
+        isValidElement<{ children?: ReactNode }>(node) &&
+        typeof node.type === "string"
+      ) {
         const tag = node.type as string;
-        if (tag === 'p' || tag === 'h1' || tag === 'h2' || tag === 'h3') {
+        if (tag === "p" || tag === "h1" || tag === "h2" || tag === "h3") {
           const text = toText(node.props.children).trim();
           if (text && looksLikeFrontmatter(text, 2)) {
             return [...arr.slice(0, i), ...arr.slice(i + 1)];
@@ -220,28 +246,33 @@ export function MDXWrapper({ children, className, components }: MDXWrapperProps)
 
   return (
     <MDXProvider components={mergedComponents}>
-      <div className={cn('prose dark:prose-invert max-w-[1920]', className)}>{sanitizedChildren}</div>
+      <div className={cn("prose dark:prose-invert max-w-[1920]", className)}>
+        {sanitizedChildren}
+      </div>
     </MDXProvider>
   );
 }
 
-function Heading<T extends 'h1' | 'h2' | 'h3'>(
+function Heading<T extends "h1" | "h2" | "h3">(
   tag: T,
-  props: ComponentPropsWithoutRef<T>
+  props: ComponentPropsWithoutRef<T>,
 ) {
   const { id, children, ...rest } = props as any;
-  const computedId = useMemo(() => id ?? slugFromReact(children), [id, children]);
+  const computedId = useMemo(
+    () => id ?? slugFromReact(children),
+    [id, children],
+  );
   const headingText = toText(children).trim();
   if (headingText && looksLikeFrontmatter(headingText, 3)) {
     return null;
   }
 
   const common =
-    tag === 'h1'
-      ? 'text-3xl font-bold mt-6 mb-4'
-      : tag === 'h2'
-        ? 'text-2xl font-semibold mt-6 mb-3'
-        : 'text-xl font-medium mt-5 mb-2';
+    tag === "h1"
+      ? "text-3xl font-bold mt-6 mb-4"
+      : tag === "h2"
+        ? "text-2xl font-semibold mt-6 mb-3"
+        : "text-xl font-medium mt-5 mb-2";
 
   const Tag: any = tag;
   return (
@@ -256,15 +287,16 @@ function slugFromReact(node: ReactNode): string | undefined {
   if (!text) return undefined;
   return text
     .toLowerCase()
-    .replace(/[^\w]+/g, '-')
-    .replace(/^[-]+|[-]+$/g, '');
+    .replace(/[^\w]+/g, "-")
+    .replace(/^[-]+|[-]+$/g, "");
 }
 
 function toText(node: ReactNode): string {
-  if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (!node) return '';
-  if (Array.isArray(node)) return node.map(toText).join('');
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (!node) return "";
+  if (Array.isArray(node)) return node.map(toText).join("");
   // Narrow React elements to a props shape that includes optional children so TS knows about it
-  if (isValidElement<{ children?: ReactNode }>(node)) return toText(node.props.children);
-  return '';
+  if (isValidElement<{ children?: ReactNode }>(node))
+    return toText(node.props.children);
+  return "";
 }

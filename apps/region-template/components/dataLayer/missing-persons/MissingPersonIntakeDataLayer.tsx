@@ -10,5 +10,10 @@ export function MissingPersonIntakeDataLayer() {
   const seedRecords = React.useMemo(() => demoMissingPersons, []);
   const handleExport = React.useCallback(exportLegalAidReport, []);
 
-  return <MissingPersonIntakeForm seedRecords={seedRecords} onExportRecord={handleExport} />;
+  return (
+    <MissingPersonIntakeForm
+      seedRecords={seedRecords}
+      onExportRecord={handleExport}
+    />
+  );
 }

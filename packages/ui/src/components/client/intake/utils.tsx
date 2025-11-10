@@ -8,13 +8,20 @@ import type {
   TransferRecord,
 } from "@workspace/ui/types/missing-person-intake";
 
-export function formatText(value?: React.ReactNode, fallback = "Not provided"): React.ReactNode {
+export function formatText(
+  value?: React.ReactNode,
+  fallback = "Not provided",
+): React.ReactNode {
   if (value === undefined || value === null) {
     return <span className="text-muted-foreground">{fallback}</span>;
   }
   if (typeof value === "string") {
     const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : <span className="text-muted-foreground">{fallback}</span>;
+    return trimmed.length > 0 ? (
+      trimmed
+    ) : (
+      <span className="text-muted-foreground">{fallback}</span>
+    );
   }
   if (Array.isArray(value) && value.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
@@ -22,7 +29,10 @@ export function formatText(value?: React.ReactNode, fallback = "Not provided"): 
   return value;
 }
 
-export function formatDateTime(value?: string, fallback = "Not provided"): React.ReactNode {
+export function formatDateTime(
+  value?: string,
+  fallback = "Not provided",
+): React.ReactNode {
   if (!value) return <span className="text-muted-foreground">{fallback}</span>;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -31,7 +41,10 @@ export function formatDateTime(value?: string, fallback = "Not provided"): React
   return date.toLocaleString();
 }
 
-export function formatList(values?: string[], fallback = "Not provided"): React.ReactNode {
+export function formatList(
+  values?: string[],
+  fallback = "Not provided",
+): React.ReactNode {
   if (!values || values.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
   }
@@ -46,7 +59,10 @@ export function formatList(values?: string[], fallback = "Not provided"): React.
   );
 }
 
-export function formatContacts(records?: ContactInfo[], fallback = "No contacts recorded"): React.ReactNode {
+export function formatContacts(
+  records?: ContactInfo[],
+  fallback = "No contacts recorded",
+): React.ReactNode {
   if (!records || records.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
   }
@@ -56,7 +72,9 @@ export function formatContacts(records?: ContactInfo[], fallback = "No contacts 
         <div key={`${contact.name}-${contact.relation ?? index}`}>
           <div className="font-medium text-foreground">{contact.name}</div>
           <div className="text-muted-foreground">
-            {[contact.relation, contact.phone, contact.email].filter(Boolean).join(" · ")}
+            {[contact.relation, contact.phone, contact.email]
+              .filter(Boolean)
+              .join(" · ")}
           </div>
         </div>
       ))}
@@ -64,7 +82,10 @@ export function formatContacts(records?: ContactInfo[], fallback = "No contacts 
   );
 }
 
-export function formatTransfers(records?: TransferRecord[], fallback = "No documented transfers"): React.ReactNode {
+export function formatTransfers(
+  records?: TransferRecord[],
+  fallback = "No documented transfers",
+): React.ReactNode {
   if (!records || records.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
   }
@@ -72,11 +93,15 @@ export function formatTransfers(records?: TransferRecord[], fallback = "No docum
     <div className="space-y-2 text-sm">
       {records.map((transfer, index) => (
         <div key={`${transfer.transferDate}-${transfer.toFacility}-${index}`}>
-          <div className="font-medium text-foreground">{transfer.toFacility ?? "Unknown facility"}</div>
+          <div className="font-medium text-foreground">
+            {transfer.toFacility ?? "Unknown facility"}
+          </div>
           <div className="text-muted-foreground">
             {transfer.fromFacility ? `From ${transfer.fromFacility}` : null}
             {transfer.fromFacility && transfer.transferDate ? " · " : null}
-            {transfer.transferDate ? new Date(transfer.transferDate).toLocaleString() : null}
+            {transfer.transferDate
+              ? new Date(transfer.transferDate).toLocaleString()
+              : null}
             {transfer.method ? ` · ${transfer.method}` : null}
           </div>
         </div>
@@ -85,7 +110,10 @@ export function formatTransfers(records?: TransferRecord[], fallback = "No docum
   );
 }
 
-export function formatInfoSources(records?: InfoSource[], fallback = "No verification notes recorded"): React.ReactNode {
+export function formatInfoSources(
+  records?: InfoSource[],
+  fallback = "No verification notes recorded",
+): React.ReactNode {
   if (!records || records.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
   }

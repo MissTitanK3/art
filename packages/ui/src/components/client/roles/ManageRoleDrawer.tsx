@@ -1,11 +1,18 @@
-'use client';
+"use client";
 
 import { RosterEntry } from "@workspace/store/types/pod.ts";
 import { useState } from "react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@workspace/ui/components/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer";
 
 export default function ManageRoleDrawer({
   role,
@@ -25,7 +32,7 @@ export default function ManageRoleDrawer({
   onSave: (
     role: string,
     selected: string[],
-    manualVolunteers: { id: string; name: string }[]
+    manualVolunteers: { id: string; name: string }[],
   ) => void;
   allRoster: RosterEntry[];
   loading?: boolean;
@@ -38,12 +45,12 @@ export default function ManageRoleDrawer({
     manualAssigned.map((m) => ({
       id: m.volunteer_id,
       name: m.name ?? m.volunteer_id,
-    }))
+    })),
   );
 
   const toggle = (id: string) => {
     setSelected((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
     );
   };
 
@@ -67,7 +74,10 @@ export default function ManageRoleDrawer({
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="max-h-[50vh] overflow-y-auto mt-4 space-y-2" aria-busy={loading}>
+        <div
+          className="max-h-[50vh] overflow-y-auto mt-4 space-y-2"
+          aria-busy={loading}
+        >
           {loading ? (
             // Skeleton placeholder to avoid flicker while loading
             Array.from({ length: 6 }).map((_, idx) => (
@@ -132,7 +142,10 @@ export default function ManageRoleDrawer({
         </div>
 
         <DrawerFooter>
-          <Button onClick={() => onSave(role, selected, manualVolunteers)} disabled={!!loading}>
+          <Button
+            onClick={() => onSave(role, selected, manualVolunteers)}
+            disabled={!!loading}
+          >
             Save
           </Button>
           <Button variant="secondary" onClick={onClose}>

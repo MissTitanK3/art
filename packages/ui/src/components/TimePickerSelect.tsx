@@ -8,7 +8,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 
 type Props = {
@@ -26,7 +32,9 @@ export function TimePickerSelect({ value, onChange }: Props) {
   const selectedPeriod = h24 < 12 ? "AM" : "PM";
 
   const [hour, setHour] = React.useState(selectedHour.toString());
-  const [minute, setMinute] = React.useState(selectedMinute.toString().padStart(2, "0"));
+  const [minute, setMinute] = React.useState(
+    selectedMinute.toString().padStart(2, "0"),
+  );
   const [period, setPeriod] = React.useState(selectedPeriod);
 
   React.useEffect(() => {
@@ -45,7 +53,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
 
   const handleConfirm = () => {
     const updated = new Date(date);
-    let h24 = (parseInt(hour, 10) % 12);
+    let h24 = parseInt(hour, 10) % 12;
     if (period === "PM") h24 += 12;
     updated.setHours(h24, parseInt(minute, 10), 0, 0);
     onChange(updated);
@@ -59,7 +67,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
           variant="outline"
           className={cn(
             "justify-start text-left font-normal w-[160px]",
-            !value && "text-muted-foreground"
+            !value && "text-muted-foreground",
           )}
         >
           <Clock className="mr-2 h-4 w-4" />
@@ -74,11 +82,13 @@ export function TimePickerSelect({ value, onChange }: Props) {
               <SelectValue placeholder="Hour" />
             </SelectTrigger>
             <SelectContent className="max-h-60 overflow-y-auto">
-              {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map((h) => (
-                <SelectItem key={h} value={h}>
-                  {h}
-                </SelectItem>
-              ))}
+              {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(
+                (h) => (
+                  <SelectItem key={h} value={h}>
+                    {h}
+                  </SelectItem>
+                ),
+              )}
             </SelectContent>
           </Select>
 
@@ -88,13 +98,13 @@ export function TimePickerSelect({ value, onChange }: Props) {
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent className="max-h-60 overflow-y-auto">
-              {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0")).map(
-                (m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                )
-              )}
+              {Array.from({ length: 60 }, (_, i) =>
+                i.toString().padStart(2, "0"),
+              ).map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 

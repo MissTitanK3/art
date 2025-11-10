@@ -22,12 +22,15 @@ function Highlight({ text, query }: { text: string; query: string }) {
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
             // Use <mark> for built-in highlight semantics
-            <mark key={i} className="bg-yellow-200 dark:bg-yellow-700 rounded px-0.5">
+            <mark
+              key={i}
+              className="bg-yellow-200 dark:bg-yellow-700 rounded px-0.5"
+            >
               {part}
             </mark>
           ) : (
             <React.Fragment key={i}>{part}</React.Fragment>
-          )
+          ),
         )}
       </>
     );
@@ -43,10 +46,16 @@ function includes(text: string | undefined, q: string) {
 
 type Filtered<T> = T & { __matched?: boolean };
 
-function filterSubSections(subs: SubSection[], q: string): Filtered<SubSection>[] {
+function filterSubSections(
+  subs: SubSection[],
+  q: string,
+): Filtered<SubSection>[] {
   if (!q) return subs;
   return subs
-    .map((s) => ({ ...s, __matched: includes(s.title, q) || includes(s.content, q) }))
+    .map((s) => ({
+      ...s,
+      __matched: includes(s.title, q) || includes(s.content, q),
+    }))
     .filter((s) => s.__matched);
 }
 
@@ -54,8 +63,13 @@ function filterContent(contents: Content[], q: string): Filtered<Content>[] {
   if (!q) return contents;
   return contents
     .map((c) => {
-      const subSections = c.subSections ? filterSubSections(c.subSections, q) : undefined;
-      const matched = includes(c.preface, q) || includes(c.statement, q) || (subSections?.length ?? 0) > 0;
+      const subSections = c.subSections
+        ? filterSubSections(c.subSections, q)
+        : undefined;
+      const matched =
+        includes(c.preface, q) ||
+        includes(c.statement, q) ||
+        (subSections?.length ?? 0) > 0;
       return { ...c, subSections, __matched: matched } as Filtered<Content>;
     })
     .filter((c) => c.__matched);
@@ -66,7 +80,7 @@ function filterSections(sections: Section[], q: string): Filtered<Section>[] {
   return sections
     .map((s) => {
       const content = filterContent(s.content, q);
-      const matched = includes(s.title, q) || (content.length > 0);
+      const matched = includes(s.title, q) || content.length > 0;
       return { ...s, content, __matched: matched } as Filtered<Section>;
     })
     .filter((s) => s.__matched);
@@ -77,7 +91,8 @@ function filterArticles(articles: Article[], q: string): Filtered<Article>[] {
   return articles
     .map((a) => {
       const sections = filterSections(a.sections, q);
-      const matched = includes(a.title, q) || includes(a.id, q) || sections.length > 0;
+      const matched =
+        includes(a.title, q) || includes(a.id, q) || sections.length > 0;
       return { ...a, sections, __matched: matched } as Filtered<Article>;
     })
     .filter((a) => a.__matched);
@@ -98,7 +113,9 @@ function countMatches(ngc: NGCTypes, q: string) {
       for (const c of s.content) {
         if (includes(c.preface, q) || includes(c.statement, q)) total++;
         if (c.subSections) {
-          total += c.subSections.filter((ss) => includes(ss.title, q) || includes(ss.content, q)).length;
+          total += c.subSections.filter(
+            (ss) => includes(ss.title, q) || includes(ss.content, q),
+          ).length;
         }
       }
     }
@@ -125,20 +142,28 @@ export default function NGCPage() {
     } as NGCTypes;
   }, [query]);
 
-  const resultsCount = useMemo(() => countMatches(ngcData, query.trim()), [query]);
+  const resultsCount = useMemo(
+    () => countMatches(ngcData, query.trim()),
+    [query],
+  );
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <header className="mb-8">
         <div className="space-y-2 md:flex md:items-center md:justify-between md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Next-Generation Constitution</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Next-Generation Constitution
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Explore and search the full text of the NGC.
             </p>
           </div>
           <div>
-            <Link className="text-sm font-medium text-blue-600 hover:underline" href="/">
+            <Link
+              className="text-sm font-medium text-blue-600 hover:underline"
+              href="/"
+            >
               Back Home
             </Link>
           </div>
@@ -158,10 +183,11 @@ export default function NGCPage() {
           />
           {query.trim() && (
             <p className="mt-2 text-xs text-muted-foreground">
-          {resultsCount} result{resultsCount === 1 ? "" : "s"} for &quot;{query.trim()}&quot;
-          </p>
-        )}
-      </div>
+              {resultsCount} result{resultsCount === 1 ? "" : "s"} for &quot;
+              {query.trim()}&quot;
+            </p>
+          )}
+        </div>
       </header>
 
       {/* Preamble */}
@@ -190,13 +216,15 @@ export default function NGCPage() {
       {/* Articles */}
       <div className="space-y-10">
         {filtered.articles.map((article) => (
-          <ArticleBlock key={article.id} article={article} query={query} />)
-        )}
+          <ArticleBlock key={article.id} article={article} query={query} />
+        ))}
       </div>
 
       {/* Epilogue */}
       <footer className="mt-12 border-t pt-6 text-sm text-muted-foreground">
-        <h3 className="mb-2 text-base font-semibold text-foreground">Epilogue</h3>
+        <h3 className="mb-2 text-base font-semibold text-foreground">
+          Epilogue
+        </h3>
         <p className="leading-relaxed">
           <Highlight text={ngcData.epilogue} query={query} />
         </p>
@@ -209,20 +237,39 @@ function ArticleBlock({ article, query }: { article: Article; query: string }) {
   return (
     <article id={`article-${article.id}`} className="scroll-mt-24">
       <h2 className="text-xl font-bold">
-        Article {article.id}: <span className="font-semibold"><Highlight text={article.title} query={query} /></span>
+        Article {article.id}:{" "}
+        <span className="font-semibold">
+          <Highlight text={article.title} query={query} />
+        </span>
       </h2>
       <div className="mt-4 space-y-8">
         {article.sections.map((section) => (
-          <SectionBlock key={section.id} section={section} articleId={article.id} query={query} />
+          <SectionBlock
+            key={section.id}
+            section={section}
+            articleId={article.id}
+            query={query}
+          />
         ))}
       </div>
     </article>
   );
 }
 
-function SectionBlock({ section, articleId, query }: { section: Section; articleId: string; query: string }) {
+function SectionBlock({
+  section,
+  articleId,
+  query,
+}: {
+  section: Section;
+  articleId: string;
+  query: string;
+}) {
   return (
-    <section id={`article-${articleId}-section-${section.id}`} className="scroll-mt-24">
+    <section
+      id={`article-${articleId}-section-${section.id}`}
+      className="scroll-mt-24"
+    >
       <h3 className="text-lg font-semibold">
         Section {section.id}. <Highlight text={section.title} query={query} />
       </h3>
@@ -249,7 +296,9 @@ function ContentBlock({ content, query }: { content: Content; query: string }) {
           {content.subSections.map((s) => (
             <li key={s.id} className="leading-relaxed">
               {s.title ? (
-                <span className="font-medium"><Highlight text={s.title} query={query} />: </span>
+                <span className="font-medium">
+                  <Highlight text={s.title} query={query} />:{" "}
+                </span>
               ) : null}
               <Highlight text={s.content} query={query} />
             </li>

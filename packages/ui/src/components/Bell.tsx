@@ -1,27 +1,38 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
-import { useNotificationsStore, notificationsStore } from '@workspace/store/useNotificationsStore';
-import { Popover, PopoverContent, PopoverTrigger } from '@workspace/ui/components/popover';
-import { BellDot, BellDotIcon, BellIcon } from 'lucide-react';
+import { useEffect, useMemo } from "react";
+import {
+  useNotificationsStore,
+  notificationsStore,
+} from "@workspace/store/useNotificationsStore";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
+import { BellDot, BellDotIcon, BellIcon } from "lucide-react";
 
 export function Bell({
   popoverSide,
   popoverAlign,
 }: {
-  popoverSide?: 'top' | 'right' | 'bottom' | 'left';
-  popoverAlign?: 'start' | 'center' | 'end';
+  popoverSide?: "top" | "right" | "bottom" | "left";
+  popoverAlign?: "start" | "center" | "end";
 }) {
   const items = useNotificationsStore((s) => s.items);
   const unread = useMemo(() => items.filter((i) => !i.readAt).length, [items]);
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button aria-label="Notifications" className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100">
-
+        <button
+          aria-label="Notifications"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100"
+        >
           {unread > 0 ? (
             <BellDotIcon className="w-5 h-5 text-red-600" />
-          ) : <BellIcon className="w-5 h-5" />}
+          ) : (
+            <BellIcon className="w-5 h-5" />
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -71,18 +82,28 @@ function Panel() {
                   n.title
                 )}
               </div>
-              {n.body && <div className="text-sm text-gray-600 whitespace-pre-wrap">{n.body}</div>}
+              {n.body && (
+                <div className="text-sm text-gray-600 whitespace-pre-wrap">
+                  {n.body}
+                </div>
+              )}
               <div className="mt-1 text-[10px] uppercase tracking-wide text-gray-400">
-                {n.channel ?? 'system'} • {n.level}
+                {n.channel ?? "system"} • {n.level}
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
               {!n.readAt && (
-                <button className="text-xs underline" onClick={() => markRead(n.id)}>
+                <button
+                  className="text-xs underline"
+                  onClick={() => markRead(n.id)}
+                >
                   Mark read
                 </button>
               )}
-              <button className="text-xs text-red-600 underline" onClick={() => remove(n.id)}>
+              <button
+                className="text-xs text-red-600 underline"
+                onClick={() => remove(n.id)}
+              >
                 Dismiss
               </button>
             </div>

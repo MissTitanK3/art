@@ -1,8 +1,8 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import { visit } from 'unist-util-visit';
-import type { Heading } from 'mdast';
-import { toString } from 'mdast-util-to-string';
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import { visit } from "unist-util-visit";
+import type { Heading } from "mdast";
+import { toString } from "mdast-util-to-string";
 
 export type TOCHeading = {
   value: string;
@@ -10,7 +10,14 @@ export type TOCHeading = {
   depth: number;
 };
 
-const FRONTMATTER_KEYS = ['title:', 'slug:', 'description:', 'type:', 'readingtime:', 'version:'] as const;
+const FRONTMATTER_KEYS = [
+  "title:",
+  "slug:",
+  "description:",
+  "type:",
+  "readingtime:",
+  "version:",
+] as const;
 function looksLikeFrontmatter(text: string, minMatches = 2): boolean {
   const lc = text.toLowerCase();
   const matches = FRONTMATTER_KEYS.filter((k) => lc.includes(k)).length;
@@ -29,7 +36,7 @@ export function extractToc(markdown: string): NestedTOCHeading[] {
   const idCounts: Record<string, number> = {};
   let currentParent: NestedTOCHeading | null = null;
 
-  visit(tree, 'heading', (node: Heading) => {
+  visit(tree, "heading", (node: Heading) => {
     const value = toString(node);
     // Skip headings that look like leaked frontmatter
     if (looksLikeFrontmatter(value, 2)) {
@@ -37,8 +44,8 @@ export function extractToc(markdown: string): NestedTOCHeading[] {
     }
     let id = value
       .toLowerCase()
-      .replace(/[^\w]+/g, '-')
-      .replace(/^[-]+|[-]+$/g, '');
+      .replace(/[^\w]+/g, "-")
+      .replace(/^[-]+|[-]+$/g, "");
 
     const count = (idCounts[id] ?? 0) + 1;
     idCounts[id] = count;

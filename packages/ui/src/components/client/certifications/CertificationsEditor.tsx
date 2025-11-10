@@ -2,7 +2,11 @@
 
 import { NormalizedCertification } from "@workspace/store/types/pod.ts";
 import { CertificationLevel } from "@workspace/store/types/pod.ts";
-import { CERTIFICATION_FILL, CERTIFICATION_LEVELS, certificationLabel } from "../../../lib/utils.ts";
+import {
+  CERTIFICATION_FILL,
+  CERTIFICATION_LEVELS,
+  certificationLabel,
+} from "../../../lib/utils.ts";
 import { X } from "lucide-react";
 
 type Props = {
@@ -46,7 +50,6 @@ export default function CertificationEditor({
             className="flex flex-col gap-3 rounded-xl border px-3 py-2"
           >
             <div className="flex items-center justify-between">
-
               {/* Name */}
               <div className="text-sm font-medium">{c.display_name}</div>
               {!disabled && (
@@ -72,12 +75,18 @@ export default function CertificationEditor({
                   const isFilled = i < (lvl ? CERTIFICATION_FILL[lvl] : 0);
 
                   let color = "bg-zinc-200";
-                  if (lvl === "in_progress") color = isFilled ? "bg-amber-500" : "bg-zinc-200";
-                  if (lvl === "completed") color = isFilled ? "bg-emerald-500" : "bg-zinc-200";
-                  if (lvl === "expired") color = isFilled ? "bg-rose-500" : "bg-zinc-200";
-                  if (lvl === "mentor") color = isFilled ? "bg-indigo-500" : "bg-zinc-200";
+                  if (lvl === "in_progress")
+                    color = isFilled ? "bg-amber-500" : "bg-zinc-200";
+                  if (lvl === "completed")
+                    color = isFilled ? "bg-emerald-500" : "bg-zinc-200";
+                  if (lvl === "expired")
+                    color = isFilled ? "bg-rose-500" : "bg-zinc-200";
+                  if (lvl === "mentor")
+                    color = isFilled ? "bg-indigo-500" : "bg-zinc-200";
 
-                  return <span key={i} className={`h-2.5 w-6 rounded ${color}`} />;
+                  return (
+                    <span key={i} className={`h-2.5 w-6 rounded ${color}`} />
+                  );
                 })}
               </div>
 
@@ -91,7 +100,12 @@ export default function CertificationEditor({
               className="text-sm rounded-md border bg-background px-2 py-1"
               disabled={disabled}
               value={lvl ?? ""}
-              onChange={(e) => setLevel(c.id, (e.target.value || undefined) as CertificationLevel)}
+              onChange={(e) =>
+                setLevel(
+                  c.id,
+                  (e.target.value || undefined) as CertificationLevel,
+                )
+              }
             >
               <option value="">—</option>
               {CERTIFICATION_LEVELS.map((opt) => (

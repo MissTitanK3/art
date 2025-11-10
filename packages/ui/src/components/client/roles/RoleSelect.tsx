@@ -1,11 +1,20 @@
 // components/role/RoleSelect.tsx
 "use client";
 
-import { ROLE_BY_VALUE, ROLE_OPTIONS, RoleValue } from "@workspace/store/types/roles.ts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../select.tsx";
+import {
+  ROLE_BY_VALUE,
+  ROLE_OPTIONS,
+  RoleValue,
+} from "@workspace/store/types/roles.ts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../select.tsx";
 import { cn } from "../../../lib/utils.ts";
 import { Dot } from "../../server/Dot.tsx";
-
 
 export interface RoleSelectProps {
   id?: string;
@@ -30,7 +39,10 @@ export function RoleSelect({
   disabled,
   showDescriptions = false,
 }: RoleSelectProps) {
-  const current = (value ?? defaultValue) ? ROLE_BY_VALUE[(value ?? defaultValue)!] : undefined;
+  const current =
+    (value ?? defaultValue)
+      ? ROLE_BY_VALUE[(value ?? defaultValue)!]
+      : undefined;
 
   return (
     <Select
@@ -41,7 +53,11 @@ export function RoleSelect({
     >
       <SelectTrigger
         id={id}
-        className={cn("w-[220px]", error && "ring-1 ring-destructive", className)}
+        className={cn(
+          "w-[220px]",
+          error && "ring-1 ring-destructive",
+          className,
+        )}
         aria-invalid={!!error}
       >
         {current ? (
@@ -66,7 +82,9 @@ export function RoleSelect({
                   {opt.label}
                 </span>
                 {showDescriptions && opt.description && (
-                  <span className="text-xs text-muted-foreground">{opt.description}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {opt.description}
+                  </span>
                 )}
               </span>
             </span>

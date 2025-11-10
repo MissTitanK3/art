@@ -1,6 +1,6 @@
-'use client';
-import { useEffect, useState, useRef } from 'react';
-import { getCachedLocation, setCachedLocation } from '@/lib/locationCache';
+"use client";
+import { useEffect, useState, useRef } from "react";
+import { getCachedLocation, setCachedLocation } from "@/lib/locationCache";
 
 type LatLng = { lat: number; lng: number };
 
@@ -30,14 +30,14 @@ export default function ReportDistanceGuard({
     const handleVisibility = () => setActive(!document.hidden);
 
     // Only run on client
-    if (typeof document !== 'undefined') {
+    if (typeof document !== "undefined") {
       setActive(!document.hidden);
-      document.addEventListener('visibilitychange', handleVisibility);
+      document.addEventListener("visibilitychange", handleVisibility);
     }
 
     return () => {
-      if (typeof document !== 'undefined') {
-        document.removeEventListener('visibilitychange', handleVisibility);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibility);
       }
     };
   }, []);
@@ -69,7 +69,10 @@ export default function ReportDistanceGuard({
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          const coords = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          };
           updateDistance(coords);
         },
         () => {
@@ -85,17 +88,28 @@ export default function ReportDistanceGuard({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [targetLocation, refreshIntervalMs, movementThresholdM, onDistanceChange, active]);
+  }, [
+    targetLocation,
+    refreshIntervalMs,
+    movementThresholdM,
+    onDistanceChange,
+    active,
+  ]);
 
   if (!userLocation || distance === null) {
-    return <p className="text-sm text-gray-500">Validating your location to be within {maxDistanceKm}km...</p>;
+    return (
+      <p className="text-sm text-gray-500">
+        Validating your location to be within {maxDistanceKm}km...
+      </p>
+    );
   }
 
   if (distance > maxDistanceKm) {
     return (
       <p className="text-sm text-yellow-600">
-        ⚠️ This location is <strong>{distance.toFixed(2)}km</strong> away from your current location. Reports should
-        generally be made only from your vicinity.
+        ⚠️ This location is <strong>{distance.toFixed(2)}km</strong> away from
+        your current location. Reports should generally be made only from your
+        vicinity.
       </p>
     );
   }
@@ -111,6 +125,8 @@ function safeDistanceKm(a: LatLng | null, b: LatLng | null): number | null {
   const dLng = ((b.lng - a.lng) * Math.PI) / 180;
   const lat1 = (a.lat * Math.PI) / 180;
   const lat2 = (b.lat * Math.PI) / 180;
-  const x = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  const x =
+    Math.sin(dLat / 2) ** 2 +
+    Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
   return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }

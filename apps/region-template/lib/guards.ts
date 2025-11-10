@@ -1,23 +1,36 @@
-import 'server-only';
+import "server-only";
 
-import { redirect } from 'next/navigation';
-import { requireServerSession } from '@/lib/auth/server';
-import { getProfileByUserId } from '@/lib/dal/admin';
-import { completeOnboarding, elevatedRoles, localAdmins, NavRole } from '@workspace/store/utils/nav';
+import { redirect } from "next/navigation";
+import { requireServerSession } from "@/lib/auth/server";
+import { getProfileByUserId } from "@/lib/dal/admin";
+import {
+  completeOnboarding,
+  elevatedRoles,
+  localAdmins,
+  NavRole,
+} from "@workspace/store/utils/nav";
+import {
+  isSuspended,
+  isVerified,
+  hasRole,
+} from "@workspace/store/utils/access";
 
-function isSuspended(state?: string | null) {
-  return state === 'suspended';
-}
+// Access control is driven by public.profiles.access_role
+// AccessRole is unified with NavRole across the app
 
-function isVerified(verified_by?: string | null) {
-  // Consider anything other than 'self' as verified by a third party/admin
-  return verified_by && verified_by !== 'self';
-}
-
-function hasDispatchPrivileges(role: NavRole, profileAccessRole?: string | null) {
-  // Allow if session role is elevated OR profile access role is dispatcher_verified/admin
-  if (elevatedRoles.includes(role)) return true;
-  return profileAccessRole === 'dispatcher_verified' || profileAccessRole === 'dispatcher_admin';
+// hasDispatchPrivileges previously allowed either elevated session roles or
+// profile-level dispatcher roles. We can express the same using shared helpers
+// and the elevatedRoles/localAdmins arrays. Keep the logic explicit here so
+// callers are clear about the intent.
+function hasDispatchPrivileges(
+  role: NavRole,
+  profileAccessRole?: string | null,
+) {
+  if (hasRole(role, elevatedRoles)) return true;
+  return (
+    profileAccessRole === "dispatcher_verified" ||
+    profileAccessRole === "dispatcher_admin"
+  );
 }
 
 export async function requireVerifiedProfileActive() {
@@ -25,15 +38,15 @@ export async function requireVerifiedProfileActive() {
   const profile = await getProfileByUserId(session.user.id);
 
   if (!profile) {
-    redirect('/my-profile?reason=profile-required');
+    redirect("/my-profile?reason=profile-required");
   }
 
   if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
+    redirect("/my-profile?reason=suspended");
   }
 
   if (!isVerified(profile.verified_by)) {
-    redirect('/my-profile?reason=awaiting_verification');
+    redirect("/my-profile?reason=awaiting_verification");
   }
 
   return { session, profile };
@@ -44,15 +57,15 @@ export async function requireDispatchAccess() {
   const profile = await getProfileByUserId(session.user.id);
 
   if (!profile) {
-    redirect('/my-profile?reason=profile-required');
+    redirect("/my-profile?reason=profile-required");
   }
 
   if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
+    redirect("/my-profile?reason=suspended");
   }
 
   if (!hasDispatchPrivileges(session.user.role, profile.access_role)) {
-    redirect('/my-profile?reason=forbidden-dispatch');
+    redirect("/my-profile?reason=forbidden-dispatch");
   }
 
   return { session, profile };
@@ -63,17 +76,17 @@ export async function requireLocalAdminAccess() {
   const profile = await getProfileByUserId(session.user.id);
 
   if (!profile) {
-    redirect('/my-profile?reason=profile-required');
+    redirect("/my-profile?reason=profile-required");
   }
 
   if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
+    redirect("/my-profile?reason=suspended");
   }
 
   const isLocalAdmin = localAdmins.includes(session.user.role);
-  const isDispatchAdmin = profile.access_role === 'dispatcher_admin';
+  const isDispatchAdmin = profile.access_role === "dispatcher_admin";
   if (!isLocalAdmin && !isDispatchAdmin) {
-    redirect('/my-profile?reason=forbidden-schedules');
+    redirect("/my-profile?reason=forbidden-schedules");
   }
 
   return { session, profile };
@@ -84,16 +97,16 @@ export async function requireElevatedAccess() {
   const profile = await getProfileByUserId(session.user.id);
 
   if (!profile) {
-    redirect('/my-profile?reason=profile-required');
+    redirect("/my-profile?reason=profile-required");
   }
 
   if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
+    redirect("/my-profile?reason=suspended");
   }
 
   const isElevated = elevatedRoles.includes(session.user.role);
   if (!isElevated) {
-    redirect('/my-profile?reason=forbidden-elevated');
+    redirect("/my-profile?reason=forbidden-elevated");
   }
 
   return { session, profile };
@@ -104,16 +117,16 @@ export async function requireOnboardedAccess() {
   const profile = await getProfileByUserId(session.user.id);
 
   if (!profile) {
-    redirect('/my-profile?reason=profile-required');
+    redirect("/my-profile?reason=profile-required");
   }
 
   if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
+    redirect("/my-profile?reason=suspended");
   }
 
   const ok = completeOnboarding.includes(session.user.role);
   if (!ok) {
-    redirect('/sign-in');
+    redirect("/sign-in");
   }
 
   return { session, profile };

@@ -3,7 +3,13 @@
 import * as React from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@workspace/ui/components/card";
 import { Label } from "@workspace/ui/components/label";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
@@ -39,7 +45,9 @@ export default function ResetPasswordPage() {
       setInfo("Password updated. You can now sign in.");
       setTimeout(() => router.push("/sign-in"), 1200);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to update password.");
+      setError(
+        err instanceof Error ? err.message : "Failed to update password.",
+      );
     } finally {
       setPending(false);
     }
@@ -51,18 +59,32 @@ export default function ResetPasswordPage() {
         <CardHeader>
           <CardTitle>Set a new password</CardTitle>
           <CardDescription>
-            {isRecovery ? "Enter a new password for your account." : "Update your password."}
+            {isRecovery
+              ? "Enter a new password for your account."
+              : "Update your password."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-1">
               <Label htmlFor="password">New password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
             <div className="grid gap-1">
               <Label htmlFor="confirm">Confirm password</Label>
-              <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+              <Input
+                id="confirm"
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             {info && <p className="text-sm text-muted-foreground">{info}</p>}

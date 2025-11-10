@@ -1,16 +1,45 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
-import Link from "next/link"
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert"
-import { Badge } from "@workspace/ui/components/badge"
-import { Button } from "@workspace/ui/components/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Terminal, Info, DatabaseZap, LogIn, MapPin, ClipboardList, Users, Megaphone, Truck, MessagesSquare, FileText, GraduationCap, Shield, BookOpen, User, Calendar, Settings as SettingsIcon, LifeBuoy, Search, Eye, CheckCircle2 } from "lucide-react"
-import { toast } from "sonner"
-import { cn } from "@workspace/ui/lib/utils"
-import { STATUS_META } from "@workspace/ui/lib/constants/dispatch"
-import { DISPATCH_TYPE_LABELS, DispatchStatus } from "@workspace/store/types/dispatch.ts"
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert";
+import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import {
+  Terminal,
+  Info,
+  DatabaseZap,
+  LogIn,
+  ClipboardList,
+  Users,
+  MessagesSquare,
+  GraduationCap,
+  Shield,
+  BookOpen,
+  User,
+  Calendar,
+  LifeBuoy,
+  Search,
+  Eye,
+  CheckCircle2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@workspace/ui/lib/utils";
+import { STATUS_META } from "@workspace/ui/lib/constants/dispatch";
+import {
+  DISPATCH_TYPE_LABELS,
+  DispatchStatus,
+} from "@workspace/store/types/dispatch.ts";
 import {
   Drawer,
   DrawerContent,
@@ -20,37 +49,43 @@ import {
   DrawerFooter,
   DrawerTrigger,
   DrawerClose,
-} from "@workspace/ui/components/drawer"
+} from "@workspace/ui/components/drawer";
 
-import { navConfig } from "@/nav.config"
-import { DispatchStoreProvider, useDispatchStore } from "@/providers/DispatchStoreProvider"
-import { PodStoreProvider, usePodStore } from "@/providers/PodStoreProvider"
-import PodDataHydrator from "@/components/dataLayer/pods/PodDataHydrator"
-import DispatchHomeHydrator from "@/components/dataLayer/dispatches/DispatchHomeHydrator"
-import ActiveRosterHydrator from "@/components/dataLayer/pods/ActiveRosterHydrator"
-import { useAuth } from "@/hooks/useAuth"
+import { navConfig } from "@/nav.config";
+import {
+  DispatchStoreProvider,
+  useDispatchStore,
+} from "@/providers/DispatchStoreProvider";
+import { PodStoreProvider, usePodStore } from "@/providers/PodStoreProvider";
+import PodDataHydrator from "@/components/dataLayer/pods/PodDataHydrator";
+import DispatchHomeHydrator from "@/components/dataLayer/dispatches/DispatchHomeHydrator";
+import ActiveRosterHydrator from "@/components/dataLayer/pods/ActiveRosterHydrator";
+import { useAuth } from "@/hooks/useAuth";
+import { REGION_IDENTIFIER } from "./brand_settings";
 
-type ViewMode = "info" | "dashboard"
+type ViewMode = "info" | "dashboard";
 
-const REGION_IDENTIFIER = String("region-socal")
-const TEMPLATE_REGION_IDENTIFIER = `region-${"template"}`
+
 
 export default function Page() {
-  const isTemplateRegion = REGION_IDENTIFIER === TEMPLATE_REGION_IDENTIFIER
-  const [view, setView] = useState<ViewMode>(isTemplateRegion ? "info" : "dashboard")
-  const showToggle = isTemplateRegion
-  const brandName = navConfig.brand?.name ?? "ART Region Template"
-  const brandHeadline = brandName.replace(/^ART\s+/i, "")
+  const [view, setView] = useState<ViewMode>(
+    REGION_IDENTIFIER === `region-${"template"}` ? "info" : "dashboard",
+  );
+  const showToggle = REGION_IDENTIFIER === `region-${"template"}`;
+  const brandName = navConfig.brand?.name ?? "ART Region Template";
+  const brandHeadline = brandName.replace(/^ART\s+/i, "");
 
   return (
     <div className="flex min-h-svh w-full flex-col items-center gap-6 px-4 py-12">
       <header className="text-center">
         <h1 className="text-4xl font-bold tracking-tight">{brandHeadline}</h1>
         <p className="mt-2 max-w-2xl text-balance text-muted-foreground">
-          Welcome to your region’s centralized platform for collaboration and response coordination.
+          Welcome to your region’s centralized platform for collaboration and
+          response coordination.
         </p>
         <p className="mt-2 max-w-2xl text-balance text-muted-foreground">
-          Use the tools below to manage your region’s operations and support your community effectively.
+          Use the tools below to manage your region’s operations and support
+          your community effectively.
         </p>
         <div className="mt-4 flex justify-center">
           <Drawer>
@@ -74,10 +109,16 @@ export default function Page() {
         {view === "info" ? <TemplateInfoContent /> : <DemoDashboard />}
       </main>
     </div>
-  )
+  );
 }
 
-function ViewToggle({ current, onChange }: { current: ViewMode; onChange: (mode: ViewMode) => void }) {
+function ViewToggle({
+  current,
+  onChange,
+}: {
+  current: ViewMode;
+  onChange: (mode: ViewMode) => void;
+}) {
   return (
     <div className="inline-flex items-center gap-1 rounded-full border bg-muted p-1">
       <ToggleButton
@@ -91,10 +132,18 @@ function ViewToggle({ current, onChange }: { current: ViewMode; onChange: (mode:
         onClick={() => onChange("dashboard")}
       />
     </div>
-  )
+  );
 }
 
-function ToggleButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function ToggleButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <Button
       type="button"
@@ -105,7 +154,7 @@ function ToggleButton({ label, active, onClick }: { label: string; active: boole
     >
       {label}
     </Button>
-  )
+  );
 }
 
 function TemplateInfoContent() {
@@ -142,18 +191,22 @@ function TemplateInfoContent() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm leading-relaxed">
           <p>
-            This Region Template is part of a decentralized platform designed to support regional
-            collaboration, rapid deployment, and secure autonomy. It includes:
+            This Region Template is part of a decentralized platform designed to
+            support regional collaboration, rapid deployment, and secure
+            autonomy. It includes:
           </p>
           <ul className="list-inside list-disc space-y-1 pl-2">
             <li>
-              <strong>Region-specific routing</strong> and branding via subdomains
+              <strong>Region-specific routing</strong> and branding via
+              subdomains
             </li>
             <li>
-              <strong>Authentication-aware dashboards</strong> for different roles
+              <strong>Authentication-aware dashboards</strong> for different
+              roles
             </li>
             <li>
-              <strong>Supabase (or PocketServer)</strong> integration for storage and permissions
+              <strong>Supabase (or PocketServer)</strong> integration for
+              storage and permissions
             </li>
           </ul>
         </CardContent>
@@ -179,8 +232,8 @@ function TemplateInfoContent() {
             <Terminal className="h-4 w-4" />
             <AlertTitle>Heads up!</AlertTitle>
             <AlertDescription>
-              Region names must be <strong>globally unique</strong>. Make sure you coordinate with
-              other region admins to avoid duplication.
+              Region names must be <strong>globally unique</strong>. Make sure
+              you coordinate with other region admins to avoid duplication.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -203,7 +256,7 @@ function TemplateInfoContent() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 function DemoDashboard() {
@@ -251,22 +304,31 @@ function DemoDashboard() {
 }
 
 function DashboardOverviewCards() {
-  const submissions = useDispatchStore((state) => state.submissions)
-  const pods = usePodStore((state) => state.pods)
-  const roster = usePodStore((state) => state.activeRoster)
+  const submissions = useDispatchStore((state) => state.submissions);
+  const pods = usePodStore((state) => state.pods);
+  const roster = usePodStore((state) => state.activeRoster);
 
   const metrics = useMemo(() => {
-    const totalDispatches = submissions.length
-    const activeDispatches = submissions.filter((entry) => isActiveStatus(entry.status)).length
-    const mobilizing = submissions.filter((entry) => entry.status === "mobilizing").length
-    const podsOnline = pods.length
-    const rosterReady = roster.filter((entry) => entry.status === "active").length
-    const rosterTotal = roster.length
-    const totalPodMembers = pods.reduce((sum, pod) => sum + (pod.team?.length ?? 0), 0)
-    const languages = new Set<string>()
+    const totalDispatches = submissions.length;
+    const activeDispatches = submissions.filter((entry) =>
+      isActiveStatus(entry.status),
+    ).length;
+    const mobilizing = submissions.filter(
+      (entry) => entry.status === "mobilizing",
+    ).length;
+    const podsOnline = pods.length;
+    const rosterReady = roster.filter(
+      (entry) => entry.status === "active",
+    ).length;
+    const rosterTotal = roster.length;
+    const totalPodMembers = pods.reduce(
+      (sum, pod) => sum + (pod.team?.length ?? 0),
+      0,
+    );
+    const languages = new Set<string>();
     roster.forEach((entry) => {
-      entry.langs?.forEach((lang) => languages.add(lang.display_name))
-    })
+      entry.langs?.forEach((lang) => languages.add(lang.display_name));
+    });
 
     return [
       {
@@ -298,57 +360,67 @@ function DashboardOverviewCards() {
             ? "Invite your first volunteers."
             : `${languages.size} languages covered across ${rosterTotal} people.`,
       },
-    ]
-  }, [pods, roster, submissions])
+    ];
+  }, [pods, roster, submissions]);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {metrics.map((metric) => (
         <Card key={metric.key}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{metric.label}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {metric.label}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold">{metric.value}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{metric.subtext}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {metric.subtext}
+            </p>
           </CardContent>
         </Card>
       ))}
     </div>
-  )
+  );
 }
 
 function ResourceCoverageCard() {
-  const pods = usePodStore((state) => state.pods)
-  const podsById = useMemo(() => new Map(pods.map((pod) => [pod.id, pod])), [pods])
-  const shifts = useDispatchStore((state) => state.shifts)
+  const pods = usePodStore((state) => state.pods);
+  const podsById = useMemo(
+    () => new Map(pods.map((pod) => [pod.id, pod])),
+    [pods],
+  );
+  const shifts = useDispatchStore((state) => state.shifts);
 
   const { activeShifts, upcomingShifts } = useMemo(() => {
-    const now = new Date()
-    const cutoff = new Date(now.getTime() + 12 * 60 * 60 * 1000)
+    const now = new Date();
+    const cutoff = new Date(now.getTime() + 12 * 60 * 60 * 1000);
 
-    const active = []
-    const upcoming = []
+    const active = [];
+    const upcoming = [];
 
     for (const shift of shifts) {
-      const start = new Date(shift.startsAt)
-      const end = new Date(shift.endsAt)
-      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) continue
+      const start = new Date(shift.startsAt);
+      const end = new Date(shift.endsAt);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
+        continue;
 
       if (start <= now && end >= now) {
-        active.push(shift)
-        continue
+        active.push(shift);
+        continue;
       }
 
       if (start > now && start <= cutoff) {
-        upcoming.push(shift)
+        upcoming.push(shift);
       }
     }
 
-    upcoming.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+    upcoming.sort(
+      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+    );
 
-    return { activeShifts: active, upcomingShifts: upcoming }
-  }, [shifts])
+    return { activeShifts: active, upcomingShifts: upcoming };
+  }, [shifts]);
 
   return (
     <Card>
@@ -370,17 +442,17 @@ function ResourceCoverageCard() {
         />
       </CardContent>
     </Card>
-  )
+  );
 }
 
 type ShiftPreview = {
-  id: string
-  podId?: string
-  startsAt: string
-  endsAt: string
-  notes?: string
-  volunteerName?: string
-}
+  id: string;
+  podId?: string;
+  startsAt: string;
+  endsAt: string;
+  notes?: string;
+  volunteerName?: string;
+};
 
 function ShiftColumn({
   title,
@@ -388,22 +460,24 @@ function ShiftColumn({
   podsById,
   emptyCopy,
 }: {
-  title: string
-  shifts: ShiftPreview[]
-  podsById: Map<string, { name: string; area?: string }>
-  emptyCopy: string
+  title: string;
+  shifts: ShiftPreview[];
+  podsById: Map<string, { name: string; area?: string }>;
+  emptyCopy: string;
 }) {
   return (
     <div className="space-y-3">
       <div>
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-        <p className="text-xs text-muted-foreground">Pulled from the dispatch roster.</p>
+        <p className="text-xs text-muted-foreground">
+          Pulled from the dispatch roster.
+        </p>
       </div>
       {shifts.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyCopy}</p>
       ) : (
         shifts.slice(0, 3).map((shift) => {
-          const pod = shift.podId ? podsById.get(shift.podId) : undefined
+          const pod = shift.podId ? podsById.get(shift.podId) : undefined;
           return (
             <div
               key={shift.id}
@@ -413,40 +487,52 @@ function ShiftColumn({
                 <span>{pod?.name ?? "Unassigned pod"}</span>
                 <span>{formatRelativeTime(shift.startsAt)}</span>
               </div>
-              <p className="mt-2 text-sm font-medium">{formatTimeRange(shift.startsAt, shift.endsAt)}</p>
+              <p className="mt-2 text-sm font-medium">
+                {formatTimeRange(shift.startsAt, shift.endsAt)}
+              </p>
               {pod?.area ? (
                 <p className="text-xs text-muted-foreground">{pod.area}</p>
               ) : null}
               {shift.notes ? (
-                <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{shift.notes}</p>
+                <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
+                  {shift.notes}
+                </p>
               ) : null}
             </div>
-          )
+          );
         })
       )}
     </div>
-  )
+  );
 }
 
 function ActiveDispatchesPreview() {
-  const submissions = useDispatchStore((state) => state.submissions)
+  const submissions = useDispatchStore((state) => state.submissions);
 
   const items = useMemo(
     () =>
       [...submissions]
         // Filter out non-actionable dispatches
-        .filter((entry) => !["cancelled", "expired", "archived"].includes(entry.status))
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .filter(
+          (entry) =>
+            !["cancelled", "expired", "archived"].includes(entry.status),
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        )
         .slice(0, 4),
     [submissions],
-  )
+  );
 
   return (
     <Card className="h-full">
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div>
           <CardTitle>Dispatch queue</CardTitle>
-          <p className="text-sm text-muted-foreground">Latest entries flowing through the queue.</p>
+          <p className="text-sm text-muted-foreground">
+            Latest entries flowing through the queue.
+          </p>
         </div>
         <Button variant="ghost" size="sm" asChild>
           <Link href="/dispatches">Open dispatch</Link>
@@ -454,16 +540,14 @@ function ActiveDispatchesPreview() {
       </CardHeader>
       <CardContent className="space-y-4">
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No dispatches yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No dispatches yet.</p>
         ) : (
           items.map((submission) => {
-            const statusMeta = STATUS_META[submission.status]
-            const typeLabel = DISPATCH_TYPE_LABELS[submission.type ?? "other"]
-            const requiredRoles = submission.required_roles ?? []
-            const rolePreview = requiredRoles.slice(0, 3).join(", ")
-            const hasMoreRoles = requiredRoles.length > 3
+            const statusMeta = STATUS_META[submission.status];
+            const typeLabel = DISPATCH_TYPE_LABELS[submission.type ?? "other"];
+            const requiredRoles = submission.required_roles ?? [];
+            const rolePreview = requiredRoles.slice(0, 3).join(", ");
+            const hasMoreRoles = requiredRoles.length > 3;
 
             return (
               <div
@@ -472,7 +556,10 @@ function ActiveDispatchesPreview() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="border-none bg-background/60 px-2 py-1 text-xs">
+                    <Badge
+                      variant="outline"
+                      className="border-none bg-background/60 px-2 py-1 text-xs"
+                    >
                       {typeLabel}
                     </Badge>
                     <span>{formatRelativeTime(submission.timestamp)}</span>
@@ -501,18 +588,21 @@ function ActiveDispatchesPreview() {
                   </p>
                 ) : null}
               </div>
-            )
+            );
           })
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function PodsPreview() {
-  const pods = usePodStore((state) => state.pods)
-  const snippets = useMemo(() => pods.slice(0, 4), [pods])
-  const totalRoster = pods.reduce((sum, pod) => sum + (pod.team?.length ?? 0), 0)
+  const pods = usePodStore((state) => state.pods);
+  const snippets = useMemo(() => pods.slice(0, 4), [pods]);
+  const totalRoster = pods.reduce(
+    (sum, pod) => sum + (pod.team?.length ?? 0),
+    0,
+  );
 
   return (
     <Card className="h-full">
@@ -542,14 +632,21 @@ function PodsPreview() {
             >
               <div className="flex items-center justify-between text-sm font-medium">
                 <span>{pod.name}</span>
-                <Badge variant="secondary" className="px-2 py-1 text-xs font-medium">
+                <Badge
+                  variant="secondary"
+                  className="px-2 py-1 text-xs font-medium"
+                >
                   {(pod.team?.length ?? 0).toString()} members
                 </Badge>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{pod.area}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {(pod.channels ?? []).slice(0, 3).map((channel) => (
-                  <Badge key={`${pod.id}-${channel.type}`} variant="outline" className="text-xs">
+                  <Badge
+                    key={`${pod.id}-${channel.type}`}
+                    variant="outline"
+                    className="text-xs"
+                  >
                     {channel.type}
                   </Badge>
                 ))}
@@ -559,71 +656,79 @@ function PodsPreview() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function isActiveStatus(status: DispatchStatus) {
-  return !["completed", "cancelled", "expired", "archived"].includes(status)
+  return !["completed", "cancelled", "expired", "archived"].includes(status);
 }
 
 function formatRelativeTime(value: string) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return "Unknown time"
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown time";
 
-  const diffMs = date.getTime() - Date.now()
-  const isFuture = diffMs > 0
-  const absoluteMinutes = Math.round(Math.abs(diffMs) / 60000)
+  const diffMs = date.getTime() - Date.now();
+  const isFuture = diffMs > 0;
+  const absoluteMinutes = Math.round(Math.abs(diffMs) / 60000);
 
   if (absoluteMinutes < 1) {
-    return isFuture ? "starting now" : "just now"
+    return isFuture ? "starting now" : "just now";
   }
 
   if (absoluteMinutes < 60) {
     return isFuture
       ? `in ${absoluteMinutes} min${absoluteMinutes === 1 ? "" : "s"}`
-      : `${absoluteMinutes} min${absoluteMinutes === 1 ? "" : "s"} ago`
+      : `${absoluteMinutes} min${absoluteMinutes === 1 ? "" : "s"} ago`;
   }
 
-  const absoluteHours = Math.round(absoluteMinutes / 60)
+  const absoluteHours = Math.round(absoluteMinutes / 60);
   if (absoluteHours < 24) {
     return isFuture
       ? `in ${absoluteHours} hr${absoluteHours === 1 ? "" : "s"}`
-      : `${absoluteHours} hr${absoluteHours === 1 ? "" : "s"} ago`
+      : `${absoluteHours} hr${absoluteHours === 1 ? "" : "s"} ago`;
   }
 
-  const absoluteDays = Math.round(absoluteHours / 24)
+  const absoluteDays = Math.round(absoluteHours / 24);
   return isFuture
     ? `in ${absoluteDays} day${absoluteDays === 1 ? "" : "s"}`
-    : `${absoluteDays} day${absoluteDays === 1 ? "" : "s"} ago`
+    : `${absoluteDays} day${absoluteDays === 1 ? "" : "s"} ago`;
 }
 
 function formatTimeRange(start: string, end: string) {
-  const startDate = new Date(start)
-  const endDate = new Date(end)
+  const startDate = new Date(start);
+  const endDate = new Date(end);
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return "Unscheduled"
+    return "Unscheduled";
   }
 
-  const sameDay = startDate.toDateString() === endDate.toDateString()
+  const sameDay = startDate.toDateString() === endDate.toDateString();
   const dateFormatter = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
-  })
+  });
   const timeFormatter = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     minute: "2-digit",
-  })
+  });
 
   if (sameDay) {
-    return `${dateFormatter.format(startDate)} • ${timeFormatter.format(startDate)} – ${timeFormatter.format(endDate)}`
+    return `${dateFormatter.format(startDate)} • ${timeFormatter.format(startDate)} – ${timeFormatter.format(endDate)}`;
   }
 
-  return `${dateFormatter.format(startDate)} ${timeFormatter.format(startDate)} – ${dateFormatter.format(endDate)} ${timeFormatter.format(endDate)}`
+  return `${dateFormatter.format(startDate)} ${timeFormatter.format(startDate)} – ${dateFormatter.format(endDate)} ${timeFormatter.format(endDate)}`;
 }
 
 function QuickStartDrawerContent() {
-  const Item = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+  const Item = ({
+    icon,
+    title,
+    children,
+  }: {
+    icon: React.ReactNode;
+    title: string;
+    children: React.ReactNode;
+  }) => (
     <div className="flex gap-3">
       <div className="mt-0.5 text-muted-foreground">{icon}</div>
       <div>
@@ -631,7 +736,7 @@ function QuickStartDrawerContent() {
         <div className="text-sm text-muted-foreground mt-1">{children}</div>
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -643,87 +748,116 @@ function QuickStartDrawerContent() {
       </DrawerHeader>
       <div className="max-h-[50dvh] overflow-y-auto px-4 pb-4 space-y-5">
         <Item icon={<GraduationCap className="h-5 w-5" />} title="Academy">
-          The Academy is your training hub for learning how this platform and your region operate.
-          Courses are self‑paced and cover both fundamentals and role‑specific practices so you can onboard quickly.
-          As you complete modules, you earn credentials that unlock permissions and responsibilities in other areas of the app.
-          Returning users can use the Academy for refreshers or to track progress toward advanced qualifications.
+          The Academy is your training hub for learning how this platform and
+          your region operate. Courses are self‑paced and cover both
+          fundamentals and role‑specific practices so you can onboard quickly.
+          As you complete modules, you earn credentials that unlock permissions
+          and responsibilities in other areas of the app. Returning users can
+          use the Academy for refreshers or to track progress toward advanced
+          qualifications.
         </Item>
 
         <Item icon={<Shield className="h-5 w-5" />} title="Admin">
-          The Admin area provides region‑level oversight and configuration tools for authorized administrators.
-          Use it to review activity, access audit trails, manage reports, and keep operations compliant with local policies.
-          From here you can tune integrations, branding, and feature availability so the platform matches your needs.
-          Access is restricted to protect sensitive settings while preserving transparency for coordinators.
+          The Admin area provides region‑level oversight and configuration tools
+          for authorized administrators. Use it to review activity, access audit
+          trails, manage reports, and keep operations compliant with local
+          policies. From here you can tune integrations, branding, and feature
+          availability so the platform matches your needs. Access is restricted
+          to protect sensitive settings while preserving transparency for
+          coordinators.
         </Item>
 
         <Item icon={<Eye className="h-5 w-5" />} title="Watch">
           Watch is a live map for situational awareness across your region.
-          Layers and filters help you focus on relevant reports, signals, and activity as conditions change.
-          It’s useful for real‑time monitoring, early triage, and spotting patterns before they turn into dispatches.
-          Teams can use Watch during operations briefings to align on what’s happening right now.
+          Layers and filters help you focus on relevant reports, signals, and
+          activity as conditions change. It’s useful for real‑time monitoring,
+          early triage, and spotting patterns before they turn into dispatches.
+          Teams can use Watch during operations briefings to align on what’s
+          happening right now.
         </Item>
 
-        <Item icon={<CheckCircle2 className="h-5 w-5" />} title="Confirmed Watch">
-          Confirmed Watch highlights reports that coordinators have reviewed and verified for accuracy.
-          This view reduces noise and uncertainty so on‑the‑ground teams can act with confidence.
-          It lives inside Watch as a filter or dedicated layer rather than a separate tool.
-          Use it when you need a trusted baseline for decisions or public communication.
+        <Item
+          icon={<CheckCircle2 className="h-5 w-5" />}
+          title="Confirmed Watch"
+        >
+          Confirmed Watch highlights reports that coordinators have reviewed and
+          verified for accuracy. This view reduces noise and uncertainty so
+          on‑the‑ground teams can act with confidence. It lives inside Watch as
+          a filter or dedicated layer rather than a separate tool. Use it when
+          you need a trusted baseline for decisions or public communication.
         </Item>
 
         <Item icon={<ClipboardList className="h-5 w-5" />} title="Dispatches">
-          Dispatches is the intake‑to‑action pipeline that moves a report from first contact to resolution.
-          Coordinators triage submissions, set status, and record intended actions so everyone sees the current plan.
-          Roles and staffing needs are tracked here, and updates form the running incident log for handoffs.
-          Use Dispatches to keep decisions visible, responsibilities clear, and progress easy to audit.
+          Dispatches is the intake‑to‑action pipeline that moves a report from
+          first contact to resolution. Coordinators triage submissions, set
+          status, and record intended actions so everyone sees the current plan.
+          Roles and staffing needs are tracked here, and updates form the
+          running incident log for handoffs. Use Dispatches to keep decisions
+          visible, responsibilities clear, and progress easy to audit.
         </Item>
 
         <Item icon={<BookOpen className="h-5 w-5" />} title="How to Use">
-          The How‑to guide is a built‑in reference for new and experienced users.
-          It explains common workflows step by step and links concepts across the platform so you can learn in context.
-          Short sections are designed for quick reading during live operations when time is limited.
-          Use it to discover features, clarify terminology, and share consistent practices across teams.
+          The How‑to guide is a built‑in reference for new and experienced
+          users. It explains common workflows step by step and links concepts
+          across the platform so you can learn in context. Short sections are
+          designed for quick reading during live operations when time is
+          limited. Use it to discover features, clarify terminology, and share
+          consistent practices across teams.
         </Item>
 
         <Item icon={<LifeBuoy className="h-5 w-5" />} title="Meet a Need">
-          Meet a Need is a guided intake for community requests that feeds directly into Dispatches.
-          The form collects the essential context up front so coordinators can prioritize quickly and respond appropriately.
-          It is suitable for demos and training, but it also supports real‑world requests when enabled.
-          Clear intake reduces back‑and‑forth and helps volunteers show up prepared.
+          Meet a Need is a guided intake for community requests that feeds
+          directly into Dispatches. The form collects the essential context up
+          front so coordinators can prioritize quickly and respond
+          appropriately. It is suitable for demos and training, but it also
+          supports real‑world requests when enabled. Clear intake reduces
+          back‑and‑forth and helps volunteers show up prepared.
         </Item>
 
         <Item icon={<Search className="h-5 w-5" />} title="Missing Persons">
-          Missing Persons provides structured intake and case tracking when someone is unaccounted for.
-          It captures critical details, contact information, and consent, then centralizes updates in one timeline.
-          The module supports coordination among pods and external partners while protecting sensitive data.
-          Use it to keep search efforts organized and to avoid duplicating work.
+          Missing Persons provides structured intake and case tracking when
+          someone is unaccounted for. It captures critical details, contact
+          information, and consent, then centralizes updates in one timeline.
+          The module supports coordination among pods and external partners
+          while protecting sensitive data. Use it to keep search efforts
+          organized and to avoid duplicating work.
         </Item>
 
         <Item icon={<User className="h-5 w-5" />} title="My Profile">
-          My Profile is where you keep your information accurate and discoverable.
-          Update contact details, languages, and skills so coordinators can match you to the right roles.
-          You control map visibility and availability preferences to respect your boundaries.
-          Keeping this current improves response speed and reduces coordination overhead.
+          My Profile is where you keep your information accurate and
+          discoverable. Update contact details, languages, and skills so
+          coordinators can match you to the right roles. You control map
+          visibility and availability preferences to respect your boundaries.
+          Keeping this current improves response speed and reduces coordination
+          overhead.
         </Item>
 
         <Item icon={<Users className="h-5 w-5" />} title="Pods">
-          Pods are teams organized around people, skills, and geography.
-          Use them to maintain rosters, define communication channels, and assign responsibilities to specific areas.
-          Pods make it easier to see who is available and how coverage changes over time.
-          Well‑structured pods reduce confusion during incidents and improve handoffs.
+          Pods are teams organized around people, skills, and geography. Use
+          them to maintain rosters, define communication channels, and assign
+          responsibilities to specific areas. Pods make it easier to see who is
+          available and how coverage changes over time. Well‑structured pods
+          reduce confusion during incidents and improve handoffs.
         </Item>
 
         <Item icon={<Calendar className="h-5 w-5" />} title="Schedules">
-          Schedules help you plan shifts, roles, and coverage windows across pods.
-          Coordinators can align staffing with expected demand and adjust as conditions change.
-          Clear schedules reduce gaps, prevent burnout, and make accountability visible.
-          Combined with Dispatches, they provide a day‑to‑day rhythm for operations.
+          Schedules help you plan shifts, roles, and coverage windows across
+          pods. Coordinators can align staffing with expected demand and adjust
+          as conditions change. Clear schedules reduce gaps, prevent burnout,
+          and make accountability visible. Combined with Dispatches, they
+          provide a day‑to‑day rhythm for operations.
         </Item>
 
-        <Item icon={<MessagesSquare className="h-5 w-5" />} title="Team Request">
-          Team Request is a structured way to ask for help from specific teams or roles.
-          You can specify what skills are needed, where support is required, and any time constraints.
-          Clear requests make routing and staffing faster because coordinators have the key details up front.
-          It also creates a record that can be tracked to completion or handed off between shifts.
+        <Item
+          icon={<MessagesSquare className="h-5 w-5" />}
+          title="Team Request"
+        >
+          Team Request is a structured way to ask for help from specific teams
+          or roles. You can specify what skills are needed, where support is
+          required, and any time constraints. Clear requests make routing and
+          staffing faster because coordinators have the key details up front. It
+          also creates a record that can be tracked to completion or handed off
+          between shifts.
         </Item>
 
         {/* <Item icon={<SettingsIcon className="h-5 w-5" />} title="Settings">
@@ -740,5 +874,5 @@ function QuickStartDrawerContent() {
         </DrawerClose>
       </DrawerFooter>
     </div>
-  )
+  );
 }

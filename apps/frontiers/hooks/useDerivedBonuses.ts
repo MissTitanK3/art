@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 export function useDerivedBonuses(profileId: string | null, deps: any[] = []) {
-  const [derivedBonuses, setDerivedBonuses] = React.useState<Record<string, number> | null>(null);
+  const [derivedBonuses, setDerivedBonuses] = React.useState<Record<
+    string,
+    number
+  > | null>(null);
   const [derivedBreakdown, setDerivedBreakdown] = React.useState<{
-    items: Array<{ type: 'crew' | 'position'; id: string; name?: string; contributions: Record<string, number> }>;
+    items: Array<{
+      type: "crew" | "position";
+      id: string;
+      name?: string;
+      contributions: Record<string, number>;
+    }>;
     auras: string[];
     sets?: string[];
   } | null>(null);
@@ -18,9 +26,9 @@ export function useDerivedBonuses(profileId: string | null, deps: any[] = []) {
       }
       try {
         const u = new URL(window.location.href);
-        u.pathname = '/api/ship/state';
-        u.searchParams.set('profile_id', profileId);
-        const res = await fetch(u.toString(), { cache: 'no-store' });
+        u.pathname = "/api/ship/state";
+        u.searchParams.set("profile_id", profileId);
+        const res = await fetch(u.toString(), { cache: "no-store" });
         const json = await res.json();
         if (res.ok) {
           setDerivedBonuses(json.bonuses || null);

@@ -1,7 +1,12 @@
-import { DispatchStatus, DispatchType, DispatchUpdate, LogisticsItem } from './dispatch.ts';
-import { RosterEntry } from './pod.ts';
-import { WeeklyAvailability } from './profile.ts';
-import { AccessRole, FieldRole, VerifiedBy } from './roles.ts';
+import {
+  DispatchStatus,
+  DispatchType,
+  DispatchUpdate,
+  LogisticsItem,
+} from "./dispatch.ts";
+import { RosterEntry } from "./pod.ts";
+import { WeeklyAvailability } from "./profile.ts";
+import { AccessRole, FieldRole, VerifiedBy } from "./roles.ts";
 
 export type LinkLikeProps = {
   href?: string;
@@ -48,7 +53,7 @@ export interface DispatchSubmission {
   auto_delete_after?: string | null;
   integrity_hash?: string;
   submitted_by?: string | null;
-  source?: 'dispatch' | 'manual' | 'system';
+  source?: "dispatch" | "manual" | "system";
   visibility_radius_km?: number;
   status: DispatchStatus;
   assigned_volunteers?: Partial<RosterEntry>[];

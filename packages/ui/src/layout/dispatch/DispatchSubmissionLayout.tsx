@@ -31,11 +31,21 @@ import { toast } from "sonner";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
-  defaultTab?: "overview" | "roles" | "updates" | "logistics" | "public_engagement" | "comms";
+  defaultTab?:
+    | "overview"
+    | "roles"
+    | "updates"
+    | "logistics"
+    | "public_engagement"
+    | "comms";
   loadingMessage?: React.ReactNode;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
@@ -60,11 +70,16 @@ export function DispatchSubmissionLayout({
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
-  const eventDate = submission.date_of_event ? new Date(submission.date_of_event).toLocaleString() : undefined;
-
+  const eventDate = submission.date_of_event
+    ? new Date(submission.date_of_event).toLocaleString()
+    : undefined;
 
   const handleShare = () => {
-    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard) {
+    if (
+      typeof window === "undefined" ||
+      typeof navigator === "undefined" ||
+      !navigator.clipboard
+    ) {
       toast.error("Clipboard access unavailable");
       return;
     }
@@ -90,8 +105,12 @@ export function DispatchSubmissionLayout({
       submission.intended_action_notes
         ? `📝 Notes: ${submission.intended_action_notes}`
         : null,
-      submission.public_signal_link ? `🔗 Public Link: ${submission.public_signal_link}` : null,
-      submission.signal_link ? `🔒 Private Dispatch Link: ${submission.signal_link}` : null,
+      submission.public_signal_link
+        ? `🔗 Public Link: ${submission.public_signal_link}`
+        : null,
+      submission.signal_link
+        ? `🔒 Private Dispatch Link: ${submission.signal_link}`
+        : null,
     ]
       .filter(Boolean)
       .join("\n");
@@ -112,16 +131,31 @@ export function DispatchSubmissionLayout({
   const overviewSections = [
     {
       id: "location",
-      content: <DispatchLocationUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+      content: (
+        <DispatchLocationUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
     {
       id: "date-of-event",
       // label: "Event Date/Time",
-      content: <DispatchDateOfEventUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+      content: (
+        <DispatchDateOfEventUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
     {
       id: "location-pin",
-      content: <DispatchLocationPinSelector submission={submission} onUpdate={onUpdateSubmission} />,
+      content: (
+        <DispatchLocationPinSelector
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
     {
       id: "intended-action",
@@ -135,11 +169,21 @@ export function DispatchSubmissionLayout({
     },
     {
       id: "notes",
-      content: <DispatchNotesUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+      content: (
+        <DispatchNotesUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
     {
       id: "signal-link",
-      content: <DispatchSignalLinkUpdater submission={submission} onUpdate={onUpdateSubmission} />,
+      content: (
+        <DispatchSignalLinkUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
     },
     {
       id: "public-signal-link",
@@ -160,7 +204,10 @@ export function DispatchSubmissionLayout({
             <h2 className="text-lg font-bold">{locationLabel}</h2>
           ) : null}
           {timestamp ? (
-            <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+            <p
+              className="text-xs text-muted-foreground"
+              suppressHydrationWarning
+            >
               {eventDate ? `Event: ${eventDate}` : timestamp}
             </p>
           ) : null}
@@ -172,7 +219,10 @@ export function DispatchSubmissionLayout({
           ) : null}
         </div>
         <div className="mt-3 flex flex-col items-center gap-2 sm:mt-0 sm:flex-row">
-          <DispatchStatusUpdater submission={submission} onUpdate={onUpdateSubmission} />
+          <DispatchStatusUpdater
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
           <Button size="sm" variant="outline" onClick={handleShare}>
             Share <Share2 className="ml-1 h-4 w-4" />
           </Button>
@@ -193,10 +243,13 @@ export function DispatchSubmissionLayout({
             <Alert>
               <AlertTitle>Confirm and document detention details</AlertTitle>
               <AlertDescription>
-                If this incident involves a detention or arrest, capture identifiers and facility details so advocates can act fast.
+                If this incident involves a detention or arrest, capture
+                identifiers and facility details so advocates can act fast.
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button size="sm" asChild>
-                    <a href="/missing-persons/intake">Open Missing Persons Intake</a>
+                    <a href="/missing-persons/intake">
+                      Open Missing Persons Intake
+                    </a>
                   </Button>
                   <Button size="sm" variant="outline" asChild>
                     <a href="/missing-persons">View Directory</a>
@@ -247,7 +300,9 @@ export function DispatchSubmissionLayout({
             <CardContent className="space-y-3 text-sm" suppressHydrationWarning>
               {overviewSections.map((section, index) => (
                 <div key={section.id ?? index}>
-                  {section.label ? <p className="font-medium">{section.label}</p> : null}
+                  {section.label ? (
+                    <p className="font-medium">{section.label}</p>
+                  ) : null}
                   <div>{section.content}</div>
                 </div>
               ))}
@@ -283,7 +338,10 @@ export function DispatchSubmissionLayout({
         </TabsContent>
 
         <TabsContent value="logistics" className="flex-1">
-          <LogisticsPanel submission={submission} onUpdate={onUpdateSubmission} />
+          <LogisticsPanel
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
         </TabsContent>
 
         <TabsContent value="public_engagement" className="flex-1">

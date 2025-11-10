@@ -45,12 +45,14 @@ export type AuthClientAdapter = {
   /** Passwordless magic-link or OTP flow. */
   signInWithOtp?: (payload: OtpSignInPayload) => Promise<void>;
   /** Optional password sign-up flow. Returns session if auto-confirmed. */
-  signUpWithPassword?: (payload: PasswordSignUpPayload) => Promise<AuthSession | null>;
+  signUpWithPassword?: (
+    payload: PasswordSignUpPayload,
+  ) => Promise<AuthSession | null>;
   /** Sign the current user out. */
   signOut: () => Promise<void>;
   /** Subscribe to session changes emitted by the provider SDK. */
   onSessionChanged?: (
-    callback: (session: AuthSession | null) => void
+    callback: (session: AuthSession | null) => void,
   ) => () => void;
 };
 

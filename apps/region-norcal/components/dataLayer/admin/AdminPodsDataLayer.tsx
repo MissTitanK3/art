@@ -5,4 +5,3 @@ export default async function AdminPodsDataLayer() {
   const pods = await getPods();
   return <PodsClient initialPods={pods} />;
 }
-

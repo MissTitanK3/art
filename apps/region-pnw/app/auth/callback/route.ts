@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   if (!url || !anonKey) {
     return NextResponse.json(
       { error: "Supabase is not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -58,9 +58,16 @@ export async function POST(req: Request) {
   const refreshToken = body?.session?.refresh_token ?? null;
 
   try {
-    if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+    if (
+      event === "SIGNED_IN" ||
+      event === "TOKEN_REFRESHED" ||
+      event === "USER_UPDATED"
+    ) {
       if (accessToken && refreshToken) {
-        await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
       } else {
         // fall back to querying current session to ensure cookies are set
         await supabase.auth.getSession();
@@ -79,7 +86,7 @@ export async function POST(req: Request) {
 export async function GET() {
   return new Response(null, {
     status: 204,
-    headers: { 'cache-control': 'no-store' },
+    headers: { "cache-control": "no-store" },
   });
 }
 

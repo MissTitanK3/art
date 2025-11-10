@@ -20,18 +20,16 @@ type AuthContextValue = {
   status: AuthStatus;
   setSession: (session: AuthSession | null) => void;
   refresh: () => Promise<AuthSession | null>;
-  signInWithPassword: (
-    payload: PasswordSignInPayload
-  ) => Promise<AuthSession>;
+  signInWithPassword: (payload: PasswordSignInPayload) => Promise<AuthSession>;
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
   signUpWithPassword?: (
-    payload: PasswordSignUpPayload
+    payload: PasswordSignUpPayload,
   ) => Promise<AuthSession | null>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 type AuthProviderProps = {
@@ -43,15 +41,18 @@ function toStatus(session: AuthSession | null): AuthStatus {
   return session ? "authenticated" : "unauthenticated";
 }
 
-export function AuthProvider({ children, initialSession = null }: AuthProviderProps) {
+export function AuthProvider({
+  children,
+  initialSession = null,
+}: AuthProviderProps) {
   const providerId = React.useMemo(() => getAuthProviderId(), []);
   const clientRef = React.useRef<AuthClientAdapter | null>(null);
 
   const [session, setSession] = React.useState<AuthSession | null>(
-    initialSession
+    initialSession,
   );
   const [status, setStatus] = React.useState<AuthStatus>(
-    toStatus(initialSession)
+    toStatus(initialSession),
   );
 
   const ensureClient = React.useCallback(async () => {
@@ -127,7 +128,7 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       const client = await ensureClient();
       if (!client.signInWithPassword) {
         throw new Error(
-          `${providerId} adapter does not support password sign-in`
+          `${providerId} adapter does not support password sign-in`,
         );
       }
       const next = await client.signInWithPassword(payload);
@@ -135,7 +136,7 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       setStatus(toStatus(next));
       return next;
     },
-    [ensureClient, providerId]
+    [ensureClient, providerId],
   );
 
   const signInWithOtp = React.useCallback(
@@ -143,12 +144,12 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       const client = await ensureClient();
       if (!client.signInWithOtp) {
         throw new Error(
-          `${providerId} adapter does not support magic-link sign-in`
+          `${providerId} adapter does not support magic-link sign-in`,
         );
       }
       await client.signInWithOtp(payload);
     },
-    [ensureClient, providerId]
+    [ensureClient, providerId],
   );
 
   const signOut = React.useCallback(async () => {
@@ -162,7 +163,9 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
     async (payload: PasswordSignUpPayload) => {
       const client = await ensureClient();
       if (!client.signUpWithPassword) {
-        throw new Error(`${providerId} adapter does not support password sign-up`);
+        throw new Error(
+          `${providerId} adapter does not support password sign-up`,
+        );
       }
       const next = await client.signUpWithPassword(payload);
       if (next) {
@@ -171,7 +174,7 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       }
       return next;
     },
-    [ensureClient, providerId]
+    [ensureClient, providerId],
   );
 
   const value = React.useMemo<AuthContextValue>(
@@ -187,7 +190,16 @@ export function AuthProvider({ children, initialSession = null }: AuthProviderPr
       signOut,
       signUpWithPassword,
     }),
-    [providerId, session, status, refresh, signInWithPassword, signInWithOtp, signOut, signUpWithPassword]
+    [
+      providerId,
+      session,
+      status,
+      refresh,
+      signInWithPassword,
+      signInWithOtp,
+      signOut,
+      signUpWithPassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

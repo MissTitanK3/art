@@ -1,5 +1,5 @@
-import HeatmapClient from '@/components/map/HeatmapClient';
-import { Suspense } from 'react';
+import HeatmapClient from "@/components/map/HeatmapClient";
+import { Suspense } from "react";
 
 export default function HeatmapPage() {
   return (

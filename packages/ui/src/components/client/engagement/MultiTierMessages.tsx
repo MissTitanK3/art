@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { Button } from "@workspace/ui/components/button";
-
-
 
 // --- Urgency options ---
 const URGENCY_OPTIONS = [
@@ -23,7 +27,7 @@ export function MultiTierMessages({
   urgency,
   setUrgency,
 }: {
-  msgs: { callout: string, detailed: string; medium: string; tldr: string };
+  msgs: { callout: string; detailed: string; medium: string; tldr: string };
   urgency: string;
   setUrgency: (u: string) => void;
 }) {
@@ -70,5 +74,3 @@ export function MultiTierMessages({
     </div>
   );
 }
-
-

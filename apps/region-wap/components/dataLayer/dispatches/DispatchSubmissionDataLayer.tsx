@@ -7,7 +7,10 @@ import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/Dispatch
 
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-import type { DispatchUpdate, LogisticsItem } from "@workspace/store/types/dispatch";
+import type {
+  DispatchUpdate,
+  LogisticsItem,
+} from "@workspace/store/types/dispatch";
 import CommsDashboardDataLayer from "@/components/dataLayer/dispatches/CommsDashboardDataLayer";
 
 type Props = {
@@ -17,42 +20,79 @@ type Props = {
 function mapRowToSubmission(row: any): DispatchSubmission {
   const updates = Array.isArray(row?.updates) ? row.updates : [];
   const logistics = Array.isArray(row?.logistics) ? row.logistics : [];
-  const location = row?.location && typeof row.location === "object" ? row.location : undefined;
+  const location =
+    row?.location && typeof row.location === "object"
+      ? row.location
+      : undefined;
   return {
     id: String(row.id ?? crypto.randomUUID()),
     type: row?.type ?? undefined,
     location,
     timestamp: String(row?.timestamp ?? new Date().toISOString()),
-    date_of_event: typeof row?.date_of_event === "string" ? row.date_of_event : row?.date_of_event ?? undefined,
+    date_of_event:
+      typeof row?.date_of_event === "string"
+        ? row.date_of_event
+        : (row?.date_of_event ?? undefined),
     flagged: Boolean(row?.flagged ?? false),
-    required_roles: Array.isArray(row?.required_roles) ? row.required_roles : undefined,
-    encrypted_payload: typeof row?.encrypted_payload === "string" ? row.encrypted_payload : undefined,
+    required_roles: Array.isArray(row?.required_roles)
+      ? row.required_roles
+      : undefined,
+    encrypted_payload:
+      typeof row?.encrypted_payload === "string"
+        ? row.encrypted_payload
+        : undefined,
     auto_delete_after: row?.auto_delete_after ?? null,
-    integrity_hash: typeof row?.integrity_hash === "string" ? row.integrity_hash : undefined,
+    integrity_hash:
+      typeof row?.integrity_hash === "string" ? row.integrity_hash : undefined,
     submitted_by: row?.submitted_by ?? null,
     source: row?.source ?? undefined,
-    visibility_radius_km: typeof row?.visibility_radius_km === "number" ? row.visibility_radius_km : undefined,
+    visibility_radius_km:
+      typeof row?.visibility_radius_km === "number"
+        ? row.visibility_radius_km
+        : undefined,
     status: (row?.status as any) ?? "unconfirmed",
-    assigned_volunteers: Array.isArray(row?.assigned_volunteers) ? row.assigned_volunteers : undefined,
-    required_roles_by_type: typeof row?.required_roles_by_type === "object" && row?.required_roles_by_type
-      ? row.required_roles_by_type
+    assigned_volunteers: Array.isArray(row?.assigned_volunteers)
+      ? row.assigned_volunteers
       : undefined,
-    location_label: typeof row?.location_label === "string" ? row.location_label : undefined,
+    required_roles_by_type:
+      typeof row?.required_roles_by_type === "object" &&
+        row?.required_roles_by_type
+        ? row.required_roles_by_type
+        : undefined,
+    location_label:
+      typeof row?.location_label === "string" ? row.location_label : undefined,
     point_of_contact: row?.point_of_contact ?? null,
     state: typeof row?.state === "string" ? row.state : undefined,
-    intended_action_preset: typeof row?.intended_action_preset === "string" ? row.intended_action_preset : undefined,
-    intended_action_notes: typeof row?.intended_action_notes === "string" ? row.intended_action_notes : undefined,
-    intended_actions: Array.isArray(row?.intended_actions) ? row.intended_actions : undefined,
-    intended_actions_custom: typeof row?.intended_actions_custom === "string" ? row.intended_actions_custom : undefined,
-    signal_link: typeof row?.signal_link === "string" ? row.signal_link : undefined,
-    public_signal_link: typeof row?.public_signal_link === "string" ? row.public_signal_link : undefined,
+    intended_action_preset:
+      typeof row?.intended_action_preset === "string"
+        ? row.intended_action_preset
+        : undefined,
+    intended_action_notes:
+      typeof row?.intended_action_notes === "string"
+        ? row.intended_action_notes
+        : undefined,
+    intended_actions: Array.isArray(row?.intended_actions)
+      ? row.intended_actions
+      : undefined,
+    intended_actions_custom:
+      typeof row?.intended_actions_custom === "string"
+        ? row.intended_actions_custom
+        : undefined,
+    signal_link:
+      typeof row?.signal_link === "string" ? row.signal_link : undefined,
+    public_signal_link:
+      typeof row?.public_signal_link === "string"
+        ? row.public_signal_link
+        : undefined,
     training: Boolean(row?.training ?? false),
     updates,
     logistics,
   } as DispatchSubmission;
 }
 
-async function fetchDispatchSubmissionFromDatabase(id: string): Promise<DispatchSubmission | null> {
+async function fetchDispatchSubmissionFromDatabase(
+  id: string,
+): Promise<DispatchSubmission | null> {
   try {
     const client = getSupabaseBrowserClient();
     const { data, error } = await client
@@ -106,7 +146,10 @@ async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
     const rows = Array.isArray(data) ? data : [];
     return rows.map(mapRowToUpdate);
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase fetch updates error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase fetch updates error",
+      e,
+    );
     return [];
   }
 }
@@ -123,12 +166,18 @@ async function fetchSubmissionLogistics(id: string): Promise<LogisticsItem[]> {
     const rows = Array.isArray(data) ? data : [];
     return rows.map(mapRowToLogistics);
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase fetch logistics error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase fetch logistics error",
+      e,
+    );
     return [];
   }
 }
 
-async function persistSubmissionPatchToDatabase(id: string, patch: Partial<DispatchSubmission>): Promise<void> {
+async function persistSubmissionPatchToDatabase(
+  id: string,
+  patch: Partial<DispatchSubmission>,
+): Promise<void> {
   // Filter only top-level submission fields that live on dispatch_submissions
   const allowed: Record<string, any> = {};
   const keys: (keyof DispatchSubmission)[] = [
@@ -173,11 +222,17 @@ async function persistSubmissionPatchToDatabase(id: string, patch: Partial<Dispa
       .eq("id", id);
     if (error) throw error;
   } catch (e: any) {
-    console.warn("[DispatchSubmissionDataLayer] supabase persist submission error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase persist submission error",
+      e,
+    );
   }
 }
 
-async function insertUpdateRow(dispatchId: string, update: DispatchUpdate): Promise<void> {
+async function insertUpdateRow(
+  dispatchId: string,
+  update: DispatchUpdate,
+): Promise<void> {
   try {
     const client = getSupabaseBrowserClient();
     const payload = {
@@ -191,7 +246,10 @@ async function insertUpdateRow(dispatchId: string, update: DispatchUpdate): Prom
     const { error } = await client.from("dispatch_updates").insert(payload);
     if (error) throw error;
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase insert update error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase insert update error",
+      e,
+    );
   }
 }
 
@@ -204,17 +262,26 @@ async function updateUpdateRow(updateId: string, text: string): Promise<void> {
       .eq("id", updateId);
     if (error) throw error;
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase update update error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase update update error",
+      e,
+    );
   }
 }
 
 async function deleteUpdateRow(updateId: string): Promise<void> {
   try {
     const client = getSupabaseBrowserClient();
-    const { error } = await client.from("dispatch_updates").delete().eq("id", updateId);
+    const { error } = await client
+      .from("dispatch_updates")
+      .delete()
+      .eq("id", updateId);
     if (error) throw error;
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase delete update error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase delete update error",
+      e,
+    );
   }
 }
 
@@ -295,15 +362,19 @@ async function persistLogisticsDiff(
       if (error) throw error;
     }
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase persist logistics error", e);
+    console.warn(
+      "[DispatchSubmissionDataLayer] supabase persist logistics error",
+      e,
+    );
   }
 }
 
 export default function DispatchSubmissionDataLayer({ id }: Props) {
-  const storeSubmission = useDispatchStore((s) => s.submissions.find((sub) => sub.id === id));
+  const storeSubmission = useDispatchStore((s) =>
+    s.submissions.find((sub) => sub.id === id),
+  );
   const updateSubmission = useDispatchStore((s) => s.updateSubmission);
   const addSubmission = useDispatchStore((s) => s.addSubmission);
-  const removeSubmission = useDispatchStore((s) => s.removeSubmission);
   const fetchedRef = React.useRef<string | null>(null);
   const roster = usePodStore((s) => s.activeRoster);
   const [loading, setLoading] = React.useState(false);
@@ -340,16 +411,13 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
             updateSubmission(hydrated.id, hydrated);
           }
           setLoading(false);
-        } else if (!cancelled && !result) {
-          // Not found in backend: ensure any stale local copy is removed
-          if (storeSubmission) {
-            removeSubmission(id);
-          }
-          setLoading(false);
         }
       } catch (error) {
         if (!cancelled) {
-          console.warn("DispatchSubmissionDataLayer: failed to fetch submission", error);
+          console.warn(
+            "DispatchSubmissionDataLayer: failed to fetch submission",
+            error,
+          );
         }
       } finally {
         if (!cancelled) {
@@ -363,7 +431,7 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [id, updateSubmission, addSubmission, removeSubmission, storeSubmission]);
+  }, [id, updateSubmission, addSubmission, storeSubmission]);
 
   const submission = storeSubmission;
 
@@ -398,7 +466,9 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
     updateSubmission(submission.id, patch);
   };
 
-  const handleAddUpdate = async (u: Omit<DispatchUpdate, "id" | "createdAt">) => {
+  const handleAddUpdate = async (
+    u: Omit<DispatchUpdate, "id" | "createdAt">,
+  ) => {
     const newUpdate: DispatchUpdate = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
@@ -434,14 +504,18 @@ export default function DispatchSubmissionDataLayer({ id }: Props) {
     } catch (e) {
       // already logged
     }
-    const nextUpdates = (submission.updates ?? []).filter((u) => u.id !== updateId);
+    const nextUpdates = (submission.updates ?? []).filter(
+      (u) => u.id !== updateId,
+    );
     updateSubmission(submission.id, { updates: nextUpdates });
   };
 
   return (
     <DispatchSubmissionLayout
       submission={submission}
-      loadingMessage={loading ? "Loading latest dispatch details..." : undefined}
+      loadingMessage={
+        loading ? "Loading latest dispatch details..." : undefined
+      }
       onUpdateSubmission={handleUpdateSubmission}
       onAddUpdate={handleAddUpdate}
       onEditUpdate={handleEditUpdate}

@@ -20,7 +20,7 @@ export const NextImageAdapter: ImageComponent = ({
 
   return (
     <NextImage
-      src={src as any}               // Next can accept StaticImport if you pass one
+      src={src as any} // Next can accept StaticImport if you pass one
       alt={alt}
       className={className}
       style={style}

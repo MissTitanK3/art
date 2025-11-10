@@ -14,9 +14,7 @@ import { Textarea } from "../../textarea";
 import { StringArrayField, TransferArrayField } from "../../form-array-fields";
 import { DetailGrid, DetailItem } from "./DetailGrid";
 import { formatList, formatText, formatTransfers } from "./utils";
-import type {
-  DetaineeIntake,
-} from "@workspace/ui/types/missing-person-intake";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 interface BaseProps {
   title?: React.ReactNode;
@@ -39,7 +37,8 @@ export type DetentionDetailsSectionProps = EditProps | ViewProps;
 
 export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
   const title = props.title ?? "Detention Details";
-  const description = props.description ?? "Where they were last seen and custody updates.";
+  const description =
+    props.description ?? "Where they were last seen and custody updates.";
   const sectionName = props.sectionName ?? "Detention Details";
 
   if (props.mode === "view") {
@@ -48,15 +47,30 @@ export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
       <FormSectionCard title={title} description={description}>
         <div className="space-y-6">
           <DetailGrid>
-            <DetailItem label="Last Known Facility" value={formatText(data.lastKnownFacility)} />
-            <DetailItem label="Last Known City" value={formatText(data.lastKnownCity)} />
+            <DetailItem
+              label="Last Known Facility"
+              value={formatText(data.lastKnownFacility)}
+            />
+            <DetailItem
+              label="Last Known City"
+              value={formatText(data.lastKnownCity)}
+            />
           </DetailGrid>
-          <DetailItem label="Arresting Officers" value={formatList(data.arrestingOfficers, "None recorded")} />
+          <DetailItem
+            label="Arresting Officers"
+            value={formatList(data.arrestingOfficers, "None recorded")}
+          />
           <DetailItem
             label="Stated Reason for Detention"
-            value={formatText(data.statedReasonForDetention, "No reason recorded")}
+            value={formatText(
+              data.statedReasonForDetention,
+              "No reason recorded",
+            )}
           />
-          <DetailItem label="Known Transfers" value={formatTransfers(data.knownTransfers)} />
+          <DetailItem
+            label="Known Transfers"
+            value={formatTransfers(data.knownTransfers)}
+          />
           <DetailGrid>
             <DetailItem
               label="Belongings Left Behind"
@@ -125,7 +139,11 @@ export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
           <FormItem>
             <FormLabel>Stated Reason for Detention</FormLabel>
             <FormControl>
-              <Textarea {...field} rows={3} placeholder="Reason given by officers" />
+              <Textarea
+                {...field}
+                rows={3}
+                placeholder="Reason given by officers"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -146,7 +164,11 @@ export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
             <FormItem>
               <FormLabel>Belongings Left Behind</FormLabel>
               <FormControl>
-                <Textarea {...field} rows={3} placeholder="Items retained by friends, family, or officers" />
+                <Textarea
+                  {...field}
+                  rows={3}
+                  placeholder="Items retained by friends, family, or officers"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -159,7 +181,11 @@ export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
             <FormItem>
               <FormLabel>Dependents Left Behind</FormLabel>
               <FormControl>
-                <Textarea {...field} rows={3} placeholder="Children, elders, or others who need support" />
+                <Textarea
+                  {...field}
+                  rows={3}
+                  placeholder="Children, elders, or others who need support"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

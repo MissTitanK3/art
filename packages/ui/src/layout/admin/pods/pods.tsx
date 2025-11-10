@@ -2,8 +2,21 @@
 
 import * as React from "react";
 import type { Pod } from "@workspace/store/types/pod.ts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/table";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Input } from "@workspace/ui/components/input";
@@ -11,7 +24,13 @@ import { toast } from "sonner";
 import { slugify } from "@workspace/store/types/pod.ts";
 import { Plus, Archive, Edit, Users } from "lucide-react";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog";
 import { Label } from "@workspace/ui/components/label";
 
 type Props = {
@@ -28,26 +47,35 @@ export default function PodsClient({ initialPods }: Props) {
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((p) => [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q));
+    return rows.filter((p) =>
+      [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q),
+    );
   }, [rows, query]);
 
   async function createPod() {
     const name = prompt("Pod name");
     if (!name || !name.trim()) return;
     try {
-      const res = await fetch('/api/admin/pods', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/admin/pods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim() }),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       const json = (await res.json()) as { pod: any };
       const p = json.pod;
-      const pod: Pod = { id: String(p.id), slug: String(p.slug), name: String(p.name), area: String(p.area ?? ''), channels: Array.isArray(p.channels) ? p.channels : [], team: [] };
+      const pod: Pod = {
+        id: String(p.id),
+        slug: String(p.slug),
+        name: String(p.name),
+        area: String(p.area ?? ""),
+        channels: Array.isArray(p.channels) ? p.channels : [],
+        team: [],
+      };
       setRows((prev) => [pod, ...prev]);
-      toast.success('Pod created');
+      toast.success("Pod created");
     } catch (e: any) {
-      toast.error(e?.message ?? 'Create failed');
+      toast.error(e?.message ?? "Create failed");
     }
   }
 
@@ -64,18 +92,30 @@ export default function PodsClient({ initialPods }: Props) {
     const current = rows.find((p) => p.id === id);
     try {
       const res = await fetch(`/api/admin/pods/${encodeURIComponent(id)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: nextName }),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       const json = (await res.json()) as { pod?: any };
-      const p = json.pod ?? { id, name: nextName, slug: slugify(nextName), area: current?.area, channels: current?.channels };
-      setRows((prev) => prev.map((x) => (x.id === id ? { ...x, name: String(p.name), slug: String(p.slug) } : x)));
-      toast.success('Pod renamed');
+      const p = json.pod ?? {
+        id,
+        name: nextName,
+        slug: slugify(nextName),
+        area: current?.area,
+        channels: current?.channels,
+      };
+      setRows((prev) =>
+        prev.map((x) =>
+          x.id === id
+            ? { ...x, name: String(p.name), slug: String(p.slug) }
+            : x,
+        ),
+      );
+      toast.success("Pod renamed");
       setRenameOpen(false);
     } catch (e: any) {
-      toast.error(e?.message ?? 'Rename failed');
+      toast.error(e?.message ?? "Rename failed");
     }
   }
 
@@ -84,12 +124,14 @@ export default function PodsClient({ initialPods }: Props) {
     if (!p) return;
     if (!confirm(`Archive pod “${p.name}”?`)) return;
     try {
-      const res = await fetch(`/api/admin/pods/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/pods/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       setRows((prev) => prev.filter((x) => x.id !== id));
-      toast.success('Pod archived');
+      toast.success("Pod archived");
     } catch (e: any) {
-      toast.error(e?.message ?? 'Archive failed');
+      toast.error(e?.message ?? "Archive failed");
     }
   }
 
@@ -107,7 +149,9 @@ export default function PodsClient({ initialPods }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Organize pods and membership</CardTitle>
-          <CardDescription>Search, rename, or archive pods. Manage membership in pod detail.</CardDescription>
+          <CardDescription>
+            Search, rename, or archive pods. Manage membership in pod detail.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-3 items-center mb-4">
@@ -136,7 +180,9 @@ export default function PodsClient({ initialPods }: Props) {
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span>{pod.name}</span>
-                        <span className="text-xs text-muted-foreground">{pod.slug}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {pod.slug}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>{pod.area}</TableCell>
@@ -157,10 +203,18 @@ export default function PodsClient({ initialPods }: Props) {
                             <Users className="h-4 w-4 mr-2" /> Members
                           </a>
                         </Button>
-                        <Button variant="secondary" size="sm" onClick={() => openRename(pod)}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => openRename(pod)}
+                        >
                           <Edit className="h-4 w-4 mr-2" /> Rename
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => archivePod(pod.id)}>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => archivePod(pod.id)}
+                        >
                           <Archive className="h-4 w-4 mr-2" /> Archive
                         </Button>
                       </div>
@@ -206,11 +260,23 @@ function RenameDialog({
         </DialogHeader>
         <div className="grid gap-2 py-2">
           <Label htmlFor="pod-name">Name</Label>
-          <Input id="pod-name" value={value} onChange={(e) => onChange(e.target.value)} />
+          <Input
+            id="pod-name"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
         </div>
         <DialogFooter>
-          <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button type="button" onClick={onSubmit}>Save</Button>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button type="button" onClick={onSubmit}>
+            Save
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

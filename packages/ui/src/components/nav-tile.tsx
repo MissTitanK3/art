@@ -11,7 +11,13 @@ type Props = {
   className?: string;
 };
 
-export default function NavTile({ href, icon, label, description, className }: Props) {
+export default function NavTile({
+  href,
+  icon,
+  label,
+  description,
+  className,
+}: Props) {
   return (
     <a
       href={href}
@@ -21,7 +27,9 @@ export default function NavTile({ href, icon, label, description, className }: P
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="rounded-md border p-2 text-muted-foreground group-hover:text-foreground">{icon}</div>
+        <div className="rounded-md border p-2 text-muted-foreground group-hover:text-foreground">
+          {icon}
+        </div>
         <div className="flex-1">
           <div className="font-medium">{label}</div>
           {description ? (
@@ -32,4 +40,3 @@ export default function NavTile({ href, icon, label, description, className }: P
     </a>
   );
 }
-

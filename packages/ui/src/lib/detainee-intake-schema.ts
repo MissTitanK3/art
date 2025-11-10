@@ -12,7 +12,7 @@ export const DetaineeIntakeSchema = z.object({
         phone: z.string().optional(),
         email: z.string().optional(),
         relation: z.string().optional(),
-      })
+      }),
     )
     .optional(),
   dispatcherContact: z
@@ -44,7 +44,7 @@ export const DetaineeIntakeSchema = z.object({
         toFacility: z.string().optional(),
         transferDate: z.string().optional(),
         method: z.string().optional(),
-      })
+      }),
     )
     .optional(),
   belongingsLeftBehind: z.string().optional(),
@@ -56,7 +56,7 @@ export const DetaineeIntakeSchema = z.object({
         phone: z.string().optional(),
         email: z.string().optional(),
         relation: z.string().optional(),
-      })
+      }),
     )
     .optional(),
   priorAttorney: z.string().optional(),
@@ -71,7 +71,7 @@ export const DetaineeIntakeSchema = z.object({
         details: z.string().optional(),
         timestamp: z.string().optional(),
         confidence: z.number().min(1).max(5).optional(),
-      })
+      }),
     )
     .optional(),
   lastUpdated: z.string().optional(),

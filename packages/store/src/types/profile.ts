@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { AccessRoles, FIELD_ROLE_OPTIONS, VerifiedBy } from './roles.ts';
+import { z } from "zod";
+import { AccessRoles, FIELD_ROLE_OPTIONS, VerifiedBy } from "./roles.ts";
 
 /** DB-enforced enums */
 
@@ -42,15 +42,16 @@ export const WeeklyAvailabilitySchema = z
   })
   .default({ blocks: {} });
 
-export const SIGNAL_HANDLE_RE = /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{0,8}|1000000000)$/;
+export const SIGNAL_HANDLE_RE =
+  /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{0,8}|1000000000)$/;
 
 export const DispatchProfileSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid().nullable().optional(),
-  display_name: z.string().default(''),
-  access_role: z.enum(AccessRoles).default('team_member'),
+  display_name: z.string().default(""),
+  access_role: z.enum(AccessRoles).default("team_member"),
   field_roles: z.array(z.enum(FIELD_ROLE_OPTIONS)).default([]),
-  verified_by: z.enum(VerifiedBy).default('self'),
+  verified_by: z.enum(VerifiedBy).default("self"),
   affiliation: z.string().nullable().optional(),
   availability: z.boolean().nullable().optional(),
   contact_signal: z
@@ -59,13 +60,13 @@ export const DispatchProfileSchema = z.object({
     .optional()
     .refine(
       (v) => !v || SIGNAL_HANDLE_RE.test(v),
-      'Enter a Signal username like @name.12 and must end with 2+ digits).',
+      "Enter a Signal username like @name.12 and must end with 2+ digits).",
     )
     // normalize to lowercase and ensure a single leading "@"
     .transform((v) => {
       if (!v) return v;
-      const u = v.replace(/^@/, '').toLowerCase();
-      return '@' + u;
+      const u = v.replace(/^@/, "").toLowerCase();
+      return "@" + u;
     }),
   coordination_zone: z.string().nullable().optional(),
   inserted_at: z.string().optional(), // timestamptz as ISO

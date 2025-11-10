@@ -5,8 +5,9 @@ export default function AdminBugReportsGuide() {
     <section className="prose dark:prose-invert max-w-none">
       <h2>Admin – Bug Reports</h2>
       <p>
-        Triage and manage bug reports submitted by users. Filter, review details, set status and
-        priority, and keep records up to date as fixes ship.
+        Triage and manage bug reports submitted by users. Filter, review
+        details, set status and priority, and keep records up to date as fixes
+        ship.
       </p>
 
       <div className="my-4 flex gap-2">
@@ -20,7 +21,10 @@ export default function AdminBugReportsGuide() {
 
       <h3>Overview</h3>
       <ul>
-        <li>List of all reports with title, area, priority, created time, reporter.</li>
+        <li>
+          List of all reports with title, area, priority, created time,
+          reporter.
+        </li>
         <li>Grouped by status for quick scanning and triage.</li>
         <li>Click a report to open details and edit.</li>
       </ul>
@@ -29,8 +33,9 @@ export default function AdminBugReportsGuide() {
       <ul>
         <li>Filter by Status: open, triage, in_progress, resolved, closed.</li>
         <li>
-          Filter by Area: general, create, dispatches, watch, schedules, pods, academy, intents,
-          roles, impact, missing-persons, profile, admin, auth.
+          Filter by Area: general, create, dispatches, watch, schedules, pods,
+          academy, intents, roles, impact, missing-persons, profile, admin,
+          auth.
         </li>
         <li>Use Reset to clear filters and reload all results.</li>
       </ul>
@@ -38,7 +43,8 @@ export default function AdminBugReportsGuide() {
       <h3>Triage Workflow</h3>
       <ul>
         <li>
-          Open → Triage: verify reproduction steps, add expected/actual, assign a priority.
+          Open → Triage: verify reproduction steps, add expected/actual, assign
+          a priority.
         </li>
         <li>In Progress: work acknowledged; linked to an active fix.</li>
         <li>Resolved: fix deployed and verified; keep for short time.</li>
@@ -50,28 +56,32 @@ export default function AdminBugReportsGuide() {
         <li>Status values: open, triage, in_progress, resolved, closed.</li>
         <li>Priority values: none, low, medium, high, critical.</li>
         <li>
-          Critical and High render with distinct badges in the list for visibility.
+          Critical and High render with distinct badges in the list for
+          visibility.
         </li>
       </ul>
 
       <h3>View & Edit Reports</h3>
       <ul>
         <li>
-          Detail page fields: title, area, status, priority, steps to reproduce, expected, actual.
+          Detail page fields: title, area, status, priority, steps to reproduce,
+          expected, actual.
         </li>
         <li>Use Save to persist updates; Back to return to the list.</li>
         <li>
-          Delete removes a report permanently; confirm only when duplicates/spam or migrated.
+          Delete removes a report permanently; confirm only when duplicates/spam
+          or migrated.
         </li>
         <li>
-          Metadata includes created time and reporter id (partial for privacy) for follow‑ups.
+          Metadata includes created time and reporter id (partial for privacy)
+          for follow‑ups.
         </li>
       </ul>
 
       <h3>Permissions</h3>
       <p className="!mt-2">
-        Admin roles manage triage and editing. Non‑admins should use the user‑facing Bug Tracker to
-        submit reports.
+        Admin roles manage triage and editing. Non‑admins should use the
+        user‑facing Bug Tracker to submit reports.
       </p>
 
       <h3>Checklist</h3>

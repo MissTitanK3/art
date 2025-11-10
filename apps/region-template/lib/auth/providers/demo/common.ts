@@ -27,7 +27,9 @@ export function encodeSession(session: AuthSession): string {
   return encodeURIComponent(JSON.stringify(session));
 }
 
-export function decodeSession(raw: string | undefined | null): AuthSession | null {
+export function decodeSession(
+  raw: string | undefined | null,
+): AuthSession | null {
   if (!raw) return null;
   try {
     const decoded = decodeURIComponent(raw);

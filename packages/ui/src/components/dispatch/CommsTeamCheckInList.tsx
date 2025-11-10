@@ -16,43 +16,63 @@ type Props = {
   setGlobalCheckInMinutes?: (n: number) => void;
 };
 
-export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn, checkInInput, setCheckInInput, setGlobalCheckInMinutes }: Props) {
+export function CommsTeamCheckInList({
+  teams,
+  defaultCheckInMinutes,
+  onCheckIn,
+  checkInInput,
+  setCheckInInput,
+  setGlobalCheckInMinutes,
+}: Props) {
   const [localDefault, setLocalDefault] = React.useState<number>(() => {
-    if (typeof window === 'undefined') return defaultCheckInMinutes;
-    const stored = window.localStorage.getItem('comms.defaultCheckInMinutes');
+    if (typeof window === "undefined") return defaultCheckInMinutes;
+    const stored = window.localStorage.getItem("comms.defaultCheckInMinutes");
     const parsed = stored ? parseInt(stored, 10) : NaN;
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultCheckInMinutes;
+    return Number.isFinite(parsed) && parsed > 0
+      ? parsed
+      : defaultCheckInMinutes;
   });
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem('comms.defaultCheckInMinutes');
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("comms.defaultCheckInMinutes");
     if (!stored) setLocalDefault(defaultCheckInMinutes);
   }, [defaultCheckInMinutes]);
 
   const setDefault = (mins: number) => {
     setLocalDefault(mins);
     try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('comms.defaultCheckInMinutes', String(mins));
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "comms.defaultCheckInMinutes",
+          String(mins),
+        );
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   const choices = [10, 20, 30, 40, 50, 60];
-  const selectedFromParent = Number.isFinite(parseInt(checkInInput || "", 10)) ? parseInt(checkInInput || "", 10) : undefined;
+  const selectedFromParent = Number.isFinite(parseInt(checkInInput || "", 10))
+    ? parseInt(checkInInput || "", 10)
+    : undefined;
 
   return (
     <div className="space-y-2 text-sm">
       <div className="mb-2 flex justify-center w-full">
-        <div >
+        <div>
           {setCheckInInput && setGlobalCheckInMinutes ? (
             <div className="flex flex-wrap gap-3 justify-center">
               {[10, 20, 30, 40, 50, 60].map((v) => (
                 <Button
                   key={v}
                   size="sm"
-                  variant={parseInt(checkInInput || "0", 10) === v ? 'default' : 'outline'}
+                  variant={
+                    parseInt(checkInInput || "0", 10) === v
+                      ? "default"
+                      : "outline"
+                  }
                   onClick={() => {
                     setCheckInInput(String(v));
                     setGlobalCheckInMinutes(v);
@@ -66,7 +86,17 @@ export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn, 
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {choices.map((v) => (
-                <Button key={v} size="sm" variant={(selectedFromParent ?? localDefault) === v ? 'default' : 'outline'} onClick={() => setDefault(v)} aria-label={`Set default check-in to ${v} minutes`}>
+                <Button
+                  key={v}
+                  size="sm"
+                  variant={
+                    (selectedFromParent ?? localDefault) === v
+                      ? "default"
+                      : "outline"
+                  }
+                  onClick={() => setDefault(v)}
+                  aria-label={`Set default check-in to ${v} minutes`}
+                >
                   {v}m
                 </Button>
               ))}
@@ -78,20 +108,32 @@ export function CommsTeamCheckInList({ teams, defaultCheckInMinutes, onCheckIn, 
         <EmptyText>No teams configured.</EmptyText>
       ) : (
         teams.map((t) => {
-          const interval = t.default_check_in_interval_minutes ?? (selectedFromParent ?? localDefault);
+          const interval =
+            t.default_check_in_interval_minutes ??
+            selectedFromParent ??
+            localDefault;
           return (
             <div key={t.id} className="rounded-md border p-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{t.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {t.channel ? `Ch: ${t.channel}` : '—'}
-                    {t.location_label ? ` · Loc: ${t.location_label}` : ''}
+                    {t.channel ? `Ch: ${t.channel}` : "—"}
+                    {t.location_label ? ` · Loc: ${t.location_label}` : ""}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckInTimerBadge lastCheckIn={t.last_check_in ?? undefined} intervalMinutes={interval} mode="due" />
-                  <Button size="sm" variant="outline" onClick={() => onCheckIn?.(t.id)} aria-label={`Check in team ${t.name}`}>
+                  <CheckInTimerBadge
+                    lastCheckIn={t.last_check_in ?? undefined}
+                    intervalMinutes={interval}
+                    mode="due"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onCheckIn?.(t.id)}
+                    aria-label={`Check in team ${t.name}`}
+                  >
                     Check In
                   </Button>
                 </div>

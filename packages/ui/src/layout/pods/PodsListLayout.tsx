@@ -69,10 +69,9 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
       title
     );
 
-  const empty =
-    emptyState ?? (
-      <p className="text-sm text-muted-foreground">No pods available.</p>
-    );
+  const empty = emptyState ?? (
+    <p className="text-sm text-muted-foreground">No pods available.</p>
+  );
 
   const [query, setQuery] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
@@ -83,7 +82,9 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
   const [area, setArea] = React.useState<string>("all");
   const [channel, setChannel] = React.useState<string>("all");
   const [pageSize, setPageSize] = React.useState<number>(() =>
-    typeof initialPageSize === "number" && initialPageSize > 0 ? initialPageSize : pageSizeOptions?.[0] ?? 9
+    typeof initialPageSize === "number" && initialPageSize > 0
+      ? initialPageSize
+      : (pageSizeOptions?.[0] ?? 9),
   );
   const [page, setPage] = React.useState<number>(1);
   const lastQueryRef = React.useRef<string | null>(null);
@@ -95,9 +96,11 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
     for (const p of pods) {
       if (typeof p.area === "string" && p.area) areas.add(p.area);
       // channel string or channels array
-      if (typeof (p as any).channel === "string" && (p as any).channel) channels.add((p as any).channel);
+      if (typeof (p as any).channel === "string" && (p as any).channel)
+        channels.add((p as any).channel);
       const arr = (p as any).channels as Array<{ type: string }> | undefined;
-      if (Array.isArray(arr)) arr.forEach((c) => c?.type && channels.add(c.type));
+      if (Array.isArray(arr))
+        arr.forEach((c) => c?.type && channels.add(c.type));
     }
     return {
       areas: Array.from(areas).sort(),
@@ -119,10 +122,14 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
           if (typeof saved?.pageSize === "number") setPageSize(saved.pageSize);
           if (typeof saved?.page === "number") setPage(saved.page);
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
 
-    const src = initialUrlParams ?? Object.fromEntries(new URLSearchParams(window.location.search).entries());
+    const src =
+      initialUrlParams ??
+      Object.fromEntries(new URLSearchParams(window.location.search).entries());
     if (typeof src.q === "string") setQuery(src.q);
     if (typeof src.area === "string") setArea(src.area);
     if (typeof src.channel === "string") setChannel(src.channel);
@@ -150,7 +157,9 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
 
   const currentCanonicalQueryString = React.useCallback(() => {
     const src = new URLSearchParams(window.location.search);
-    ["_rsc", "__nextDataReq", "next-router-state-tree", "next-url"].forEach((k) => src.delete(k));
+    ["_rsc", "__nextDataReq", "next-router-state-tree", "next-url"].forEach(
+      (k) => src.delete(k),
+    );
     const params = new URLSearchParams();
     const order = ["q", "area", "channel", "size", "page"] as const;
     for (const key of order) {
@@ -177,24 +186,45 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
       try {
         window.localStorage.setItem(
           persistKey,
-          JSON.stringify({ query, area, channel, pageSize, page })
+          JSON.stringify({ query, area, channel, pageSize, page }),
         );
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
-  }, [buildQueryString, currentCanonicalQueryString, onUrlChange, persistKey, query, area, channel, pageSize, page]);
+  }, [
+    buildQueryString,
+    currentCanonicalQueryString,
+    onUrlChange,
+    persistKey,
+    query,
+    area,
+    channel,
+    pageSize,
+    page,
+  ]);
 
   const filtered = React.useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
     return pods.filter((p) => {
       if (area !== "all" && p.area !== area) return false;
       if (channel !== "all") {
-        const hasChannelString = typeof (p as any).channel === "string" && (p as any).channel === channel;
+        const hasChannelString =
+          typeof (p as any).channel === "string" &&
+          (p as any).channel === channel;
         const arr = (p as any).channels as Array<{ type: string }> | undefined;
-        const hasChannelArr = Array.isArray(arr) && arr.some((c) => c?.type === channel);
+        const hasChannelArr =
+          Array.isArray(arr) && arr.some((c) => c?.type === channel);
         if (!hasChannelString && !hasChannelArr) return false;
       }
       if (q.length > 0) {
-        const hay = [p.name, p.slug, p.area, (p as any).channel, (p as any).channelLink]
+        const hay = [
+          p.name,
+          p.slug,
+          p.area,
+          (p as any).channel,
+          (p as any).channelLink,
+        ]
           .filter(Boolean)
           .join(" \n ")
           .toLowerCase();
@@ -205,36 +235,60 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
   }, [pods, debouncedQuery, area, channel]);
 
   // reset page when filters change
-  React.useEffect(() => { setPage(1); }, [debouncedQuery, area, channel, pageSize]);
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery, area, channel, pageSize]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
   const currentPage = Math.min(page, totalPages);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, total);
-  const pageItems = enablePagination ? filtered.slice(startIndex, endIndex) : filtered;
+  const pageItems = enablePagination
+    ? filtered.slice(startIndex, endIndex)
+    : filtered;
 
-  const handleGoTo = (p: number) => setPage(Math.max(1, Math.min(totalPages, p)));
+  const handleGoTo = (p: number) =>
+    setPage(Math.max(1, Math.min(totalPages, p)));
 
   const renderPaginationNumbers = () => {
     const items: React.ReactNode[] = [];
     const windowSize = 1;
-    const addPage = (p: number) => items.push(
-      <PaginationItem key={p}>
-        <PaginationLink
-          isActive={p === currentPage}
-          href="#"
-          onClick={(e) => { e.preventDefault(); handleGoTo(p); }}
-        >{p}</PaginationLink>
-      </PaginationItem>
-    );
-    if (totalPages <= 7) { for (let p = 1; p <= totalPages; p++) addPage(p); return items; }
+    const addPage = (p: number) =>
+      items.push(
+        <PaginationItem key={p}>
+          <PaginationLink
+            isActive={p === currentPage}
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleGoTo(p);
+            }}
+          >
+            {p}
+          </PaginationLink>
+        </PaginationItem>,
+      );
+    if (totalPages <= 7) {
+      for (let p = 1; p <= totalPages; p++) addPage(p);
+      return items;
+    }
     addPage(1);
-    if (currentPage - windowSize > 2) items.push(<PaginationItem key="se"><PaginationEllipsis /></PaginationItem>);
+    if (currentPage - windowSize > 2)
+      items.push(
+        <PaginationItem key="se">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      );
     const start = Math.max(2, currentPage - windowSize);
     const end = Math.min(totalPages - 1, currentPage + windowSize);
     for (let p = start; p <= end; p++) addPage(p);
-    if (currentPage + windowSize < totalPages - 1) items.push(<PaginationItem key="ee"><PaginationEllipsis /></PaginationItem>);
+    if (currentPage + windowSize < totalPages - 1)
+      items.push(
+        <PaginationItem key="ee">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      );
     addPage(totalPages);
     return items;
   };
@@ -262,7 +316,9 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
                   <SelectContent>
                     <SelectItem value="all">All Areas</SelectItem>
                     {options.areas.map((a) => (
-                      <SelectItem key={a} value={a}>{a}</SelectItem>
+                      <SelectItem key={a} value={a}>
+                        {a}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -273,12 +329,21 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
                   <SelectContent>
                     <SelectItem value="all">All Channels</SelectItem>
                     {options.channels.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {(query || area !== "all" || channel !== "all") && (
-                  <Button variant="ghost" onClick={() => { setQuery(""); setArea("all"); setChannel("all"); }}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setQuery("");
+                      setArea("all");
+                      setChannel("all");
+                    }}
+                  >
                     Clear
                   </Button>
                 )}
@@ -286,14 +351,23 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
 
               {enablePagination ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="hidden sm:inline">{total > 0 ? `Showing ${startIndex + 1}–${endIndex} of ${total}` : "No results"}</span>
-                  <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v) || pageSize)}>
+                  <span className="hidden sm:inline">
+                    {total > 0
+                      ? `Showing ${startIndex + 1}–${endIndex} of ${total}`
+                      : "No results"}
+                  </span>
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(v) => setPageSize(Number(v) || pageSize)}
+                  >
                     <SelectTrigger className="w-full sm:w-[120px]">
                       <SelectValue placeholder="Page size" />
                     </SelectTrigger>
                     <SelectContent>
                       {pageSizeOptions.map((n) => (
-                        <SelectItem key={n} value={String(n)}>{n} / page</SelectItem>
+                        <SelectItem key={n} value={String(n)}>
+                          {n} / page
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -304,10 +378,16 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
 
           <div className={gridClassName}>
             {pageItems.map((pod) => {
-              const key = "id" in pod && pod.id !== undefined && pod.id !== null ? String(pod.id) : pod.slug;
+              const key =
+                "id" in pod && pod.id !== undefined && pod.id !== null
+                  ? String(pod.id)
+                  : pod.slug;
               const defaultCard = <PodCard pod={pod} />;
-              const rendered = renderPod ? renderPod({ pod, DefaultCard: defaultCard }) : defaultCard;
-              if (React.isValidElement(rendered)) return React.cloneElement(rendered, { key });
+              const rendered = renderPod
+                ? renderPod({ pod, DefaultCard: defaultCard })
+                : defaultCard;
+              if (React.isValidElement(rendered))
+                return React.cloneElement(rendered, { key });
               return <React.Fragment key={key}>{rendered}</React.Fragment>;
             })}
           </div>
@@ -318,14 +398,20 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
                 <PaginationItem>
                   <PaginationPrevious
                     href="#"
-                    onClick={(e) => { e.preventDefault(); handleGoTo(currentPage - 1); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleGoTo(currentPage - 1);
+                    }}
                   />
                 </PaginationItem>
                 {renderPaginationNumbers()}
                 <PaginationItem>
                   <PaginationNext
                     href="#"
-                    onClick={(e) => { e.preventDefault(); handleGoTo(currentPage + 1); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleGoTo(currentPage + 1);
+                    }}
                   />
                 </PaginationItem>
               </PaginationContent>

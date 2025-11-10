@@ -52,22 +52,33 @@ export function CountySelectLayout({
   }
 
   const countyList = selectedCounties.map((county, index) => (
-    <div key={county.GEO_ID} className="mb-10 space-y-2 rounded border p-3 text-sm">
+    <div
+      key={county.GEO_ID}
+      className="mb-10 space-y-2 rounded border p-3 text-sm"
+    >
       <div className="flex h-full w-full flex-col items-center justify-evenly gap-3 md:flex-row md:justify-between">
         <div className="font-medium">
-          <span className="text-xs font-mono text-muted-foreground">#{index + 1}</span>{" "}
+          <span className="text-xs font-mono text-muted-foreground">
+            #{index + 1}
+          </span>{" "}
           {county.NAME} County
         </div>
         {Array.isArray(county.ZONE) && county.ZONE.length > 0 ? (
           <div className="text-xs text-blue-600">
-            Partial coverage: {county.ZONE.length} zone{county.ZONE.length > 1 ? "s" : ""}
+            Partial coverage: {county.ZONE.length} zone
+            {county.ZONE.length > 1 ? "s" : ""}
           </div>
         ) : null}
         <div className="mt-3 flex items-center gap-3">
           <Button onClick={() => onToggleEditCounty(county)}>
-            {activeCounty?.GEO_ID === county.GEO_ID ? "Done Editing" : "Edit Zones"}
+            {activeCounty?.GEO_ID === county.GEO_ID
+              ? "Done Editing"
+              : "Edit Zones"}
           </Button>
-          <Button onClick={() => onRemoveCounty(county.GEO_ID)} variant="destructive">
+          <Button
+            onClick={() => onRemoveCounty(county.GEO_ID)}
+            variant="destructive"
+          >
             Remove
           </Button>
         </div>
@@ -79,7 +90,9 @@ export function CountySelectLayout({
     <div className="z-0 flex flex-col gap-4">
       <div className="flex flex-col items-center justify-between gap-3 md:flex-row">
         <div>
-          <h1 className="text-xl font-semibold">Pick your operating counties</h1>
+          <h1 className="text-xl font-semibold">
+            Pick your operating counties
+          </h1>
           <p className="text-sm text-muted-foreground">
             Click counties to toggle. Use “Edit Zones” to mark partial coverage.
           </p>
@@ -104,12 +117,16 @@ export function CountySelectLayout({
         <MapComponent
           selected={selectedCounties}
           onChange={onMapChange}
-          editor={activeCounty ? {
-            county: activeCounty,
-            gridSize: 20,
-            clipEdges: true,
-            onUpdateZones,
-          } : undefined}
+          editor={
+            activeCounty
+              ? {
+                  county: activeCounty,
+                  gridSize: 20,
+                  clipEdges: true,
+                  onUpdateZones,
+                }
+              : undefined
+          }
           {...mapProps}
         />
       ) : null}
@@ -117,7 +134,8 @@ export function CountySelectLayout({
       <div className="space-y-3">
         {selectedCounties.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No counties selected yet. Zoom in and click on a county to select it.
+            No counties selected yet. Zoom in and click on a county to select
+            it.
           </p>
         ) : (
           countyList

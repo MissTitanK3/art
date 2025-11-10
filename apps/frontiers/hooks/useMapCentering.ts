@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import type { Map as LeafletMap } from 'leaflet';
+import type { Map as LeafletMap } from "leaflet";
 
 export function useMapCentering() {
   async function centerOnMe(
@@ -18,7 +18,7 @@ export function useMapCentering() {
         map.flyTo([lat, lng], targetZoom, { animate: true });
       }
     } catch (err: any) {
-      setError(err?.message || 'Unable to access your location');
+      setError(err?.message || "Unable to access your location");
     }
   }
 

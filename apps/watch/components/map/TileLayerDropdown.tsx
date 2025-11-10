@@ -1,13 +1,18 @@
-'use client';
+"use client";
 
-import { MAP_TILE_OPTIONS, useMapTile } from '@/lib/MapTileContext';
+import { MAP_TILE_OPTIONS, useMapTile } from "@/lib/MapTileContext";
 
-export default function TileLayerDropdown({ onSelected }: { onSelected?: () => void } = {}) {
+export default function TileLayerDropdown({
+  onSelected,
+}: { onSelected?: () => void } = {}) {
   const { tileKey, setTileKey } = useMapTile();
 
   return (
     <div className="flex flex-col items-start w-full max-w-sm">
-      <label htmlFor="tileSelector" className="text-sm font-semibold text-white mb-1">
+      <label
+        htmlFor="tileSelector"
+        className="text-sm font-semibold text-white mb-1"
+      >
         🗺️ Basemap
       </label>
 
@@ -19,7 +24,8 @@ export default function TileLayerDropdown({ onSelected }: { onSelected?: () => v
             setTileKey(e.target.value as keyof typeof MAP_TILE_OPTIONS);
             onSelected?.();
           }}
-          className="appearance-none w-full px-4 py-2 pr-10 text-white text-sm font-medium rounded-lg  bg-white/10 backdrop-blur-md border border-white/20 shadow transition  hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400/50">
+          className="appearance-none w-full px-4 py-2 pr-10 text-white text-sm font-medium rounded-lg  bg-white/10 backdrop-blur-md border border-white/20 shadow transition  hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+        >
           {Object.entries(MAP_TILE_OPTIONS).map(([key, layer]) => (
             <option
               key={key}

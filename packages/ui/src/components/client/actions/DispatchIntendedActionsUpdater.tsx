@@ -26,7 +26,9 @@ export default function DispatchIntendedActionsUpdater({
   onUpdate,
 }: DispatchIntendedActionsUpdaterProps) {
   const [open, setOpen] = useState<"manual" | "preset" | null>(null);
-  const [selected, setSelected] = useState<string[]>(submission.intended_actions ?? []);
+  const [selected, setSelected] = useState<string[]>(
+    submission.intended_actions ?? [],
+  );
 
   useEffect(() => {
     setSelected(submission.intended_actions ?? []);
@@ -37,7 +39,7 @@ export default function DispatchIntendedActionsUpdater({
     setSelected((prev) =>
       hasAll
         ? prev.filter((a) => !groupActions.includes(a))
-        : [...prev, ...groupActions.filter((a) => !prev.includes(a))]
+        : [...prev, ...groupActions.filter((a) => !prev.includes(a))],
     );
   };
 
@@ -88,24 +90,26 @@ export default function DispatchIntendedActionsUpdater({
           </DrawerHeader>
 
           <div className="max-h-[50vh] overflow-y-auto mt-4 space-y-2">
-            {Object.values(ACTION_PRESETS_GROUPED).flat().map((action) => (
-              <label
-                key={action}
-                className="flex items-center gap-2 text-sm cursor-pointer"
-              >
-                <Checkbox
-                  checked={selected.includes(action)}
-                  onCheckedChange={() =>
-                    setSelected((prev) =>
-                      prev.includes(action)
-                        ? prev.filter((a) => a !== action)
-                        : [...prev, action]
-                    )
-                  }
-                />
-                <span>{action}</span>
-              </label>
-            ))}
+            {Object.values(ACTION_PRESETS_GROUPED)
+              .flat()
+              .map((action) => (
+                <label
+                  key={action}
+                  className="flex items-center gap-2 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selected.includes(action)}
+                    onCheckedChange={() =>
+                      setSelected((prev) =>
+                        prev.includes(action)
+                          ? prev.filter((a) => a !== action)
+                          : [...prev, action],
+                      )
+                    }
+                  />
+                  <span>{action}</span>
+                </label>
+              ))}
           </div>
 
           <DrawerFooter>

@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import TeleprompterViewer from "@workspace/ui/components/teleprompter-viewer";
-import { TransportControls, SpeedControl } from "@workspace/ui/components/teleprompter-controls";
+import {
+  TransportControls,
+  SpeedControl,
+} from "@workspace/ui/components/teleprompter-controls";
 
 export type TeleprompterShellProps = {
   // wiring
@@ -36,7 +39,12 @@ export type TeleprompterShellProps = {
   mirror: { h: boolean; v: boolean };
   overlay: { color: string; opacity: number };
   showLegend: boolean;
-  countdown?: { enabled: boolean; totalMs: number; startedAt?: number; segments: { name: string; durationMs: number }[] };
+  countdown?: {
+    enabled: boolean;
+    totalMs: number;
+    startedAt?: number;
+    segments: { name: string; durationMs: number }[];
+  };
   legendDurations?: { pauseMs: number; breatheMs: number; lookupMs: number };
   showSegmentBar?: boolean;
   overlays?: React.ReactNode;
@@ -83,16 +91,34 @@ export default function TeleprompterShell(props: TeleprompterShellProps) {
     >
       {props.overlays}
       {overlay.opacity > 0 ? (
-        <div className="pointer-events-none absolute inset-0 z-10" style={{ backgroundColor: overlay.color, opacity: overlay.opacity }} />
+        <div
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{ backgroundColor: overlay.color, opacity: overlay.opacity }}
+        />
       ) : null}
 
       {fullscreen && (
-        <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 p-3 pb-[env(safe-area-inset-bottom)] transition-all duration-200 ${showFsControls ? 'opacity-100' : 'opacity-0 translate-y-2'}`}>
+        <div
+          className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 p-3 pb-[env(safe-area-inset-bottom)] transition-all duration-200 ${showFsControls ? "opacity-100" : "opacity-0 translate-y-2"}`}
+        >
           <div className="mx-auto max-w-3xl">
             <div className="pointer-events-auto flex flex-wrap items-center gap-2 rounded-md border bg-background/80 p-2 shadow-sm backdrop-blur">
-              <TransportControls compact className="md:flex-1" playing={playing} onPlayToggle={onPlayToggle} onPrev={onPrev} onNext={onNext} onRewind={onRewind} />
+              <TransportControls
+                compact
+                className="md:flex-1"
+                playing={playing}
+                onPlayToggle={onPlayToggle}
+                onPrev={onPrev}
+                onNext={onNext}
+                onRewind={onRewind}
+              />
               <div className="ml-auto flex items-center gap-2">
-                <button className="h-9 px-3 text-sm rounded-md border bg-transparent" onClick={onToggleFullscreen}>{fullscreen ? "Exit Fullscreen" : "Fullscreen"}</button>
+                <button
+                  className="h-9 px-3 text-sm rounded-md border bg-transparent"
+                  onClick={onToggleFullscreen}
+                >
+                  {fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                </button>
               </div>
               <div className="w-full">
                 <SpeedControl value={speed} onChange={onSpeedChange} />
@@ -105,8 +131,12 @@ export default function TeleprompterShell(props: TeleprompterShellProps) {
       <TeleprompterViewer
         text={text}
         index={index}
-        onIndexRef={(r) => { if (currentRef) currentRef(r.current); }}
-        onScrollRef={(r) => { if (scrollRef) scrollRef(r.current); }}
+        onIndexRef={(r) => {
+          if (currentRef) currentRef(r.current);
+        }}
+        onScrollRef={(r) => {
+          if (scrollRef) scrollRef(r.current);
+        }}
         theme={theme}
         custom={custom}
         font={font as any}

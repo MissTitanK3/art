@@ -13,7 +13,12 @@ type Props = {
  * Preserves scroll position for its own scrollable container across route changes.
  * Uses sessionStorage(key) to store/restore scrollTop.
  */
-export default function ScrollAreaPersist({ storageKey, className, style, children }: Props) {
+export default function ScrollAreaPersist({
+  storageKey,
+  className,
+  style,
+  children,
+}: Props) {
   const ref = React.useRef<HTMLDivElement | null>(null);
 
   // Restore on mount

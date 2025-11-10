@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import { PropsWithChildren, createContext, useContext, useRef } from 'react';
-import type { StoreApi } from 'zustand';
-import { useStore } from 'zustand';
-import { useStoreWithEqualityFn } from 'zustand/traditional';
+import { PropsWithChildren, createContext, useContext, useRef } from "react";
+import type { StoreApi } from "zustand";
+import { useStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
 
 import {
   type AcademyDashboardStoreState,
   type CreateAcademyDashboardStoreOptions,
   createAcademyDashboardStore,
-} from '@workspace/store/useAcademyDashboardStore';
+} from "@workspace/store/useAcademyDashboardStore";
 
-type PodAcademyDashboardStoreProviderProps = PropsWithChildren<CreateAcademyDashboardStoreOptions>;
+type PodAcademyDashboardStoreProviderProps =
+  PropsWithChildren<CreateAcademyDashboardStoreOptions>;
 
 export const PodAcademyDashboardStoreContext =
   createContext<StoreApi<AcademyDashboardStoreState> | null>(null);
@@ -19,7 +20,7 @@ export const PodAcademyDashboardStoreContext =
 export function PodAcademyDashboardStoreProvider({
   children,
   persist = false,
-  storageKey = 'pod-academy-dashboard-store:region-wap',
+  storageKey = `pod-academy-dashboard-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`,
   initialStats,
   initialCourseGroups,
   initialMembers,
@@ -43,9 +44,12 @@ export function PodAcademyDashboardStoreProvider({
   } else {
     const currentState = storeRef.current.getState();
     const hasInstructorActions =
-      typeof (currentState as Partial<AcademyDashboardStoreState>).addInstructor === 'function' &&
-      typeof (currentState as Partial<AcademyDashboardStoreState>).updateInstructor === 'function' &&
-      typeof (currentState as Partial<AcademyDashboardStoreState>).removeInstructor === 'function';
+      typeof (currentState as Partial<AcademyDashboardStoreState>)
+        .addInstructor === "function" &&
+      typeof (currentState as Partial<AcademyDashboardStoreState>)
+        .updateInstructor === "function" &&
+      typeof (currentState as Partial<AcademyDashboardStoreState>)
+        .removeInstructor === "function";
 
     if (!hasInstructorActions) {
       storeRef.current = createAcademyDashboardStore({
@@ -53,7 +57,8 @@ export function PodAcademyDashboardStoreProvider({
         initialCourseGroups: currentState.courseGroups ?? initialCourseGroups,
         initialMembers: currentState.members ?? initialMembers,
         initialInstructors: currentState.instructors ?? initialInstructors,
-        initialTrainingClasses: currentState.trainingClasses ?? initialTrainingClasses,
+        initialTrainingClasses:
+          currentState.trainingClasses ?? initialTrainingClasses,
         initialSessions: currentState.sessions ?? initialSessions,
         persist,
         storageKey,
@@ -75,8 +80,12 @@ export function usePodAcademyDashboardStore<T>(
   const store = useContext(PodAcademyDashboardStoreContext);
 
   if (!store) {
-    throw new Error('usePodAcademyDashboardStore must be used within a PodAcademyDashboardStoreProvider');
+    throw new Error(
+      "usePodAcademyDashboardStore must be used within a PodAcademyDashboardStoreProvider",
+    );
   }
 
-  return equalityFn ? useStoreWithEqualityFn(store, selector, equalityFn) : useStore(store, selector);
+  return equalityFn
+    ? useStoreWithEqualityFn(store, selector, equalityFn)
+    : useStore(store, selector);
 }

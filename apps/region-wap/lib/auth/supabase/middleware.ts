@@ -1,16 +1,16 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
-import { ensureSupabaseEnv } from './utils';
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+import { ensureSupabaseEnv } from "./utils";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
-  const isApi = pathname.startsWith('/api/');
+  const isApi = pathname.startsWith("/api/");
 
   // If env vars are missing, skip to avoid throwing during local/tutorial flows
   let env: ReturnType<typeof ensureSupabaseEnv>;
   try {
-    env = ensureSupabaseEnv('server');
+    env = ensureSupabaseEnv("server");
   } catch {
     return supabaseResponse;
   }
@@ -21,9 +21,13 @@ export async function updateSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value),
+        );
         supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options),
+        );
       },
     },
   });
@@ -35,22 +39,22 @@ export async function updateSession(request: NextRequest) {
 
   // Example gate: redirect if not authenticated and not on public routes
   if (
-    pathname !== '/' &&
+    pathname !== "/" &&
     !user &&
-    !pathname.startsWith('/sign-in') &&
+    !pathname.startsWith("/sign-in") &&
     // Allow unauthenticated access to sign-up as a public route
-    !pathname.startsWith('/sign-up') &&
-    !pathname.startsWith('/intents') &&
-    !pathname.startsWith('/roles') &&
-    !pathname.startsWith('/impact') &&
-    !pathname.startsWith('/forgot-password') &&
-    !pathname.startsWith('/auth')
+    !pathname.startsWith("/sign-up") &&
+    !pathname.startsWith("/intents") &&
+    !pathname.startsWith("/roles") &&
+    !pathname.startsWith("/impact") &&
+    !pathname.startsWith("/forgot-password") &&
+    !pathname.startsWith("/auth")
   ) {
     if (isApi) {
-      return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 });
+      return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
     }
     const url = request.nextUrl.clone();
-    url.pathname = '/sign-in';
+    url.pathname = "/sign-in";
     return NextResponse.redirect(url);
   }
 

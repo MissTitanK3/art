@@ -31,12 +31,17 @@ export default function MobileCourseSheet({
           <DrawerTitle>Courses</DrawerTitle>
           <DrawerDescription>Select a course to view</DrawerDescription>
         </DrawerHeader>
-        <ScrollAreaPersist storageKey="academy.sidebar.mobile.scroll" className="h-[80vh] overflow-y-auto px-2 pb-4">
+        <ScrollAreaPersist
+          storageKey="academy.sidebar.mobile.scroll"
+          className="h-[80vh] overflow-y-auto px-2 pb-4"
+        >
           {children}
         </ScrollAreaPersist>
         <DrawerFooter className="px-4 py-3">
           <DrawerClose asChild>
-            <Button size="sm" variant="secondary">Close</Button>
+            <Button size="sm" variant="secondary">
+              Close
+            </Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

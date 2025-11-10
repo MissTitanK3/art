@@ -1,0 +1,35 @@
+# Example whitelist (glob patterns relative to region root)
+# Allow environment files to differ
+.env
+.env.local
+
+# Allow environment file patterns
+.env*
+
+# Allow README differences
+README.md
+
+
+# Allow CONTRIBUTING variations
+CONTRIBUTING.md
+
+# Allow package.json differences (content_mismatch)
+package.json
+
+# Allow site.webmanifest differences (content_mismatch)
+public/site.webmanifest
+
+# Allow sw.js differences (content_mismatch)
+public/sw.js
+
+# Allow README differences (per-region)
+README.md
+
+# Demo/template data
+data/demo*
+
+# Local/demo auth providers
+lib/auth/providers/demo/**
+
+# Test placeholders
+components/client/__tests__/**

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 
 // Keep UI props framework-agnostic and a strict subset
 export type ImageProps = {
@@ -16,7 +16,7 @@ export type ImageProps = {
   unoptimized?: boolean;
 
   // Plain <img> ops
-  loading?: 'eager' | 'lazy';
+  loading?: "eager" | "lazy";
   onLoad?: React.ReactEventHandler<HTMLImageElement>;
   onError?: React.ReactEventHandler<HTMLImageElement>;
 };

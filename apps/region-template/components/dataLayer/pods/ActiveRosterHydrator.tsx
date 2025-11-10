@@ -24,7 +24,9 @@ function mapRowToRosterEntry(row: any): RosterEntry {
 
 type RosterRow = { pod_id?: string } & Record<string, any>;
 
-async function fetchActiveRoster(): Promise<Array<{ podId: string; entry: RosterEntry }>> {
+async function fetchActiveRoster(): Promise<
+  Array<{ podId: string; entry: RosterEntry }>
+> {
   try {
     const client = getSupabaseBrowserClient();
     const { data, error } = await client
@@ -33,7 +35,10 @@ async function fetchActiveRoster(): Promise<Array<{ podId: string; entry: Roster
       .order("joined_at", { ascending: true });
     if (error) throw error;
     const rows = (Array.isArray(data) ? data : []) as RosterRow[];
-    return rows.map((row) => ({ podId: String(row.pod_id ?? ""), entry: mapRowToRosterEntry(row) }));
+    return rows.map((row) => ({
+      podId: String(row.pod_id ?? ""),
+      entry: mapRowToRosterEntry(row),
+    }));
   } catch (e) {
     if (process.env.NODE_ENV !== "production") {
       console.warn("[ActiveRosterHydrator] supabase fetch error", e);
@@ -86,4 +91,3 @@ export default function ActiveRosterHydrator() {
 
   return null;
 }
-

@@ -16,7 +16,9 @@ type ClassAssignmentDataLayerProps = {
   classId: string;
 };
 
-export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerProps) {
+export function ClassAssignmentDataLayer({
+  classId,
+}: ClassAssignmentDataLayerProps) {
   const router = useRouter();
   const academyClass = usePodStore(
     React.useCallback(
@@ -44,6 +46,7 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           .select("*")
           .eq("id", classId)
           .maybeSingle();
+        // fetched academy class row
         if (error || !data) return;
         if (cancelled) return;
         const patch = {
@@ -53,9 +56,12 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           variant: data.variant ?? academyClass?.variant,
           title: data.title ?? academyClass?.title,
           description: data.description ?? academyClass?.description,
-          modality: (data.modality ?? academyClass?.modality) as AcademyClass["modality"],
-          instructorType: (data.instructor_type ?? academyClass?.instructorType) as AcademyClass["instructorType"],
-          durationHours: (data.duration_hours ?? academyClass?.durationHours) as number,
+          modality: (data.modality ??
+            academyClass?.modality) as AcademyClass["modality"],
+          instructorType: (data.instructor_type ??
+            academyClass?.instructorType) as AcademyClass["instructorType"],
+          durationHours: (data.duration_hours ??
+            academyClass?.durationHours) as number,
           capacity: data.capacity ?? academyClass?.capacity,
           startDate: data.start_date ?? academyClass?.startDate,
           startTime: data.start_time ?? academyClass?.startTime,
@@ -63,11 +69,20 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           meetingUrl: data.meeting_url ?? academyClass?.meetingUrl,
           notes: data.notes ?? academyClass?.notes,
           instructorName: data.instructor_name ?? academyClass?.instructorName,
-          sessionsScheduled: (data.sessions_scheduled ?? academyClass?.sessionsScheduled ?? 0) as number,
+          sessionsScheduled: (data.sessions_scheduled ??
+            academyClass?.sessionsScheduled ??
+            0) as number,
           nextSession: data.next_session ?? academyClass?.nextSession,
-          status: (data.status ?? academyClass?.status) as AcademyClass["status"],
-          createdAt: data.created_at ?? academyClass?.createdAt ?? new Date().toISOString(),
-          updatedAt: data.updated_at ?? academyClass?.updatedAt ?? new Date().toISOString(),
+          status: (data.status ??
+            academyClass?.status) as AcademyClass["status"],
+          createdAt:
+            data.created_at ??
+            academyClass?.createdAt ??
+            new Date().toISOString(),
+          updatedAt:
+            data.updated_at ??
+            academyClass?.updatedAt ??
+            new Date().toISOString(),
         } as Partial<AcademyClass>;
 
         if (!academyClass) {
@@ -81,7 +96,8 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
             title: (patch.title ?? "Untitled Cohort") as string,
             description: (patch.description ?? "") as string,
             modality: (patch.modality ?? "online") as AcademyClass["modality"],
-            instructorType: (patch.instructorType ?? "expert") as AcademyClass["instructorType"],
+            instructorType: (patch.instructorType ??
+              "expert") as AcademyClass["instructorType"],
             durationHours: (patch.durationHours ?? 0) as number,
             capacity: patch.capacity,
             startDate: patch.startDate,
@@ -115,14 +131,18 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
   }, [classId, academyClass, updateAcademyClass, addAcademyClass]);
 
   // Live instructor options from DB, with pods as a fallback
-  const [instructorOptions, setInstructorOptions] = React.useState<InstructorOption[]>([]);
+  const [instructorOptions, setInstructorOptions] = React.useState<
+    InstructorOption[]
+  >([]);
 
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const client = getSupabaseBrowserClient();
-        const { data, error } = await client.from("academy_instructors").select("*");
+        const { data, error } = await client
+          .from("academy_instructors")
+          .select("*");
         if (error) throw error;
         if (cancelled) return;
 
@@ -131,17 +151,20 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           name: String(row.name ?? "Unknown"),
           type: (row.type ?? "expert") as InstructorOption["type"],
           // Map DB availability to content status type
-          status: row.availability === "available"
-            ? "active"
-            : row.availability === "unavailable"
-              ? "inactive"
-              : (row.availability ?? undefined),
+          status:
+            row.availability === "available"
+              ? "active"
+              : row.availability === "unavailable"
+                ? "inactive"
+                : (row.availability ?? undefined),
           // DB may not track pod, omit to avoid rendering undefined
           podName: undefined,
         }));
 
         if (fromDb.length > 0) {
-          setInstructorOptions(fromDb.sort((a, b) => a.name.localeCompare(b.name)));
+          setInstructorOptions(
+            fromDb.sort((a, b) => a.name.localeCompare(b.name)),
+          );
           return;
         }
       } catch {
@@ -156,22 +179,35 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           if (seen.has(member.id)) continue;
           seen.add(member.id);
 
-          const hasMentorLevel = member.certs?.some((cert) => cert.level === "mentor");
+          const hasMentorLevel = member.certs?.some(
+            (cert) => cert.level === "mentor",
+          );
           const dispatchCertified = member.certs?.some(
-            (cert) => cert.id.startsWith("dispatch-") && cert.level !== "expired",
+            (cert) =>
+              cert.id.startsWith("dispatch-") && cert.level !== "expired",
           );
 
           options.push({
             id: member.id,
-            name: (member.profile?.display_name ?? member.handle ?? 'Unknown').toString(),
-            type: hasMentorLevel ? "mentor" : dispatchCertified ? "dispatcher" : "expert",
+            name: (
+              member.profile?.display_name ??
+              member.handle ??
+              "Unknown"
+            ).toString(),
+            type: hasMentorLevel
+              ? "mentor"
+              : dispatchCertified
+                ? "dispatcher"
+                : "expert",
             podName: pod.name,
             status: member.status,
           });
         }
       }
       if (!cancelled) {
-        setInstructorOptions(options.sort((a, b) => a.name.localeCompare(b.name)));
+        setInstructorOptions(
+          options.sort((a, b) => a.name.localeCompare(b.name)),
+        );
       }
     })();
     return () => {
@@ -181,7 +217,9 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
 
   const modules = React.useMemo(() => {
     if (!academyClass) return [];
-    const blueprint = COURSE_BLUEPRINT.find((pathway) => pathway.id === academyClass.pathwayId);
+    const blueprint = COURSE_BLUEPRINT.find(
+      (pathway) => pathway.id === academyClass.pathwayId,
+    );
     return (blueprint?.courses ?? []).map((course) => ({
       slug: course.slug,
       title: course.title,
@@ -249,13 +287,18 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           }
 
           const currentIds = new Set(updatedClass.sessions.map((s) => s.id));
-          const existingIds = new Set((existing ?? []).map((r: any) => r.id as string));
+          const existingIds = new Set(
+            (existing ?? []).map((r: any) => r.id as string),
+          );
           const toDelete = (existing ?? [])
             .map((r: any) => r.id as string)
             .filter((id: string) => !currentIds.has(id));
 
           if (toDelete.length > 0) {
-            const { error: delErr } = await client.from("academy_sessions").delete().in("id", toDelete);
+            const { error: delErr } = await client
+              .from("academy_sessions")
+              .delete()
+              .in("id", toDelete);
             if (delErr) {
               console.warn("Failed to delete removed sessions", delErr);
             }
@@ -264,7 +307,10 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           // Upsert all current sessions
           const sessionRows = updatedClass.sessions.map((s) => {
             const start = s.date ? new Date(s.date) : null;
-            const end = start && s.durationHours ? new Date(start.getTime() + s.durationHours * 60 * 60 * 1000) : null;
+            const end =
+              start && s.durationHours
+                ? new Date(start.getTime() + s.durationHours * 60 * 60 * 1000)
+                : null;
             return {
               id: s.id,
               class_id: updatedClass.id,
@@ -284,7 +330,9 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           });
 
           if (sessionRows.length > 0) {
-            const { error: upsertErr } = await client.from("academy_sessions").upsert(sessionRows);
+            const { error: upsertErr } = await client
+              .from("academy_sessions")
+              .upsert(sessionRows);
             if (upsertErr) {
               console.warn("Failed to upsert sessions", upsertErr);
             }
@@ -299,10 +347,17 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
                 .select("id, session_id")
                 .in("session_id", sessionIds);
               if (fetchPartsErr) {
-                console.warn("Failed to read existing participants", fetchPartsErr);
+                console.warn(
+                  "Failed to read existing participants",
+                  fetchPartsErr,
+                );
               }
 
-              const existingPartKey = new Set((existingParts ?? []).map((r: any) => `${r.session_id}:${r.id}`));
+              const existingPartKey = new Set(
+                (existingParts ?? []).map(
+                  (r: any) => `${r.session_id}:${r.id}`,
+                ),
+              );
               const desiredPartKey = new Set<string>();
               const participantRows: Array<{
                 id: string;
@@ -315,7 +370,9 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
 
               // Build desired rows from UI state
               for (const s of updatedClass.sessions) {
-                const rosterById = new Map(updatedClass.members.map((m) => [m.id, m] as const));
+                const rosterById = new Map(
+                  updatedClass.members.map((m) => [m.id, m] as const),
+                );
                 for (const p of s.participants) {
                   const pid = `par_${s.id}__mem_${p.memberId}`;
                   desiredPartKey.add(`${s.id}:${pid}`);
@@ -326,7 +383,7 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
                     name: member?.name ?? null,
                     signal_handle: null,
                     understanding: p.understanding ?? null,
-                    status: p.present ? 'confirmed' : 'waitlist',
+                    status: p.present ? "confirmed" : "waitlist",
                   });
                 }
               }
@@ -347,7 +404,10 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
                   .delete()
                   .in("id", toDeleteParticipantIds);
                 if (delPartErr) {
-                  console.warn("Failed to delete removed participants", delPartErr);
+                  console.warn(
+                    "Failed to delete removed participants",
+                    delPartErr,
+                  );
                 }
               }
 
@@ -381,7 +441,10 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
       // Delete from Supabase
       try {
         const client = getSupabaseBrowserClient();
-        const { error } = await client.from("academy_classes").delete().eq("id", id);
+        const { error } = await client
+          .from("academy_classes")
+          .delete()
+          .eq("id", id);
         if (error) {
           console.warn("Failed to delete academy class", error);
         }
@@ -414,17 +477,24 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
           .select("*")
           .eq("class_id", classId)
           .order("start", { ascending: true });
+        // fetched sessions
         if (error) return;
         if (cancelled) return;
 
         const mapped = (data ?? []).map((row: any, idx: number) => {
-          const startIso = row.start ? new Date(row.start).toISOString() : undefined;
+          const startIso = row.start
+            ? new Date(row.start).toISOString()
+            : undefined;
           const endIso = row.end ? new Date(row.end).toISOString() : undefined;
           let durationHours: number | undefined = undefined;
           if (startIso && endIso) {
             const startMs = new Date(startIso).getTime();
             const endMs = new Date(endIso).getTime();
-            if (!Number.isNaN(startMs) && !Number.isNaN(endMs) && endMs > startMs) {
+            if (
+              !Number.isNaN(startMs) &&
+              !Number.isNaN(endMs) &&
+              endMs > startMs
+            ) {
               durationHours = (endMs - startMs) / (1000 * 60 * 60);
             }
           }
@@ -440,7 +510,10 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
 
         // Hydrate participants for all sessions in one query
         const sessionIds = mapped.map((s) => s.id);
-        let participantsBySession = new Map<string, ReturnType<typeof Array.prototype.slice>>();
+        let participantsBySession = new Map<
+          string,
+          ReturnType<typeof Array.prototype.slice>
+        >();
         // Track any member ids/names discovered from participants so we can ensure roster contains them
         const discoveredMemberNamesById = new Map<string, string>();
         if (sessionIds.length > 0) {
@@ -448,14 +521,20 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
             .from("academy_participants")
             .select("*")
             .in("session_id", sessionIds);
-        if (!partsErr) {
-          const rosterByName = new Map((academyClass.members ?? []).map((m) => [m.name, m.id] as const));
-            const toMemberId = (rowId: string, name: string | null): string | null => {
+          if (!partsErr) {
+            const rosterByName = new Map(
+              (academyClass.members ?? []).map((m) => [m.name, m.id] as const),
+            );
+            const toMemberId = (
+              rowId: string,
+              name: string | null,
+            ): string | null => {
               // Prefer deriving memberId from our synthetic id format
               const m = rowId.match(/^par_(.+)__mem_(.+)$/);
               if (m && m[2]) return m[2];
               // Fallback: try exact name match to roster
-              if (name && rosterByName.has(name)) return rosterByName.get(name)!;
+              if (name && rosterByName.has(name))
+                return rosterByName.get(name)!;
               return null;
             };
             participantsBySession = new Map<string, any[]>();
@@ -470,9 +549,12 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
               }
               const entry = {
                 memberId,
-                present: row.status === 'confirmed',
-                engagement: 'medium' as const, // not stored in DB; default
-                understanding: (row.understanding ?? 'building') as 'needs_support' | 'building' | 'confident',
+                present: row.status === "confirmed",
+                engagement: "medium" as const, // not stored in DB; default
+                understanding: (row.understanding ?? "building") as
+                  | "needs_support"
+                  | "building"
+                  | "confident",
                 notes: undefined,
               };
               const key = String(row.session_id);
@@ -516,10 +598,18 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
         // Compute roster upserts from discovered participants
         const existingMembers = academyClass.members ?? [];
         const existingIds = new Set(existingMembers.map((m) => m.id));
-        const toAddMembers: Array<{ id: string; name: string; participationCount: number }> = [];
+        const toAddMembers: Array<{
+          id: string;
+          name: string;
+          participationCount: number;
+        }> = [];
         for (const [mid, name] of discoveredMemberNamesById) {
           if (!existingIds.has(mid)) {
-            toAddMembers.push({ id: mid, name: name || 'Unknown', participationCount: 0 });
+            toAddMembers.push({
+              id: mid,
+              name: name || "Unknown",
+              participationCount: 0,
+            });
           }
         }
 
@@ -529,6 +619,11 @@ export function ClassAssignmentDataLayer({ classId }: ClassAssignmentDataLayerPr
         }
         if (toAddMembers.length > 0) {
           (patch as any).members = [...existingMembers, ...toAddMembers];
+        }
+        // Preserve updatedAt to avoid unintentionally stamping a new client timestamp
+        // which can flip state and re-trigger the class hydration effect.
+        if (academyClass?.updatedAt) {
+          (patch as any).updatedAt = academyClass.updatedAt;
         }
         if (Object.keys(patch).length > 0) {
           updateAcademyClass(classId, patch);

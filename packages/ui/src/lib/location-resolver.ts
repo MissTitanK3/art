@@ -34,7 +34,10 @@ function writeToStorage(key: string, value: LocationInfo) {
   }
 }
 
-export async function resolveLocationInfo(lat: number, lng: number): Promise<LocationInfo> {
+export async function resolveLocationInfo(
+  lat: number,
+  lng: number,
+): Promise<LocationInfo> {
   const key = normalizeCoord(lat, lng);
 
   if (locationCache.has(key)) {

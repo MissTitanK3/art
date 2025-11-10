@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { PropsWithChildren, useEffect, useRef, createContext, useContext } from 'react';
-import type { StoreApi } from 'zustand';
-import { useStore } from 'zustand';
-import { useStoreWithEqualityFn } from 'zustand/traditional';
-import { createPodStore, PodStoreState } from '@workspace/store/usePodStore';
-import type { Pod, RosterEntry, Shift } from '@workspace/store/types/pod.ts';
-import type { Profile } from '@workspace/store/types/global.ts';
-import { makeRosterEntry } from '@workspace/store/utils/generator.ts';
-import { useProfileStore as useGlobalProfileStore } from '@workspace/store/useProfileStore';
+import {
+  PropsWithChildren,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+} from "react";
+import type { StoreApi } from "zustand";
+import { useStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
+import { createPodStore, PodStoreState } from "@workspace/store/usePodStore";
+import type { Pod, RosterEntry, Shift } from "@workspace/store/types/pod.ts";
+import type { Profile } from "@workspace/store/types/global.ts";
+import { makeRosterEntry } from "@workspace/store/utils/generator.ts";
+import { useProfileStore as useGlobalProfileStore } from "@workspace/store/useProfileStore";
 
 type PodStoreProviderProps = PropsWithChildren<{
   initialPods?: Pod[];
@@ -18,7 +24,9 @@ type PodStoreProviderProps = PropsWithChildren<{
   persist?: boolean;
 }>;
 
-export const PodStoreContext = createContext<StoreApi<PodStoreState> | null>(null);
+export const PodStoreContext = createContext<StoreApi<PodStoreState> | null>(
+  null,
+);
 
 export function PodStoreProvider({
   children,
@@ -26,7 +34,7 @@ export function PodStoreProvider({
   initialShifts = [],
   initialRoster,
   persist = false,
-  storageKey = 'pod-store:region-socal',
+  storageKey = `pod-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`,
 }: PodStoreProviderProps) {
   const storeRef = useRef<StoreApi<PodStoreState> | null>(null);
 
@@ -55,22 +63,26 @@ export function usePodStore<T>(
   const store = useContext(PodStoreContext);
 
   if (!store) {
-    throw new Error('usePodStore must be used within a PodStoreProvider');
+    throw new Error("usePodStore must be used within a PodStoreProvider");
   }
 
-  return equalityFn ? useStoreWithEqualityFn(store, selector, equalityFn) : useStore(store, selector);
+  return equalityFn
+    ? useStoreWithEqualityFn(store, selector, equalityFn)
+    : useStore(store, selector);
 }
 
-const REGISTERED_ROSTER_PREFIX = 'registered-profile';
+const REGISTERED_ROSTER_PREFIX = "registered-profile";
 
 function profileToRosterEntry(profile: Profile): RosterEntry {
   const rosterId = `${REGISTERED_ROSTER_PREFIX}-${profile.id}`;
-  const affiliationNote = profile.affiliation ? `Affiliation: ${profile.affiliation}` : undefined;
+  const affiliationNote = profile.affiliation
+    ? `Affiliation: ${profile.affiliation}`
+    : undefined;
   const baseEntry = makeRosterEntry(
     rosterId,
     profile,
-    'member',
-    profile.availability ? 'active' : 'inactive',
+    "member",
+    profile.availability ? "active" : "inactive",
     [],
     [],
     [],
@@ -87,8 +99,12 @@ function profileToRosterEntry(profile: Profile): RosterEntry {
 
 function RegisteredRosterSync() {
   const profile = useGlobalProfileStore((s) => s.profile);
-  const upsertActiveRosterEntry = usePodStore((state) => state.upsertActiveRosterEntry);
-  const removeActiveRosterEntry = usePodStore((state) => state.removeActiveRosterEntry);
+  const upsertActiveRosterEntry = usePodStore(
+    (state) => state.upsertActiveRosterEntry,
+  );
+  const removeActiveRosterEntry = usePodStore(
+    (state) => state.removeActiveRosterEntry,
+  );
   const lastRegisteredId = useRef<string | null>(null);
 
   useEffect(() => {

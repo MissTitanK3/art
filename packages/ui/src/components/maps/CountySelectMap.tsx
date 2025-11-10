@@ -1,13 +1,18 @@
-'use client';
+"use client";
 
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import { useMemo, useRef, useCallback, useEffect, useState } from 'react';
-import type { FeatureCollection } from 'geojson';
-import CountyLayer from './CountyLayer.tsx';
-import { computeBounds, fitBoundsOnce, toggleCounty, ZoomWatcher } from '@workspace/store/utils/map';
-import GridOverlay from './GridOverlay.tsx';
-import { SelectedCounty } from '@workspace/store/types/maps.ts';
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+import { useMemo, useRef, useCallback, useEffect, useState } from "react";
+import type { FeatureCollection } from "geojson";
+import CountyLayer from "./CountyLayer.tsx";
+import {
+  computeBounds,
+  fitBoundsOnce,
+  toggleCounty,
+  ZoomWatcher,
+} from "@workspace/store/utils/map";
+import GridOverlay from "./GridOverlay.tsx";
+import { SelectedCounty } from "@workspace/store/types/maps.ts";
 
 export interface CountySelectMapProps {
   geojson?: FeatureCollection;
@@ -20,7 +25,7 @@ export interface CountySelectMapProps {
     clipEdges?: boolean;
     onUpdateZones: (geoId: string, zones: number[]) => void;
   };
-};
+}
 
 export default function CountySelectMap({
   geojson,
@@ -33,8 +38,17 @@ export default function CountySelectMap({
 
   const { center, zoom, initialBounds } = useMemo(() => {
     const b = computeBounds(geojson);
-    if (b) return { center: b.getCenter() as L.LatLngExpression, zoom: 6, initialBounds: b };
-    return { center: [37.8, -96] as L.LatLngExpression, zoom: 4, initialBounds: null as L.LatLngBounds | null };
+    if (b)
+      return {
+        center: b.getCenter() as L.LatLngExpression,
+        zoom: 6,
+        initialBounds: b,
+      };
+    return {
+      center: [37.8, -96] as L.LatLngExpression,
+      zoom: 4,
+      initialBounds: null as L.LatLngBounds | null,
+    };
   }, [geojson]);
 
   const [currentZoom, setCurrentZoom] = useState<number>(zoom);
@@ -45,14 +59,15 @@ export default function CountySelectMap({
       onChange(next);
       fitBoundsOnce(mapRef.current, bounds, [24, 24]);
     },
-    [selected, onChange]
+    [selected, onChange],
   );
 
   return (
     <>
       <div className="flex flex-col md:flex-row justify-between items-center">
         <p className="text-sm text-gray-400">
-          Current Zoom: <span className="font-mono text-white">{currentZoom}</span>
+          Current Zoom:{" "}
+          <span className="font-mono text-white">{currentZoom}</span>
         </p>
         <p className="text-sm text-gray-400">
           Tip: Zoom to <span className="font-bold">7+</span> to edit grid cells.
@@ -61,12 +76,13 @@ export default function CountySelectMap({
       <MapContainer
         center={center}
         zoom={zoom}
-        style={{ height: 500, width: '100%' }}
+        style={{ height: 500, width: "100%" }}
         zoomControl
         minZoom={2}
         worldCopyJump
         whenReady={() => {
-          if (initialBounds) fitBoundsOnce(mapRef.current, initialBounds, [12, 12]);
+          if (initialBounds)
+            fitBoundsOnce(mapRef.current, initialBounds, [12, 12]);
           if (mapRef.current && onMapReady) onMapReady(mapRef.current);
         }}
         ref={(m) => {
@@ -85,19 +101,23 @@ export default function CountySelectMap({
             selectedCounty={editor.county}
             editable
             clipEdges={editor.clipEdges ?? true}
-            onUpdateZones={(zones) => editor.onUpdateZones(editor.county.GEO_ID, zones)}
+            onUpdateZones={(zones) =>
+              editor.onUpdateZones(editor.county.GEO_ID, zones)
+            }
           />
         )}
 
-        {selected.filter(c => c.ZONE.length > 0).map(c => (
-          <GridOverlay
-            key={`view-${c.GEO_ID}`}
-            gridSize={editor?.gridSize ?? 40}
-            selectedCounty={c}
-            editable={false}
-            onUpdateZones={() => { }}
-          />
-        ))}
+        {selected
+          .filter((c) => c.ZONE.length > 0)
+          .map((c) => (
+            <GridOverlay
+              key={`view-${c.GEO_ID}`}
+              gridSize={editor?.gridSize ?? 40}
+              selectedCounty={c}
+              editable={false}
+              onUpdateZones={() => {}}
+            />
+          ))}
       </MapContainer>
     </>
   );

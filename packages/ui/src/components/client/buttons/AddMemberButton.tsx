@@ -19,7 +19,10 @@ import {
   SelectContent,
 } from "@workspace/ui/components/select";
 
-import { makeProfile, makeRosterEntry } from "@workspace/store/utils/generator.ts";
+import {
+  makeProfile,
+  makeRosterEntry,
+} from "@workspace/store/utils/generator.ts";
 import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
 
 type AddMemberButtonProps = {
@@ -28,48 +31,60 @@ type AddMemberButtonProps = {
   onAddMember: (entry: RosterEntry) => void;
 };
 
-export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberButtonProps) {
-
+export function AddMemberButton({
+  pod,
+  activeRoster,
+  onAddMember,
+}: AddMemberButtonProps) {
   const [open, setOpen] = React.useState(false);
   const [mode, setMode] = React.useState<"registered" | "guest">("registered");
 
   // form state
   const [guestName, setGuestName] = React.useState("");
   const [selectedRosterId, setSelectedRosterId] = React.useState<string | null>(
-    null
+    null,
   );
-  const [role, setRole] = React.useState<"lead" | "member" | "trainee">("member");
+  const [role, setRole] = React.useState<"lead" | "member" | "trainee">(
+    "member",
+  );
 
   // Load eligible profiles (pod_leader and higher) from server route when dialog opens
   const [loadingOptions, setLoadingOptions] = React.useState(false);
-  const [rosterOptions, setRosterOptions] = React.useState<RosterEntry[] | null>(null);
+  const [rosterOptions, setRosterOptions] = React.useState<
+    RosterEntry[] | null
+  >(null);
 
   // Convert a plain profile into a synthetic RosterEntry for selection
-  const profileToRosterEntry = React.useCallback((profile: any): RosterEntry => ({
-    id: String(profile.id), // synthetic id for selection (we generate a new one on add)
-    profile,
-    role: "member",
-    status: "active",
-    langs: [],
-    skills: [],
-    certs: [],
-    notes: undefined,
-    handle: profile.display_name ?? "",
-    joinedAt: new Date().toISOString(),
-    lastShiftAt: undefined,
-    signal_handle: profile.contact_signal ?? undefined,
-  }), []);
+  const profileToRosterEntry = React.useCallback(
+    (profile: any): RosterEntry => ({
+      id: String(profile.id), // synthetic id for selection (we generate a new one on add)
+      profile,
+      role: "member",
+      status: "active",
+      langs: [],
+      skills: [],
+      certs: [],
+      notes: undefined,
+      handle: profile.display_name ?? "",
+      joinedAt: new Date().toISOString(),
+      lastShiftAt: undefined,
+      signal_handle: profile.contact_signal ?? undefined,
+    }),
+    [],
+  );
 
   React.useEffect(() => {
     let cancelled = false;
     async function loadEligible() {
-      if (!open || mode !== 'registered') return;
+      if (!open || mode !== "registered") return;
       // Avoid refetch if already loaded
       if (rosterOptions && rosterOptions.length > 0) return;
       setLoadingOptions(true);
       try {
         // Try server route (filters to pod_leader+ and authorizes podAdmins)
-        const res = await fetch('/api/dispatch/profiles', { credentials: 'include' });
+        const res = await fetch("/api/dispatch/profiles", {
+          credentials: "include",
+        });
         if (res.ok) {
           const json = await res.json();
           const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
@@ -85,7 +100,9 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
             if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
           }
           const merged = Array.from(mapByProfile.values()).sort((a, b) =>
-            (a.profile?.display_name ?? '').localeCompare(b.profile?.display_name ?? '')
+            (a.profile?.display_name ?? "").localeCompare(
+              b.profile?.display_name ?? "",
+            ),
           );
           if (!cancelled) setRosterOptions(merged);
           return;
@@ -100,7 +117,9 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
       if (!cancelled) setRosterOptions(activeRoster);
     }
     loadEligible();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [open, mode, activeRoster, rosterOptions, profileToRosterEntry]);
 
   if (!pod) return null;
@@ -116,17 +135,9 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
         guestName || "Guest Volunteer",
         [],
         "Unregistered",
-        { registered: false }
+        { registered: false },
       );
-      entry = makeRosterEntry(
-        newId,
-        profile,
-        role,
-        "active",
-        [],
-        [],
-        []
-      );
+      entry = makeRosterEntry(newId, profile, role, "active", [], [], []);
     } else {
       const list = rosterOptions ?? activeRoster;
       const found = list.find((r) => r.id === selectedRosterId);
@@ -141,7 +152,9 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
         role,
         status: "active",
         // Ensure profile_id is present for proper Registered detection and persistence
-        profile_id: found.profile_id ?? (found.profile?.id ? String(found.profile.id) : undefined),
+        profile_id:
+          found.profile_id ??
+          (found.profile?.id ? String(found.profile.id) : undefined),
       };
     }
 
@@ -192,12 +205,19 @@ export function AddMemberButton({ pod, activeRoster, onAddMember }: AddMemberBut
                 onValueChange={(v) => setSelectedRosterId(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={loadingOptions ? "Loading users..." : "Select a roster member"} />
+                  <SelectValue
+                    placeholder={
+                      loadingOptions
+                        ? "Loading users..."
+                        : "Select a roster member"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {(rosterOptions ?? activeRoster).map((r) => (
                     <SelectItem key={r.id} value={r.id}>
-                      {(r.profile?.display_name ?? r.handle ?? 'Unknown')} ({r.role})
+                      {r.profile?.display_name ?? r.handle ?? "Unknown"} (
+                      {r.role})
                     </SelectItem>
                   ))}
                 </SelectContent>

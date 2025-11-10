@@ -13,9 +13,16 @@ type PageHeaderProps = {
  * Simple page header with title, optional description, and an actions slot.
  * Keeps page chrome consistent across apps.
  */
-export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+  className,
+}: PageHeaderProps) {
   return (
-    <header className={cn("flex items-center justify-between gap-3", className)}>
+    <header
+      className={cn("flex items-center justify-between gap-3", className)}
+    >
       <div className="space-y-1">
         <h1 className="text-2xl font-bold">{title}</h1>
         {description ? (
@@ -26,4 +33,3 @@ export function PageHeader({ title, description, actions, className }: PageHeade
     </header>
   );
 }
-

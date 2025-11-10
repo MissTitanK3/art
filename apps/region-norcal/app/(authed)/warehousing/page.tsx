@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const Wharehousing = () => {
-  return (
-    <div>Wharehousing Soon..</div>
-  )
-}
+  return <div>Wharehousing Soon..</div>;
+};
 
-export default Wharehousing
+export default Wharehousing;

@@ -3,10 +3,7 @@
 import * as React from "react";
 import { Button } from "../button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "../drawer";
-import {
-  HOW_TO_SECTIONS,
-  type HowToSectionId,
-} from "./index";
+import { HOW_TO_SECTIONS, type HowToSectionId } from "./index";
 
 export interface HowToLayoutProps {
   title?: string;
@@ -17,33 +14,54 @@ export interface HowToLayoutProps {
   quick?: React.ReactNode; // optional quick-access area rendered at top
 }
 
-export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn how to navigate the platform and report issues effectively.", active, onSelect, renderers, quick }: HowToLayoutProps) {
+export function HowToLayout({
+  title = "How To Use Platform",
+  subtitle = "Learn how to navigate the platform and report issues effectively.",
+  active,
+  onSelect,
+  renderers,
+  quick,
+}: HowToLayoutProps) {
   const sections = React.useMemo(
-    () => [...HOW_TO_SECTIONS].sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? ''))),
-    []
+    () =>
+      [...HOW_TO_SECTIONS].sort((a, b) =>
+        String(a.label ?? "").localeCompare(String(b.label ?? "")),
+      ),
+    [],
   );
 
   const grouped = React.useMemo(() => {
     const byId = new Map(sections.map((s) => [s.id, s] as const));
     const parentIds = new Set(Array.from(byId.keys()));
-    const childrenOf = new Map<string, Array<typeof sections[number]>>();
+    const childrenOf = new Map<string, Array<(typeof sections)[number]>>();
     for (const s of sections) {
       const maybeParentId = Array.from(parentIds).find(
-        (pid) => s.id !== pid && s.id.startsWith(`${pid}-`)
+        (pid) => s.id !== pid && s.id.startsWith(`${pid}-`),
       );
       if (maybeParentId) {
         if (!childrenOf.has(maybeParentId)) childrenOf.set(maybeParentId, []);
         childrenOf.get(maybeParentId)!.push(s);
       }
     }
-    const childIds = new Set(Array.from(childrenOf.values()).flat().map((c) => c.id));
+    const childIds = new Set(
+      Array.from(childrenOf.values())
+        .flat()
+        .map((c) => c.id),
+    );
     const parents = sections.filter((s) => !childIds.has(s.id));
-    parents.sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')));
+    parents.sort((a, b) =>
+      String(a.label ?? "").localeCompare(String(b.label ?? "")),
+    );
     for (const [pid, list] of childrenOf.entries()) {
-      list.sort((a, b) => String(a.label ?? '').localeCompare(String(b.label ?? '')));
+      list.sort((a, b) =>
+        String(a.label ?? "").localeCompare(String(b.label ?? "")),
+      );
       childrenOf.set(pid, list);
     }
-    return parents.map((p) => ({ parent: p, children: childrenOf.get(p.id) ?? [] }));
+    return parents.map((p) => ({
+      parent: p,
+      children: childrenOf.get(p.id) ?? [],
+    }));
   }, [sections]);
 
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -82,7 +100,9 @@ export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn h
                             onClick={() => onSelect(c.id as HowToSectionId)}
                             className={
                               "w-full text-left block px-2 py-1 rounded hover:bg-muted text-muted-foreground " +
-                              (active === c.id ? "bg-muted font-medium text-foreground" : "")
+                              (active === c.id
+                                ? "bg-muted font-medium text-foreground"
+                                : "")
                             }
                             aria-current={active === c.id ? "page" : undefined}
                           >
@@ -106,13 +126,13 @@ export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn h
             <p className="text-muted-foreground mt-1">{subtitle}</p>
           </div>
           <div className="mt-2 lg:hidden z-10">
-            <Button variant="outline" onClick={() => setMobileOpen(true)}>Sections</Button>
+            <Button variant="outline" onClick={() => setMobileOpen(true)}>
+              Sections
+            </Button>
           </div>
         </header>
 
-        {quick ? (
-          <section className="mb-10">{quick}</section>
-        ) : null}
+        {quick ? <section className="mb-10">{quick}</section> : null}
 
         {content}
 
@@ -129,7 +149,10 @@ export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn h
                     <li key={parent.id}>
                       <button
                         type="button"
-                        onClick={() => { onSelect(parent.id as HowToSectionId); setMobileOpen(false); }}
+                        onClick={() => {
+                          onSelect(parent.id as HowToSectionId);
+                          setMobileOpen(false);
+                        }}
                         className={
                           "w-full text-left block px-2 py-2 rounded hover:bg-muted " +
                           (active === parent.id ? "bg-muted font-medium" : "")
@@ -144,12 +167,19 @@ export function HowToLayout({ title = "How To Use Platform", subtitle = "Learn h
                             <li key={c.id}>
                               <button
                                 type="button"
-                                onClick={() => { onSelect(c.id as HowToSectionId); setMobileOpen(false); }}
+                                onClick={() => {
+                                  onSelect(c.id as HowToSectionId);
+                                  setMobileOpen(false);
+                                }}
                                 className={
                                   "w-full text-left block px-2 py-1 rounded hover:bg-muted text-muted-foreground " +
-                                  (active === c.id ? "bg-muted font-medium text-foreground" : "")
+                                  (active === c.id
+                                    ? "bg-muted font-medium text-foreground"
+                                    : "")
                                 }
-                                aria-current={active === c.id ? "page" : undefined}
+                                aria-current={
+                                  active === c.id ? "page" : undefined
+                                }
                               >
                                 {c.label}
                               </button>

@@ -5,4 +5,3 @@ export default async function ConfirmedWatchPage() {
   await requireVerifiedAdminAccess();
   return <ConfirmedWatchForm />;
 }
-

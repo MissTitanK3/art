@@ -21,5 +21,5 @@ export type MapFocus = {
   lng: number;
   zoom?: number;
   token: number;
-  reportId?: WizardReport['id'];
+  reportId?: WizardReport["id"];
 };

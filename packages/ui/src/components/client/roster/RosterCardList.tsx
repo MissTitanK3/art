@@ -1,14 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Edit3, Radio } from "lucide-react";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
 import { RemoveMemberButton } from "../buttons/RemoveMemberButton.tsx";
 import { humanize } from "@workspace/ui/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { toast } from "sonner";
 
 type Props = {
@@ -18,12 +28,19 @@ type Props = {
   onEdit?: (id: string) => void;
 };
 
-export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props) {
+export function RosterCardList({
+  rows,
+  podName,
+  onRemoveMember,
+  onEdit,
+}: Props) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {rows.map((r) => {
         // Treat as Registered when roster entry links to a profile row
-        const registered = Boolean(r.profile_id && String(r.profile_id).trim().length > 0);
+        const registered = Boolean(
+          r.profile_id && String(r.profile_id).trim().length > 0,
+        );
         return (
           <Card key={r.id} className="flex flex-col mt-2 shadow-sm">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -35,8 +52,12 @@ export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props)
                       <TooltipTrigger asChild>
                         <button
                           onClick={async () => {
-                            await navigator.clipboard.writeText(r.signal_handle!);
-                            toast.success("Signal handle copied to clipboard ✅");
+                            await navigator.clipboard.writeText(
+                              r.signal_handle!,
+                            );
+                            toast.success(
+                              "Signal handle copied to clipboard ✅",
+                            );
                           }}
                           className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
@@ -51,7 +72,11 @@ export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props)
                 <div className="flex items-center gap-2 justify-between w-full">
                   <Badge
                     variant={registered ? "default" : "outline"}
-                    className={registered ? "bg-emerald-500/15 text-emerald-800" : "text-muted-foreground"}
+                    className={
+                      registered
+                        ? "bg-emerald-500/15 text-emerald-800"
+                        : "text-muted-foreground"
+                    }
                   >
                     {registered ? "Registered" : "Manual Entry"}
                   </Badge>
@@ -75,7 +100,9 @@ export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props)
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               {r.langs?.length > 0 && (
                 <div>
-                  <span className="font-medium text-foreground">Languages:</span>{" "}
+                  <span className="font-medium text-foreground">
+                    Languages:
+                  </span>{" "}
                   {r.langs.map((l) => l.display_name).join(", ")}
                 </div>
               )}
@@ -109,7 +136,9 @@ export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props)
 
               {r.lastShiftAt && (
                 <div>
-                  <span className="font-medium text-foreground">Last Shift:</span>{" "}
+                  <span className="font-medium text-foreground">
+                    Last Shift:
+                  </span>{" "}
                   {new Date(r.lastShiftAt).toLocaleDateString()}
                 </div>
               )}
@@ -123,9 +152,17 @@ export function RosterCardList({ rows, podName, onRemoveMember, onEdit }: Props)
             </CardContent>
 
             <CardFooter className="flex gap-2 justify-end">
-              <RemoveMemberButton podName={podName} member={r} onRemoveMember={() => onRemoveMember(r.id)} />
+              <RemoveMemberButton
+                podName={podName}
+                member={r}
+                onRemoveMember={() => onRemoveMember(r.id)}
+              />
               {onEdit && (
-                <Button size="sm" variant="outline" onClick={() => onEdit(r.id)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(r.id)}
+                >
                   <Edit3 className="mr-2 h-4 w-4" /> Edit
                 </Button>
               )}

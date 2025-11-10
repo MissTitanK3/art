@@ -1,9 +1,9 @@
-import { persist } from 'zustand/middleware';
-import { createStore, type StateCreator } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import type { MeetANeed } from './types/meet-a-need';
+import { persist } from "zustand/middleware";
+import { createStore, type StateCreator } from "zustand/vanilla";
+import { useStore } from "zustand";
+import type { MeetANeed } from "./types/meet-a-need";
 
-const DEFAULT_STORAGE_KEY = 'meet-a-need-store';
+const DEFAULT_STORAGE_KEY = "meet-a-need-store";
 
 export interface MeetANeedStoreState {
   needs: MeetANeed[];
@@ -20,17 +20,28 @@ export interface CreateMeetANeedStoreOptions {
   storageKey?: string;
 }
 
-const createInitializer = (initialNeeds: MeetANeed[]): StateCreator<MeetANeedStoreState> => (set) => ({
-  needs: initialNeeds,
-  addNeed: (need) => set((s) => ({ needs: [need, ...s.needs.filter((n) => n.id !== need.id)] })),
-  updateNeed: (id, patch) =>
-    set((s) => ({ needs: s.needs.map((n) => (n.id === id ? { ...n, ...patch } : n)) })),
-  removeNeed: (id) => set((s) => ({ needs: s.needs.filter((n) => n.id !== id) })),
-  setAll: (needs) => set({ needs }),
-  clear: () => set({ needs: [] }),
-});
+const createInitializer =
+  (initialNeeds: MeetANeed[]): StateCreator<MeetANeedStoreState> =>
+  (set) => ({
+    needs: initialNeeds,
+    addNeed: (need) =>
+      set((s) => ({
+        needs: [need, ...s.needs.filter((n) => n.id !== need.id)],
+      })),
+    updateNeed: (id, patch) =>
+      set((s) => ({
+        needs: s.needs.map((n) => (n.id === id ? { ...n, ...patch } : n)),
+      })),
+    removeNeed: (id) =>
+      set((s) => ({ needs: s.needs.filter((n) => n.id !== id) })),
+    setAll: (needs) => set({ needs }),
+    clear: () => set({ needs: [] }),
+  });
 
-function withPersistence(initializer: StateCreator<MeetANeedStoreState>, storageKey: string) {
+function withPersistence(
+  initializer: StateCreator<MeetANeedStoreState>,
+  storageKey: string,
+) {
   return persist(initializer, { name: storageKey, version: 1 });
 }
 
@@ -40,9 +51,12 @@ export function createMeetANeedStore({
   storageKey = DEFAULT_STORAGE_KEY,
 }: CreateMeetANeedStoreOptions = {}) {
   const initializer = createInitializer(initialNeeds);
-  return shouldPersist ? createStore(withPersistence(initializer, storageKey)) : createStore(initializer);
+  return shouldPersist
+    ? createStore(withPersistence(initializer, storageKey))
+    : createStore(initializer);
 }
 
 const store = createMeetANeedStore();
-export const useMeetANeedStore = <T>(selector: (state: MeetANeedStoreState) => T) => useStore(store, selector);
-
+export const useMeetANeedStore = <T>(
+  selector: (state: MeetANeedStoreState) => T,
+) => useStore(store, selector);

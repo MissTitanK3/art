@@ -23,9 +23,7 @@ interface PrintableLine {
   indent?: number;
 }
 
-export async function generatePDF(
-  options: GeneratePDFOptions
-): Promise<Blob> {
+export async function generatePDF(options: GeneratePDFOptions): Promise<Blob> {
   const document = await PDFDocument.create();
   let page = document.addPage();
   const pageSize = () => page.getSize();
@@ -41,7 +39,12 @@ export async function generatePDF(
     }
   };
 
-  const wrapText = (text: string, font: PDFFont, fontSize: number, availableWidth: number) => {
+  const wrapText = (
+    text: string,
+    font: PDFFont,
+    fontSize: number,
+    availableWidth: number,
+  ) => {
     if (text.length === 0) {
       return [""];
     }
@@ -96,7 +99,11 @@ export async function generatePDF(
     return lines;
   };
 
-  const drawLines = (lines: PrintableLine[], font: PDFFont, fontSize: number) => {
+  const drawLines = (
+    lines: PrintableLine[],
+    font: PDFFont,
+    fontSize: number,
+  ) => {
     lines.forEach(({ text, indent }) => {
       const x = PAGE_MARGIN + (indent ?? 0);
       const availableWidth = pageSize().width - x - PAGE_MARGIN;
@@ -123,7 +130,9 @@ export async function generatePDF(
       .replace(/\s+/g, " ")
       .trim();
     const capitalized = spaced.charAt(0).toUpperCase() + spaced.slice(1);
-    return capitalized.replace(/\bId\b/gi, "ID").replace(/\bA number\b/gi, "A-Number");
+    return capitalized
+      .replace(/\bId\b/gi, "ID")
+      .replace(/\bA number\b/gi, "A-Number");
   };
 
   const renderScalar = (value: unknown): string => {
@@ -155,7 +164,10 @@ export async function generatePDF(
           typeof entry === "number" ||
           typeof entry === "boolean"
         ) {
-          rows.push({ text: `• ${renderScalar(entry)}`, indent: BULLET_INDENT });
+          rows.push({
+            text: `• ${renderScalar(entry)}`,
+            indent: BULLET_INDENT,
+          });
           return;
         }
         if (Array.isArray(entry)) {
@@ -206,10 +218,7 @@ export async function generatePDF(
           }
           return true;
         })
-        .map(
-          ([key, val]) =>
-            `${formatKey(key)}: ${renderScalar(val)}`
-        );
+        .map(([key, val]) => `${formatKey(key)}: ${renderScalar(val)}`);
 
       return entries.length > 0
         ? entries.map((text) => ({ text, indent: BULLET_INDENT }))
@@ -224,7 +233,7 @@ export async function generatePDF(
     const { width } = pageSize();
     const titleWidth = boldFont.widthOfTextAtSize(
       options.title,
-      TITLE_FONT_SIZE
+      TITLE_FONT_SIZE,
     );
     ensureSpace();
     page.drawText(options.title, {
@@ -257,7 +266,7 @@ export async function generatePDF(
     }
 
     const entries = Object.entries(section.fields ?? {}).filter(
-      ([, value]) => value !== undefined && value !== null
+      ([, value]) => value !== undefined && value !== null,
     );
 
     if (entries.length === 0) {

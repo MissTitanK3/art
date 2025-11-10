@@ -1,6 +1,6 @@
 // store/trust.ts (zustand)
-import { create } from 'zustand';
-import { TrustDraft, TrustEntry, TrustPatch } from './types/trust';
+import { create } from "zustand";
+import { TrustDraft, TrustEntry, TrustPatch } from "./types/trust";
 
 function isoNow() {
   return new Date().toISOString();
@@ -48,13 +48,13 @@ export const useTrustStore = create<TrustState>((set, get) => ({
         ...current,
         ...patch,
         // enforce still required
-        subjectId: current?.subjectId || '',
-        signerId: current?.signerId || '',
-        signer_role: current?.signer_role || 'pod_leader',
-        signer_rot: current?.signer_rot || '',
-        signed_at: current?.signed_at || '',
-        signed_entry_hash: current?.signed_entry_hash || '',
-        status: patch?.status ? current?.status! : 'inactive',
+        subjectId: current?.subjectId || "",
+        signerId: current?.signerId || "",
+        signer_role: current?.signer_role || "pod_leader",
+        signer_rot: current?.signer_rot || "",
+        signed_at: current?.signed_at || "",
+        signed_entry_hash: current?.signed_entry_hash || "",
+        status: patch?.status ? current?.status! : "inactive",
       };
       const copy = s.trustList.slice();
       copy[i] = next;
@@ -68,7 +68,7 @@ export const useTrustStore = create<TrustState>((set, get) => ({
       if (!entry) return s;
       const next: TrustEntry = {
         ...entry,
-        status: entry.status === 'active' ? 'inactive' : 'active',
+        status: entry.status === "active" ? "inactive" : "active",
       };
       const copy = s.trustList.slice();
       copy[idx] = next;

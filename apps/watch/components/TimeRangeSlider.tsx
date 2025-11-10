@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Range } from 'react-range';
-import { FrostedButton } from './ui/FrostedButton';
-import { useTranslations } from '@/lib/il8n/useTranslations';
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Range } from "react-range";
+import { FrostedButton } from "./ui/FrostedButton";
+import { useTranslations } from "@/lib/il8n/useTranslations";
 
 const MAX = 168;
 const STEP = 4;
@@ -21,16 +21,18 @@ export default function TimeRangeSlider({ onChange, value }: Props) {
   const router = useRouter();
 
   const parseIntOrDefault = (value: string | null, fallback: number) =>
-    Math.max(0, Math.min(MAX, parseInt(value || '', 10) || fallback));
+    Math.max(0, Math.min(MAX, parseInt(value || "", 10) || fallback));
 
-  const initialFrom = parseIntOrDefault(searchParams.get('from'), 0);
-  const initialTo = parseIntOrDefault(searchParams.get('to'), MAX);
+  const initialFrom = parseIntOrDefault(searchParams.get("from"), 0);
+  const initialTo = parseIntOrDefault(searchParams.get("to"), MAX);
   const derivedInitial: [number, number] = [
     Math.min(initialFrom, initialTo),
     Math.max(initialFrom, initialTo),
   ];
   const isControlled = Array.isArray(value);
-  const [range, setRange] = useState<[number, number]>(() => (isControlled && value ? value : derivedInitial));
+  const [range, setRange] = useState<[number, number]>(() =>
+    isControlled && value ? value : derivedInitial,
+  );
 
   const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -39,8 +41,8 @@ export default function TimeRangeSlider({ onChange, value }: Props) {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set('from', String(from));
-      params.set('to', String(to));
+      params.set("from", String(from));
+      params.set("to", String(to));
       router.replace(`?${params.toString()}`, { scroll: false });
     }, 300);
   };
@@ -67,9 +69,12 @@ export default function TimeRangeSlider({ onChange, value }: Props) {
 
   useEffect(() => {
     if (isControlled) return;
-    const urlFrom = parseIntOrDefault(searchParams.get('from'), 0);
-    const urlTo = parseIntOrDefault(searchParams.get('to'), MAX);
-    const normalized: [number, number] = [Math.min(urlFrom, urlTo), Math.max(urlFrom, urlTo)];
+    const urlFrom = parseIntOrDefault(searchParams.get("from"), 0);
+    const urlTo = parseIntOrDefault(searchParams.get("to"), MAX);
+    const normalized: [number, number] = [
+      Math.min(urlFrom, urlTo),
+      Math.max(urlFrom, urlTo),
+    ];
 
     // Only update state if values actually changed
     if (normalized[0] !== range[0] || normalized[1] !== range[1]) {
@@ -90,8 +95,8 @@ export default function TimeRangeSlider({ onChange, value }: Props) {
 
       {/* Label */}
       <label className="block font-semibold mb-15">
-        {t('showingReportsFrom')} {Math.floor(range[0] / 24)}d {range[0] % 24}h → {Math.floor(range[1] / 24)}d{' '}
-        {range[1] % 24}h ago
+        {t("showingReportsFrom")} {Math.floor(range[0] / 24)}d {range[0] % 24}h
+        → {Math.floor(range[1] / 24)}d {range[1] % 24}h ago
       </label>
 
       {/* Range Slider */}
@@ -106,12 +111,13 @@ export default function TimeRangeSlider({ onChange, value }: Props) {
             {...props}
             style={{
               ...props.style,
-              height: '0.5rem', // h-2 equivalent
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '9999px', // fully rounded
-              backdropFilter: 'blur(4px)',
+              height: "0.5rem", // h-2 equivalent
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              borderRadius: "9999px", // fully rounded
+              backdropFilter: "blur(4px)",
             }}
-            className="relative">
+            className="relative"
+          >
             <div
               className="absolute top-0 bottom-0 bg-blue-500 rounded"
               style={{
@@ -129,12 +135,14 @@ export default function TimeRangeSlider({ onChange, value }: Props) {
               key={key}
               {...safeProps}
               className={`relative z-10 flex items-center justify-center w-5 h-5 rounded-full border-2 transition
-      ${isDragged ? 'border-blue-600 bg-blue-500 scale-110' : 'border-blue-400 bg-white'}
-      focus:outline-none focus:ring-2 focus:ring-blue-500`}>
+      ${isDragged ? "border-blue-600 bg-blue-500 scale-110" : "border-blue-400 bg-white"}
+      focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            >
               {/* Label above the thumb */}
               <div
                 className="absolute -top-7 text-xs font-medium text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded shadow"
-                style={{ whiteSpace: 'nowrap' }}>
+                style={{ whiteSpace: "nowrap" }}
+              >
                 {Math.floor(value / 24)}d {value % 24}h
               </div>
             </div>

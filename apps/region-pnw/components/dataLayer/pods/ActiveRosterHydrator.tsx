@@ -24,7 +24,9 @@ function mapRowToRosterEntry(row: any): RosterEntry {
 
 type RosterRow = { pod_id?: string } & Record<string, any>;
 
-async function fetchActiveRoster(): Promise<Array<{ podId: string; entry: RosterEntry }>> {
+async function fetchActiveRoster(): Promise<
+  Array<{ podId: string; entry: RosterEntry }>
+> {
   try {
     const client = getSupabaseBrowserClient();
     const { data, error } = await client
@@ -33,7 +35,10 @@ async function fetchActiveRoster(): Promise<Array<{ podId: string; entry: Roster
       .order("joined_at", { ascending: true });
     if (error) throw error;
     const rows = (Array.isArray(data) ? data : []) as RosterRow[];
-    return rows.map((row) => ({ podId: String(row.pod_id ?? ""), entry: mapRowToRosterEntry(row) }));
+    return rows.map((row) => ({
+      podId: String(row.pod_id ?? ""),
+      entry: mapRowToRosterEntry(row),
+    }));
   } catch (e) {
     console.warn("[ActiveRosterHydrator] supabase fetch error", e);
     return [];
@@ -45,19 +50,23 @@ async function fetchProfilesAsEntries(): Promise<RosterEntry[]> {
     // Prefer server route for pod admins: returns all profiles when authorized
     let rows: any[] | null = null;
     try {
-      const res = await fetch('/api/dispatch/profiles', { credentials: 'include' });
+      const res = await fetch("/api/dispatch/profiles", {
+        credentials: "include",
+      });
       if (res.ok) {
         const json = await res.json();
         rows = Array.isArray(json?.profiles) ? json.profiles : [];
       }
-    } catch { /* fall back to direct Supabase query */ void 0; }
+    } catch {
+      /* fall back to direct Supabase query */ void 0;
+    }
 
     if (!rows) {
       const client = getSupabaseBrowserClient();
       const { data, error } = await client
-        .from('profiles')
-        .select('*')
-        .order('display_name', { ascending: true });
+        .from("profiles")
+        .select("*")
+        .order("display_name", { ascending: true });
       if (error) throw error;
       rows = Array.isArray(data) ? data : [];
     }
@@ -105,9 +114,11 @@ export default function ActiveRosterHydrator() {
       // Set global active roster for other views
       const rosterOnly = rows.map((r) => r.entry);
       // Merge in profiles not already represented by an existing roster entry (by profile.id)
-      const existingProfileIds = new Set(rosterOnly.map((e) => e.profile?.id).filter(Boolean));
+      const existingProfileIds = new Set(
+        rosterOnly.map((e) => e.profile?.id).filter(Boolean),
+      );
       const merged = rosterOnly.concat(
-        profileEntries.filter((e) => !existingProfileIds.has(e.profile?.id))
+        profileEntries.filter((e) => !existingProfileIds.has(e.profile?.id)),
       );
       setActiveRoster(merged);
 

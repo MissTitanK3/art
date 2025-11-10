@@ -20,7 +20,7 @@ export function AutoCreateProfile() {
   const createdForUserId = React.useRef<string | null>(null);
   const pathname = usePathname();
   // Skip auto-create on admin routes to avoid extra client reads
-  const isAdminRoute = (pathname ?? '').startsWith('/admin');
+  const isAdminRoute = (pathname ?? "").startsWith("/admin");
 
   React.useEffect(() => {
     let cancelled = false;
@@ -37,12 +37,17 @@ export function AutoCreateProfile() {
         const existing = await profileAdapter.loadProfile(userId);
         if (existing) {
           // Hydrate missing display_name for legacy/null rows
-          const needsName = typeof (existing as any).display_name !== 'string' || (existing as any).display_name.trim().length === 0;
+          const needsName =
+            typeof (existing as any).display_name !== "string" ||
+            (existing as any).display_name.trim().length === 0;
           if (needsName) {
             try {
               const next = {
                 ...(existing as any),
-                display_name: defaultDisplayName(session.user.email, session.user.fullName),
+                display_name: defaultDisplayName(
+                  session.user.email,
+                  session.user.fullName,
+                ),
               } as Profile;
               await profileAdapter.saveProfile(next);
             } catch {
@@ -67,9 +72,15 @@ export function AutoCreateProfile() {
 
         const now = new Date().toISOString();
         const base: Profile = {
-          id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `${userId}-${Date.now()}`,
+          id:
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `${userId}-${Date.now()}`,
           user_id: userId,
-          display_name: defaultDisplayName(session.user.email, session.user.fullName),
+          display_name: defaultDisplayName(
+            session.user.email,
+            session.user.fullName,
+          ),
           access_role: "team_member",
           field_roles: [],
           verified_by: "self",
@@ -91,10 +102,10 @@ export function AutoCreateProfile() {
         await profileAdapter.saveProfile(profile);
         // Best-effort: notify dispatcher_admin+ that onboarding outreach may be needed
         try {
-          await fetch('/api/onboarding/notify-admins', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            credentials: 'include',
+          await fetch("/api/onboarding/notify-admins", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "include",
           });
         } catch {
           // ignore notification errors

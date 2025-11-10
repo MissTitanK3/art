@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { CampaignForm } from '@workspace/ui/components/CampaignForm'
-import { useCampaigns } from '@workspace/ui/hooks/useCampaigns'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card'
+import { CampaignForm } from "@workspace/ui/components/CampaignForm";
+import { useCampaigns } from "@workspace/ui/hooks/useCampaigns";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 
 export default function CampaignsAdminPage() {
-  const { items, loading, error, createCampaign } = useCampaigns()
+  const { items, loading, error, createCampaign } = useCampaigns();
 
   return (
     <section className="space-y-6">
@@ -20,13 +26,18 @@ export default function CampaignsAdminPage() {
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No campaigns yet</div>
+            <div className="text-sm text-muted-foreground">
+              No campaigns yet
+            </div>
           ) : (
             <ul className="space-y-2">
               {items.map((c) => (
                 <li key={c.id} className="text-sm">
-                  <span className="font-medium">{c.title || 'Untitled'}</span>
-                  <span className="text-muted-foreground"> — {c.start_at?.slice(0, 10)} → {c.end_at?.slice(0, 10)}</span>
+                  <span className="font-medium">{c.title || "Untitled"}</span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    — {c.start_at?.slice(0, 10)} → {c.end_at?.slice(0, 10)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -34,6 +45,5 @@ export default function CampaignsAdminPage() {
         </CardContent>
       </Card>
     </section>
-  )
+  );
 }
-

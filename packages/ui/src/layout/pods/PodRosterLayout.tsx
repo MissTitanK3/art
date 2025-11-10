@@ -44,23 +44,26 @@ export function PodRosterLayout({
   emptyState,
 }: PodRosterLayoutProps) {
   if (!podId && notFoundMessage) {
-    return <section className="mx-auto w-full max-w-4xl">{notFoundMessage}</section>;
+    return (
+      <section className="mx-auto w-full max-w-4xl">{notFoundMessage}</section>
+    );
   }
 
-  const rosterList = rows.length > 0 ? (
-    <RosterCardList
-      rows={rows}
-      onEdit={onEdit}
-      podName={podName ?? podSlug}
-      onRemoveMember={onRemoveMember}
-    />
-  ) : (
-    emptyState ?? (
-      <p className="mt-6 text-sm text-muted-foreground">
-        No members yet. Add someone to get started.
-      </p>
-    )
-  );
+  const rosterList =
+    rows.length > 0 ? (
+      <RosterCardList
+        rows={rows}
+        onEdit={onEdit}
+        podName={podName ?? podSlug}
+        onRemoveMember={onRemoveMember}
+      />
+    ) : (
+      (emptyState ?? (
+        <p className="mt-6 text-sm text-muted-foreground">
+          No members yet. Add someone to get started.
+        </p>
+      ))
+    );
 
   return (
     <section className="mx-auto w-full max-w-4xl">
@@ -77,7 +80,10 @@ export function PodRosterLayout({
 
       {rosterList}
 
-      <Sheet open={Boolean(editingEntry)} onOpenChange={(next) => !next && onCloseEditor()}>
+      <Sheet
+        open={Boolean(editingEntry)}
+        onOpenChange={(next) => !next && onCloseEditor()}
+      >
         <SheetContent
           side="right"
           className="flex max-w-none flex-col p-0 sm:w-[480px] md:w-[640px] lg:w-[720px] bg-accent text-accent-foreground"
@@ -93,7 +99,10 @@ export function PodRosterLayout({
 
           {editingEntry ? (
             <div className="flex-1 overflow-y-auto p-4">
-              <EditRosterEntryForm initial={editingEntry} onSave={onSaveEntry} />
+              <EditRosterEntryForm
+                initial={editingEntry}
+                onSave={onSaveEntry}
+              />
             </div>
           ) : null}
 
@@ -101,7 +110,11 @@ export function PodRosterLayout({
             <SheetClose asChild>
               <Button variant="outline">Close</Button>
             </SheetClose>
-            <Button type="submit" form="edit-roster-entry-form" className="min-w-24">
+            <Button
+              type="submit"
+              form="edit-roster-entry-form"
+              className="min-w-24"
+            >
               Save
             </Button>
           </div>

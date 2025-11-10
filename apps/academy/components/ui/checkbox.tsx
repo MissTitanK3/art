@@ -1,1 +1,1 @@
-export { Checkbox } from '@workspace/ui/components/checkbox';
+export { Checkbox } from "@workspace/ui/components/checkbox";

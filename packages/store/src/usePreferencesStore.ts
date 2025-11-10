@@ -1,8 +1,8 @@
-import { useStore } from 'zustand';
-import { createStore, StateCreator, StoreApi } from 'zustand/vanilla';
-import { persist } from 'zustand/middleware';
+import { useStore } from "zustand";
+import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
+import { persist } from "zustand/middleware";
 
-export type DistanceUnit = 'mi' | 'km';
+export type DistanceUnit = "mi" | "km";
 
 export type PreferencesStoreState = {
   distanceUnit: DistanceUnit;
@@ -21,10 +21,14 @@ const createPreferencesInitializer =
   (set, get) => ({
     distanceUnit: initialUnit,
     setDistanceUnit: (unit) => set({ distanceUnit: unit }),
-    toggleDistanceUnit: () => set({ distanceUnit: get().distanceUnit === 'mi' ? 'km' : 'mi' }),
+    toggleDistanceUnit: () =>
+      set({ distanceUnit: get().distanceUnit === "mi" ? "km" : "mi" }),
   });
 
-function withPersistence(initializer: StateCreator<PreferencesStoreState>, storageKey: string) {
+function withPersistence(
+  initializer: StateCreator<PreferencesStoreState>,
+  storageKey: string,
+) {
   return persist(initializer, {
     name: storageKey,
     version: 1,
@@ -35,23 +39,38 @@ function withPersistence(initializer: StateCreator<PreferencesStoreState>, stora
 
 export type PreferencesStore = StoreApi<PreferencesStoreState>;
 
-export function createPreferencesStore(options?: CreatePreferencesStoreOptions): PreferencesStore {
-  const { initialUnit = 'mi', persist: enablePersist = true, storageKey = 'preferences-store-v1' } = options ?? {};
+export function createPreferencesStore(
+  options?: CreatePreferencesStoreOptions,
+): PreferencesStore {
+  const {
+    initialUnit = "mi",
+    persist: enablePersist = true,
+    storageKey = "preferences-store-v1",
+  } = options ?? {};
 
   const initializer = createPreferencesInitializer(initialUnit);
-  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+  const creator = enablePersist
+    ? withPersistence(initializer, storageKey)
+    : initializer;
   return createStore<PreferencesStoreState>(creator as any);
 }
 
 // Allow apps to override the persisted storage key or provide a global instance
 const GLOBAL_STORE: PreferencesStore | undefined =
-  (typeof globalThis !== 'undefined' && (globalThis as any).__ART_PREFERENCES_STORE) || undefined;
+  (typeof globalThis !== "undefined" &&
+    (globalThis as any).__ART_PREFERENCES_STORE) ||
+  undefined;
 
 const GLOBAL_STORAGE_KEY: string | undefined =
-  (typeof globalThis !== 'undefined' && (globalThis as any).__ART_PREFERENCES_STORAGE_KEY) || undefined;
+  (typeof globalThis !== "undefined" &&
+    (globalThis as any).__ART_PREFERENCES_STORAGE_KEY) ||
+  undefined;
 
 const singletonPreferencesStore =
-  GLOBAL_STORE ?? createPreferencesStore({ storageKey: GLOBAL_STORAGE_KEY ?? 'preferences-store-v1' });
+  GLOBAL_STORE ??
+  createPreferencesStore({
+    storageKey: GLOBAL_STORAGE_KEY ?? "preferences-store-v1",
+  });
 
 export const preferencesStore = singletonPreferencesStore;
 

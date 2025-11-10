@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
-import type { Profile } from '@workspace/store/types/global.ts';
-import type { ProfileAdapter } from '@workspace/store/types/profile.ts';
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import type { Profile } from "@workspace/store/types/global.ts";
+import type { ProfileAdapter } from "@workspace/store/types/profile.ts";
 
 function isUuid(value: string): boolean {
   // Allow optional surrounding braces and standard UUID hyphenation
@@ -18,12 +18,12 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     // - handle rows returned as arrays
     // - allow lookup by id or user_id
     const { data, error } = await client
-      .from('profiles')
-      .select('*')
+      .from("profiles")
+      .select("*")
       .or(`user_id.eq.${userId},id.eq.${userId}`)
       .limit(1);
     if (error) {
-      console.warn('[supabaseProfileAdapter] loadProfile error', error);
+      console.warn("[supabaseProfileAdapter] loadProfile error", error);
       return null;
     }
     const row = Array.isArray(data) ? (data[0] as any) : (data as any);
@@ -31,7 +31,7 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     // Normalize nullable fields to avoid runtime null reads
     const normalized: Profile = {
       ...(row as any),
-      display_name: String((row as any)?.display_name ?? ''),
+      display_name: String((row as any)?.display_name ?? ""),
     } as Profile;
     return normalized;
   },
@@ -41,7 +41,7 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     const { inserted_at, ...rest } = profile as any;
     // Write both joined_at and inserted_at for schema compatibility
     const payload = { ...rest, inserted_at };
-    const { error } = await client.from('profiles').upsert(payload);
+    const { error } = await client.from("profiles").upsert(payload);
     if (error) {
       throw new Error(error.message);
     }
@@ -50,7 +50,10 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     const client = getSupabaseBrowserClient();
     // Be flexible: try delete by id OR user_id
     const target = userOrProfileId;
-    const { error: byIdErr } = await client.from('profiles').delete().or(`id.eq.${target},user_id.eq.${target}`);
+    const { error: byIdErr } = await client
+      .from("profiles")
+      .delete()
+      .or(`id.eq.${target},user_id.eq.${target}`);
     if (byIdErr) {
       throw new Error(byIdErr.message);
     }

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import DispatchSubmissionDataLayer from '@/components/dataLayer/dispatches/DispatchSubmissionDataLayer';
+import { useParams } from "next/navigation";
+import DispatchSubmissionDataLayer from "@/components/dataLayer/dispatches/DispatchSubmissionDataLayer";
 
 export default function DispatchSubmissionPage() {
   const params = useParams<{ id: string }>();

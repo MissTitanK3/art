@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useMap, useMapEvents } from 'react-leaflet';
+import { useEffect } from "react";
+import { useMap, useMapEvents } from "react-leaflet";
 import type {
   GeoJsonObject,
   Feature,
@@ -15,9 +15,9 @@ import type {
   Polygon,
   MultiPolygon,
   Position,
-} from 'geojson';
-import type { SelectedCounty } from '@workspace/store/types/maps.ts';
-import * as L from 'leaflet';
+} from "geojson";
+import type { SelectedCounty } from "@workspace/store/types/maps.ts";
+import * as L from "leaflet";
 
 /** ---------- Pure helpers (no Leaflet import) ---------- **/
 
@@ -37,21 +37,31 @@ export function stateFipsFromFips(fips: string): string {
 
 /** Styling constants (simple POJOs; no Leaflet types needed) */
 export const STYLES = {
-  base: { color: '#666', weight: 1, fillOpacity: 0.05 },
-  active: { color: '#111', weight: 2, fillOpacity: 0.15 },
-  hover: { color: '#000', weight: 2, fillOpacity: 0.12 },
+  base: { color: "#666", weight: 1, fillOpacity: 0.05 },
+  active: { color: "#111", weight: 2, fillOpacity: 0.15 },
+  hover: { color: "#000", weight: 2, fillOpacity: 0.12 },
 } as const;
 
 /** ---------- Bounds helpers (pure) ---------- **/
 
 // Internal mutable bounds accumulator
-type BoundsAcc = { minLat: number; minLng: number; maxLat: number; maxLng: number };
+type BoundsAcc = {
+  minLat: number;
+  minLng: number;
+  maxLat: number;
+  maxLng: number;
+};
 
 // Final bounds tuple: [south, west, north, east]
 export type BoundsTuple = [number, number, number, number];
 
 function accInit(): BoundsAcc {
-  return { minLat: Infinity, minLng: Infinity, maxLat: -Infinity, maxLng: -Infinity };
+  return {
+    minLat: Infinity,
+    minLng: Infinity,
+    maxLat: -Infinity,
+    maxLng: -Infinity,
+  };
 }
 function accAdd(acc: BoundsAcc, coord: Position) {
   const [lng, lat] = coord; // GeoJSON is [lng, lat]
@@ -62,7 +72,12 @@ function accAdd(acc: BoundsAcc, coord: Position) {
   if (lng > acc.maxLng) acc.maxLng = lng;
 }
 function accToTuple(acc: BoundsAcc): BoundsTuple | null {
-  if (!isFinite(acc.minLat) || !isFinite(acc.minLng) || !isFinite(acc.maxLat) || !isFinite(acc.maxLng)) {
+  if (
+    !isFinite(acc.minLat) ||
+    !isFinite(acc.minLng) ||
+    !isFinite(acc.maxLat) ||
+    !isFinite(acc.maxLng)
+  ) {
     return null;
   }
   return [acc.minLat, acc.minLng, acc.maxLat, acc.maxLng];
@@ -70,7 +85,7 @@ function accToTuple(acc: BoundsAcc): BoundsTuple | null {
 
 function walkCoords(coordinates: any, acc: BoundsAcc) {
   // Handles nested arrays of positions for all geometry types
-  if (typeof coordinates[0] === 'number') {
+  if (typeof coordinates[0] === "number") {
     accAdd(acc, coordinates as Position);
     return;
   }
@@ -79,26 +94,27 @@ function walkCoords(coordinates: any, acc: BoundsAcc) {
 
 function boundsOfGeometry(geom: Geometry, acc: BoundsAcc) {
   switch (geom.type) {
-    case 'Point':
+    case "Point":
       accAdd(acc, (geom as Point).coordinates);
       break;
-    case 'MultiPoint':
+    case "MultiPoint":
       for (const p of (geom as MultiPoint).coordinates) accAdd(acc, p);
       break;
-    case 'LineString':
+    case "LineString":
       walkCoords((geom as LineString).coordinates, acc);
       break;
-    case 'MultiLineString':
+    case "MultiLineString":
       walkCoords((geom as MultiLineString).coordinates, acc);
       break;
-    case 'Polygon':
+    case "Polygon":
       walkCoords((geom as Polygon).coordinates, acc);
       break;
-    case 'MultiPolygon':
+    case "MultiPolygon":
       walkCoords((geom as MultiPolygon).coordinates, acc);
       break;
-    case 'GeometryCollection':
-      for (const g of (geom as GeometryCollection).geometries) boundsOfGeometry(g, acc);
+    case "GeometryCollection":
+      for (const g of (geom as GeometryCollection).geometries)
+        boundsOfGeometry(g, acc);
       break;
     default:
       break;
@@ -111,11 +127,11 @@ export function computeBounds(geojson?: GeoJsonObject): L.LatLngBounds | null {
 
   const acc = accInit();
 
-  if ((geojson as FeatureCollection).type === 'FeatureCollection') {
+  if ((geojson as FeatureCollection).type === "FeatureCollection") {
     for (const f of (geojson as FeatureCollection).features) {
       if (f.geometry) boundsOfGeometry(f.geometry, acc);
     }
-  } else if ((geojson as Feature).type === 'Feature') {
+  } else if ((geojson as Feature).type === "Feature") {
     const f = geojson as Feature;
     if (f.geometry) boundsOfGeometry(f.geometry, acc);
   } else {
@@ -141,7 +157,7 @@ export function fitBoundsOnce(
   if (!map || !bounds) return;
 
   // If a Leaflet LatLngBounds-like was passed:
-  if (typeof (bounds as any).isValid === 'function') {
+  if (typeof (bounds as any).isValid === "function") {
     if ((bounds as any).isValid()) map.fitBounds(bounds, { padding });
     return;
   }
@@ -164,7 +180,13 @@ export function fitBoundsOnce(
  * AutoFit: on mount/update, fits the map to the given GeoJSON geometry.
  * Uses pure bounds + map.fitBounds with array form (no Leaflet import).
  */
-export function AutoFit({ data, padding = [12, 12] }: { data: GeoJsonObject; padding?: [number, number] }) {
+export function AutoFit({
+  data,
+  padding = [12, 12],
+}: {
+  data: GeoJsonObject;
+  padding?: [number, number];
+}) {
   const map = useMap();
   useEffect(() => {
     if (!data || !map) return;
@@ -181,14 +203,18 @@ export function AutoFit({ data, padding = [12, 12] }: { data: GeoJsonObject; pad
  * DoOnceOnReady: runs a callback once when the map finishes its initial load.
  * Still uses only the Leaflet API present on `map`, no imports needed here.
  */
-export function DoOnceOnReady({ run }: { run: (m: any /* Leaflet.Map */) => void }) {
+export function DoOnceOnReady({
+  run,
+}: {
+  run: (m: any /* Leaflet.Map */) => void;
+}) {
   const map = useMap();
   useEffect(() => {
     if (!map) return;
     const handler = () => run(map);
-    map.once('load', handler);
+    map.once("load", handler);
     return () => {
-      map.off('load', handler);
+      map.off("load", handler);
     };
   }, [map, run]);
   return null;

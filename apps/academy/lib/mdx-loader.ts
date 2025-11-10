@@ -1,24 +1,26 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 // Frontmatter is provided by the generated manifest; no runtime parsing needed
-import rehypeSlug from 'rehype-slug';
-import { extractToc } from './mdx.toc';
-import remarkGfm from 'remark-gfm';
-import { ACADEMY_COURSES_DIR } from '@workspace/ui/data/academy/paths';
-import type { AcademyCourseFrontmatter as CourseFrontmatter } from '@workspace/ui/data/academy/types';
-import { MDX_COURSE_FRONTMATTER } from './mdx-manifest.generated';
+import rehypeSlug from "rehype-slug";
+import { extractToc } from "./mdx.toc";
+import remarkGfm from "remark-gfm";
+import { ACADEMY_COURSES_DIR } from "@workspace/ui/data/academy/paths";
+import type { AcademyCourseFrontmatter as CourseFrontmatter } from "@workspace/ui/data/academy/types";
+import { MDX_COURSE_FRONTMATTER } from "./mdx-manifest.generated";
 
 export async function getCourseBySlug(slug: string) {
   const filepath = findCourseFile(slug);
   if (!filepath) {
     const expected = path.join(ACADEMY_COURSES_DIR, `${slug}.mdx`);
-    console.error('[academy] getCourseBySlug:file-missing', { slug, expected });
-    throw new Error('Course file not found');
+    console.error("[academy] getCourseBySlug:file-missing", { slug, expected });
+    throw new Error("Course file not found");
   }
-  const rawFull = fs.readFileSync(filepath, 'utf8');
-  const content = rawFull.replace(/^---[\s\S]*?---\n/, '');
+  const rawFull = fs.readFileSync(filepath, "utf8");
+  const content = rawFull.replace(/^---[\s\S]*?---\n/, "");
   const fmMap = MDX_COURSE_FRONTMATTER;
-  const frontmatter = fmMap[slug as keyof typeof fmMap] as CourseFrontmatter | undefined;
+  const frontmatter = fmMap[slug as keyof typeof fmMap] as
+    | CourseFrontmatter
+    | undefined;
   const toc = extractToc(content); // ✅ Extract at build time
 
   return {
@@ -35,7 +37,8 @@ export function getAllCourseSlugs(): string[] {
     for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
       const abs = path.join(dir, ent.name);
       if (ent.isDirectory()) walk(abs);
-      else if (ent.isFile() && /\.mdx?$/.test(ent.name)) slugs.push(ent.name.replace(/\.mdx?$/, ''));
+      else if (ent.isFile() && /\.mdx?$/.test(ent.name))
+        slugs.push(ent.name.replace(/\.mdx?$/, ""));
     }
   };
   walk(ACADEMY_COURSES_DIR);

@@ -1,4 +1,4 @@
-import QRCode from "qrcode"
+import QRCode from "qrcode";
 
 export async function generateQRDataURL(text: string): Promise<string> {
   try {
@@ -10,9 +10,9 @@ export async function generateQRDataURL(text: string): Promise<string> {
         dark: "#1f2937",
         light: "#fefce8",
       },
-    })
+    });
   } catch (error) {
-    console.error("Failed to generate QR code:", error)
-    return ""
+    console.error("Failed to generate QR code:", error);
+    return "";
   }
 }

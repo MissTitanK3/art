@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 import {
   AlertCircle,
   BookOpenCheck,
@@ -6,7 +6,7 @@ import {
   Flame,
   Info,
   Lightbulb,
-} from "lucide-react"
+} from "lucide-react";
 
 export type CalloutType =
   | "info"
@@ -14,15 +14,15 @@ export type CalloutType =
   | "success"
   | "hint"
   | "important"
-  | "rabbit-hole"
+  | "rabbit-hole";
 
 type CalloutStyle = {
-  icon: ReactNode
-  label: string
-  border: string
-  bg: string
-  text: string
-}
+  icon: ReactNode;
+  label: string;
+  border: string;
+  bg: string;
+  text: string;
+};
 
 const CALLOUT_STYLES: Record<CalloutType, CalloutStyle> = {
   info: {
@@ -67,16 +67,16 @@ const CALLOUT_STYLES: Record<CalloutType, CalloutStyle> = {
     bg: "bg-gray-800",
     text: "text-gray-50 italic [&_strong]:text-gray-400",
   },
-}
+};
 
 export function Callout({
   type = "info",
   children,
 }: {
-  type?: CalloutType
-  children: ReactNode
+  type?: CalloutType;
+  children: ReactNode;
 }) {
-  const style = CALLOUT_STYLES[type] ?? CALLOUT_STYLES.info
+  const style = CALLOUT_STYLES[type] ?? CALLOUT_STYLES.info;
 
   return (
     <div className={`flex rounded my-3 p-4 ${style.border} ${style.bg}`}>
@@ -88,5 +88,5 @@ export function Callout({
         <div className="text-sm">{children}</div>
       </div>
     </div>
-  )
+  );
 }

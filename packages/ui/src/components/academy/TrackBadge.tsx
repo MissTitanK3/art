@@ -1,4 +1,4 @@
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@workspace/ui/lib/utils";
 import {
   Compass,
   Gavel,
@@ -10,8 +10,8 @@ import {
   ShieldCheck,
   Users,
   Zap,
-} from "lucide-react"
-import type { ElementType } from "react"
+} from "lucide-react";
+import type { ElementType } from "react";
 
 export const TRACK_VARIANTS = [
   "default",
@@ -38,15 +38,15 @@ export const TRACK_VARIANTS = [
   "survivor-escort",
   "vehicle-specialist",
   "specialized-role",
-] as const
+] as const;
 
-export type TrackVariant = (typeof TRACK_VARIANTS)[number]
+export type TrackVariant = (typeof TRACK_VARIANTS)[number];
 
 type TrackConfig = {
-  label: string
-  icon: ElementType
-  color: string
-}
+  label: string;
+  icon: ElementType;
+  color: string;
+};
 
 const trackConfig: Record<TrackVariant, TrackConfig> = {
   default: {
@@ -169,17 +169,17 @@ const trackConfig: Record<TrackVariant, TrackConfig> = {
     icon: Users,
     color: "bg-emerald-200 text-emerald-800",
   },
-}
+};
 
 export function TrackBadge({
   variant,
   className,
 }: {
-  variant: TrackVariant
-  className?: string
+  variant: TrackVariant;
+  className?: string;
 }) {
-  const cfg = trackConfig[variant] ?? trackConfig.default
-  const { label, icon: Icon, color } = cfg
+  const cfg = trackConfig[variant] ?? trackConfig.default;
+  const { label, icon: Icon, color } = cfg;
 
   return (
     <div className="my-4 flex w-full justify-center">
@@ -194,5 +194,5 @@ export function TrackBadge({
         {label}
       </span>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -53,7 +53,10 @@ function ReasonBanner() {
         };
       default:
         return reason
-          ? { title: "Access limited", text: "You were redirected due to access restrictions." }
+          ? {
+              title: "Access limited",
+              text: "You were redirected due to access restrictions.",
+            }
           : null;
     }
   }, [reason]);
@@ -79,7 +82,9 @@ function ReasonBanner() {
             setHidden(true);
             const params = new URLSearchParams(searchParams.toString());
             params.delete("reason");
-            router.replace(`${pathname}${params.size ? `?${params.toString()}` : ""}`);
+            router.replace(
+              `${pathname}${params.size ? `?${params.toString()}` : ""}`,
+            );
           }}
         >
           Dismiss
@@ -116,7 +121,8 @@ function ProfilePageContent() {
         <div className="mt-6 rounded-lg border p-6">
           <h2 className="text-lg font-semibold">No profile found</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            You don&apos;t have a profile yet. After signing in, create your profile to continue.
+            You don&apos;t have a profile yet. After signing in, create your
+            profile to continue.
           </p>
         </div>
       ) : (
@@ -126,7 +132,10 @@ function ProfilePageContent() {
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="text-sm">
                   <div className="font-semibold">Complete verification</div>
-                  <div className="opacity-90">Your account may require verification and risk acknowledgement.</div>
+                  <div className="opacity-90">
+                    Your account may require verification and risk
+                    acknowledgement.
+                  </div>
                 </div>
               </div>
             </div>

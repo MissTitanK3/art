@@ -16,7 +16,11 @@ export type CourseSidebarGroup = {
   }>;
 };
 
-export default function CourseSidebarList({ groups }: { groups: CourseSidebarGroup[] }) {
+export default function CourseSidebarList({
+  groups,
+}: {
+  groups: CourseSidebarGroup[];
+}) {
   const [query, setQuery] = React.useState("");
 
   const norm = (s: string) => s.toLowerCase();
@@ -27,7 +31,9 @@ export default function CourseSidebarList({ groups }: { groups: CourseSidebarGro
     return groups
       .map((g) => ({
         ...g,
-        courses: g.courses.filter((c) => norm(c.title).includes(q) || norm(c.slug).includes(q)),
+        courses: g.courses.filter(
+          (c) => norm(c.title).includes(q) || norm(c.slug).includes(q),
+        ),
       }))
       .filter((g) => g.courses.length > 0);
   }, [groups, query]);
@@ -39,7 +45,9 @@ export default function CourseSidebarList({ groups }: { groups: CourseSidebarGro
         <ThemeToggle />
       </div>
       <div className="mb-4">
-        <label htmlFor="course-search" className="sr-only">Search courses</label>
+        <label htmlFor="course-search" className="sr-only">
+          Search courses
+        </label>
         <Input
           id="course-search"
           placeholder="Search courses…"
@@ -52,9 +60,13 @@ export default function CourseSidebarList({ groups }: { groups: CourseSidebarGro
         {filtered.map((group) => (
           <div key={group.label}>
             <div className="flex flex-col">
-              <h3 className="font-semibold text-muted-foreground mb-1 mr-3">{group.label}</h3>
+              <h3 className="font-semibold text-muted-foreground mb-1 mr-3">
+                {group.label}
+              </h3>
               {group.track ? (
-                <span className="text-xs text-muted-foreground mb-2">{group.track}</span>
+                <span className="text-xs text-muted-foreground mb-2">
+                  {group.track}
+                </span>
               ) : null}
             </div>
             <ul className="space-y-1">
@@ -67,7 +79,9 @@ export default function CourseSidebarList({ groups }: { groups: CourseSidebarGro
                     <div className="grid grid-cols-[2rem_1fr] items-center gap-2 w-full">
                       <div className="pr-3">
                         <div className="text-base leading-none">{c.icon}</div>
-                        <div className="text-xs text-muted-foreground">v{Number(c.version).toFixed(1)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          v{Number(c.version).toFixed(1)}
+                        </div>
                       </div>
                       <div className="text-sm">{c.title}</div>
                     </div>
@@ -79,7 +93,9 @@ export default function CourseSidebarList({ groups }: { groups: CourseSidebarGro
         ))}
 
         {filtered.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No courses match “{query}”.</div>
+          <div className="text-sm text-muted-foreground">
+            No courses match “{query}”.
+          </div>
         ) : null}
       </div>
     </div>

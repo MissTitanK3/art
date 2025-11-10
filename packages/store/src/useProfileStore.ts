@@ -1,7 +1,7 @@
-import { useStore } from 'zustand';
-import { createStore, StateCreator, StoreApi } from 'zustand/vanilla';
-import { persist } from 'zustand/middleware';
-import { Profile } from './types/global.ts';
+import { useStore } from "zustand";
+import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
+import { persist } from "zustand/middleware";
+import { Profile } from "./types/global.ts";
 
 export interface ProfileStoreState {
   profile: Profile | null;
@@ -19,7 +19,10 @@ export interface CreateProfileStoreOptions {
 }
 
 const createProfileStoreInitializer =
-  (initialProfile: Profile | null, demoProfileFactory?: () => Profile): StateCreator<ProfileStoreState> =>
+  (
+    initialProfile: Profile | null,
+    demoProfileFactory?: () => Profile,
+  ): StateCreator<ProfileStoreState> =>
   (set) => ({
     profile: initialProfile,
     setProfile: (p) => set({ profile: p }),
@@ -31,10 +34,17 @@ const createProfileStoreInitializer =
       set({ profile: demoProfileFactory() });
     },
     setOperatingCounties: (counties) =>
-      set((state) => (state.profile ? { profile: { ...state.profile, operating_counties: counties } } : state)),
+      set((state) =>
+        state.profile
+          ? { profile: { ...state.profile, operating_counties: counties } }
+          : state,
+      ),
   });
 
-function withPersistence(initializer: StateCreator<ProfileStoreState>, storageKey: string) {
+function withPersistence(
+  initializer: StateCreator<ProfileStoreState>,
+  storageKey: string,
+) {
   return persist(initializer, {
     name: storageKey,
     version: 1,
@@ -45,15 +55,22 @@ function withPersistence(initializer: StateCreator<ProfileStoreState>, storageKe
 
 export type ProfileStore = StoreApi<ProfileStoreState>;
 
-export function createProfileStore(options?: CreateProfileStoreOptions): ProfileStore {
+export function createProfileStore(
+  options?: CreateProfileStoreOptions,
+): ProfileStore {
   const {
     initialProfile = null,
     persist: enablePersist = true,
-    storageKey = 'profile-store',
+    storageKey = "profile-store",
     demoProfileFactory,
   } = options ?? {};
-  const initializer = createProfileStoreInitializer(initialProfile, demoProfileFactory);
-  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+  const initializer = createProfileStoreInitializer(
+    initialProfile,
+    demoProfileFactory,
+  );
+  const creator = enablePersist
+    ? withPersistence(initializer, storageKey)
+    : initializer;
   return createStore<ProfileStoreState>(creator as any);
 }
 

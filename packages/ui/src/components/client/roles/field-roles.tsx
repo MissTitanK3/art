@@ -13,10 +13,24 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@workspace/ui/components/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
 import { Separator } from "@workspace/ui/components/separator";
-import { Controller, type Control, type FieldValues, type Path } from "react-hook-form";
+import {
+  Controller,
+  type Control,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
 
 /* ---------- helpers ---------- */
 
@@ -25,27 +39,44 @@ const LABEL = FIELD_ROLE_LABELS;
 const TIER = FIELD_ROLE_TIERS;
 const TIERS = [1, 2, 3, 4] as const;
 type Tier = (typeof TIERS)[number];
-const DETAILS = Object.fromEntries(FIELD_ROLE_DETAILS.map((d) => [d.role, d])) as Record<
-  FieldRole,
-  (typeof FIELD_ROLE_DETAILS)[number]
->;
+const DETAILS = Object.fromEntries(
+  FIELD_ROLE_DETAILS.map((d) => [d.role, d]),
+) as Record<FieldRole, (typeof FIELD_ROLE_DETAILS)[number]>;
 const riskDot: Record<RiskLevel, string> = {
   low: "bg-emerald-500",
   medium: "bg-amber-500",
   high: "bg-rose-500",
 };
-const roleRisk = (role: FieldRole): RiskLevel => (DETAILS[role]?.riskLevel ?? "low") as RiskLevel;
-const byTier = (a: FieldRole, b: FieldRole) => TIER[a] - TIER[b] || LABEL[a].localeCompare(LABEL[b]);
-const tierNames: Record<1 | 2 | 3 | 4, string> = { 1: "Essential", 2: "Stabilizing", 3: "Supportive", 4: "Auxiliary" };
+const roleRisk = (role: FieldRole): RiskLevel =>
+  (DETAILS[role]?.riskLevel ?? "low") as RiskLevel;
+const byTier = (a: FieldRole, b: FieldRole) =>
+  TIER[a] - TIER[b] || LABEL[a].localeCompare(LABEL[b]);
+const tierNames: Record<1 | 2 | 3 | 4, string> = {
+  1: "Essential",
+  2: "Stabilizing",
+  3: "Supportive",
+  4: "Auxiliary",
+};
 
 /* ---------- Badge ---------- */
 
-export function RoleBadge({ role, onRemove, className }: { role: FieldRole; onRemove?: () => void; className?: string }) {
+export function RoleBadge({
+  role,
+  onRemove,
+  className,
+}: {
+  role: FieldRole;
+  onRemove?: () => void;
+  className?: string;
+}) {
   const risk = roleRisk(role);
   return (
     <Badge
       variant="secondary"
-      className={cn("flex items-center gap-1 pl-2 pr-1 py-1 border border-border", className)}
+      className={cn(
+        "flex items-center gap-1 pl-2 pr-1 py-1 border border-border",
+        className,
+      )}
     >
       <span aria-hidden className={cn("h-2 w-2 rounded-full", riskDot[risk])} />
       <span className="text-sm">{LABEL[role]}</span>
@@ -74,7 +105,8 @@ export function FieldRolesDisplay({
   emptyText?: string;
   className?: string;
 }) {
-  if (!roles || roles.length === 0) return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+  if (!roles || roles.length === 0)
+    return <p className="text-sm text-muted-foreground">{emptyText}</p>;
   const sorted = [...roles].sort(byTier);
   return (
     <div className={cn("flex flex-wrap gap-1.5", className)}>
@@ -90,8 +122,15 @@ export function FieldRolesDisplay({
               <div className="mb-1 font-medium">{LABEL[r]}</div>
               <div className="text-xs text-muted-foreground">
                 <div>
-                  <span className={cn("inline-block h-2 w-2 rounded-full mr-1 align-middle", riskDot[roleRisk(r)])} />
-                  <span className="align-middle capitalize">{roleRisk(r)} risk</span>
+                  <span
+                    className={cn(
+                      "inline-block h-2 w-2 rounded-full mr-1 align-middle",
+                      riskDot[roleRisk(r)],
+                    )}
+                  />
+                  <span className="align-middle capitalize">
+                    {roleRisk(r)} risk
+                  </span>
                 </div>
                 <div className="mt-2">{DETAILS[r]?.description}</div>
               </div>
@@ -128,7 +167,10 @@ export function FieldRolesEditor({
   const buttonRef = React.useRef<HTMLButtonElement | null>(null);
   const listRef = React.useRef<HTMLDivElement | null>(null);
 
-  const chosen = React.useMemo(() => new Set((value ?? []) as FieldRole[]), [value]);
+  const chosen = React.useMemo(
+    () => new Set((value ?? []) as FieldRole[]),
+    [value],
+  );
 
   const toggle = (role: FieldRole) => {
     const next = new Set(chosen);
@@ -144,13 +186,19 @@ export function FieldRolesEditor({
     const grouped: Record<Tier, FieldRole[]> = { 1: [], 2: [], 3: [], 4: [] };
     FIELD_ROLE_OPTIONS.forEach((r) => grouped[FIELD_ROLE_TIERS[r]].push(r));
     TIERS.forEach((t) =>
-      grouped[t].sort((a, b) => FIELD_ROLE_TIERS[a] - FIELD_ROLE_TIERS[b] || LABEL[a].localeCompare(LABEL[b])),
+      grouped[t].sort(
+        (a, b) =>
+          FIELD_ROLE_TIERS[a] - FIELD_ROLE_TIERS[b] ||
+          LABEL[a].localeCompare(LABEL[b]),
+      ),
     );
     return grouped;
   }, []);
 
   // filtered flat list with tier labels inline
-  const filtered: Array<{ kind: "label"; text: string } | { kind: "item"; role: FieldRole }> = React.useMemo(() => {
+  const filtered: Array<
+    { kind: "label"; text: string } | { kind: "item"; role: FieldRole }
+  > = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     const out: typeof filtered = [];
     TIERS.forEach((t) => {
@@ -174,7 +222,9 @@ export function FieldRolesEditor({
 
   // keep the highlighted item in view
   React.useEffect(() => {
-    const el = listRef.current?.querySelector<HTMLElement>(`[data-index="${activeIndex}"]`);
+    const el = listRef.current?.querySelector<HTMLElement>(
+      `[data-index="${activeIndex}"]`,
+    );
     el?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, filtered.length]);
 
@@ -183,10 +233,14 @@ export function FieldRolesEditor({
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (!open) return;
     // move only across items (skip labels)
-    const indices = filtered.map((f, i) => (f.kind === "item" ? i : -1)).filter((i) => i >= 0);
+    const indices = filtered
+      .map((f, i) => (f.kind === "item" ? i : -1))
+      .filter((i) => i >= 0);
 
     if (indices.length === 0) return;
-    const cur = indices.indexOf(indices.find((i) => i >= activeIndex) ?? indices[0]!);
+    const cur = indices.indexOf(
+      indices.find((i) => i >= activeIndex) ?? indices[0]!,
+    );
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -213,9 +267,19 @@ export function FieldRolesEditor({
       <div className="max-h-[28vh] overflow-y-auto pr-1 rounded-md border bg-background/50 p-2">
         <div className="flex flex-wrap gap-1.5">
           {(value ?? []).length === 0 ? (
-            <span className="text-sm text-muted-foreground">No roles selected</span>
+            <span className="text-sm text-muted-foreground">
+              No roles selected
+            </span>
           ) : (
-            value.sort(byTier).map((r) => <RoleBadge key={r} role={r} onRemove={disabled ? undefined : () => toggle(r)} />)
+            value
+              .sort(byTier)
+              .map((r) => (
+                <RoleBadge
+                  key={r}
+                  role={r}
+                  onRemove={disabled ? undefined : () => toggle(r)}
+                />
+              ))
           )}
         </div>
       </div>
@@ -260,7 +324,7 @@ export function FieldRolesEditor({
                   placeholder="Search roles…"
                   className={cn(
                     "w-full pl-8 pr-2 py-2 text-sm rounded-md border bg-background",
-                    "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   )}
                 />
               </div>
@@ -279,7 +343,9 @@ export function FieldRolesEditor({
               tabIndex={-1}
             >
               {filtered.length === 0 && (
-                <div className="px-3 py-6 text-sm text-muted-foreground">No roles found.</div>
+                <div className="px-3 py-6 text-sm text-muted-foreground">
+                  No roles found.
+                </div>
               )}
 
               {filtered.map((row, idx) =>
@@ -307,10 +373,17 @@ export function FieldRolesEditor({
                     onClick={() => toggle(row.role)}
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
-                      <span className={cn("h-2 w-2 rounded-full", riskDot[roleRisk(row.role)])} />
+                      <span
+                        className={cn(
+                          "h-2 w-2 rounded-full",
+                          riskDot[roleRisk(row.role)],
+                        )}
+                      />
                       <span className="truncate">{LABEL[row.role]}</span>
                     </div>
-                    {chosen.has(row.role) && <Check className="h-4 w-4 shrink-0" />}
+                    {chosen.has(row.role) && (
+                      <Check className="h-4 w-4 shrink-0" />
+                    )}
                   </button>
                 ),
               )}
@@ -328,7 +401,8 @@ export function FieldRolesEditor({
                 Clear all
               </Button>
               <div className="ml-auto text-xs text-muted-foreground">
-                {(value ?? []).length} selected{maxSelections ? ` / ${maxSelections}` : ""}
+                {(value ?? []).length} selected
+                {maxSelections ? ` / ${maxSelections}` : ""}
               </div>
             </div>
           </PopoverContent>
@@ -354,14 +428,22 @@ export function FieldRolesEditor({
             <TooltipContent side="top" sideOffset={6} className="max-w-80 z-50">
               <div className="mb-1 font-medium">Risk legend</div>
               <ul className="text-xs space-y-1">
-                <li><span className="inline-block h-2 w-2 rounded-full mr-1 align-middle bg-emerald-500" />Low risk</li>
-                <li><span className="inline-block h-2 w-2 rounded-full mr-1 align-middle bg-amber-500" />Medium risk</li>
-                <li><span className="inline-block h-2 w-2 rounded-full mr-1 align-middle bg-rose-500" />High risk</li>
+                <li>
+                  <span className="inline-block h-2 w-2 rounded-full mr-1 align-middle bg-emerald-500" />
+                  Low risk
+                </li>
+                <li>
+                  <span className="inline-block h-2 w-2 rounded-full mr-1 align-middle bg-amber-500" />
+                  Medium risk
+                </li>
+                <li>
+                  <span className="inline-block h-2 w-2 rounded-full mr-1 align-middle bg-rose-500" />
+                  High risk
+                </li>
               </ul>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
       </div>
     </div>
   );

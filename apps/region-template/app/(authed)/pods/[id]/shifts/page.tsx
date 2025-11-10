@@ -17,7 +17,6 @@ export default function PodShiftsPage() {
   const pods = usePodStore((state) => state.pods);
   const pod = pods.find((candidate) => candidate.slug === podId);
 
-
   return (
     <>
       <div className="flex items-center gap-2">

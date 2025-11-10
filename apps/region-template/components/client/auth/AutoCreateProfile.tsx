@@ -49,9 +49,15 @@ export function AutoCreateProfile() {
 
         const now = new Date().toISOString();
         const base: Profile = {
-          id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `${userId}-${Date.now()}`,
+          id:
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `${userId}-${Date.now()}`,
           user_id: userId,
-          display_name: defaultDisplayName(session.user.email, session.user.fullName),
+          display_name: defaultDisplayName(
+            session.user.email,
+            session.user.fullName,
+          ),
           access_role: "team_member",
           field_roles: [],
           verified_by: "self",
@@ -100,4 +106,3 @@ export function AutoCreateProfile() {
 
   return null;
 }
-

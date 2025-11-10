@@ -2,7 +2,13 @@
 "use client";
 
 import { NormalizedLanguage } from "@workspace/store/types/language.ts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import * as React from "react";
 
 type Props = {
@@ -22,7 +28,10 @@ const LEVELS: Array<NonNullable<NormalizedLanguage["proficiency"]>> = [
 
 // Map level → fill count (0..4). We’ll keep a 4‑segment bar:
 // nonverbal is special-colored but fills 1 segment so it’s *visible*.
-const fillCount: Record<NonNullable<NormalizedLanguage["proficiency"]>, number> = {
+const fillCount: Record<
+  NonNullable<NormalizedLanguage["proficiency"]>,
+  number
+> = {
   nonverbal: 1,
   basic: 1,
   conversational: 2,
@@ -41,7 +50,9 @@ export default function LanguageFluencyEditor({
   className = "",
 }: Props) {
   function setProf(tag: string, prof?: NormalizedLanguage["proficiency"]) {
-    onChange(value.map((l) => (l.tag === tag ? { ...l, proficiency: prof } : l)));
+    onChange(
+      value.map((l) => (l.tag === tag ? { ...l, proficiency: prof } : l)),
+    );
   }
 
   if (!value?.length) {

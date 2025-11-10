@@ -135,13 +135,11 @@ export function PodManagementLayout({
           </div>
           {showDebug && errorDetails ? (
             <pre className="mt-2 max-h-56 overflow-auto rounded bg-background p-2 text-xs text-foreground/80">
-{String(errorDetails)}
+              {String(errorDetails)}
             </pre>
           ) : null}
         </div>
       ) : null}
-
-      
 
       <form
         id="pod-management-form"
@@ -165,7 +163,7 @@ export function PodManagementLayout({
               aria-invalid={Boolean(errors?.area)}
               className={cn(
                 "w-full",
-                errors?.area ? "ring-1 ring-destructive" : undefined
+                errors?.area ? "ring-1 ring-destructive" : undefined,
               )}
               {...fieldBindings.area}
             />
@@ -182,7 +180,7 @@ export function PodManagementLayout({
               aria-invalid={Boolean(errors?.slug)}
               className={cn(
                 "w-full font-mono",
-                errors?.slug ? "ring-1 ring-destructive" : undefined
+                errors?.slug ? "ring-1 ring-destructive" : undefined,
               )}
               {...fieldBindings.slug}
             />
@@ -204,7 +202,7 @@ export function PodManagementLayout({
                 id="pod-channel"
                 className={cn(
                   "w-[220px]",
-                  channelType.error ? "ring-1 ring-destructive" : undefined
+                  channelType.error ? "ring-1 ring-destructive" : undefined,
                 )}
               >
                 <SelectValue placeholder="Select a channel…" />
@@ -230,7 +228,7 @@ export function PodManagementLayout({
               aria-invalid={Boolean(channelLinkError)}
               className={cn(
                 "w-full",
-                channelLinkError ? "ring-1 ring-destructive" : undefined
+                channelLinkError ? "ring-1 ring-destructive" : undefined,
               )}
               {...fieldBindings.channelLink}
             />
@@ -308,7 +306,11 @@ export function PodManagementLayout({
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur md:hidden">
         <div className="mx-auto flex w-full max-w-4xl gap-2">
-          <Button type="submit" form="pod-management-form" disabled={disableSave}>
+          <Button
+            type="submit"
+            form="pod-management-form"
+            disabled={disableSave}
+          >
             <Save className="mr-2 h-4 w-4" />
             {isSubmitting ? "Saving…" : "Save"}
           </Button>

@@ -1,8 +1,14 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@workspace/ui/components/card";
-import { Switch } from "@workspace/ui/components/switch";  // <-- add this
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@workspace/ui/components/card";
+import { Switch } from "@workspace/ui/components/switch"; // <-- add this
 import { Label } from "@workspace/ui/components/label";
 import { makeDispatchSubmission } from "@workspace/store/utils/generator";
 import { toast } from "sonner";
@@ -20,9 +26,17 @@ interface ReviewStepProps {
   onCreateSubmission: (submission: DispatchSubmission) => void;
 }
 
-export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmission }: ReviewStepProps) {
+export function ReviewStep({
+  data,
+  onBack,
+  onReset,
+  onSubmitted,
+  onCreateSubmission,
+}: ReviewStepProps) {
   // local state for toggle
-  const [training, setTraining] = useState<boolean>(data.contact?.training ?? false);
+  const [training, setTraining] = useState<boolean>(
+    data.contact?.training ?? false,
+  );
   const unit = usePreferencesStore((s) => s.distanceUnit);
 
   const handleSubmit = () => {
@@ -54,19 +68,31 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
         {/* Basic Info */}
         <div>
           <h4 className="font-semibold">Basic Info</h4>
-          <p>{data.basicInfo?.location_label} ({data.basicInfo?.state})</p>
-          <p>Response type: {data.basicInfo?.type ? humanize(data.basicInfo.type) : "Rapid Response"}</p>
           <p>
-            Visibility radius: {typeof data.basicInfo?.visibility_radius_km === 'number'
+            {data.basicInfo?.location_label} ({data.basicInfo?.state})
+          </p>
+          <p>
+            Response type:{" "}
+            {data.basicInfo?.type
+              ? humanize(data.basicInfo.type)
+              : "Rapid Response"}
+          </p>
+          <p>
+            Visibility radius:{" "}
+            {typeof data.basicInfo?.visibility_radius_km === "number"
               ? formatDistance(data.basicInfo.visibility_radius_km, unit, 1)
-              : '—'}
+              : "—"}
           </p>
           {data.basicInfo?.date_of_event && (
-            <p>Event time: {new Date(data.basicInfo.date_of_event).toLocaleString()}</p>
+            <p>
+              Event time:{" "}
+              {new Date(data.basicInfo.date_of_event).toLocaleString()}
+            </p>
           )}
           {data.basicInfo?.location && (
             <p className="text-sm text-muted-foreground">
-              Coordinates: {data.basicInfo.location.lat.toFixed(4)}, {data.basicInfo.location.lng.toFixed(4)}
+              Coordinates: {data.basicInfo.location.lat.toFixed(4)},{" "}
+              {data.basicInfo.location.lng.toFixed(4)}
             </p>
           )}
         </div>
@@ -78,7 +104,8 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
             <ul className="list-disc pl-5">
               {data.rolesNeeded.required_roles.map((r: string) => (
                 <li key={r}>
-                  {humanize(r)} ({data.rolesNeeded.required_roles_by_type?.[r] ?? 1})
+                  {humanize(r)} (
+                  {data.rolesNeeded.required_roles_by_type?.[r] ?? 1})
                 </li>
               ))}
             </ul>
@@ -103,7 +130,9 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
             <p className="mt-2 italic">{data.actions.intended_action_notes}</p>
           )}
           {data.actions?.intended_actions_custom && (
-            <p className="mt-2">Custom: {data.actions.intended_actions_custom}</p>
+            <p className="mt-2">
+              Custom: {data.actions.intended_actions_custom}
+            </p>
           )}
         </div>
 
@@ -126,9 +155,7 @@ export function ReviewStep({ data, onBack, onReset, onSubmitted, onCreateSubmiss
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={handleSubmit}>
-          Submit Dispatch
-        </Button>
+        <Button onClick={handleSubmit}>Submit Dispatch</Button>
       </CardFooter>
     </Card>
   );

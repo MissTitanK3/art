@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import TransparencyPanel from '@/components/info/TransparencyPanel';
+import TransparencyPanel from "@/components/info/TransparencyPanel";
 
 export default function TransparencyPage() {
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 type CampaignRow = {
   id: string;
@@ -18,7 +18,9 @@ export const useCampaigns = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/admin/campaigns', { credentials: 'include' });
+        const res = await fetch("/api/admin/campaigns", {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const { campaigns } = await res.json();
         setItems(Array.isArray(campaigns) ? campaigns : []);
@@ -44,17 +46,21 @@ export const useCampaigns = () => {
       if (data.artLink.trim()) payload.art_link = data.artLink.trim();
       if (data.startAt) payload.start_at = new Date(data.startAt).toISOString();
       if (data.endAt) payload.end_at = new Date(data.endAt).toISOString();
-      const res = await fetch('/api/admin/campaigns', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
+      const res = await fetch("/api/admin/campaigns", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await res.text());
       const { campaign } = await res.json();
       setItems((prev) => [campaign, ...prev]);
     } catch (e: any) {
-      setError(typeof e?.message === 'string' ? e.message : 'Failed to create campaign');
+      setError(
+        typeof e?.message === "string"
+          ? e.message
+          : "Failed to create campaign",
+      );
     } finally {
       setLoading(false);
     }

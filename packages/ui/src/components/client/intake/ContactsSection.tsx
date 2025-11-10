@@ -11,7 +11,13 @@ import {
   FormMessage,
 } from "../../form";
 import { Input } from "../../input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../card";
 import { Separator } from "../../separator";
 import { DetailGrid, DetailItem } from "./DetailGrid";
 import { formatContacts } from "./utils";
@@ -44,18 +50,25 @@ function formatDispatcherContact(contact?: ContactInfo): React.ReactNode {
   if (!contact) {
     return <span className="text-muted-foreground">Not provided</span>;
   }
-  const details = [contact.relation, contact.phone, contact.email].filter(Boolean).join(" · ");
+  const details = [contact.relation, contact.phone, contact.email]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <div className="space-y-1 text-sm">
-      <div className="font-medium text-foreground">{contact.name || "Unknown"}</div>
-      <div className="text-muted-foreground">{details || "No contact details"}</div>
+      <div className="font-medium text-foreground">
+        {contact.name || "Unknown"}
+      </div>
+      <div className="text-muted-foreground">
+        {details || "No contact details"}
+      </div>
     </div>
   );
 }
 
 export function ContactsSection(props: ContactsSectionProps) {
   const title = props.title ?? "Contacts";
-  const description = props.description ?? "Witnesses and dispatch point of contact.";
+  const description =
+    props.description ?? "Witnesses and dispatch point of contact.";
   const sectionName = props.sectionName ?? "Contacts";
 
   if (props.mode === "view") {
@@ -63,10 +76,17 @@ export function ContactsSection(props: ContactsSectionProps) {
     return (
       <FormSectionCard title={title} description={description}>
         <div className="space-y-6">
-          <DetailItem label="Witness Contacts" value={formatContacts(data.witnessContacts)} />
+          <DetailItem
+            label="Witness Contacts"
+            value={formatContacts(data.witnessContacts)}
+          />
           <div>
-            <div className="text-sm font-medium text-foreground">Dispatcher Contact</div>
-            <div className="mt-2">{formatDispatcherContact(data.dispatcherContact)}</div>
+            <div className="text-sm font-medium text-foreground">
+              Dispatcher Contact
+            </div>
+            <div className="mt-2">
+              {formatDispatcherContact(data.dispatcherContact)}
+            </div>
           </div>
         </div>
       </FormSectionCard>
@@ -143,7 +163,11 @@ export function ContactsSection(props: ContactsSectionProps) {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="dispatcher@example.org" type="email" />
+                  <Input
+                    {...field}
+                    placeholder="dispatcher@example.org"
+                    type="email"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

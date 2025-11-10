@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@workspace/ui/components/card";
 import { Textarea } from "@workspace/ui/components/textarea";
 
 export function CommsScratchpad() {
@@ -13,11 +19,15 @@ export function CommsScratchpad() {
         <CardDescription>Temporary notes for comms operators</CardDescription>
       </CardHeader>
       <CardContent>
-        <Textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder="Notes..." />
+        <Textarea
+          rows={8}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Notes..."
+        />
       </CardContent>
     </Card>
   );
 }
 
 export default CommsScratchpad;
-

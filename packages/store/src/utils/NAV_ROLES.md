@@ -53,14 +53,28 @@ Use these arrays from `nav.ts` when authoring the global nav to keep intent clea
 Nav items are specified using `NavItemInput` (string icon id; roles are optional).
 
 ```ts
-import { completeOnboarding, elevatedRoles, podAdmins } from '@workspace/store/utils/nav';
+import {
+  completeOnboarding,
+  elevatedRoles,
+  podAdmins,
+} from "@workspace/store/utils/nav";
 
 export const nav = {
-  brand: { name: 'ART Dispatch', href: '/', logoSrc: '/logo.svg' },
+  brand: { name: "ART Dispatch", href: "/", logoSrc: "/logo.svg" },
   primary: [
-    { label: 'Watch', href: '/watch', icon: 'watch', roles: completeOnboarding },
-    { label: 'Dispatches', href: '/dispatches', icon: 'dispatch', roles: elevatedRoles },
-    { label: 'Admin', href: '/admin', icon: 'admin', roles: podAdmins },
+    {
+      label: "Watch",
+      href: "/watch",
+      icon: "watch",
+      roles: completeOnboarding,
+    },
+    {
+      label: "Dispatches",
+      href: "/dispatches",
+      icon: "dispatch",
+      roles: elevatedRoles,
+    },
+    { label: "Admin", href: "/admin", icon: "admin", roles: podAdmins },
   ],
 } as const;
 ```
@@ -72,4 +86,3 @@ At runtime, the UI transforms `NavItemInput` into `NavItem` (resolving the `icon
 - Prefer the exported groupings (e.g., `elevatedRoles`) to hard‑coding role lists.
 - Treat “no `roles` on an item” as intentionally public.
 - When adding a new role, update the groupings in `nav.ts` and this doc accordingly.
-

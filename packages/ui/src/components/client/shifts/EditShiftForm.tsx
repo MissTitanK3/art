@@ -3,7 +3,12 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { Shift, ShiftFormInput, ShiftFormOutput, shiftSchema } from "@workspace/store/types/pod.ts";
+import {
+  Shift,
+  ShiftFormInput,
+  ShiftFormOutput,
+  shiftSchema,
+} from "@workspace/store/types/pod.ts";
 import { toLocalInputValue } from "@workspace/store/utils/form-helpers";
 
 export function EditShiftForm({
@@ -45,29 +50,41 @@ export function EditShiftForm({
   };
 
   return (
-    <form id="edit-shift-form" onSubmit={handleSubmit(submit)} className="grid gap-3">
+    <form
+      id="edit-shift-form"
+      onSubmit={handleSubmit(submit)}
+      className="grid gap-3"
+    >
       <div className="grid gap-1">
         <Label htmlFor="e-label">Label</Label>
         <Input id="e-label" {...register("label")} />
-        {errors.label && <p className="text-xs text-destructive">{errors.label.message}</p>}
+        {errors.label && (
+          <p className="text-xs text-destructive">{errors.label.message}</p>
+        )}
       </div>
 
       <div className="grid gap-1">
         <Label htmlFor="e-start">Start</Label>
         <Input id="e-start" type="datetime-local" {...register("start")} />
-        {errors.start && <p className="text-xs text-destructive">{errors.start.message}</p>}
+        {errors.start && (
+          <p className="text-xs text-destructive">{errors.start.message}</p>
+        )}
       </div>
 
       <div className="grid gap-1">
         <Label htmlFor="e-end">End</Label>
         <Input id="e-end" type="datetime-local" {...register("end")} />
-        {errors.end && <p className="text-xs text-destructive">{errors.end.message}</p>}
+        {errors.end && (
+          <p className="text-xs text-destructive">{errors.end.message}</p>
+        )}
       </div>
 
       <div className="grid gap-1">
         <Label htmlFor="e-location">Location</Label>
         <Input id="e-location" {...register("location")} />
-        {errors.location && <p className="text-xs text-destructive">{errors.location.message}</p>}
+        {errors.location && (
+          <p className="text-xs text-destructive">{errors.location.message}</p>
+        )}
       </div>
 
       <div className="grid gap-1">
@@ -81,7 +98,9 @@ export function EditShiftForm({
             setValueAs: (v) => (v === "" ? undefined : Number(v)),
           })}
         />
-        {errors.headcount && <p className="text-xs text-destructive">{errors.headcount.message}</p>}
+        {errors.headcount && (
+          <p className="text-xs text-destructive">{errors.headcount.message}</p>
+        )}
       </div>
 
       <div className="grid gap-1">
@@ -90,11 +109,14 @@ export function EditShiftForm({
           id="e-dlink"
           placeholder="/dispatch/…"
           {...register("dispatchLink", {
-            setValueAs: (v: string) => (v?.trim() === "" ? undefined : v.trim()),
+            setValueAs: (v: string) =>
+              v?.trim() === "" ? undefined : v.trim(),
           })}
         />
         {errors.dispatchLink && (
-          <p className="text-xs text-destructive">{errors.dispatchLink.message}</p>
+          <p className="text-xs text-destructive">
+            {errors.dispatchLink.message}
+          </p>
         )}
       </div>
     </form>

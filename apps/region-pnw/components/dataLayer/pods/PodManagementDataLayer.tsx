@@ -19,7 +19,10 @@ import {
 const schema = z.object({
   name: z.string().min(2).max(60),
   area: z.string().min(2),
-  slug: z.string().min(6).regex(/^pod-[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(6)
+    .regex(/^pod-[a-z0-9-]+$/),
   channelType: z.enum(["Signal", "Matrix", "LoRa"]),
   channelLink: z
     .string()
@@ -67,7 +70,9 @@ async function savePodViaApi(pod: Pod, isExisting: boolean): Promise<Pod> {
     channels: pod.channels,
   };
 
-  const url = isExisting ? `/api/admin/pods/${encodeURIComponent(pod.id)}` : `/api/admin/pods`;
+  const url = isExisting
+    ? `/api/admin/pods/${encodeURIComponent(pod.id)}`
+    : `/api/admin/pods`;
   const method = isExisting ? "PATCH" : "POST";
   const res = await fetch(url, {
     method,
@@ -76,9 +81,10 @@ async function savePodViaApi(pod: Pod, isExisting: boolean): Promise<Pod> {
     cache: "no-store",
     body: JSON.stringify(payload),
   });
-  const json = await res.json().catch(() => ({} as any));
+  const json = await res.json().catch(() => ({}) as any);
   if (!res.ok) {
-    const message = json?.error || `Failed to ${isExisting ? "update" : "create"} pod`;
+    const message =
+      json?.error || `Failed to ${isExisting ? "update" : "create"} pod`;
     throw new Error(message);
   }
   const row = (json as any)?.pod as Pod | null;
@@ -92,7 +98,7 @@ async function archivePodViaApi(podId: string): Promise<void> {
     credentials: "include",
   });
   if (!res.ok) {
-    const json = await res.json().catch(() => ({} as any));
+    const json = await res.json().catch(() => ({}) as any);
     const message = (json as any)?.error || "Failed to archive pod";
     throw new Error(message);
   }
@@ -118,7 +124,7 @@ export default function PodManagementDataLayer() {
       channels: [{ type: "Signal" as Channel["type"], link: "" }],
       team: [],
     }),
-    [id]
+    [id],
   );
 
   const initialPod = storePod ?? fallbackPod;
@@ -179,7 +185,7 @@ export default function PodManagementDataLayer() {
               channelType: channel?.type ?? "Signal",
               channelLink: channel?.link ?? "",
             },
-            { keepDirty: false }
+            { keepDirty: false },
           );
         }
       } catch (error) {
@@ -210,7 +216,11 @@ export default function PodManagementDataLayer() {
       },
     ];
 
-    const patch = { ...data, area: data.area?.trim(), channels: updatedChannels };
+    const patch = {
+      ...data,
+      area: data.area?.trim(),
+      channels: updatedChannels,
+    };
     delete (patch as any).channelType;
     delete (patch as any).channelLink;
 
@@ -247,7 +257,11 @@ export default function PodManagementDataLayer() {
           {
             context: "savePodViaApi",
             submittedInput: data,
-            payload: { name: nextPod.name, area: nextPod.area, channels: nextPod.channels },
+            payload: {
+              name: nextPod.name,
+              area: nextPod.area,
+              channels: nextPod.channels,
+            },
             message: msg,
           },
           null,
@@ -265,7 +279,9 @@ export default function PodManagementDataLayer() {
         const el = document.activeElement as HTMLElement | null;
         el?.blur?.();
       }
-    } catch { /* no-op */ }
+    } catch {
+      /* no-op */
+    }
     return handleSubmit(onValidSubmit)(e);
   };
 
@@ -277,7 +293,13 @@ export default function PodManagementDataLayer() {
       console.warn("PodManagementDataLayer: failed to archive pod", error);
       const msg = error?.message || "Failed to archive pod";
       setErrorMessage(msg);
-      setErrorDetails(JSON.stringify({ context: "archivePodViaApi", podId: activePod.id, message: msg }, null, 2));
+      setErrorDetails(
+        JSON.stringify(
+          { context: "archivePodViaApi", podId: activePod.id, message: msg },
+          null,
+          2,
+        ),
+      );
       toast.error(msg);
     }
     removePod(activePod.id);
@@ -306,7 +328,12 @@ export default function PodManagementDataLayer() {
   const slugField = register("slug");
   const channelLinkField = register("channelLink");
   const { field: areaField } = useController({ name: "area", control });
-  const fieldBindings = { name: nameField, area: areaField, slug: slugField, channelLink: channelLinkField } as const;
+  const fieldBindings = {
+    name: nameField,
+    area: areaField,
+    slug: slugField,
+    channelLink: channelLinkField,
+  } as const;
 
   const formErrors: PodManagementLayoutErrors = {
     name: errors.name?.message,

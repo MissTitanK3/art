@@ -8,6 +8,7 @@ import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/PodsListLayout
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { Pod } from "@workspace/store/types/pod.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import { REGION_IDENTIFIER } from "@/app/brand_settings";
 
 type NormalizedPod = Pod & PodsListLayoutPod;
 
@@ -21,12 +22,9 @@ function normalizePod(pod: Pod | PodsListLayoutPod): NormalizedPod {
       : [];
 
   const team: Pod["team"] =
-    "team" in pod && Array.isArray(pod.team)
-      ? (pod.team as Pod["team"])
-      : [];
+    "team" in pod && Array.isArray(pod.team) ? (pod.team as Pod["team"]) : [];
 
-  const area =
-    "area" in pod && typeof pod.area === "string" ? pod.area : "";
+  const area = "area" in pod && typeof pod.area === "string" ? pod.area : "";
 
   const normalized: NormalizedPod = {
     ...(pod as Record<string, unknown>),
@@ -70,7 +68,9 @@ type ListFilters = {
   channel?: string;
 };
 
-async function fetchPodsFromDatabase(filters?: ListFilters): Promise<PodsListLayoutPod[]> {
+async function fetchPodsFromDatabase(
+  filters?: ListFilters,
+): Promise<PodsListLayoutPod[]> {
   try {
     const client = getSupabaseBrowserClient();
     let query = client
@@ -91,7 +91,9 @@ async function fetchPodsFromDatabase(filters?: ListFilters): Promise<PodsListLay
       }
       if (q && q.trim().length > 0) {
         const like = `%${q}%`;
-        query = query.or(`name.ilike.${like},slug.ilike.${like},area.ilike.${like}`);
+        query = query.or(
+          `name.ilike.${like},slug.ilike.${like},area.ilike.${like}`,
+        );
       }
     }
 
@@ -108,7 +110,9 @@ async function fetchPodsFromDatabase(filters?: ListFilters): Promise<PodsListLay
 export default function PodsListDataLayer() {
   const pods = usePodStore((state) => state.pods);
   const setPods = usePodStore((state) => state.setPods);
-  const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(null);
+  const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(
+    null,
+  );
   const [loadingRemotePods, setLoadingRemotePods] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -119,7 +123,9 @@ export default function PodsListDataLayer() {
     async function hydrateFromDatabase() {
       setLoadingRemotePods(true);
       try {
-        const paramsRecord = Object.fromEntries((searchParams ?? new URLSearchParams()).entries());
+        const paramsRecord = Object.fromEntries(
+          (searchParams ?? new URLSearchParams()).entries(),
+        );
         const filters: ListFilters = {
           q: paramsRecord.q,
           area: paramsRecord.area,
@@ -141,7 +147,10 @@ export default function PodsListDataLayer() {
           setPods(corePods);
         }
       } catch (error) {
-        console.warn("PodsListDataLayer: failed to fetch pods from database", error);
+        console.warn(
+          "PodsListDataLayer: failed to fetch pods from database",
+          error,
+        );
       } finally {
         if (mounted) {
           setLoadingRemotePods(false);
@@ -162,18 +171,20 @@ export default function PodsListDataLayer() {
   return (
     <PodsListLayout
       pods={normalizedPods}
-      initialUrlParams={Object.fromEntries((searchParams ?? new URLSearchParams()).entries())}
+      initialUrlParams={Object.fromEntries(
+        (searchParams ?? new URLSearchParams()).entries(),
+      )}
       onUrlChange={(url) => router.replace(url)}
-      persistKey="podsList.filters:region-norcal"
+      persistKey={`podsList.filters:${REGION_IDENTIFIER}`}
       emptyState={
         loadingRemotePods ? (
-          <p className="text-sm text-muted-foreground">Loading pods from database...</p>
+          <p className="text-sm text-muted-foreground">
+            Loading pods from database...
+          </p>
         ) : undefined
       }
       renderPod={({ pod, DefaultCard }) => (
-        <Link href={`/pods/${pod.slug}`}>
-          {DefaultCard}
-        </Link>
+        <Link href={`/pods/${pod.slug}`}>{DefaultCard}</Link>
       )}
     />
   );

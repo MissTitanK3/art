@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import * as React from 'react'
+import * as React from "react";
 
-import { Callout } from '@workspace/ui/components/academy/Callout'
-import { AcademyStatsGrid } from '@workspace/ui/components/academy/pod/AcademyStatsGrid'
-import { ActiveClassesSection } from '@workspace/ui/components/academy/pod/ActiveClassesSection'
-import { SessionsBoard } from '@workspace/ui/components/academy/pod/SessionsBoard'
-import { InstructorBench } from '@workspace/ui/components/academy/pod/InstructorBench'
-import { QualificationPathwaysSection } from '@workspace/ui/components/academy/pod/QualificationPathwaysSection'
+import { Callout } from "@workspace/ui/components/academy/Callout";
+import { AcademyStatsGrid } from "@workspace/ui/components/academy/pod/AcademyStatsGrid";
+import { ActiveClassesSection } from "@workspace/ui/components/academy/pod/ActiveClassesSection";
+import { SessionsBoard } from "@workspace/ui/components/academy/pod/SessionsBoard";
+import { InstructorBench } from "@workspace/ui/components/academy/pod/InstructorBench";
+import { QualificationPathwaysSection } from "@workspace/ui/components/academy/pod/QualificationPathwaysSection";
 import type {
   AcademyCourseGroup,
   AcademyInstructorProfile,
@@ -17,7 +17,12 @@ import type {
   AcademyTrainingClass,
   AcademyTrainingSession,
   AcademyTrainingSessionDraft,
-} from '@workspace/store/types/academy.ts'
+} from "@workspace/store/types/academy.ts";
+import {
+  resolvePermissionsFromRoles,
+  canManageInstructorsFromRoles,
+} from "@workspace/ui/lib/permissions";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 
 export type {
   AcademySummaryStat,
@@ -31,37 +36,50 @@ export type {
   AcademyTrainingSessionParticipant,
   AcademySessionUnderstandingLevel,
   AcademyTrainingSessionStatus,
-} from '@workspace/store/types/academy.ts'
+} from "@workspace/store/types/academy.ts";
 
 export type PodAcademyDashboardLayoutProps = {
+  /** Current user's roles. Optional; if omitted, conservative defaults are used. */
+  roles?: string[];
   heading?: {
-    title: string
-    subtitle?: string
-    cta?: React.ReactNode
-  }
-  stats: AcademySummaryStat[]
-  courseGroups: AcademyCourseGroup[]
-  members: AcademyMemberProgress[]
-  instructors: AcademyInstructorProfile[]
-  trainingClasses: AcademyTrainingClass[]
-  sessions: AcademyTrainingSession[]
+    title: string;
+    subtitle?: string;
+    cta?: React.ReactNode;
+  };
+  stats: AcademySummaryStat[];
+  courseGroups: AcademyCourseGroup[];
+  members: AcademyMemberProgress[];
+  instructors: AcademyInstructorProfile[];
+  trainingClasses: AcademyTrainingClass[];
+  sessions: AcademyTrainingSession[];
   /** Whether current user can manage instructors (admin dispatcher). */
-  canManageInstructors?: boolean
-  onScheduleClass?: (classId: string) => void
-  onUpdateSessionStatus?: (sessionId: string, status: AcademyTrainingSession['status']) => void
-  onCreateInstructor?: (instructor: AcademyInstructorDraft) => void
-  onUpdateInstructor?: (instructorId: string, patch: Partial<AcademyInstructorProfile>) => void
-  onDeleteInstructor?: (instructorId: string) => void
-  onCreatePathwayClass?: (pathwayId: string) => void
-  onCreateTrainingSession?: (session: AcademyTrainingSessionDraft) => void
-  onUpdateTrainingSession?: (sessionId: string, patch: Partial<AcademyTrainingSession>) => void
-  onDeleteTrainingSession?: (sessionId: string) => void
-}
+  canManageInstructors?: boolean;
+  onScheduleClass?: (classId: string) => void;
+  onUpdateSessionStatus?: (
+    sessionId: string,
+    status: AcademyTrainingSession["status"],
+  ) => void;
+  onCreateInstructor?: (instructor: AcademyInstructorDraft) => void;
+  onUpdateInstructor?: (
+    instructorId: string,
+    patch: Partial<AcademyInstructorProfile>,
+  ) => void;
+  onDeleteInstructor?: (instructorId: string) => void;
+  onCreatePathwayClass?: (pathwayId: string) => void;
+  onCreateTrainingSession?: (session: AcademyTrainingSessionDraft) => void;
+  onUpdateTrainingSession?: (
+    sessionId: string,
+    patch: Partial<AcademyTrainingSession>,
+  ) => void;
+  onDeleteTrainingSession?: (sessionId: string) => void;
+};
 
 export function PodAcademyDashboardLayout({
+  roles = [],
   heading = {
-    title: 'Pod Academy Readiness',
-    subtitle: 'Track how your dispatch pod is progressing through qualifications.',
+    title: "Pod Academy Readiness",
+    subtitle:
+      "Track how your dispatch pod is progressing through qualifications.",
   },
   stats,
   courseGroups,
@@ -80,78 +98,334 @@ export function PodAcademyDashboardLayout({
   onUpdateTrainingSession,
   onDeleteTrainingSession,
 }: PodAcademyDashboardLayoutProps) {
-  const handleScheduleClass = onScheduleClass ?? (() => { })
-  const handleUpdateSessionStatus = onUpdateSessionStatus ?? (() => { })
-  const handleCreateInstructor = onCreateInstructor ?? (() => { })
-  const handleUpdateInstructor = onUpdateInstructor ?? (() => { })
-  const handleDeleteInstructor = onDeleteInstructor ?? (() => { })
-  const handleCreatePathwayClass = onCreatePathwayClass ?? (() => { })
-  const handleCreateTrainingSession = onCreateTrainingSession ?? (() => { })
-  const handleUpdateTrainingSession = onUpdateTrainingSession ?? (() => { })
-  const handleDeleteTrainingSession = onDeleteTrainingSession ?? (() => { })
+  // If the parent hasn't yet provided `roles` (e.g. profile still hydrating),
+  // attempt to read the profile from the shared store as a fallback so the
+  // layout can compute permissions correctly once the profile is available.
+  const profileFromStore = useProfileStore((s) => s.profile);
+  const effectiveRoles = React.useMemo(() => {
+    const profileRoles = profileFromStore?.access_role
+      ? [String(profileFromStore.access_role)]
+      : [];
+    if (roles && roles.length > 0) return roles;
+    if (profileRoles.length) return profileRoles;
+    return [];
+  }, [roles, profileFromStore]);
+
+  const {
+    canManageInstructorsFromRole,
+    canManageSessions,
+    canScheduleClasses,
+    canCreatePathwayClass,
+  } = React.useMemo(
+    () => resolvePermissionsFromRoles(effectiveRoles),
+    [effectiveRoles],
+  );
+
+  // Final instructor management flag: prefer explicit prop, otherwise use the
+  // UI-layer helper which wraps the canonical resolver and applies the
+  // product-driven allowance (e.g. permitting `dispatcher_basic`). Memoize to
+  // keep hooks stable.
+  const resolvedCanManageInstructors = React.useMemo(
+    () => (canManageInstructors ?? canManageInstructorsFromRoles(effectiveRoles)),
+    [canManageInstructors, effectiveRoles],
+  );
+
+  // React.useEffect(() => {
+  //   if (process.env.NODE_ENV !== "production") {
+  //     console.debug("PodAcademyDashboardLayout: effectiveRoles", effectiveRoles);
+  //     console.debug("PodAcademyDashboardLayout: resolvedCanManageInstructors", resolvedCanManageInstructors);
+  //     console.debug("PodAcademyDashboardLayout: onCreateInstructor provided", typeof onCreateInstructor === "function");
+  //     console.debug("PodAcademyDashboardLayout: onUpdateInstructor provided", typeof onUpdateInstructor === "function");
+  //     console.debug("PodAcademyDashboardLayout: onDeleteInstructor provided", typeof onDeleteInstructor === "function");
+  //   }
+  // }, [effectiveRoles, resolvedCanManageInstructors, onCreateInstructor, onUpdateInstructor, onDeleteInstructor]);
+  const handleScheduleClass = React.useMemo(
+    () => onScheduleClass ?? (() => { }),
+    [onScheduleClass],
+  );
+  const handleUpdateSessionStatus = React.useMemo(
+    () => onUpdateSessionStatus ?? (() => { }),
+    [onUpdateSessionStatus],
+  );
+  const handleCreateInstructor = React.useMemo(
+    () => onCreateInstructor ?? (() => { }),
+    [onCreateInstructor],
+  );
+  const handleUpdateInstructor = React.useMemo(
+    () => onUpdateInstructor ?? (() => { }),
+    [onUpdateInstructor],
+  );
+  const handleDeleteInstructor = React.useMemo(
+    () => onDeleteInstructor ?? (() => { }),
+    [onDeleteInstructor],
+  );
+  const handleCreatePathwayClass = React.useMemo(
+    () => onCreatePathwayClass ?? (() => { }),
+    [onCreatePathwayClass],
+  );
+  const handleCreateTrainingSession = React.useMemo(
+    () => onCreateTrainingSession ?? (() => { }),
+    [onCreateTrainingSession],
+  );
+  const handleUpdateTrainingSession = React.useMemo(
+    () => onUpdateTrainingSession ?? (() => { }),
+    [onUpdateTrainingSession],
+  );
+  const handleDeleteTrainingSession = React.useMemo(
+    () => onDeleteTrainingSession ?? (() => { }),
+    [onDeleteTrainingSession],
+  );
+  // Wrap handlers so they only run when the current role set has permission. No-ops otherwise.
+  const guardedScheduleClass = React.useCallback(
+    (classId: string) => {
+      // If we don't yet know the user's roles (empty array), allow the action to
+      // proceed to avoid blocking during client-side hydration. When roles are
+      // known and the permission is false, block and warn.
+      if (!canScheduleClasses && effectiveRoles.length > 0) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[PodAcademyDashboardLayout] scheduleClass blocked by permissions",
+            {
+              roles: effectiveRoles,
+              canScheduleClasses,
+            },
+          );
+        }
+        return;
+      }
+      if (
+        !canScheduleClasses &&
+        effectiveRoles.length === 0 &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        // Roles are unknown — warn in dev but still proceed so UX isn't blocked during hydration.
+        // Production remains permissive here because server-side RLS / guards enforce safety.
+        console.warn(
+          "[PodAcademyDashboardLayout] scheduleClass proceeding with unknown roles (hydration)",
+          {
+            roles: effectiveRoles,
+          },
+        );
+      }
+      return handleScheduleClass(classId);
+    },
+    [canScheduleClasses, handleScheduleClass, effectiveRoles],
+  );
+
+  const guardedCreateTrainingSession = React.useCallback(
+    (session: AcademyTrainingSessionDraft) => {
+      if (!canManageSessions && effectiveRoles.length > 0) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[PodAcademyDashboardLayout] createTrainingSession blocked by permissions",
+            {
+              roles: effectiveRoles,
+              canManageSessions,
+            },
+          );
+        }
+        return;
+      }
+      if (
+        !canManageSessions &&
+        effectiveRoles.length === 0 &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[PodAcademyDashboardLayout] createTrainingSession proceeding with unknown roles (hydration)",
+          {
+            roles: effectiveRoles,
+          },
+        );
+      }
+      return handleCreateTrainingSession(session);
+    },
+    [canManageSessions, handleCreateTrainingSession, effectiveRoles],
+  );
+
+  const guardedUpdateSessionStatus = React.useCallback(
+    (sessionId: string, status: AcademyTrainingSession["status"]) => {
+      if (!canManageSessions && effectiveRoles.length > 0) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[PodAcademyDashboardLayout] updateSessionStatus blocked by permissions",
+            {
+              roles: effectiveRoles,
+              canManageSessions,
+            },
+          );
+        }
+        return;
+      }
+      if (
+        !canManageSessions &&
+        effectiveRoles.length === 0 &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[PodAcademyDashboardLayout] updateSessionStatus proceeding with unknown roles (hydration)",
+          {
+            roles: effectiveRoles,
+          },
+        );
+      }
+      return handleUpdateSessionStatus(sessionId, status);
+    },
+    [canManageSessions, handleUpdateSessionStatus, effectiveRoles],
+  );
+
+  const guardedUpdateTrainingSession = React.useCallback(
+    (sessionId: string, patch: Partial<AcademyTrainingSession>) => {
+      if (!canManageSessions && effectiveRoles.length > 0) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[PodAcademyDashboardLayout] updateTrainingSession blocked by permissions",
+            {
+              roles: effectiveRoles,
+              canManageSessions,
+            },
+          );
+        }
+        return;
+      }
+      if (
+        !canManageSessions &&
+        effectiveRoles.length === 0 &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[PodAcademyDashboardLayout] updateTrainingSession proceeding with unknown roles (hydration)",
+          {
+            roles: effectiveRoles,
+          },
+        );
+      }
+      return handleUpdateTrainingSession(sessionId, patch);
+    },
+    [canManageSessions, handleUpdateTrainingSession, effectiveRoles],
+  );
+
+  const guardedDeleteTrainingSession = React.useCallback(
+    (sessionId: string) => {
+      if (!canManageSessions && effectiveRoles.length > 0) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[PodAcademyDashboardLayout] deleteTrainingSession blocked by permissions",
+            {
+              roles: effectiveRoles,
+              canManageSessions,
+            },
+          );
+        }
+        return;
+      }
+      if (
+        !canManageSessions &&
+        effectiveRoles.length === 0 &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[PodAcademyDashboardLayout] deleteTrainingSession proceeding with unknown roles (hydration)",
+          {
+            roles: effectiveRoles,
+          },
+        );
+      }
+      return handleDeleteTrainingSession(sessionId);
+    },
+    [canManageSessions, handleDeleteTrainingSession, effectiveRoles],
+  );
+
+  const guardedCreatePathwayClass = React.useCallback(
+    (pathwayId: string) => {
+      if (!canCreatePathwayClass && effectiveRoles.length > 0) return;
+      if (
+        !canCreatePathwayClass &&
+        effectiveRoles.length === 0 &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[PodAcademyDashboardLayout] createPathwayClass proceeding with unknown roles (hydration)",
+          {
+            roles: effectiveRoles,
+          },
+        );
+      }
+      return handleCreatePathwayClass(pathwayId);
+    },
+    [canCreatePathwayClass, handleCreatePathwayClass, effectiveRoles],
+  );
   const benchStat = React.useMemo(() => {
-    const total = instructors.length
-    const registered = instructors.filter((instructor) => instructor.registrationStatus !== 'unregistered').length
-    const unregistered = total - registered
-    let cleared = 0
-    let needsReview = 0
-    let awaiting = 0
+    const total = instructors.length;
+    const registered = instructors.filter(
+      (instructor) => instructor.registrationStatus !== "unregistered",
+    ).length;
+    const unregistered = total - registered;
+    let cleared = 0;
+    let needsReview = 0;
+    let awaiting = 0;
     for (const instructor of instructors) {
-      const status = instructor.vettingStatus ?? 'awaiting_verification'
-      if (status === 'cleared') {
-        cleared += 1
-      } else if (status === 'needs_review') {
-        needsReview += 1
+      const status = instructor.vettingStatus ?? "awaiting_verification";
+      if (status === "cleared") {
+        cleared += 1;
+      } else if (status === "needs_review") {
+        needsReview += 1;
       } else {
-        awaiting += 1
+        awaiting += 1;
       }
     }
     if (total === 0) {
       return {
-        label: 'Instructor Bench',
-        value: '0',
-        helper: 'Add instructors to begin scheduling live sessions',
-      }
+        label: "Instructor Bench",
+        value: "0",
+        helper: "Add instructors to begin scheduling live sessions",
+      };
     }
-    const helperSegments: string[] = []
+    const helperSegments: string[] = [];
     if (registered > 0) {
-      helperSegments.push(`${registered} registered`)
+      helperSegments.push(`${registered} registered`);
     }
     if (unregistered > 0) {
-      helperSegments.push(`${unregistered} unregistered SME${unregistered === 1 ? '' : 's'}`)
+      helperSegments.push(
+        `${unregistered} unregistered SME${unregistered === 1 ? "" : "s"}`,
+      );
     }
     if (cleared > 0) {
-      helperSegments.push(`${cleared} cleared`)
+      helperSegments.push(`${cleared} cleared`);
     }
     if (needsReview > 0) {
-      helperSegments.push(`${needsReview} needs review`)
+      helperSegments.push(`${needsReview} needs review`);
     }
     if (awaiting > 0) {
-      helperSegments.push(`${awaiting} awaiting verification`)
+      helperSegments.push(`${awaiting} awaiting verification`);
     }
     if (helperSegments.length === 0) {
-      helperSegments.push('Bench vetting not yet tracked')
+      helperSegments.push("Bench vetting not yet tracked");
     }
     return {
-      label: 'Instructor Bench',
+      label: "Instructor Bench",
       value: String(total),
-      helper: helperSegments.join(' · '),
-      href: '#instructor-bench',
-    }
-  }, [instructors])
+      helper: helperSegments.join(" · "),
+      href: "#instructor-bench",
+    };
+  }, [instructors]);
   const statsWithBench = React.useMemo(() => {
-    const filtered = stats.filter((stat) => stat.label !== 'Instructor Bench')
-    return [benchStat, ...filtered]
-  }, [benchStat, stats])
+    const filtered = stats.filter((stat) => stat.label !== "Instructor Bench");
+    return [benchStat, ...filtered];
+  }, [benchStat, stats]);
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <header className="flex flex-col gap-6 rounded-2xl border bg-card/40 p-6 text-card-foreground shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Academy Overview</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Academy Overview
+          </p>
           <h1 className="mt-2 text-3xl font-semibold">{heading.title}</h1>
           {heading.subtitle ? (
-            <p className="mt-4 max-w-2xl text-sm text-muted-foreground">{heading.subtitle}</p>
+            <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
+              {heading.subtitle}
+            </p>
           ) : null}
         </div>
         {heading.cta}
@@ -160,20 +434,26 @@ export function PodAcademyDashboardLayout({
       <AcademyStatsGrid stats={statsWithBench} />
 
       <Callout type="info">
-        Classes are the training container — a group of learners working through a set of topics or a qualification track.
-        Sessions are standalone events focused on a single lesson or topic. Sessions are managed independently (scheduling,
-        status, and participants) and are not necessarily attached to a class. Use classes to organize curriculum and
-        learning pathways; use sessions to run discrete, schedulable meetings or focused instruction.
+        Classes are the training container — a group of learners working through
+        a set of topics or a qualification track. Sessions are standalone events
+        focused on a single lesson or topic. Sessions are managed independently
+        (scheduling, status, and participants) and are not necessarily attached
+        to a class. Use classes to organize curriculum and learning pathways;
+        use sessions to run discrete, schedulable meetings or focused
+        instruction.
       </Callout>
 
-      <ActiveClassesSection classes={trainingClasses} onScheduleClass={handleScheduleClass} />
+      <ActiveClassesSection
+        classes={trainingClasses}
+        onScheduleClass={guardedScheduleClass}
+      />
 
       <SessionsBoard
         sessions={sessions}
-        onCreateSession={handleCreateTrainingSession}
-        onUpdateSessionStatus={handleUpdateSessionStatus}
-        onUpdateSession={handleUpdateTrainingSession}
-        onDeleteSession={handleDeleteTrainingSession}
+        onCreateSession={guardedCreateTrainingSession}
+        onUpdateSessionStatus={guardedUpdateSessionStatus}
+        onUpdateSession={guardedUpdateTrainingSession}
+        onDeleteSession={guardedDeleteTrainingSession}
       />
 
       <div id="instructor-bench" className="scroll-mt-28">
@@ -183,16 +463,16 @@ export function PodAcademyDashboardLayout({
           onCreateInstructor={handleCreateInstructor}
           onUpdateInstructor={handleUpdateInstructor}
           onRemoveInstructor={handleDeleteInstructor}
-          canManageInstructors={canManageInstructors}
+          canManageInstructors={resolvedCanManageInstructors}
         />
       </div>
 
       <QualificationPathwaysSection
         courseGroups={courseGroups}
-        onCreatePathwayClass={handleCreatePathwayClass}
+        onCreatePathwayClass={guardedCreatePathwayClass}
       />
     </section>
-  )
+  );
 }
 
-export default PodAcademyDashboardLayout
+export default PodAcademyDashboardLayout;

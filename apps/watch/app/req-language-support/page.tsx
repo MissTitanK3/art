@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import LinkButton from '@/components/ui/FrostedLink';
-import LanguageSupportPanel from '@/components/info/LanguageSupportPanel';
-import { useTranslations } from '@/lib/il8n/useTranslations';
+import LinkButton from "@/components/ui/FrostedLink";
+import LanguageSupportPanel from "@/components/info/LanguageSupportPanel";
+import { useTranslations } from "@/lib/il8n/useTranslations";
 
 export default function RequestLanguageSupportPage() {
   const { t } = useTranslations();
@@ -11,7 +11,7 @@ export default function RequestLanguageSupportPage() {
     <main className="p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex justify-end">
         <LinkButton
-          label={t('quickExit')}
+          label={t("quickExit")}
           size="2xl"
           variant="red"
           href="https://wikipedia.org"

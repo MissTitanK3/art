@@ -1,9 +1,9 @@
-import { persist } from 'zustand/middleware';
-import { useStore } from 'zustand';
-import { createStore, StateCreator, StoreApi } from 'zustand/vanilla';
-import { DispatchUpdate } from './types/dispatch.ts';
-import { DispatchSubmission } from './types/global.ts';
-import { fakeUUID } from '@workspace/ui/lib/utils';
+import { persist } from "zustand/middleware";
+import { useStore } from "zustand";
+import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
+import { DispatchUpdate } from "./types/dispatch.ts";
+import { DispatchSubmission } from "./types/global.ts";
+import { fakeUUID } from "@workspace/ui/lib/utils";
 
 // -----------------------------------------------------------------------------
 // Types
@@ -28,10 +28,13 @@ export type DispatchStoreState = {
   replaceSubmissions: (subs: DispatchSubmission[]) => void;
   updateSubmission: (id: string, patch: Partial<DispatchSubmission>) => void;
   removeSubmission: (id: string) => void;
-  addUpdate: (dispatchId: string, update: Omit<DispatchUpdate, 'id' | 'createdAt'>) => void;
+  addUpdate: (
+    dispatchId: string,
+    update: Omit<DispatchUpdate, "id" | "createdAt">,
+  ) => void;
   editUpdate: (dispatchId: string, updateId: string, text: string) => void;
   removeUpdate: (dispatchId: string, updateId: string) => void;
-  addShift: (shift: Omit<DispatchShift, 'id'>) => void;
+  addShift: (shift: Omit<DispatchShift, "id">) => void;
   replaceShifts: (shifts: DispatchShift[]) => void;
   updateShift: (id: string, updates: Partial<DispatchShift>) => void;
   removeShift: (id: string) => void;
@@ -63,7 +66,9 @@ const createDispatchStoreInitializer =
 
     updateSubmission: (id, patch) =>
       set((s) => ({
-        submissions: s.submissions.map((sub) => (sub.id === id ? { ...sub, ...patch } : sub)),
+        submissions: s.submissions.map((sub) =>
+          sub.id === id ? { ...sub, ...patch } : sub,
+        ),
       })),
 
     removeSubmission: (id) =>
@@ -97,7 +102,9 @@ const createDispatchStoreInitializer =
           sub.id === dispatchId
             ? {
                 ...sub,
-                updates: sub.updates?.map((u) => (u.id === updateId ? { ...u, text } : u)),
+                updates: sub.updates?.map((u) =>
+                  u.id === updateId ? { ...u, text } : u,
+                ),
               }
             : sub,
         ),
@@ -130,7 +137,9 @@ const createDispatchStoreInitializer =
 
     updateShift: (id, updates) =>
       set((state) => ({
-        shifts: state.shifts.map((s) => (s.id === id ? { ...s, ...updates } : s)),
+        shifts: state.shifts.map((s) =>
+          s.id === id ? { ...s, ...updates } : s,
+        ),
       })),
 
     removeShift: (id) =>
@@ -140,7 +149,9 @@ const createDispatchStoreInitializer =
 
     isShiftActive: (shift) => {
       const current = new Date();
-      return new Date(shift.startsAt) <= current && new Date(shift.endsAt) >= current;
+      return (
+        new Date(shift.startsAt) <= current && new Date(shift.endsAt) >= current
+      );
     },
 
     getActiveShifts: () => {
@@ -155,18 +166,28 @@ const createDispatchStoreInitializer =
       const cutoff = new Date(current.getTime() + hoursAhead * 60 * 60 * 1000);
       return get()
         .shifts.filter(
-          (s) => new Date(s.startsAt) > current && new Date(s.startsAt) <= cutoff,
+          (s) =>
+            new Date(s.startsAt) > current && new Date(s.startsAt) <= cutoff,
         )
-        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+        .sort(
+          (a, b) =>
+            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+        );
     },
 
     getShiftsByVolunteer: (volunteerId) =>
       get()
         .shifts.filter((s) => s.volunteerId === volunteerId)
-        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()),
+        .sort(
+          (a, b) =>
+            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+        ),
   });
 
-function withPersistence(initializer: StateCreator<DispatchStoreState>, storageKey: string) {
+function withPersistence(
+  initializer: StateCreator<DispatchStoreState>,
+  storageKey: string,
+) {
   return persist(initializer, {
     name: storageKey,
     version: 1,
@@ -181,16 +202,23 @@ function withPersistence(initializer: StateCreator<DispatchStoreState>, storageK
 
 export type DispatchStore = StoreApi<DispatchStoreState>;
 
-export function createDispatchStore(options?: CreateDispatchStoreOptions): DispatchStore {
+export function createDispatchStore(
+  options?: CreateDispatchStoreOptions,
+): DispatchStore {
   const {
     initialSubmissions,
     initialShifts,
     persist: enablePersist = true,
-    storageKey = 'dispatch-store',
+    storageKey = "dispatch-store",
   } = options ?? {};
 
-  const initializer = createDispatchStoreInitializer(initialSubmissions ?? [], initialShifts ?? []);
-  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+  const initializer = createDispatchStoreInitializer(
+    initialSubmissions ?? [],
+    initialShifts ?? [],
+  );
+  const creator = enablePersist
+    ? withPersistence(initializer, storageKey)
+    : initializer;
   return createStore<DispatchStoreState>(creator as any);
 }
 

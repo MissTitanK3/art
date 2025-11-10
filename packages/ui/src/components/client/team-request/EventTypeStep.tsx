@@ -1,5 +1,11 @@
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { humanize } from "@workspace/ui/lib/utils";
 
@@ -19,7 +25,9 @@ export function EventTypeStep({ onBack, onNext }: EventTypeStepProps) {
           <Button
             key={type}
             variant="outline"
-            onClick={() => onNext({ eventType: type as keyof typeof TEAM_CONFIG_PRESETS })}
+            onClick={() =>
+              onNext({ eventType: type as keyof typeof TEAM_CONFIG_PRESETS })
+            }
           >
             {humanize(type)}
           </Button>

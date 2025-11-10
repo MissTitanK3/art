@@ -14,5 +14,7 @@ export function ImageProvider({
   component: ImageComponent;
   children: React.ReactNode;
 }) {
-  return <ImageContext.Provider value={component}>{children}</ImageContext.Provider>;
+  return (
+    <ImageContext.Provider value={component}>{children}</ImageContext.Provider>
+  );
 }

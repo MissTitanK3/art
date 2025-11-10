@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { createIndexedDBStorage } from './idbStorage'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { createIndexedDBStorage } from "./idbStorage";
 
-export type JournalKind = 'repair' | 'dock' | 'ping' | 'other'
+export type JournalKind = "repair" | "dock" | "ping" | "other";
 
 export type JournalEntry = {
-  id: string
-  ts: string // ISO timestamp
-  kind: JournalKind
-  message: string
-}
+  id: string;
+  ts: string; // ISO timestamp
+  kind: JournalKind;
+  message: string;
+};
 
 type JournalState = {
-  entries: JournalEntry[]
-  add: (kind: JournalKind, message: string, ts?: string) => void
-  clear: () => void
-}
+  entries: JournalEntry[];
+  add: (kind: JournalKind, message: string, ts?: string) => void;
+  clear: () => void;
+};
 
 export const useJournalStore = create<JournalState>()(
   persist(
@@ -38,11 +38,10 @@ export const useJournalStore = create<JournalState>()(
       clear: () => set({ entries: [] }),
     }),
     {
-      name: 'journal-store',
+      name: "journal-store",
       storage: createIndexedDBStorage(),
       version: 1,
       partialize: (s) => ({ entries: s.entries }),
     },
   ),
-)
-
+);

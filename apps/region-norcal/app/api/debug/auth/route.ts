@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { cookies as nextCookies } from 'next/headers';
-import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
+import { NextResponse } from "next/server";
+import { cookies as nextCookies } from "next/headers";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
@@ -18,9 +18,11 @@ export async function GET() {
 
   // Prefer explicit env provider, else infer from Supabase presence
   const provider =
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER ?? (supaUser?.user || supaSession?.session ? 'supabase' : 'unknown');
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
+    (supaUser?.user || supaSession?.session ? "supabase" : "unknown");
 
-  const has = (key: string) => Boolean(process.env[key] && String(process.env[key]).length > 0);
+  const has = (key: string) =>
+    Boolean(process.env[key] && String(process.env[key]).length > 0);
 
   return NextResponse.json({
     ok: true,
@@ -36,7 +38,10 @@ export async function GET() {
               ? {
                   id: supaUser.user.id,
                   email: supaUser.user.email,
-                  role: (supaUser.user as any)?.role ?? (supaUser.user as any)?.user_metadata?.role ?? null,
+                  role:
+                    (supaUser.user as any)?.role ??
+                    (supaUser.user as any)?.user_metadata?.role ??
+                    null,
                 }
               : null,
             session: supaSession?.session
@@ -48,8 +53,10 @@ export async function GET() {
         : null,
     env: {
       NEXT_PUBLIC_AUTH_PROVIDER: process.env.NEXT_PUBLIC_AUTH_PROVIDER ?? null,
-      NEXT_PUBLIC_SUPABASE_URL_present: has('NEXT_PUBLIC_SUPABASE_URL'),
-      NEXT_PUBLIC_SUPABASE_ANON_KEY_present: has('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+      NEXT_PUBLIC_SUPABASE_URL_present: has("NEXT_PUBLIC_SUPABASE_URL"),
+      NEXT_PUBLIC_SUPABASE_ANON_KEY_present: has(
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      ),
     },
   });
 }

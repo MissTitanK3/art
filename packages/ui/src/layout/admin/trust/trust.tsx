@@ -2,13 +2,38 @@
 
 import * as React from "react";
 import type { TrustEntry } from "@workspace/store/types/trust.ts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/table";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog";
 import { Badge } from "@workspace/ui/components/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { Input } from "@workspace/ui/components/input";
 import { toast } from "sonner";
 import { Plus, PauseCircle, PlayCircle, Download } from "lucide-react";
@@ -21,7 +46,11 @@ type Props = {
   nameById: Record<string, string>;
 };
 
-const ROLE_OPTIONS: TrustEntry["signer_role"][] = ["regional_admin", "pod_leader", "trainer"];
+const ROLE_OPTIONS: TrustEntry["signer_role"][] = [
+  "regional_admin",
+  "pod_leader",
+  "trainer",
+];
 const STATUS_OPTIONS: TrustEntry["status"][] = ["active", "inactive"];
 
 export default function TrustClient({ initialEntries, nameById }: Props) {
@@ -43,7 +72,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
         hour12: true,
         timeZone: "UTC",
       }),
-    []
+    [],
   );
   const [now, setNow] = React.useState<number | null>(null);
   React.useEffect(() => {
@@ -52,7 +81,8 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
   const [addOpen, setAddOpen] = React.useState(false);
   const [newSubjectId, setNewSubjectId] = React.useState<string>("");
   const [newSignerId, setNewSignerId] = React.useState<string>("");
-  const [newRole, setNewRole] = React.useState<TrustEntry["signer_role"]>("pod_leader");
+  const [newRole, setNewRole] =
+    React.useState<TrustEntry["signer_role"]>("pod_leader");
 
   const filtered = React.useMemo(() => {
     return rows.filter((e) => {
@@ -61,7 +91,9 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       if (query) {
         const subject = nameById[e.subjectId] || e.subjectId;
         const signer = nameById[e.signerId] || e.signerId;
-        const hay = [subject, signer, e.signer_rot, e.signed_entry_hash].join("\n").toLowerCase();
+        const hay = [subject, signer, e.signer_rot, e.signed_entry_hash]
+          .join("\n")
+          .toLowerCase();
         if (!hay.includes(query.toLowerCase())) return false;
       }
       return true;
@@ -74,45 +106,81 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       return;
     }
     try {
-      const res = await fetch('/api/admin/trust', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subjectId: newSubjectId, signerId: newSignerId, signer_role: newRole, signer_rot: 'rot-fingerprint', status: 'active' }),
+      const res = await fetch("/api/admin/trust", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subjectId: newSubjectId,
+          signerId: newSignerId,
+          signer_role: newRole,
+          signer_rot: "rot-fingerprint",
+          status: "active",
+        }),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       const json = (await res.json()) as { entry?: TrustEntry };
       const entry = json.entry as TrustEntry;
       setRows((prev) => [entry, ...prev]);
-      toast.success('Entry added');
+      toast.success("Entry added");
       setAddOpen(false);
-      setNewSubjectId(''); setNewSignerId(''); setNewRole('pod_leader');
+      setNewSubjectId("");
+      setNewSignerId("");
+      setNewRole("pod_leader");
     } catch (e: any) {
-      toast.error(e?.message ?? 'Add failed');
+      toast.error(e?.message ?? "Add failed");
     }
   }
 
   async function toggleStatus(idx: number) {
     const e = rows[idx];
     if (!e) return;
-    const nextStatus: TrustEntry['status'] = e.status === 'inactive' ? 'active' : 'inactive';
+    const nextStatus: TrustEntry["status"] =
+      e.status === "inactive" ? "active" : "inactive";
     // optimistic
-    setRows((prev) => prev.map((row, i) => (i === idx ? { ...row, status: nextStatus, signed_at: nextStatus === 'active' ? new Date().toISOString() : row.signed_at } : row)));
+    setRows((prev) =>
+      prev.map((row, i) =>
+        i === idx
+          ? {
+              ...row,
+              status: nextStatus,
+              signed_at:
+                nextStatus === "active"
+                  ? new Date().toISOString()
+                  : row.signed_at,
+            }
+          : row,
+      ),
+    );
     try {
-      const res = await fetch(`/api/admin/trust/${encodeURIComponent(e.subjectId)}/${encodeURIComponent(e.signerId)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus, signed_at: nextStatus === 'active' ? new Date().toISOString() : undefined }),
-      });
+      const res = await fetch(
+        `/api/admin/trust/${encodeURIComponent(e.subjectId)}/${encodeURIComponent(e.signerId)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: nextStatus,
+            signed_at:
+              nextStatus === "active" ? new Date().toISOString() : undefined,
+          }),
+        },
+      );
       if (!res.ok) throw new Error(await safeErrorMessage(res));
-      toast.success(nextStatus === 'active' ? 'Entry resumed — check-in reset' : 'Entry deactivated');
+      toast.success(
+        nextStatus === "active"
+          ? "Entry resumed — check-in reset"
+          : "Entry deactivated",
+      );
     } catch (err: any) {
-      toast.error(err?.message ?? 'Update failed');
+      toast.error(err?.message ?? "Update failed");
     }
   }
 
   // re-verify disabled when ROT is not used
 
   function exportJSON() {
-    const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(filtered, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -144,7 +212,10 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
           <div className="space-y-3">
             <div className="space-y-1">
               <Label>Subject</Label>
-              <Select value={newSubjectId} onValueChange={(v) => setNewSubjectId(v)}>
+              <Select
+                value={newSubjectId}
+                onValueChange={(v) => setNewSubjectId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select subject by name" />
                 </SelectTrigger>
@@ -152,14 +223,19 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                   {Object.entries(nameById)
                     .sort((a, b) => a[1].localeCompare(b[1]))
                     .map(([id, name]) => (
-                      <SelectItem key={id} value={id}>{name}</SelectItem>
+                      <SelectItem key={id} value={id}>
+                        {name}
+                      </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
               <Label>Signer</Label>
-              <Select value={newSignerId} onValueChange={(v) => setNewSignerId(v)}>
+              <Select
+                value={newSignerId}
+                onValueChange={(v) => setNewSignerId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select signer by name" />
                 </SelectTrigger>
@@ -167,28 +243,42 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                   {Object.entries(nameById)
                     .sort((a, b) => a[1].localeCompare(b[1]))
                     .map(([id, name]) => (
-                      <SelectItem key={id} value={id}>{name}</SelectItem>
+                      <SelectItem key={id} value={id}>
+                        {name}
+                      </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
               <Label>Signer Role</Label>
-              <Select value={newRole} onValueChange={(v) => setNewRole(v as TrustEntry["signer_role"])}>
+              <Select
+                value={newRole}
+                onValueChange={(v) =>
+                  setNewRole(v as TrustEntry["signer_role"])
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose role" />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLE_OPTIONS.map((r) => (
-                    <SelectItem key={r} value={r}>{humanize(r)}</SelectItem>
+                    <SelectItem key={r} value={r}>
+                      {humanize(r)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-muted-foreground">Note: You can add an entry without a key, or register + verify a key now.</p>
+            <p className="text-xs text-muted-foreground">
+              Note: You can add an entry without a key, or register + verify a
+              key now.
+            </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={addEntry}>Add Entry</Button>
           </DialogFooter>
         </DialogContent>
@@ -198,31 +288,53 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
         <CardHeader>
           <CardTitle>What Is Trust?</CardTitle>
           <CardDescription>
-            A registry of signed endorsements used here to support periodic safety check-ins for key people. Not used for permissions.
+            A registry of signed endorsements used here to support periodic
+            safety check-ins for key people. Not used for permissions.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Callout type="info">
-            Use ROT as a check-in cadence. When a person’s ROT reaches its check-in date and you haven’t heard from them, it cues the regional admin to reach out and ensure they’re safe and secure.
+            Use ROT as a check-in cadence. When a person’s ROT reaches its
+            check-in date and you haven’t heard from them, it cues the regional
+            admin to reach out and ensure they’re safe and secure.
           </Callout>
           <div className="grid gap-3">
             <div>
               <p className="font-medium">Benefits to your region</p>
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                <li>Keep regular touchpoints with key roles (regional admin, pod leader, trainer).</li>
-                <li>Spot overdue check-ins quickly and reduce risk for isolated responders.</li>
-                <li>Maintain an auditable trail of endorsements and follow-ups.</li>
+                <li>
+                  Keep regular touchpoints with key roles (regional admin, pod
+                  leader, trainer).
+                </li>
+                <li>
+                  Spot overdue check-ins quickly and reduce risk for isolated
+                  responders.
+                </li>
+                <li>
+                  Maintain an auditable trail of endorsements and follow-ups.
+                </li>
               </ul>
             </div>
             <div>
               <p className="font-medium">Using this page</p>
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
                 <li>Search and filter by signer role or status.</li>
-                <li>Watch the Check-in column for upcoming or overdue follow-ups.</li>
-                <li>If a check-in is Overdue and there’s no recent contact, reach out to confirm safety.</li>
-                <li>Export the current view for audits or to share with leadership.</li>
+                <li>
+                  Watch the Check-in column for upcoming or overdue follow-ups.
+                </li>
+                <li>
+                  If a check-in is Overdue and there’s no recent contact, reach
+                  out to confirm safety.
+                </li>
+                <li>
+                  Export the current view for audits or to share with
+                  leadership.
+                </li>
               </ul>
-              <p className="text-xs text-muted-foreground mt-1">Note: Endorsements and check-in cadence are governed by your region.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Note: Endorsements and check-in cadence are governed by your
+                region.
+              </p>
             </div>
           </div>
         </CardContent>
@@ -231,26 +343,48 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Trust Entries</CardTitle>
-          <CardDescription>Filter by signer role or status. Add entries and manage check-in status. Demo-only.</CardDescription>
+          <CardDescription>
+            Filter by signer role or status. Add entries and manage check-in
+            status. Demo-only.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 items-center mb-4">
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search subject, signer, ROT..." className="w-[280px]" />
-            <Select value={role || undefined} onValueChange={(v) => setRole(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[220px]"><SelectValue placeholder="Filter by signer role" /></SelectTrigger>
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search subject, signer, ROT..."
+              className="w-[280px]"
+            />
+            <Select
+              value={role || undefined}
+              onValueChange={(v) => setRole(v === "all" ? "" : v)}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Filter by signer role" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All roles</SelectItem>
                 {ROLE_OPTIONS.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={status || undefined} onValueChange={(v) => setStatus(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[220px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
+            <Select
+              value={status || undefined}
+              onValueChange={(v) => setStatus(v === "all" ? "" : v)}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -271,53 +405,96 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
               </TableHeader>
               <TableBody>
                 {filtered.map((e, idx) => (
-                  <TableRow key={`${e.signerId}-${e.subjectId}-${e.signed_entry_hash}`}>
-                    <TableCell className="max-w-[220px] truncate">{nameById[e.subjectId] || e.subjectId}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">{nameById[e.signerId] || e.signerId}</TableCell>
+                  <TableRow
+                    key={`${e.signerId}-${e.subjectId}-${e.signed_entry_hash}`}
+                  >
+                    <TableCell className="max-w-[220px] truncate">
+                      {nameById[e.subjectId] || e.subjectId}
+                    </TableCell>
+                    <TableCell className="max-w-[220px] truncate">
+                      {nameById[e.signerId] || e.signerId}
+                    </TableCell>
                     <TableCell>{humanize(e.signer_role)}</TableCell>
-                    <TableCell className="whitespace-nowrap">{dateFmt.format(new Date(e.signed_at))}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {dateFmt.format(new Date(e.signed_at))}
+                    </TableCell>
                     <TableCell suppressHydrationWarning>
                       {now == null ? (
                         <span className="text-muted-foreground">—</span>
-                      ) : (() => {
-                        const signedAt = new Date(e.signed_at).getTime();
-                        const dueAt = signedAt + CHECKIN_DAYS * 24 * 60 * 60 * 1000;
-                        const diffDays = Math.ceil((dueAt - now) / (24 * 60 * 60 * 1000));
-                        if (diffDays < 0) {
-                          return (
-                            <Badge variant="outline" className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30">
-                              Overdue {Math.abs(diffDays)}d
-                            </Badge>
+                      ) : (
+                        (() => {
+                          const signedAt = new Date(e.signed_at).getTime();
+                          const dueAt =
+                            signedAt + CHECKIN_DAYS * 24 * 60 * 60 * 1000;
+                          const diffDays = Math.ceil(
+                            (dueAt - now) / (24 * 60 * 60 * 1000),
                           );
-                        }
-                        if (diffDays <= 14) {
+                          if (diffDays < 0) {
+                            return (
+                              <Badge
+                                variant="outline"
+                                className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                              >
+                                Overdue {Math.abs(diffDays)}d
+                              </Badge>
+                            );
+                          }
+                          if (diffDays <= 14) {
+                            return (
+                              <Badge
+                                variant="outline"
+                                className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30"
+                              >
+                                Due in {diffDays}d
+                              </Badge>
+                            );
+                          }
                           return (
-                            <Badge variant="outline" className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30">
+                            <Badge
+                              variant="outline"
+                              className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                            >
                               Due in {diffDays}d
                             </Badge>
                           );
-                        }
-                        return (
-                          <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
-                            Due in {diffDays}d
-                          </Badge>
-                        );
-                      })()}
+                        })()
+                      )}
                     </TableCell>
                     <TableCell>
-                      {e.status === 'active' ? (
-                        <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">Active</Badge>
+                      {e.status === "active" ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                        >
+                          Active
+                        </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30">Inactive</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                        >
+                          Inactive
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="inline-flex gap-2">
-                        <Button size="sm" variant={e.status === 'active' ? 'destructive' : 'secondary'} onClick={() => toggleStatus(idx)}>
-                          {e.status === 'active' ? (
-                            <><PauseCircle className="h-4 w-4 mr-2" /> Deactivate</>
+                        <Button
+                          size="sm"
+                          variant={
+                            e.status === "active" ? "destructive" : "secondary"
+                          }
+                          onClick={() => toggleStatus(idx)}
+                        >
+                          {e.status === "active" ? (
+                            <>
+                              <PauseCircle className="h-4 w-4 mr-2" />{" "}
+                              Deactivate
+                            </>
                           ) : (
-                            <><PlayCircle className="h-4 w-4 mr-2" /> Resume</>
+                            <>
+                              <PlayCircle className="h-4 w-4 mr-2" /> Resume
+                            </>
                           )}
                         </Button>
                         {/* Re-verify removed */}

@@ -2,11 +2,20 @@
 
 import * as React from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 
 export type QuickActionSection = {
   title: string;
-  actions: Array<{ label: string; onClick: () => void; variant?: "default" | "outline" | "light" | "secondary" }>;
+  actions: Array<{
+    label: string;
+    onClick: () => void;
+    variant?: "default" | "outline" | "light" | "secondary";
+  }>;
 };
 
 export type QuickActionsCardProps = {
@@ -16,9 +25,16 @@ export type QuickActionsCardProps = {
   hiddenOnMobile?: boolean;
 };
 
-export default function QuickActionsCard({ title = "Quick actions", sections, className, hiddenOnMobile = true }: QuickActionsCardProps) {
+export default function QuickActionsCard({
+  title = "Quick actions",
+  sections,
+  className,
+  hiddenOnMobile = true,
+}: QuickActionsCardProps) {
   return (
-    <Card className={`${hiddenOnMobile ? "hidden md:block" : ""} ${className ?? ""}`}>
+    <Card
+      className={`${hiddenOnMobile ? "hidden md:block" : ""} ${className ?? ""}`}
+    >
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -29,7 +45,12 @@ export default function QuickActionsCard({ title = "Quick actions", sections, cl
               <p className="text-sm font-medium">{sec.title}</p>
               <div className="flex flex-wrap gap-2">
                 {sec.actions.map((a, i) => (
-                  <Button key={i} className="flex-1 min-w-[160px]" variant={a.variant ?? "default"} onClick={a.onClick}>
+                  <Button
+                    key={i}
+                    className="flex-1 min-w-[160px]"
+                    variant={a.variant ?? "default"}
+                    onClick={a.onClick}
+                  >
                     {a.label}
                   </Button>
                 ))}

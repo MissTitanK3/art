@@ -5,9 +5,9 @@ export default function SchedulesGuide() {
     <section className="prose dark:prose-invert max-w-none">
       <h2>Coverage Schedules</h2>
       <p>
-        Plan, review, and update dispatch coverage across pods. See active, upcoming, and all
-        shifts; add new coverage; and assign volunteers from a pod roster or record an unlisted
-        volunteer.
+        Plan, review, and update dispatch coverage across pods. See active,
+        upcoming, and all shifts; add new coverage; and assign volunteers from a
+        pod roster or record an unlisted volunteer.
       </p>
 
       <div className="my-4 flex gap-2">
@@ -28,8 +28,8 @@ export default function SchedulesGuide() {
         <li>Use New Shift to open the drawer.</li>
         <li>Select Pod, set start/end times, and add notes.</li>
         <li>
-          Optional volunteer: choose from the pod’s roster, or pick “Unlisted volunteer” to type a
-          name and optional identifier.
+          Optional volunteer: choose from the pod’s roster, or pick “Unlisted
+          volunteer” to type a name and optional identifier.
         </li>
       </ul>
 
@@ -43,23 +43,26 @@ export default function SchedulesGuide() {
       <h3>Roster Integration</h3>
       <ul>
         <li>
-          When a pod is selected, members are fetched for that pod to populate the volunteer list.
+          When a pod is selected, members are fetched for that pod to populate
+          the volunteer list.
         </li>
         <li>
-          Volunteer selection maps roster entry to a profile for accurate attribution in reports.
+          Volunteer selection maps roster entry to a profile for accurate
+          attribution in reports.
         </li>
       </ul>
 
       <h3>Data Source</h3>
       <p>
-        Shifts read and write to the regional database when configured (Supabase). If unavailable,
-        shifts operate from the local store so you can still prototype scheduling flows.
+        Shifts read and write to the regional database when configured
+        (Supabase). If unavailable, shifts operate from the local store so you
+        can still prototype scheduling flows.
       </p>
 
       <h3>Permissions</h3>
       <p className="!mt-2">
-        Coordinators, pod leaders, or admins typically create and manage shifts. Regions can set
-        stricter policies as needed.
+        Coordinators, pod leaders, or admins typically create and manage shifts.
+        Regions can set stricter policies as needed.
       </p>
 
       <h3>Checklist</h3>

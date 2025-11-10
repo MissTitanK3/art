@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import * as React from "react";
+import { useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 
-import { usePodStore } from '@/providers/PodStoreProvider';
-import { Button } from '@workspace/ui/components/button';
-import { PodAcademyDashboardLayout } from '@workspace/ui/layout/pods/PodAcademyDashboardLayout';
-import { COURSE_BLUEPRINT } from '@workspace/ui/data/academy/course-blueprint';
-import type { AcademyClass } from '@workspace/store/usePodStore';
+import { usePodStore } from "@/providers/PodStoreProvider";
+import { Button } from "@workspace/ui/components/button";
+import { PodAcademyDashboardLayout } from "@workspace/ui/layout/pods/PodAcademyDashboardLayout";
+import { COURSE_BLUEPRINT } from "@workspace/ui/data/academy/course-blueprint";
+import type { AcademyClass } from "@workspace/store/usePodStore";
 import type {
   AcademyCourseGroup,
   AcademyInstructorProfile,
@@ -16,14 +16,19 @@ import type {
   AcademyTrainingSession,
   AcademySummaryStat,
   AcademyMemberProgress,
-} from '@workspace/store/types/academy.ts';
+} from "@workspace/store/types/academy.ts";
 import {
   PodAcademyDashboardStoreProvider,
   usePodAcademyDashboardStore,
-} from '@/providers/PodAcademyDashboardStoreProvider';
-import { attachCourseStatusToGroups, buildInstructorProfiles, buildTrainingSessions, convertPodsToMemberProgress, deriveStats } from '@/lib/utils';
-import { useProfileStore } from '@workspace/store/useProfileStore';
-
+} from "@/providers/PodAcademyDashboardStoreProvider";
+import {
+  attachCourseStatusToGroups,
+  buildInstructorProfiles,
+  buildTrainingSessions,
+  convertPodsToMemberProgress,
+  deriveStats,
+} from "@/lib/utils";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 
 export default function AcademyDashboardPage() {
   const router = useRouter();
@@ -32,10 +37,16 @@ export default function AcademyDashboardPage() {
 
   const members = useMemo(() => convertPodsToMemberProgress(pods), [pods]);
   const instructors = useMemo(() => buildInstructorProfiles(pods), [pods]);
-  const sessions = useMemo(() => buildTrainingSessions(instructors), [instructors]);
-  console.log('sessions', sessions);
+  const sessions = useMemo(
+    () => buildTrainingSessions(instructors),
+    [instructors],
+  );
+  console.log("sessions", sessions);
 
-  const stats = useMemo(() => deriveStats(pods, members, sessions), [pods, members, sessions]);
+  const stats = useMemo(
+    () => deriveStats(pods, members, sessions),
+    [pods, members, sessions],
+  );
   const trainingClasses: AcademyTrainingClass[] = useMemo(
     () =>
       academyClasses.map((academyClass: AcademyClass) => ({
@@ -60,16 +71,20 @@ export default function AcademyDashboardPage() {
 
   const headingCta = (
     <Button asChild variant="outline">
-      <a href="https://academy.alwaysreadytools.org" target="_blank" rel="noreferrer">
+      <a
+        href="https://academy.alwaysreadytools.org"
+        target="_blank"
+        rel="noreferrer"
+      >
         Open Academy
       </a>
     </Button>
   );
 
   const heading = {
-    title: 'Dispatch Academy Hub',
+    title: "Dispatch Academy Hub",
     subtitle:
-      'Coordinate live classes with mentors and dispatchers while tracking qualification progress in every pod.',
+      "Coordinate live classes with mentors and dispatchers while tracking qualification progress in every pod.",
     cta: headingCta,
   };
 
@@ -129,23 +144,40 @@ function AcademyDashboardContent({
   onCreatePathwayClass,
 }: AcademyDashboardContentProps) {
   const profile = useProfileStore((s) => s.profile);
-  const isTrainer = profile?.access_role === 'trainer';
-  const canManageInstructors = isTrainer;
+  const roles = profile?.access_role ? [String(profile.access_role)] : [];
   const setStats = usePodAcademyDashboardStore((state) => state.setStats);
-  const setCourseGroups = usePodAcademyDashboardStore((state) => state.setCourseGroups);
+  const setCourseGroups = usePodAcademyDashboardStore(
+    (state) => state.setCourseGroups,
+  );
   const setMembers = usePodAcademyDashboardStore((state) => state.setMembers);
-  const setInstructors = usePodAcademyDashboardStore((state) => state.setInstructors);
-  const addInstructor = usePodAcademyDashboardStore((state) => state.addInstructor);
-  const updateInstructor = usePodAcademyDashboardStore((state) => state.updateInstructor);
-  const removeInstructor = usePodAcademyDashboardStore((state) => state.removeInstructor);
-  const setTrainingClasses = usePodAcademyDashboardStore((state) => state.setTrainingClasses);
+  const setInstructors = usePodAcademyDashboardStore(
+    (state) => state.setInstructors,
+  );
+  const addInstructor = usePodAcademyDashboardStore(
+    (state) => state.addInstructor,
+  );
+  const updateInstructor = usePodAcademyDashboardStore(
+    (state) => state.updateInstructor,
+  );
+  const removeInstructor = usePodAcademyDashboardStore(
+    (state) => state.removeInstructor,
+  );
+  const setTrainingClasses = usePodAcademyDashboardStore(
+    (state) => state.setTrainingClasses,
+  );
   const setSessions = usePodAcademyDashboardStore((state) => state.setSessions);
-  const addTrainingSession = usePodAcademyDashboardStore((state) => state.addTrainingSession);
+  const addTrainingSession = usePodAcademyDashboardStore(
+    (state) => state.addTrainingSession,
+  );
   const updateTrainingSessionStatus = usePodAcademyDashboardStore(
     (state) => state.updateTrainingSessionStatus,
   );
-  const patchTrainingSession = usePodAcademyDashboardStore((state) => state.updateTrainingSession);
-  const removeTrainingSession = usePodAcademyDashboardStore((state) => state.removeTrainingSession);
+  const patchTrainingSession = usePodAcademyDashboardStore(
+    (state) => state.updateTrainingSession,
+  );
+  const removeTrainingSession = usePodAcademyDashboardStore(
+    (state) => state.removeTrainingSession,
+  );
 
   useEffect(() => {
     setStats(stats);
@@ -170,14 +202,21 @@ function AcademyDashboardContent({
   ]);
 
   const storeStats = usePodAcademyDashboardStore((state) => state.stats);
-  const storeCourseGroups = usePodAcademyDashboardStore((state) => state.courseGroups);
+  const storeCourseGroups = usePodAcademyDashboardStore(
+    (state) => state.courseGroups,
+  );
   const storeMembers = usePodAcademyDashboardStore((state) => state.members);
-  const storeInstructors = usePodAcademyDashboardStore((state) => state.instructors);
-  const storeTrainingClasses = usePodAcademyDashboardStore((state) => state.trainingClasses);
+  const storeInstructors = usePodAcademyDashboardStore(
+    (state) => state.instructors,
+  );
+  const storeTrainingClasses = usePodAcademyDashboardStore(
+    (state) => state.trainingClasses,
+  );
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
 
   return (
     <PodAcademyDashboardLayout
+      roles={roles}
       heading={heading}
       stats={storeStats}
       courseGroups={storeCourseGroups}
@@ -185,34 +224,32 @@ function AcademyDashboardContent({
       instructors={storeInstructors}
       trainingClasses={storeTrainingClasses}
       sessions={storeSessions}
-      canManageInstructors={canManageInstructors}
-      onScheduleClass={isTrainer ? onScheduleClass : undefined}
-      onUpdateSessionStatus={isTrainer ? updateTrainingSessionStatus : undefined}
-      onCreateInstructor={isTrainer ? ((draft) => {
+      onUpdateSessionStatus={updateTrainingSessionStatus}
+      onCreateInstructor={(draft) => {
         const instructor = addInstructor(draft);
-        console.info('Added instructor', instructor.id);
-      }) : undefined}
-      onUpdateInstructor={isTrainer ? ((instructorId, patch) => {
+        console.info("Added instructor", instructor.id);
+      }}
+      onUpdateInstructor={(instructorId, patch) => {
         updateInstructor(instructorId, patch);
-        console.info('Updated instructor', instructorId, patch);
-      }) : undefined}
-      onDeleteInstructor={isTrainer ? ((instructorId) => {
+        console.info("Updated instructor", instructorId, patch);
+      }}
+      onDeleteInstructor={(instructorId) => {
         removeInstructor(instructorId);
-        console.info('Removed instructor', instructorId);
-      }) : undefined}
-      onCreatePathwayClass={isTrainer ? onCreatePathwayClass : undefined}
-      onCreateTrainingSession={isTrainer ? ((draft) => {
+        console.info("Removed instructor", instructorId);
+      }}
+      onCreatePathwayClass={onCreatePathwayClass}
+      onCreateTrainingSession={(draft) => {
         const session = addTrainingSession(draft);
-        console.info('Created training session', session.id);
-      }) : undefined}
-      onUpdateTrainingSession={isTrainer ? ((sessionId, patch) => {
+        console.info("Created training session", session.id);
+      }}
+      onUpdateTrainingSession={(sessionId, patch) => {
         patchTrainingSession(sessionId, patch);
-        console.info('Updated training session', sessionId, patch);
-      }) : undefined}
-      onDeleteTrainingSession={isTrainer ? ((sessionId) => {
+        console.info("Updated training session", sessionId, patch);
+      }}
+      onDeleteTrainingSession={(sessionId) => {
         removeTrainingSession(sessionId);
-        console.info('Deleted training session', sessionId);
-      }) : undefined}
+        console.info("Deleted training session", sessionId);
+      }}
     />
   );
 }

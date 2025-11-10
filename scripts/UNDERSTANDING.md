@@ -1,4 +1,5 @@
 # create-region.mjs
+
 **Always Ready Tools — Region Generator Script**  
 Version: 2025-10-23
 
@@ -27,8 +28,8 @@ Run via package script:
 pnpm create:region <region-id> [--dry-run] [--skip-install]
 ```
 
-
 Examples:
+
 - `pnpm create:region pnw`
 - `pnpm create:region pccd --skip-install`
 - `pnpm create:region nyc --dry-run` (no changes, prints planned actions)
@@ -50,45 +51,47 @@ If `<region-id>` is omitted, an interactive prompt will ask for it.
 
 Input is a short slug like `pnw`, `pccd`, `nyc`.  
 The script:
+
 - Lowercases and trims input
 - Strips any leading `region-`
 - Validates `[a-z0-9-]+`
-- Produces final name `region-<slug>`  
+- Produces final name `region-<slug>`
   - Rejects `region-template` to prevent overwriting the template
 
 Also derives:
+
 - **Region Label**: `slug.toUpperCase()` (e.g., `PNW`)
 
 ---
 
 ## 6) What It Does
 
-1. **Validate**  
-   - Verifies `apps/region-template` exists  
+1. **Validate**
+   - Verifies `apps/region-template` exists
    - Ensures destination `apps/region-<slug>` does not exist
 
-2. **Copy**  
-   - Copies template to new destination  
+2. **Copy**
+   - Copies template to new destination
    - Skips `node_modules`, `.next`, `.turbo`
 
-3. **Clean**  
+3. **Clean**
    - Removes demo `data/` directory in the new region
 
-4. **Package Name**  
+4. **Package Name**
    - Sets `package.json` `"name"` to `region-<slug>`
 
-5. **Global Replace**  
-   - Replaces all occurrences of `region-template` with `region-<slug>`  
+5. **Global Replace**
+   - Replaces all occurrences of `region-template` with `region-<slug>`
    - Scans only safe text file types and filenames
 
-6. **Branding**  
-   - Updates common strings:  
-     - `ART Region Template` → `ART Region <LABEL>`  
-     - `ART. Region Template` → `ART. Region <LABEL>`  
-     - `ART Dispatch — Region` → `ART Dispatch — <LABEL>`  
+6. **Branding**
+   - Updates common strings:
+     - `ART Region Template` → `ART Region <LABEL>`
+     - `ART. Region Template` → `ART. Region <LABEL>`
+     - `ART Dispatch — Region` → `ART Dispatch — <LABEL>`
    - Updates `public/site.webmanifest` `name` and `short_name`
 
-7. **Workspace Registration**  
+7. **Workspace Registration**
    - Runs `pnpm install` in the monorepo root, unless `--skip-install`
 
 ---

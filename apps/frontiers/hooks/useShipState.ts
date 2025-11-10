@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { toast } from 'sonner';
-import { fetchShipState, resetShipState } from '@/lib/ship';
+import * as React from "react";
+import { toast } from "sonner";
+import { fetchShipState, resetShipState } from "@/lib/ship";
 
 export function useShipState(profileId: string | null) {
   const [shipLoading, setShipLoading] = React.useState(false);
-  const [ship, setShip] = React.useState<{ ship_condition: number; morale: number; fatigue: number } | null>(null);
+  const [ship, setShip] = React.useState<{
+    ship_condition: number;
+    morale: number;
+    fatigue: number;
+  } | null>(null);
   const [resetting, setResetting] = React.useState(false);
 
   React.useEffect(() => {
@@ -45,9 +49,9 @@ export function useShipState(profileId: string | null) {
           morale: norm((s as any).morale ?? 0),
           fatigue: norm((s as any).fatigue ?? 0),
         });
-      toast.success('Docked and repaired. Ship status updated.');
+      toast.success("Docked and repaired. Ship status updated.");
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to dock/repair');
+      toast.error(e?.message || "Failed to dock/repair");
     } finally {
       setResetting(false);
     }

@@ -6,7 +6,7 @@ type ReportFormat = "pdf" | "json";
 // Filters out empty, null, or undefined values so the generated report stays concise.
 function pickDefined<T extends object, K extends keyof T>(
   source: T,
-  keys: readonly K[]
+  keys: readonly K[],
 ): Partial<Pick<T, K>> {
   const result: Partial<Pick<T, K>> = {};
 
@@ -29,7 +29,7 @@ function pickDefined<T extends object, K extends keyof T>(
 
 export async function exportLegalAidReport(
   intake: DetaineeIntake,
-  format: ReportFormat = "pdf"
+  format: ReportFormat = "pdf",
 ): Promise<Blob | string> {
   if (format === "json") {
     return JSON.stringify(intake);

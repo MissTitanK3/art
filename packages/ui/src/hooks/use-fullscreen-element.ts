@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 export function useFullscreenElement<T extends HTMLElement>() {
   const [isFullscreen, setIsFullscreen] = React.useState(false);
@@ -8,11 +8,13 @@ export function useFullscreenElement<T extends HTMLElement>() {
 
   React.useEffect(() => {
     const onFsChange = () => {
-      const isFs = !!document.fullscreenElement && document.fullscreenElement === ref.current;
+      const isFs =
+        !!document.fullscreenElement &&
+        document.fullscreenElement === ref.current;
       setIsFullscreen(isFs);
     };
-    document.addEventListener('fullscreenchange', onFsChange);
-    return () => document.removeEventListener('fullscreenchange', onFsChange);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
   const enter = React.useCallback(async () => {

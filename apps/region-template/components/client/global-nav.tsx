@@ -6,13 +6,19 @@ import { usePathname } from "next/navigation";
 
 import { GlobalNavCore } from "@workspace/ui/components/client/global-nav";
 import { LinkLikeProps } from "@workspace/store/types/global.ts";
-import { GlobalNavConfig, GlobalNavConfigInput, NavItem, NavItemInput, NavRole } from "@workspace/store/utils/nav";
+import {
+  GlobalNavConfig,
+  GlobalNavConfigInput,
+  NavItem,
+  NavItemInput,
+  NavRole,
+} from "@workspace/store/utils/nav";
 import { navIconMap } from "@workspace/ui/components/icons/nav-icons";
 import { Button } from "@workspace/ui/components/button";
 
 function LinkAdapter(props: LinkLikeProps) {
   const { href = "#", children, className, target, rel, onClick } = props;
-  const isSignOut = typeof href === 'string' && href.startsWith('/sign-out');
+  const isSignOut = typeof href === "string" && href.startsWith("/sign-out");
   return (
     <NextLink
       href={href}
@@ -39,7 +45,7 @@ export function GlobalNav({
   config,
   role,
   rightSlot,
-  isAuthenticated
+  isAuthenticated,
 }: {
   config: GlobalNavConfigInput;
   role?: NavRole;

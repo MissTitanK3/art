@@ -20,7 +20,10 @@ type Props = {
   onUpdate: (patch: Partial<DispatchSubmission>) => void;
 };
 
-export default function DispatchPublicSignalLinkUpdater({ submission, onUpdate }: Props) {
+export default function DispatchPublicSignalLinkUpdater({
+  submission,
+  onUpdate,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   const publicLink = submission.public_signal_link ?? "";
@@ -67,7 +70,9 @@ export default function DispatchPublicSignalLinkUpdater({ submission, onUpdate }
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No public engagement link set.</p>
+          <p className="text-sm text-muted-foreground">
+            No public engagement link set.
+          </p>
         )}
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
           {publicLink ? "Edit Link" : "Add Link"}
@@ -78,7 +83,9 @@ export default function DispatchPublicSignalLinkUpdater({ submission, onUpdate }
         <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
           <DrawerHeader>
             <DrawerTitle>
-              {publicLink ? "Edit Public Engagement Link" : "Add Public Engagement Link"}
+              {publicLink
+                ? "Edit Public Engagement Link"
+                : "Add Public Engagement Link"}
             </DrawerTitle>
             <DrawerDescription>
               Provide a public Signal link for outreach (unvetted chat).

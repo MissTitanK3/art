@@ -2,16 +2,20 @@
 
 import React from "react";
 import { toast } from "sonner";
-import { ProfileForm, type ProfileFormProps } from "@workspace/ui/components/client/profile/ProfileForm";
+import {
+  ProfileForm,
+  type ProfileFormProps,
+} from "@workspace/ui/components/client/profile/ProfileForm";
 import { Profile } from "@workspace/store/types/global.ts";
-
 
 export type ProfileLayoutProps = {
   profile: Profile;
   initial: ProfileFormProps["initial"];
   ImageComponent: ProfileFormProps["ImageComponent"];
   imageUrl?: ProfileFormProps["ImageUrl"];
-  onSubmit: (values: ProfileFormProps["initial"]) => Promise<{ ok: boolean; err?: string }>;
+  onSubmit: (
+    values: ProfileFormProps["initial"],
+  ) => Promise<{ ok: boolean; err?: string }>;
   onDeleteProfile: (id: string | undefined) => Promise<void>;
 };
 

@@ -24,9 +24,8 @@ export default async function SignInPage({
     const redirectTo = Array.isArray(sp?.redirectTo)
       ? sp?.redirectTo?.[0]
       : sp?.redirectTo;
-    const target = (redirectTo && typeof redirectTo === "string")
-      ? redirectTo
-      : "/";
+    const target =
+      redirectTo && typeof redirectTo === "string" ? redirectTo : "/";
     redirect(target);
   }
 

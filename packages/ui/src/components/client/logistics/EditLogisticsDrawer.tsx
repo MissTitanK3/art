@@ -22,7 +22,13 @@ import {
 } from "@workspace/ui/components/select";
 import { useState, useEffect } from "react";
 
-export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSave: (updated: any) => void }) {
+export default function EditLogisticsDrawer({
+  item,
+  onSave,
+}: {
+  item: any;
+  onSave: (updated: any) => void;
+}) {
   const [form, setForm] = useState(item);
 
   useEffect(() => {
@@ -36,12 +42,16 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button size="sm" variant="outline">Edit</Button>
+        <Button size="sm" variant="outline">
+          Edit
+        </Button>
       </DrawerTrigger>
       <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
         <DrawerHeader>
           <DrawerTitle>Edit Logistics Item</DrawerTitle>
-          <DrawerDescription>Update details for this logistics entry.</DrawerDescription>
+          <DrawerDescription>
+            Update details for this logistics entry.
+          </DrawerDescription>
         </DrawerHeader>
 
         <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
@@ -49,7 +59,9 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
             value={form.category}
             onValueChange={(v) => setForm({ ...form, category: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="transport">Transport</SelectItem>
               <SelectItem value="supply">Supply</SelectItem>
@@ -75,7 +87,9 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
             value={form.priority}
             onValueChange={(v) => setForm({ ...form, priority: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Priority" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="low">Low</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
@@ -88,7 +102,9 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
             value={form.status}
             onValueChange={(v) => setForm({ ...form, status: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
@@ -101,7 +117,10 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
             placeholder="Responsible Party"
             value={form.responsibleParty?.name || ""}
             onChange={(e) =>
-              setForm({ ...form, responsibleParty: { type: "anon", name: e.target.value } })
+              setForm({
+                ...form,
+                responsibleParty: { type: "anon", name: e.target.value },
+              })
             }
           />
 
@@ -109,34 +128,47 @@ export default function EditLogisticsDrawer({ item, onSave }: { item: any; onSav
             placeholder="Warehouse Name"
             value={form.warehouse?.name || ""}
             onChange={(e) =>
-              setForm({ ...form, warehouse: { ...form.warehouse, name: e.target.value } })
+              setForm({
+                ...form,
+                warehouse: { ...form.warehouse, name: e.target.value },
+              })
             }
           />
           <Input
             placeholder="Warehouse Location"
             value={form.warehouse?.location || ""}
             onChange={(e) =>
-              setForm({ ...form, warehouse: { ...form.warehouse, location: e.target.value } })
+              setForm({
+                ...form,
+                warehouse: { ...form.warehouse, location: e.target.value },
+              })
             }
           />
           <Input
             placeholder="Warehouse Contact"
             value={form.warehouse?.contact || ""}
             onChange={(e) =>
-              setForm({ ...form, warehouse: { ...form.warehouse, contact: e.target.value } })
+              setForm({
+                ...form,
+                warehouse: { ...form.warehouse, contact: e.target.value },
+              })
             }
           />
 
           <Textarea
             placeholder="Accountability notes"
             value={form.accountabilityNotes || ""}
-            onChange={(e) => setForm({ ...form, accountabilityNotes: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, accountabilityNotes: e.target.value })
+            }
           />
         </div>
 
         <DrawerFooter className="sticky bottom-0 bg-background border-t p-4">
           <DrawerClose asChild>
-            <Button onClick={handleSave} className="w-full">Save Changes</Button>
+            <Button onClick={handleSave} className="w-full">
+              Save Changes
+            </Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

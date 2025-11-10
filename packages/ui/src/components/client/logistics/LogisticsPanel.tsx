@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import AddLogisticsDrawer from "./AddLogisticsDrawer.tsx";
 import EditLogisticsDrawer from "./EditLogisticsDrawer.tsx";
-import { humanize, priorityColors, statusColors } from "@workspace/ui/lib/utils";
+import {
+  humanize,
+  priorityColors,
+  statusColors,
+} from "@workspace/ui/lib/utils";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import type { LogisticsItem } from "@workspace/store/types/dispatch";
 
@@ -41,7 +50,10 @@ const EMPTY_DRAFT: DraftLogistics = {
   accountabilityNotes: "",
 };
 
-export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelProps) {
+export default function LogisticsPanel({
+  submission,
+  onUpdate,
+}: LogisticsPanelProps) {
   const [newItem, setNewItem] = useState<DraftLogistics>(EMPTY_DRAFT);
 
   useEffect(() => {
@@ -84,7 +96,9 @@ export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelP
     });
   };
 
-  const sortedLogistics = [...logistics].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const sortedLogistics = [...logistics].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  );
 
   return (
     <Card>
@@ -93,10 +107,15 @@ export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelP
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-muted-foreground text-sm">
-          Track transport, supply chains, rally points, comms, warehouses, and accountability.
+          Track transport, supply chains, rally points, comms, warehouses, and
+          accountability.
         </p>
 
-        <AddLogisticsDrawer newItem={newItem} setNewItem={setNewItem} addItem={addItem} />
+        <AddLogisticsDrawer
+          newItem={newItem}
+          setNewItem={setNewItem}
+          addItem={addItem}
+        />
 
         {sortedLogistics.length ? (
           <ul className="space-y-2">
@@ -126,8 +145,8 @@ export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelP
                 </div>
                 {item.warehouse?.name && (
                   <div className="text-xs mt-1">
-                    Warehouse: {item.warehouse.name} ({item.warehouse.location}) —{" "}
-                    {item.warehouse.contact}
+                    Warehouse: {item.warehouse.name} ({item.warehouse.location})
+                    — {item.warehouse.contact}
                   </div>
                 )}
                 {item.accountabilityNotes && (
@@ -135,7 +154,9 @@ export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelP
                     <span>
                       <strong>Note:</strong>
                     </span>
-                    <div className="mt-1 text-xs">{item.accountabilityNotes}</div>
+                    <div className="mt-1 text-xs">
+                      {item.accountabilityNotes}
+                    </div>
                   </div>
                 )}
                 {item.updatedAt && (
@@ -145,7 +166,11 @@ export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelP
                 )}
                 <div className="flex gap-2 pt-1 mt-3 w-full justify-evenly">
                   <EditLogisticsDrawer item={item} onSave={saveItem} />
-                  <Button size="sm" variant="destructive" onClick={() => deleteItem(item.id)}>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => deleteItem(item.id)}
+                  >
                     Delete
                   </Button>
                 </div>
@@ -153,7 +178,9 @@ export default function LogisticsPanel({ submission, onUpdate }: LogisticsPanelP
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-muted-foreground">No logistics added yet.</p>
+          <p className="text-xs text-muted-foreground">
+            No logistics added yet.
+          </p>
         )}
       </CardContent>
     </Card>

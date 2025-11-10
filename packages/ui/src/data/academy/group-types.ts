@@ -3,4 +3,3 @@ export type AcademyCourseGroupConfig = {
   track?: string;
   courses: Array<{ slug: string; icon?: string }>;
 };
-

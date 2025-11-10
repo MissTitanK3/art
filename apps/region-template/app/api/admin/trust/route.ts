@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { requireServerSession } from '@/lib/auth/server';
-import { getProfileByUserId } from '@/lib/dal/admin';
-import { regionAdmins } from '@workspace/store/utils/nav';
-import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies as nextCookies } from 'next/headers';
-import crypto from 'node:crypto';
+import { NextResponse } from "next/server";
+import { requireServerSession } from "@/lib/auth/server";
+import { getProfileByUserId } from "@/lib/dal/admin";
+import { regionAdmins } from "@workspace/store/utils/nav";
+import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies as nextCookies } from "next/headers";
+import crypto from "node:crypto";
 
 type PostBody = Partial<{
   subjectId: string;
@@ -18,8 +18,11 @@ type PostBody = Partial<{
 }>;
 
 function isDemoProvider() {
-  const p = process.env.NEXT_PUBLIC_AUTH_PROVIDER ?? process.env.AUTH_PROVIDER ?? 'demo';
-  return p === 'demo';
+  const p =
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
+    process.env.AUTH_PROVIDER ??
+    "demo";
+  return p === "demo";
 }
 
 export async function POST(req: Request) {
@@ -28,18 +31,23 @@ export async function POST(req: Request) {
     let authorized = regionAdmins.includes(session.user.role);
     if (!authorized) {
       const callerProfile = await getProfileByUserId(session.user.id);
-      authorized = !!callerProfile && callerProfile.access_role === 'dispatcher_admin';
+      authorized =
+        !!callerProfile && callerProfile.access_role === "dispatcher_admin";
     }
-    if (!authorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!authorized)
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = (await req.json()) as PostBody;
     const subjectId = body.subjectId?.trim();
     const signerId = body.signerId?.trim();
-    const signer_role = body.signer_role ?? 'pod_leader';
-    const signer_rot = body.signer_rot ?? '';
-    const status = body.status ?? 'active';
+    const signer_role = body.signer_role ?? "pod_leader";
+    const signer_rot = body.signer_rot ?? "";
+    const status = body.status ?? "active";
     if (!subjectId || !signerId)
-      return NextResponse.json({ error: 'subjectId and signerId are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "subjectId and signerId are required" },
+        { status: 400 },
+      );
 
     if (isDemoProvider()) {
       return NextResponse.json({
@@ -56,13 +64,18 @@ export async function POST(req: Request) {
       });
     }
 
-    const env = ensureSupabaseEnv('server');
+    const env = ensureSupabaseEnv("server");
     const store = await nextCookies().catch(() => null as any);
     const client = createServerClient(env.url, env.anonKey, {
       cookies: {
         getAll() {
           if (!store) return [] as { name: string; value: string }[];
-          return store.getAll().map(({ name, value }: { name: string; value: string }) => ({ name, value }));
+          return store
+            .getAll()
+            .map(({ name, value }: { name: string; value: string }) => ({
+              name,
+              value,
+            }));
         },
         setAll(cookies) {
           if (!store) return;
@@ -70,7 +83,9 @@ export async function POST(req: Request) {
             cookies.forEach(({ name, value, options }) => {
               store.set(name, value, options as CookieOptions | undefined);
             });
-          } catch { /* no-op */ }
+          } catch {
+            /* no-op */
+          }
         },
       },
     });
@@ -85,8 +100,13 @@ export async function POST(req: Request) {
       signed_entry_hash: body.signed_entry_hash ?? crypto.randomUUID(),
     } as any;
 
-    const { data, error } = await client.from('trust_signatures').upsert(row).select('*').limit(1);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const { data, error } = await client
+      .from("trust_signatures")
+      .upsert(row)
+      .select("*")
+      .limit(1);
+    if (error)
+      return NextResponse.json({ error: error.message }, { status: 500 });
     const out = Array.isArray(data) ? data[0] : (data as any);
     return NextResponse.json({
       entry: {
@@ -100,6 +120,9 @@ export async function POST(req: Request) {
       },
     });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message ?? e) }, { status: 500 });
+    return NextResponse.json(
+      { error: String(e?.message ?? e) },
+      { status: 500 },
+    );
   }
 }

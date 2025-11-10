@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchReports } from "@/lib/adapters/fetchReports";
 import { MapFocus, WizardReport } from "@workspace/store/types/watch.ts";
 import dynamic from "next/dynamic";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
 import WatchReportCard from "@workspace/ui/components/client/watch/WatchReportCard";
 import { useRouter } from "next/navigation";
 // filters UI moved into Map Options drawer inside WatchMap
@@ -12,7 +17,7 @@ import { useRouter } from "next/navigation";
 // Dynamically import WatchMap so Leaflet never loads during SSR
 const WatchMap = dynamic(
   () => import("@workspace/ui/components/client/watch/WatchMap"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const FOCUS_ZOOM = 11;
@@ -34,7 +39,9 @@ export default function WatchMapDataLayer() {
   const [sirensOnly, setSirensOnly] = useState(false);
   const [movingOnly, setMovingOnly] = useState(false);
   const [timeWindow, setTimeWindow] = useState<string>("any"); // hours: 'any' | '2' | '6' | '12' | '24' | '72'
-  const [selectedAgencies, setSelectedAgencies] = useState<Set<string>>(new Set());
+  const [selectedAgencies, setSelectedAgencies] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -117,7 +124,8 @@ export default function WatchMapDataLayer() {
 
   const filteredReports = useMemo(() => {
     const now = Date.now();
-    const maxAgeMs = timeWindow === "any" ? Infinity : Number(timeWindow) * 60 * 60 * 1000;
+    const maxAgeMs =
+      timeWindow === "any" ? Infinity : Number(timeWindow) * 60 * 60 * 1000;
     const q = query.trim().toLowerCase();
 
     const matchesAgency = (r: WizardReport) => {
@@ -156,7 +164,17 @@ export default function WatchMapDataLayer() {
 
       return true;
     });
-  }, [reports, query, hideTest, withMediaOnly, lightsOnly, sirensOnly, movingOnly, timeWindow, selectedAgencies]);
+  }, [
+    reports,
+    query,
+    hideTest,
+    withMediaOnly,
+    lightsOnly,
+    sirensOnly,
+    movingOnly,
+    timeWindow,
+    selectedAgencies,
+  ]);
 
   const resetFilters = () => {
     setQuery("");
@@ -169,7 +187,8 @@ export default function WatchMapDataLayer() {
     setSelectedAgencies(new Set());
   };
 
-  if (loading) return <div className="text-muted-foreground">Loading reports…</div>;
+  if (loading)
+    return <div className="text-muted-foreground">Loading reports…</div>;
   if (error) return <div className="text-destructive">{error}</div>;
 
   return (
@@ -203,7 +222,8 @@ export default function WatchMapDataLayer() {
                 onToggleAgency={(a, checked) => {
                   setSelectedAgencies((prev) => {
                     const next = new Set(prev);
-                    if (checked) next.add(a); else next.delete(a);
+                    if (checked) next.add(a);
+                    else next.delete(a);
                     return next;
                   });
                 }}
@@ -222,7 +242,9 @@ export default function WatchMapDataLayer() {
               {filteredReports.length === 0 ? (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <div className="rounded-md bg-background/80 px-3 py-2 text-sm text-muted-foreground shadow">
-                    {reports.length === 0 ? "No reports yet." : "No reports match current filters."}
+                    {reports.length === 0
+                      ? "No reports yet."
+                      : "No reports match current filters."}
                   </div>
                 </div>
               ) : null}
@@ -235,10 +257,18 @@ export default function WatchMapDataLayer() {
         <TabsContent value="list" className="mt-4 space-y-3">
           {filteredReports.length > 0 ? (
             filteredReports.map((r) => (
-              <WatchReportCard key={r.id} report={r} onViewOnMap={handleViewOnMap} />
+              <WatchReportCard
+                key={r.id}
+                report={r}
+                onViewOnMap={handleViewOnMap}
+              />
             ))
           ) : (
-            <div className="text-muted-foreground">{reports.length === 0 ? "No reports yet." : "No reports match current filters."}</div>
+            <div className="text-muted-foreground">
+              {reports.length === 0
+                ? "No reports yet."
+                : "No reports match current filters."}
+            </div>
           )}
         </TabsContent>
       </Tabs>

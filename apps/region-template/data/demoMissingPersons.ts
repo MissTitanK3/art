@@ -258,6 +258,8 @@ export const demoMissingPersons: DetaineeIntake[] = [
 export function findMissingPersonBySlug(slug: string): DetaineeIntake | null {
   if (!slug) return null;
   return (
-    demoMissingPersons.find((record) => getMissingPersonSlug(record) === slug) ?? null
+    demoMissingPersons.find(
+      (record) => getMissingPersonSlug(record) === slug,
+    ) ?? null
   );
 }

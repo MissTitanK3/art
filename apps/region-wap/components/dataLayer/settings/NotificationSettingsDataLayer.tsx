@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from 'react';
-import { getSupabaseBrowserClient } from '@/lib/auth/supabase/client';
-import { toast } from 'sonner';
-import NotificationPrefsForm from '@workspace/ui/components/settings/NotificationPrefsForm';
-import PreferencesSection from '@workspace/ui/components/settings/PreferencesSection';
-import { NOTIFICATION_CHANNELS } from '@workspace/store/types/notifications';
+import * as React from "react";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import { toast } from "sonner";
+import NotificationPrefsForm from "@workspace/ui/components/settings/NotificationPrefsForm";
+import PreferencesSection from "@workspace/ui/components/settings/PreferencesSection";
+import { NOTIFICATION_CHANNELS } from "@workspace/store/types/notifications";
 
 type PrefsRow = {
   user_id: string;
@@ -35,17 +35,24 @@ export default function NotificationSettingsDataLayer() {
           return;
         }
         if (mounted) setUserId(uid);
-        const { data } = await supabase.from('notification_prefs').select('user_id, global_opt_out, muted_channels').maybeSingle();
+        const { data } = await supabase
+          .from("notification_prefs")
+          .select("user_id, global_opt_out, muted_channels")
+          .maybeSingle();
         const row: PrefsRow | null = data ? (data as any as PrefsRow) : null;
         if (mounted) {
           setGlobalOptOut(Boolean(row?.global_opt_out));
           const mset: Record<string, boolean> = {};
-          const mutedChannels = Array.isArray(row?.muted_channels) ? row!.muted_channels : [];
-          (ALL_CHANNELS as readonly string[]).forEach((c) => (mset[c] = mutedChannels.includes(c as string)));
+          const mutedChannels = Array.isArray(row?.muted_channels)
+            ? row!.muted_channels
+            : [];
+          (ALL_CHANNELS as readonly string[]).forEach(
+            (c) => (mset[c] = mutedChannels.includes(c as string)),
+          );
           setMuted(mset);
         }
       } catch (e) {
-        console.warn('[settings] load prefs failed', e);
+        console.warn("[settings] load prefs failed", e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -55,7 +62,8 @@ export default function NotificationSettingsDataLayer() {
     };
   }, []);
 
-  const toggledMuted = (channel: string) => setMuted((prev) => ({ ...prev, [channel]: !prev[channel] }));
+  const toggledMuted = (channel: string) =>
+    setMuted((prev) => ({ ...prev, [channel]: !prev[channel] }));
 
   const savePrefs = async () => {
     if (!userId) return;
@@ -71,11 +79,13 @@ export default function NotificationSettingsDataLayer() {
         muted_channels,
         updated_at: new Date().toISOString(),
       } as any;
-      const { error } = await supabase.from('notification_prefs').upsert(payload);
+      const { error } = await supabase
+        .from("notification_prefs")
+        .upsert(payload);
       if (error) throw error;
-      toast.success('Preferences saved');
+      toast.success("Preferences saved");
     } catch (e: any) {
-      toast.error('Failed to save', { description: e?.message ?? String(e) });
+      toast.error("Failed to save", { description: e?.message ?? String(e) });
     } finally {
       setSaving(false);
     }
@@ -98,4 +108,3 @@ export default function NotificationSettingsDataLayer() {
     </section>
   );
 }
-

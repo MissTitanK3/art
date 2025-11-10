@@ -5,4 +5,3 @@ export default async function AdminSettingsDataLayer() {
   const settings = await getRegionSettings();
   return <SettingsClient initialSettings={settings} />;
 }
-

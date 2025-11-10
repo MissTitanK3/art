@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
+import { supabaseAdmin as supabase } from "@/lib/supabaseAdmin";
 
 type DonationArgs = {
   source_email: string;
@@ -11,15 +11,19 @@ type DonationArgs = {
 
 async function scheduleNotifications(profileIds: string[], payload: any) {
   if (!profileIds.length) return;
-  const rows = profileIds.map((pid) => ({ profile_id: pid, type: 'resonance', payload }));
-  await supabase.from('notifications').insert(rows);
+  const rows = profileIds.map((pid) => ({
+    profile_id: pid,
+    type: "resonance",
+    payload,
+  }));
+  await supabase.from("notifications").insert(rows);
 }
 
 export async function triggerResonance(args: DonationArgs) {
   const createdAt = args.created_at || new Date().toISOString();
 
   // 1) Record donation in public ledger (idempotent on message_id)
-  await supabase.from('donations').upsert(
+  await supabase.from("donations").upsert(
     {
       profile_email: args.source_email,
       amount: args.amount,
@@ -28,11 +32,11 @@ export async function triggerResonance(args: DonationArgs) {
       message: args.message ?? null,
       created_at: createdAt,
     },
-    { onConflict: 'message_id' },
+    { onConflict: "message_id" },
   );
 
   // 2) Trigger resonance propagation starting from donor identity
-  const donorKey = args.source_email || 'anonymous';
+  const donorKey = args.source_email || "anonymous";
   const baseStrength = Number.isFinite(args.amount) ? args.amount : 1;
 
   const MAX_HOP = 3;
@@ -47,13 +51,13 @@ export async function triggerResonance(args: DonationArgs) {
   while (hop < MAX_HOP && inserted < CAP && currentIds.length > 0) {
     // Consider connections as undirected for propagation
     const { data: rows1 } = await supabase
-      .from('connections')
-      .select('source_id,recipient_id')
-      .in('source_id', currentIds);
+      .from("connections")
+      .select("source_id,recipient_id")
+      .in("source_id", currentIds);
     const { data: rows2 } = await supabase
-      .from('connections')
-      .select('source_id,recipient_id')
-      .in('recipient_id', currentIds);
+      .from("connections")
+      .select("source_id,recipient_id")
+      .in("recipient_id", currentIds);
 
     const neighborSet = new Set<string>();
     const currentSet = new Set(currentIds);
@@ -62,7 +66,9 @@ export async function triggerResonance(args: DonationArgs) {
       if (currentSet.has(r.recipient_id)) neighborSet.add(r.source_id);
     }
 
-    let nextRecipients = Array.from(neighborSet).filter((id) => !visited.has(id));
+    let nextRecipients = Array.from(neighborSet).filter(
+      (id) => !visited.has(id),
+    );
     if (nextRecipients.length === 0) break;
 
     const nextHop = hop + 1;
@@ -76,15 +82,15 @@ export async function triggerResonance(args: DonationArgs) {
     let weightMap: Record<string, number> = {};
     if (uuidCurrent.length && uuidSlice.length) {
       const { data: t1 } = await supabase
-        .from('connections_v2')
-        .select('source_id,target_id,trust')
-        .in('source_id', uuidCurrent)
-        .in('target_id', uuidSlice);
+        .from("connections_v2")
+        .select("source_id,target_id,trust")
+        .in("source_id", uuidCurrent)
+        .in("target_id", uuidSlice);
       const { data: t2 } = await supabase
-        .from('connections_v2')
-        .select('source_id,target_id,trust')
-        .in('source_id', uuidSlice)
-        .in('target_id', uuidCurrent);
+        .from("connections_v2")
+        .select("source_id,target_id,trust")
+        .in("source_id", uuidSlice)
+        .in("target_id", uuidCurrent);
       for (const r of [...(t1 || []), ...(t2 || [])]) {
         const to = (r as any).target_id as string;
         const w = Math.max(0, Math.min(1, Number((r as any).trust || 0)));
@@ -104,12 +110,14 @@ export async function triggerResonance(args: DonationArgs) {
     }));
 
     if (batch.length > 0) {
-      const { error: insErr } = await supabase.from('resonance_effects').insert(batch);
+      const { error: insErr } = await supabase
+        .from("resonance_effects")
+        .insert(batch);
       if (insErr) break;
       inserted += batch.length;
       // Schedule in-app notifications for this hop
       await scheduleNotifications(slice, {
-        kind: 'resonance',
+        kind: "resonance",
         hop: nextHop,
         strength: base,
         amount: args.amount,

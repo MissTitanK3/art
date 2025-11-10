@@ -6,4 +6,3 @@ export default async function AdminTrainingDataLayer() {
   const sessions = TraingingSessionsDemoData;
   return <TrainingClient initialSessions={sessions} />;
 }
-

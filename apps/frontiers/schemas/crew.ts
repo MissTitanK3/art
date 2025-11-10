@@ -18,5 +18,5 @@ export type ProfileCrew = {
   profile_id: string;
   crew_id: string;
   hired_at: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 };
