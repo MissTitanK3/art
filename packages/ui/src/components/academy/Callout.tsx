@@ -22,6 +22,7 @@ type CalloutStyle = {
   border: string;
   bg: string;
   text: string;
+  link: string;
 };
 
 const CALLOUT_STYLES: Record<CalloutType, CalloutStyle> = {
@@ -30,42 +31,48 @@ const CALLOUT_STYLES: Record<CalloutType, CalloutStyle> = {
     label: "Info",
     border: "border-l-[55px] border-blue-300",
     bg: "bg-blue-800",
-    text: "text-blue-50 [&_strong]:text-gray-400",
+    text: "text-blue-50 [&_strong]:text-gray-200",
+    link: "[&_a]:text-blue-200 [&_a]:underline [&_a:hover]:text-blue-100",
   },
   warning: {
     icon: <AlertCircle className="h-11 w-11 text-yellow-800" />,
     label: "Warning",
     border: "border-l-[55px] border-yellow-300",
     bg: "bg-yellow-800",
-    text: "text-yellow-50 [&_strong]:text-gray-400",
+    text: "text-yellow-50 [&_strong]:text-gray-200",
+    link: "[&_a]:text-yellow-200 [&_a]:underline [&_a:hover]:text-yellow-100",
   },
   success: {
     icon: <CheckCircle2 className="h-11 w-11 text-green-800" />,
     label: "Success",
     border: "border-l-[55px] border-green-300",
     bg: "bg-green-800",
-    text: "text-green-50 [&_strong]:text-gray-400",
+    text: "text-green-50 [&_strong]:text-gray-200",
+    link: "[&_a]:text-emerald-200 [&_a]:underline [&_a:hover]:text-emerald-100",
   },
   hint: {
     icon: <Lightbulb className="h-11 w-11 text-purple-800" />,
     label: "Hint",
     border: "border-l-[55px] border-purple-300",
     bg: "bg-purple-800",
-    text: "text-purple-50 [&_strong]:text-gray-400",
+    text: "text-purple-50 [&_strong]:text-gray-200",
+    link: "[&_a]:text-purple-200 [&_a]:underline [&_a:hover]:text-purple-100",
   },
   important: {
     icon: <Flame className="h-11 w-11 text-red-800" />,
     label: "Important",
     border: "border-l-[55px] border-red-300",
     bg: "bg-red-800",
-    text: "text-red-50 [&_strong]:text-gray-400",
+    text: "text-red-50 [&_strong]:text-gray-200",
+    link: "[&_a]:text-rose-200 [&_a]:underline [&_a:hover]:text-rose-100",
   },
   "rabbit-hole": {
     icon: <BookOpenCheck className="h-11 w-11 text-gray-800" />,
     label: "Rabbit Hole",
     border: "border-l-[55px] border-gray-300",
     bg: "bg-gray-800",
-    text: "text-gray-50 italic [&_strong]:text-gray-400",
+    text: "text-gray-50 italic [&_strong]:text-gray-200",
+    link: "[&_a]:text-gray-200 [&_a]:underline [&_a:hover]:text-gray-100",
   },
 };
 
@@ -83,7 +90,7 @@ export function Callout({
       <div className="-ml-[66px] mr-3 mt-1 flex w-11 items-center justify-center">
         {style.icon}
       </div>
-      <div className={`space-y-1 ${style.text}`}>
+      <div className={`space-y-1 ${style.text} ${style.link}`}>
         <p className="font-semibold">{style.label}</p>
         <div className="text-sm">{children}</div>
       </div>
