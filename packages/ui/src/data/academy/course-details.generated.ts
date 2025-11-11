@@ -840,6 +840,12 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.5,
     "type": "qualified"
   },
+  "proton-secure-communication": {
+    "title": "Using Proton for Secure Activism & Communication",
+    "description": "Learn how to use Proton’s privacy tools—Mail, Drive, Calendar, and VPN—to build secure, encrypted workflows for activist, dispatch, and mutual aid operations.",
+    "version": 1,
+    "type": "qualified"
+  },
   "abolition-ethics": {
     "title": "Abolition Ethics",
     "description": "Explore the moral framework behind abolitionist resistance and learn to replace punishment with care, repair, and liberation in practice.",

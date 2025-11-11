@@ -145,6 +145,7 @@ const mod_encryption_101 = () => import('@workspace/ui/data/academy/courses/Tech
 const mod_mesh_networks_hardware_guide = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/mesh-networks-hardware-guide.mdx');
 const mod_mesh_networks_pod_ops = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/mesh-networks-pod-ops.mdx');
 const mod_meshtastic_large_scale = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/meshtastic-large-scale.mdx');
+const mod_proton_secure_communication = () => import('@workspace/ui/data/academy/courses/Tech___and___Comms/proton-secure-communication.mdx');
 const mod_abolition_ethics = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/abolition-ethics.mdx');
 const mod_community_consent = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/community-consent.mdx');
 const mod_decolonization_land_context = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/decolonization-land-context.mdx');
@@ -299,6 +300,7 @@ export const MDX_COURSE_MODULES = {
   'mesh-networks-hardware-guide': mod_mesh_networks_hardware_guide,
   'mesh-networks-pod-ops': mod_mesh_networks_pod_ops,
   'meshtastic-large-scale': mod_meshtastic_large_scale,
+  'proton-secure-communication': mod_proton_secure_communication,
   'abolition-ethics': mod_abolition_ethics,
   'community-consent': mod_community_consent,
   'decolonization-land-context': mod_decolonization_land_context,
@@ -452,6 +454,7 @@ export const MDX_COURSE_FRONTMATTER = {
   'mesh-networks-hardware-guide': {"title":"Mesh Network Hardware & Power Guide","slug":"mesh-networks-hardware-guide","description":"Recommended hardware, antennas, power systems, and accessories for Meshtastic pod and multi-pod operations.","type":"qualified","readingTime":14,"version":1.3},
   'mesh-networks-pod-ops': {"title":"Operating a Pod Mesh Network","slug":"mesh-networks-pod-ops","description":"Learn how to buy, configure, and operate Meshtastic devices for your pod (3–15 nodes) with secure, reliable off-grid communication.","type":"qualified","readingTime":22,"version":1.5},
   'meshtastic-large-scale': {"title":"Meshtastic for Large-Scale Actions","slug":"meshtastic-large-scale","description":"Learn to design, scale, and sustain Meshtastic networks for multi-day or multi-pod actions (15–100+ nodes) while maintaining security and operational resilience.","type":"qualified","readingTime":28,"version":1.5},
+  'proton-secure-communication': {"title":"Using Proton for Secure Activism & Communication","slug":"proton-secure-communication","description":"Learn how to use Proton’s privacy tools—Mail, Drive, Calendar, and VPN—to build secure, encrypted workflows for activist, dispatch, and mutual aid operations.","type":"qualified","readingTime":65,"version":1},
   'abolition-ethics': {"title":"Abolition Ethics","slug":"abolition-ethics","description":"Explore the moral framework behind abolitionist resistance and learn to replace punishment with care, repair, and liberation in practice.","type":"qualified","readingTime":18,"version":3.2},
   'community-consent': {"title":"Community Consent","slug":"community-consent","description":"Learn how to respect collective consent, agency, and self-determination in mutual aid, dispatch, and grassroots actions.","type":"qualified","readingTime":65,"version":2.5},
   'decolonization-land-context': {"title":"Decolonization & Land Context","slug":"decolonization-land-context","description":"Understand how colonial histories shape today’s organizing, why land context matters for mutual aid, and how pods can act in material solidarity with Indigenous communities.","type":"qualified","readingTime":15,"version":1.4},

@@ -1,0 +1,165 @@
+---
+title: Using Proton for Secure Activism & Communication
+slug: proton-secure-communication
+description: Learn how to use Proton’s privacy tools—Mail, Drive, Calendar, and VPN—to build secure, encrypted workflows for activist, dispatch, and mutual aid operations.
+type: qualified
+readingTime: 65
+version: '1.0'
+---
+
+# 🔐 Using Proton for Secure Activism & Communication
+<TrackBadge variant="tech-comms" />
+
+<Callout type="info">
+Proton provides encrypted tools built in Switzerland under strict privacy laws. Used correctly, it offers strong protection for communication, scheduling, and file storage across activist networks.
+</Callout>
+
+---
+
+## Overview
+Activist and mutual aid operations depend on privacy, reliability, and trust. **Proton** offers end-to-end encryption without relying on surveillance-based platforms. Its ecosystem—**Proton Mail, Calendar, Drive, Pass, and VPN**—enables teams to communicate, coordinate, and share sensitive data securely.
+
+This course shows how to:
+- Set up and manage Proton accounts safely.  
+- Use encrypted mail, calendar invites, and shared drives.  
+- Connect VPN and pass tools for digital resilience.  
+- Integrate Proton with ART workflows without compromising anonymity.  
+
+### 🔄 What Proton Can Replace
+
+| Common Tool / Platform | Proton Alternative | Purpose / Use Case | Key Privacy Benefit |
+|------------------------|-------------------|--------------------|---------------------|
+| **Google Mail / Outlook** | **Proton Mail** | Encrypted email for activism, legal, and dispatch communications | End-to-end encryption, zero tracking |
+| **Google Calendar** | **Proton Calendar** | Secure scheduling for meetings, shifts, or court support | Hidden event metadata, encrypted invites |
+| **Google Drive / Dropbox** | **Proton Drive** | Secure document and roster storage | Zero-access encryption |
+| **LastPass / 1Password** | **Proton Pass** | Password and credential management | Encrypted vaults under Swiss privacy law |
+| **Google One VPN / None** | **Proton VPN** | Masking IP and securing network activity | Secure Core routing, no logs |
+| **Slack / Google Chat** | **Proton Mail (aliases)** + **Signal** | Private coordination and async communication | Metadata reduction, encrypted by design |
+
+
+---
+
+## Learn & Do
+
+✅ **1. Set up a Proton ecosystem safely**
+- Visit [proton.me](https://proton.me) and create a new account using **minimal personal info**.  
+- Choose **Proton Mail** or **Proton Pass** as your primary identity layer.  
+- Use **unique aliases** for activism (never your real name).  
+- Turn on:
+  - **Two-factor authentication (2FA)** via authenticator app.  
+  - **Recovery email** only if it’s secure and not tied to your real identity.  
+- Choose the **Free or Plus plan** depending on storage and team needs.
+
+🔍 *Task:* Create a secure Proton Mail address for field coordination or dispatch use. Example: `region.ops@proton.me`.
+
+---
+
+✅ **2. Proton Mail for encrypted communication**
+- All Proton-to-Proton messages are **end-to-end encrypted** automatically.  
+- When sending to outside addresses, select **“Encrypt Message”** and set a password or hint.  
+- Use **Labels** to separate:
+  - Dispatch communications  
+  - Legal coordination  
+  - Logistics and supply updates  
+- Enable **auto-expiring messages** for time-limited correspondence.  
+- Avoid forwarding sensitive mail to Gmail or other providers—this breaks encryption.
+
+⚙️ *Tip:* Add custom filters to route mail by project or urgency level.
+
+🧩 *Example:* You send an encrypted message to a lawyer, sharing case details via password hint “mutualtrust,” ensuring no third-party access.
+
+---
+
+✅ **3. Proton Calendar for secure coordination**
+- Use Proton Calendar for internal scheduling (never Google).  
+- Create event titles that are **non-descriptive** (e.g., “Briefing #42,” not “ICE Action Plan”).  
+- Add guests by Proton address; external guests receive encrypted invites when possible.  
+- Avoid embedding location links—use code names or confirm via Signal instead.  
+- Enable **notification reminders** via encrypted Proton Mail, not SMS.  
+
+🔍 *Task:* Set up a recurring encrypted event for weekly dispatch sync, with minimal metadata in title or description.
+
+---
+
+✅ **4. Proton Drive for secure file sharing**
+- Upload documents like rosters, AARs, or training guides.  
+- Share via **encrypted link** with optional password and expiration date.  
+- Use **folders by trust level**:  
+  - 🔒 “Ops Core” – restricted team-only files.  
+  - 🗂️ “Public Materials” – flyers, non-sensitive media.  
+- Avoid syncing Drive to insecure local computers unless full-disk encryption is enabled.  
+- Proton Drive links are zero-access, meaning Proton itself cannot read your files.
+
+<Callout type="warning">
+⚠️ Never share Drive links in public chats.  
+All shared materials should expire or require passwords.
+</Callout>
+
+---
+
+✅ **5. Proton VPN for digital masking**
+- Use Proton VPN to obscure IP address and prevent metadata tracking.  
+- Select **Secure Core servers** (e.g., Iceland, Switzerland).  
+- Enable **Kill Switch** and **Always-on VPN** for persistent protection.  
+- Avoid U.S.-based servers for sensitive communication due to data-sharing treaties.  
+- Test your IP via [ipleak.net](https://ipleak.net) before use.  
+
+🧩 *Example:* Before connecting to ART Admin tools, you enable Proton VPN → Secure Core → Netherlands server for consistent, encrypted routing.
+
+---
+
+✅ **6. Proton Pass for secure credentials**
+- Store all activist or dispatch credentials in Proton Pass, not browsers.  
+- Use unique, random passwords (16+ characters).  
+- Organize entries by category (Dispatch, Academy, Admin).  
+- Never share passwords via text or Signal—share via Proton Pass shared vaults when needed.  
+- Audit entries monthly for outdated or unused accounts.
+
+🔍 *Task:* Add one Proton Vault item for a shared organizational login and enable sharing with limited teammates.
+
+---
+
+✅ **7. Integrate Proton into ART workflows**
+- Use **Proton Mail** as your default notification address in ART tools.  
+- Sync **Proton Calendar** to Dispatch or Academy event reminders manually via ICS.  
+- Store backup AARs, regional handbooks, or radio code sheets on **Proton Drive**.  
+- Route all external communication through Proton accounts for documentation consistency.  
+- For offline-first operations (PocketServer, Mesh), use Proton as your cloud backup hub.
+
+⚙️ *Tip:* Keep one “relay” Proton Mail alias for public contact; all other communication should route through secure internal aliases.
+
+---
+
+## Reflection
+When do you trust convenience tools like Google, and when should you default to Proton?  
+Write a short decision rule for your team to balance usability and security.
+
+---
+
+
+## Next Steps
+- [Digital Security Basics](/courses/digital-security-basics)  
+- [Operational Security 101 for Activists and Revolutionaries](/courses/opsec-101)  
+- [Comms Collapse Scenarios & Offline Protocols](/courses/comms-collapse)  
+- [Encryption 101](/courses/encryption-101)  
+- [Signal Messenger Basics & Accessibility](/courses/signal-basics-accessible)
+
+---
+
+## External Resources
+- *Proton Official Security Overview*  
+- *EFF – Surveillance Self-Defense: Email Encryption*  
+- *Privacy Guides – Proton vs. Other Encrypted Services*  
+- *Mozilla Privacy Not Included – Proton Review*  
+- *Mutual Aid Tech Collective – Encrypted Comms Setup Checklist*
+
+---
+
+## Rabbit Holes
+- Study **metadata security** and how Proton reduces it.  
+- Learn **bridge setup for Proton Mail on Thunderbird** for desktop encryption.  
+- Explore **Proton VPN split tunneling** for dual connections.  
+- Investigate **using Proton aliases in ART Dispatch logs** for anonymized communication.  
+- Optional task: design a **“Proton Integration Playbook”** linking Mail, Calendar, and Drive use cases for field teams.
+
+---

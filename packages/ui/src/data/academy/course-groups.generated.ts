@@ -514,6 +514,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "meshtastic-large-scale"
+      },
+      {
+        "slug": "proton-secure-communication"
       }
     ]
   },
