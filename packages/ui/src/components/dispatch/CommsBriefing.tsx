@@ -37,10 +37,10 @@ export function CommsBriefing({ briefing, onSave }: Props) {
 
   const hasBrief = Boolean(
     briefing &&
-      (briefing.overview ||
-        briefing.comms_plan ||
-        briefing.safety_notes ||
-        briefing.updates),
+    (briefing.overview ||
+      briefing.comms_plan ||
+      briefing.safety_notes ||
+      briefing.updates),
   );
 
   return (
@@ -107,25 +107,33 @@ export function CommsBriefing({ briefing, onSave }: Props) {
             {briefing.overview ? (
               <div>
                 <p className="font-medium">Overview</p>
-                <p className="text-muted-foreground">{briefing.overview}</p>
+                <pre className="whitespace-pre-wrap break-words text-muted-foreground max-w-full">
+                  {briefing.overview}
+                </pre>
               </div>
             ) : null}
             {briefing.comms_plan ? (
               <div>
                 <p className="font-medium">Comms Plan</p>
-                <p className="text-muted-foreground">{briefing.comms_plan}</p>
+                <pre className="whitespace-pre-wrap break-words text-muted-foreground max-w-full">
+                  {briefing.comms_plan}
+                </pre>
               </div>
             ) : null}
             {briefing.safety_notes ? (
               <div>
                 <p className="font-medium">Safety Notes</p>
-                <p className="text-muted-foreground">{briefing.safety_notes}</p>
+                <pre className="whitespace-pre-wrap break-words text-muted-foreground max-w-full">
+                  {briefing.safety_notes}
+                </pre>
               </div>
             ) : null}
             {briefing.updates ? (
               <div>
                 <p className="font-medium">Latest Updates</p>
-                <p className="text-muted-foreground">{briefing.updates}</p>
+                <pre className="whitespace-pre-wrap break-words text-muted-foreground max-w-full">
+                  {briefing.updates}
+                </pre>
               </div>
             ) : null}
           </>

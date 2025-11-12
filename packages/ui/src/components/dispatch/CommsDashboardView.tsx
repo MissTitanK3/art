@@ -30,6 +30,9 @@ import { CommsScratchpad } from "@workspace/ui/components/dispatch/CommsScratchp
 import { CommsBriefing } from "@workspace/ui/components/dispatch/CommsBriefing";
 import { CommsAlertsCard } from "@workspace/ui/components/dispatch/CommsAlertsCard";
 
+const CHECK_IN_STORAGE_KEY = "comms.defaultCheckInMinutes";
+const DEFAULT_CHECK_IN_MINUTES = 60;
+
 type Props = {
   teams: ComTeam[];
   logs: ComLog[];
@@ -73,13 +76,75 @@ export function CommsDashboardView({
   updateAlert,
   deleteAlert,
 }: Props) {
-  const [checkInInput, setCheckInInput] = React.useState<string>(
-    (globalCheckInMinutes ?? 60).toString(),
+  const [checkInInput, setCheckInInput] = React.useState<string>(() => {
+    const fallback = (globalCheckInMinutes ?? DEFAULT_CHECK_IN_MINUTES).toString();
+    if (typeof window === "undefined") return fallback;
+    const stored = window.localStorage.getItem(CHECK_IN_STORAGE_KEY);
+    const parsed = stored ? parseInt(stored, 10) : NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? String(parsed) : fallback;
+  });
+  const hasHydratedStoredCheckIn = React.useRef(false);
+
+  const persistGlobalCheckInMinutes = React.useCallback(
+    (mins: number) => {
+      if (!Number.isFinite(mins) || mins <= 0) return;
+      setCheckInInput(String(mins));
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(CHECK_IN_STORAGE_KEY, String(mins));
+        }
+      } catch {
+        /* ignore persistence errors */
+      }
+      setGlobalCheckInMinutes(mins);
+    },
+    [setGlobalCheckInMinutes],
   );
+
+  React.useEffect(() => {
+    if (hasHydratedStoredCheckIn.current) return;
+    if (typeof window === "undefined") return;
+
+    const stored = window.localStorage.getItem(CHECK_IN_STORAGE_KEY);
+    const parsed = stored ? parseInt(stored, 10) : NaN;
+
+    if (Number.isFinite(parsed) && parsed > 0) {
+      if (globalCheckInMinutes !== parsed) {
+        persistGlobalCheckInMinutes(parsed);
+      } else {
+        setCheckInInput(String(parsed));
+      }
+    } else if (
+      typeof globalCheckInMinutes === "number" &&
+      Number.isFinite(globalCheckInMinutes) &&
+      globalCheckInMinutes > 0
+    ) {
+      setCheckInInput(String(globalCheckInMinutes));
+    }
+
+    hasHydratedStoredCheckIn.current = true;
+  }, [globalCheckInMinutes, persistGlobalCheckInMinutes]);
+
+  React.useEffect(() => {
+    if (!hasHydratedStoredCheckIn.current) return;
+    if (
+      typeof globalCheckInMinutes !== "number" ||
+      !Number.isFinite(globalCheckInMinutes) ||
+      globalCheckInMinutes <= 0
+    ) {
+      return;
+    }
+    setCheckInInput((prev) => {
+      const parsedPrev = parseInt(prev, 10);
+      return parsedPrev === globalCheckInMinutes
+        ? prev
+        : String(globalCheckInMinutes);
+    });
+  }, [globalCheckInMinutes]);
 
   const applyGlobalInterval = () => {
     const v = parseInt(checkInInput || "0", 10);
-    if (Number.isFinite(v) && v > 0) setGlobalCheckInMinutes(v);
+    if (Number.isFinite(v) && v > 0) persistGlobalCheckInMinutes(v);
   };
 
   return (
@@ -131,10 +196,12 @@ export function CommsDashboardView({
             </div>
             <CommsTeamCheckInList
               teams={teams}
-              defaultCheckInMinutes={globalCheckInMinutes ?? 60}
+              defaultCheckInMinutes={
+                globalCheckInMinutes ?? DEFAULT_CHECK_IN_MINUTES
+              }
               checkInInput={checkInInput}
               setCheckInInput={setCheckInInput}
-              setGlobalCheckInMinutes={setGlobalCheckInMinutes}
+              setGlobalCheckInMinutes={persistGlobalCheckInMinutes}
               onCheckIn={checkInTeam}
             />
           </CardContent>

@@ -146,17 +146,25 @@ export default function DispatchLocationPinSelector({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <p className="font-medium">Pin Location</p>
-          <p className="text-xs text-muted-foreground">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-2">
+        <div className="flex gap-1 w-full md:w-auto items-center justify-between">
+          <div className="flex flex-col w-full">
+            <p className="font-medium">Pin Location</p>
             {typeof currentLat === "number" && typeof currentLng === "number"
-              ? `Lat ${currentLat.toFixed(5)}, Lng ${currentLng.toFixed(5)}`
+              ? (
+                <>
+                  <p className="text-xs text-muted-foreground">LAT:{currentLat.toFixed(4)}</p>
+                  <p className="text-xs text-muted-foreground">LNG:{currentLng.toFixed(4)}</p>
+                </>
+              )
               : "No pin set"}
-          </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          Set Pin
+        </Button>
+        <div className="flex flex-col md:flex-row items-center gap-2">
+          <div className="flex items-center gap-2">
             <Select value={mapProvider} onValueChange={setMapProvider}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Choose map" />
@@ -183,9 +191,6 @@ export default function DispatchLocationPinSelector({
               Open Maps
             </Button>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            Set Pin
-          </Button>
         </div>
       </div>
 

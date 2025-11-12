@@ -263,8 +263,8 @@ export function CommsTeamList({
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex flex-col md:flex-row items-center justify-between">
+                    <div className="flex justify-between w-full mb-2">
                       <p className="font-medium">{t.name}</p>
                       <div className="text-xs text-muted-foreground space-y-0.5">
                         {t.assigned_dispatch_lead ? (
@@ -274,11 +274,11 @@ export function CommsTeamList({
                           <div>Loc: {t.location_label}</div>
                         ) : null}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground mr-3 align-middle h-full flex items-center justify-center">
                         {t.channel ? `Ch: ${t.channel}` : null}
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         variant="outline"
