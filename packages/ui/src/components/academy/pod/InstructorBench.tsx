@@ -214,7 +214,7 @@ export function InstructorBench({
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 m-auto max-w-7xl">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Instructor Bench</h2>
@@ -290,7 +290,7 @@ export function InstructorBench({
       ) : null}
 
       <Sheet open={isManageSheetOpen} onOpenChange={setIsManageSheetOpen}>
-        <SheetContent side="right" className="max-w-xl">
+        <SheetContent side="right" className="max-w-xl bg-card text-card-foreground p-4">
           <SheetHeader>
             <SheetTitle>Manage instructors</SheetTitle>
             <SheetDescription>

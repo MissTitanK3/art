@@ -423,6 +423,30 @@ export function ClassAssignmentDataLayer({
           } catch (pErr) {
             console.warn("Error persisting participants", pErr);
           }
+
+          try {
+            const res = await fetch("/api/academy/notifications", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                id: updatedClass.id,
+                type: "class",
+                action: "update",
+                title: updatedClass.title,
+                link: `/academy/class/${updatedClass.id}`,
+              }),
+            });
+            if (!res.ok) {
+              const text = await res.text().catch(() => "");
+              console.warn(
+                "Failed to notify academy class update",
+                text || res.status,
+              );
+            }
+          } catch (notifyErr) {
+            console.warn("Error sending class update notification", notifyErr);
+          }
         } catch (sessErr) {
           console.warn("Error persisting sessions", sessErr);
         }

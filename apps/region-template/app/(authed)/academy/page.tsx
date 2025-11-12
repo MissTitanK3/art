@@ -72,7 +72,7 @@ export default function AcademyDashboardPage() {
   const headingCta = (
     <Button asChild variant="outline">
       <a
-        href="https://academy.alwaysreadytools.org"
+        href="https://academy.alwaysreadytools.org/courses"
         target="_blank"
         rel="noreferrer"
       >

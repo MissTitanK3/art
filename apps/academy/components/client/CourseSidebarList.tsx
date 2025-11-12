@@ -50,7 +50,7 @@ export default function CourseSidebarList({
         </label>
         <Input
           id="course-search"
-          placeholder="Search courses…"
+          placeholder="Search Course Titles…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

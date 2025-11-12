@@ -16,10 +16,10 @@ ALTER TABLE academy_participants ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE missing_person_records ENABLE ROW LEVEL SECURITY;
 
--- Comms
 ALTER TABLE com_teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_operators ENABLE ROW LEVEL SECURITY;
 -- Dispatchers and Trainer+ roles can manage classes and sessions
+-- NOTE: academy_sessions.class_id no longer enforces FK to academy_classes
 CREATE POLICY "dispatchers_manage_academy"
 ON academy_classes
 FOR ALL

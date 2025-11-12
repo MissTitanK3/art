@@ -414,7 +414,7 @@ export default function SearchCoursesModal() {
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        <Search className="h-4 w-4 mr-2" /> Search
+        <Search className="h-4 w-4 mr-2" /> Search Course Content...
       </Button>
 
       <CommandDialog

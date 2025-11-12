@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { toast } from "sonner";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -38,6 +39,7 @@ import type {
 } from "@workspace/store/types/academy.ts";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { humanize } from "@workspace/ui/lib/utils";
 
 type SessionFilterValue = "all" | AcademyTrainingSession["status"];
 
@@ -283,6 +285,97 @@ export function SessionsBoard({
         (participant) => participant.status === "waitlist",
       ).length,
     [manageSessionParticipants],
+  );
+
+  const resolveAbsoluteUrl = React.useCallback((path: string) => {
+    if (typeof window === "undefined") return path;
+    try {
+      return new URL(path, window.location.origin).toString();
+    } catch (err) {
+      console.warn(`[SessionsBoard] Failed to resolve ${path} URL`, err);
+      return path;
+    }
+  }, []);
+
+  const [academyUrl, setAcademyUrl] = React.useState(() =>
+    resolveAbsoluteUrl("/academy"),
+  );
+  const [signUpUrl, setSignUpUrl] = React.useState(() =>
+    resolveAbsoluteUrl("/sign-up"),
+  );
+
+  React.useEffect(() => {
+    setAcademyUrl(resolveAbsoluteUrl("/academy"));
+    setSignUpUrl(resolveAbsoluteUrl("/sign-up"));
+  }, [resolveAbsoluteUrl]);
+
+  const copySessionDetailsToClipboard = React.useCallback(
+    async (session: AcademyTrainingSession) => {
+      const academyShareUrl = resolveAbsoluteUrl("/academy");
+      const signUpShareUrl = resolveAbsoluteUrl("/sign-up");
+      const when = formatSessionRange(
+        session.start,
+        session.end,
+        session.timezone,
+      );
+      const seatsRemaining = Math.max(
+        session.seats.capacity - session.seats.confirmed,
+        0,
+      );
+      const trimmedInstructor = session.instructorName?.trim() ?? "";
+      const instructorVisible =
+        trimmedInstructor.length > 0 && !/tbd/i.test(trimmedInstructor);
+      const instructorLineValue = instructorVisible
+        ? trimmedInstructor
+        : "Sign-In to view details";
+      const parts = [
+        `Training Session: ${session.title}`,
+        `When: ${when}`,
+        `Instructor: ${instructorLineValue}`,
+        `Location: ${academyShareUrl} • Sign-In to view details`,
+        `Seats: ${session.seats.confirmed}/${session.seats.capacity} filled · ${seatsRemaining} open · ${session.seats.waitlist} waitlist`,
+        session.relatedTopic ? `Focus: ${session.relatedTopic}` : null,
+        `Sign up: ${signUpShareUrl}`,
+      ].filter((value): value is string => typeof value === "string" && value.length > 0);
+      const shareText = parts.join("\n");
+
+      if (!shareText) {
+        console.warn(
+          `[SessionsBoard] Skipping share summary copy for session ${session.id}; nothing to copy`,
+        );
+        return;
+      }
+
+      try {
+        if (
+          typeof navigator !== "undefined" &&
+          navigator?.clipboard?.writeText
+        ) {
+          await navigator.clipboard.writeText(shareText);
+        } else if (typeof document !== "undefined") {
+          const textarea = document.createElement("textarea");
+          textarea.value = shareText;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "absolute";
+          textarea.style.left = "-9999px";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+        console.info(
+          `[SessionsBoard] Copied session ${session.id} share summary to clipboard`,
+        );
+        toast.success("Session details copied to clipboard");
+      } catch (err) {
+        console.warn(
+          `[SessionsBoard] Failed to copy session ${session.id} share summary`,
+          err,
+        );
+        toast.error("Unable to copy session details");
+      }
+    },
+    [resolveAbsoluteUrl],
   );
 
   const resetCreateForm = React.useCallback(() => {
@@ -589,13 +682,23 @@ export function SessionsBoard({
         session.seats.capacity - session.seats.confirmed,
         0,
       );
+      const trimmedInstructor = session.instructorName?.trim() ?? "";
+      const instructorText =
+        trimmedInstructor.length > 0 && !/tbd/i.test(trimmedInstructor)
+          ? `${trimmedInstructor} · ${instructorTypeLabels[session.instructorType]}`
+          : "Not Selected Yet";
+      const seatsSummary = `${session.seats.confirmed}/${session.seats.capacity} filled · ${seatsRemaining} open · ${session.seats.waitlist} waitlist`;
+
+      const isSignalLocation = session.location
+        ? session.location.startsWith("https://signal")
+        : false;
 
       return (
         <Card key={session.id} className="border border-border/70 shadow-none">
           <CardContent className="space-y-3 p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold leading-tight">
+            <div className="flex flex-col gap-4 items-start break-words justify-between max-w-full">
+              <div className="flex-1 min-w-0 max-w-full">
+                <p className="text-sm font-semibold leading-tight my-2">
                   {session.title}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -605,81 +708,122 @@ export function SessionsBoard({
                     session.timezone,
                   )}
                 </p>
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-2">
+                  <span>Instructor: {instructorText}</span>
+                  <span>Location: {isSignalLocation ? "Signal" : session.location}</span>
+                  {session.location ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="max-w-52 my-3"
+                      asChild
+                    >
+                      <a
+                        href={session.location}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block"
+                      >
+                        Open Session Location
+                      </a>
+                    </Button>
+                  ) : (
+                    <span>Location: Undetermined</span>
+                  )}
+                  <span></span>
+                  <span>Seats: {seatsSummary}</span>
+                  {session.relatedTopic ? (
+                    session.relatedTopic.includes('academy.alwaysreadytools') ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className=" my-3"
+                        asChild
+                      >
+                        <a
+                          href={session.relatedTopic}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block"
+                        >
+                          {humanize(session.relatedTopic.split("/").pop() ?? session.relatedTopic)} Course
+                        </a>
+                      </Button>
+                    ) : (
+                      <span>Focus: {humanize(session.relatedTopic.split("/").pop() ?? session.relatedTopic)}</span>
+                    )
+                  ) : null}
+                </div>
               </div>
-              <Badge variant="secondary" className="text-xs capitalize">
-                {modalityLabels[session.modality]}
-              </Badge>
-            </div>
-
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-              <span>
-                Instructor: {session.instructorName} ·{" "}
-                {instructorTypeLabels[session.instructorType]}
-              </span>
-              {session.location ? (
-                <span>Location: {session.location}</span>
-              ) : null}
-              {session.meetingUrl ? (
-                <a
-                  className="text-primary underline"
-                  href={session.meetingUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Join meeting
-                </a>
-              ) : null}
-              <span>
-                {session.seats.confirmed}/{session.seats.capacity} confirmed ·{" "}
-                {seatsRemaining} open ·{session.seats.waitlist} waitlist
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleOpenManageSession(session.id)}
-              >
-                Manage
-              </Button>
-              {session.status === "scheduled" ? (
+              <div className="flex flex-col gap-2 w-full items-end md:items-start">
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleUpdateStatus(session.id, "in_progress")}
+                  className="w-full"
+                  onClick={() => handleOpenManageSession(session.id)}
                 >
-                  Mark in progress
+                  Manage
                 </Button>
-              ) : null}
-              {session.status !== "completed" ? (
-                <Button
-                  size="sm"
-                  onClick={() => handleUpdateStatus(session.id, "completed")}
-                >
-                  Mark completed
-                </Button>
-              ) : null}
-              {session.status === "completed" ? (
-                <>
-                  <Badge variant="outline" className="text-xs">
-                    Completed
-                  </Badge>
+                {session.status === "scheduled" ? (
                   <Button
                     size="sm"
-                    variant="ghost"
-                    onClick={() => handleArchiveSession(session.id)}
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleUpdateStatus(session.id, "in_progress")}
                   >
-                    Archive session
+                    Mark in progress
                   </Button>
-                </>
-              ) : null}
+                ) : null}
+                {session.status !== "completed" ? (
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleUpdateStatus(session.id, "completed")}
+                  >
+                    Mark completed
+                  </Button>
+                ) : null}
+                {session.status === "completed" ? (
+                  <>
+                    <Badge
+                      variant="outline"
+                      className="text-xs self-start sm:self-auto"
+                    >
+                      Completed
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full sm:w-auto"
+                      onClick={() => handleArchiveSession(session.id)}
+                    >
+                      Archive session
+                    </Button>
+                  </>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  className="w-full sm:w-auto"
+                  onClick={() => copySessionDetailsToClipboard(session)}
+                >
+                  Copy share details
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       );
     },
-    [handleArchiveSession, handleOpenManageSession, handleUpdateStatus],
+    [
+      academyUrl,
+      copySessionDetailsToClipboard,
+      handleArchiveSession,
+      handleOpenManageSession,
+      handleUpdateStatus,
+      signUpUrl,
+    ],
   );
 
   const renderArchivedSessionCard = React.useCallback(
@@ -778,7 +922,7 @@ export function SessionsBoard({
 
   return (
     <>
-      <section className="space-y-4">
+      <section className="space-y-4 m-auto max-w-7xl px-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">Training Sessions Board</h2>

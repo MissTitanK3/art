@@ -19,6 +19,7 @@ import type {
   AcademyInstructorVettingStatus,
 } from "@workspace/store/types/academy";
 import type { NormalizedCertification } from "@workspace/store/types/pod";
+import { UNIQUE_TIMEZONES } from "@workspace/ui/lib/constants/states";
 
 type InstructorFormValues = {
   name: string;
@@ -119,8 +120,8 @@ export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
       <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="instr-name">Name</Label>
-            <Input id="instr-name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Label htmlFor="instr-name">Name<span className="text-red-500">*</span></Label>
+            <Input id="instr-name" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="instr-type">Type</Label>
@@ -180,13 +181,22 @@ export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="instr-focus">Focus area</Label>
-          <Input id="instr-focus" value={focus} onChange={(e) => setFocus(e.target.value)} />
+          <Label htmlFor="instr-focus">Focus area<span className="text-red-500">*</span></Label>
+          <Input id="instr-focus" value={focus} onChange={(e) => setFocus(e.target.value)} required />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="instr-timezone">Timezone</Label>
-          <Input id="instr-timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+          <Select value={timezone} onValueChange={(v) => setTimezone(v)}>
+            <SelectTrigger id="instr-timezone">
+              <SelectValue placeholder="Select timezone" />
+            </SelectTrigger>
+            <SelectContent>
+              {UNIQUE_TIMEZONES.map((tz) => (
+                <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-3">

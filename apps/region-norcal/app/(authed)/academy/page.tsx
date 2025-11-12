@@ -45,7 +45,7 @@ export default function AcademyDashboardPage() {
   const headingCta = (
     <Button asChild variant="outline">
       <a
-        href="https://academy.alwaysreadytools.org"
+        href="https://academy.alwaysreadytools.org/courses"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -440,6 +440,34 @@ function AcademyDashboardContent({
     (state) => state.trainingClasses,
   );
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
+  const notifyAcademyChange = React.useCallback(
+    async (payload: {
+      id: string;
+      type: "class" | "session";
+      action: "create" | "update";
+      title?: string;
+      link?: string;
+    }) => {
+      try {
+        const res = await fetch("/api/academy/notifications", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          console.warn(
+            "[AcademyDashboard] notification request failed",
+            text || res.status,
+          );
+        }
+      } catch (notifyErr) {
+        console.warn("[AcademyDashboard] notification request error", notifyErr);
+      }
+    },
+    [],
+  );
   const profile = useProfileStore((s) => s.profile);
   const roles = profile?.access_role ? [String(profile.access_role)] : [];
 
@@ -455,13 +483,25 @@ function AcademyDashboardContent({
       sessions={storeSessions}
       onScheduleClass={onScheduleClass}
       onUpdateSessionStatus={async (sessionId, status) => {
+        const targetSession = storeSessions.find((s) => s.id === sessionId);
         updateTrainingSessionStatus(sessionId, status);
         try {
           const client = getSupabaseBrowserClient();
-          await client
+          const { error } = await client
             .from("academy_sessions")
             .update({ status })
             .eq("id", sessionId);
+          if (error) throw error;
+          await notifyAcademyChange({
+            id: sessionId,
+            type: "session",
+            action: "update",
+            title: targetSession?.title,
+            link:
+              targetSession?.classId && targetSession.classId.length > 0
+                ? `/academy/class/${targetSession.classId}`
+                : "/academy",
+          });
         } catch (e) {
           console.info(
             "[AcademyDashboard] status update local-only (no supabase)",
@@ -562,6 +602,16 @@ function AcademyDashboardContent({
           session.id,
           session.participants ?? [],
         );
+        await notifyAcademyChange({
+          id: session.id,
+          type: "session",
+          action: "create",
+          title: session.title,
+          link:
+            session.classId && session.classId.length > 0
+              ? `/academy/class/${session.classId}`
+              : "/academy",
+        });
       }}
       onUpdateTrainingSession={async (sessionId, patch) => {
         patchTrainingSession(sessionId, patch);
@@ -585,6 +635,16 @@ function AcademyDashboardContent({
               next.participants ?? [],
             );
           }
+          await notifyAcademyChange({
+            id: sessionId,
+            type: "session",
+            action: "update",
+            title: next.title,
+            link:
+              next.classId && next.classId.length > 0
+                ? `/academy/class/${next.classId}`
+                : "/academy",
+          });
         }
       }}
       onDeleteTrainingSession={async (sessionId) => {

@@ -89,7 +89,7 @@ export function QualificationPathwaysSection({
               </div>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col">
-              <ScrollArea className="h-[720px] w-full rounded-md border border-border/60">
+              <ScrollArea className="max-h-[730px] h-11/12 w-full rounded-md border border-border/60">
                 <ul className="space-y-3 pr-3">
                   {group.courses.map((course) => (
                     <li key={course.slug}>
