@@ -29,13 +29,19 @@ import type { Profile } from "@workspace/store/types/global";
 import { humanize } from "@workspace/ui/lib/utils";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import {
+  NOTIFICATION_CHANNELS,
+  type NotificationChannel,
+  type NotificationLevel,
+} from "@workspace/store/types/notifications";
+import { type AdminNotificationTemplateKey } from "@workspace/store/admin/notifications/templates";
 
 export type SendArgs = {
-  template?: "maintenance" | "dispatch_surge" | "academy_reminder" | "welcome";
+  template?: AdminNotificationTemplateKey;
   title?: string;
   body?: string;
-  level?: "info" | "success" | "warning" | "error";
-  channel?: string;
+  level?: NotificationLevel;
+  channel?: NotificationChannel;
   link?: string;
   sticky?: boolean;
   ttlMinutes?: number | null;
@@ -51,10 +57,10 @@ export function AdminNotificationForm({
 }) {
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
-  const [level, setLevel] = React.useState<
-    "info" | "success" | "warning" | "error"
-  >("info");
-  const [channel, setChannel] = React.useState("dispatch");
+  const [level, setLevel] = React.useState<NotificationLevel>("info");
+  const [channel, setChannel] = React.useState<NotificationChannel>(
+    "dispatch",
+  );
   const [link, setLink] = React.useState("");
   const [sticky, setSticky] = React.useState(false);
   const [ttlMinutes, setTtlMinutes] = React.useState<number | "">("");
@@ -225,6 +231,29 @@ export function AdminNotificationForm({
 
   return (
     <form onSubmit={submit} className="space-y-3">
+      <div className="flex gap-4">
+        <span id="ttl-label" className="text-sm font-medium">
+          TTL (minutes)
+        </span>
+        <Input
+          className="w-36"
+          value={ttlMinutes}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") setTtlMinutes("");
+            else setTtlMinutes(Number(v) || "");
+          }}
+          aria-labelledby="ttl-label"
+          inputMode="numeric"
+          placeholder="e.g. 120"
+        />
+        <div className="flex items-center gap-2 mt-1.5">
+          <Switch checked={sticky} onCheckedChange={setSticky} id="sticky" />
+          <label htmlFor="sticky" className="text-sm">
+            Sticky
+          </label>
+        </div>
+      </div>
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between align-baseline">
         <div className="flex gap-3 flex-col md:flex-row md:items-end">
           <div>
@@ -232,7 +261,7 @@ export function AdminNotificationForm({
               Level
             </span>
             <Select value={level} onValueChange={(v) => setLevel(v as any)}>
-              <SelectTrigger className="w-48" aria-labelledby="level-label">
+              <SelectTrigger className="w-32" aria-labelledby="level-label">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -247,12 +276,23 @@ export function AdminNotificationForm({
             <span id="channel-label" className="text-sm font-medium">
               Channel
             </span>
-            <Input
-              className="w-56"
+            <Select
               value={channel}
-              onChange={(e) => setChannel(e.target.value)}
-              aria-labelledby="channel-label"
-            />
+              onValueChange={(value) =>
+                setChannel(value as NotificationChannel)
+              }
+            >
+              <SelectTrigger className="w-44" aria-labelledby="channel-label">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {NOTIFICATION_CHANNELS.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {humanize(option)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <span id="link-label" className="text-sm font-medium">
@@ -265,29 +305,7 @@ export function AdminNotificationForm({
               aria-labelledby="link-label"
             />
           </div>
-          <div className="flex items-center gap-2 mt-1.5">
-            <Switch checked={sticky} onCheckedChange={setSticky} id="sticky" />
-            <label htmlFor="sticky" className="text-sm">
-              Sticky
-            </label>
-          </div>
-          <div>
-            <span id="ttl-label" className="text-sm font-medium">
-              TTL (minutes)
-            </span>
-            <Input
-              className="w-36"
-              value={ttlMinutes}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (v === "") setTtlMinutes("");
-                else setTtlMinutes(Number(v) || "");
-              }}
-              aria-labelledby="ttl-label"
-              inputMode="numeric"
-              placeholder="e.g. 120"
-            />
-          </div>
+
         </div>
       </div>
 
