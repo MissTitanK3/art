@@ -26,7 +26,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "oklch(0.38 0.02 260)",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "oklch(0.98 0.03 95)" },
+    { media: "(prefers-color-scheme: dark)", color: "oklch(0.38 0.02 260)" },
+  ],
 };
 
 export default function RootLayout({
@@ -36,10 +39,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className="bg-zinc-900 text-white"
-        style={{ backgroundColor: "oklch(0.38 0.02 260)" }}
-      >
+      <body className="bg-zinc-900 text-white">
         <WizardProvider>
           <LanguageProvider>
             <MapTileProvider>

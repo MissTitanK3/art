@@ -26,6 +26,7 @@ import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpd
 import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
 import PublicEngagementPanel from "@workspace/ui/components/client/engagement/PublicEngagementPanel";
 import { Button } from "@workspace/ui/components/button";
+import AfterActionReportGuide from "@workspace/ui/components/dispatch/AfterActionReportGuide";
 import { Copy, Share2, Flag } from "lucide-react";
 import { toast } from "sonner";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
@@ -40,12 +41,12 @@ import {
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
   defaultTab?:
-    | "overview"
-    | "roles"
-    | "updates"
-    | "logistics"
-    | "public_engagement"
-    | "comms";
+  | "overview"
+  | "roles"
+  | "updates"
+  | "logistics"
+  | "public_engagement"
+  | "comms";
   loadingMessage?: React.ReactNode;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
@@ -326,12 +327,13 @@ export function DispatchSubmissionLayout({
                 Running notes, incident log, and updates.
               </p>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col space-y-4 text-sm">
+            <CardContent className="flex-1 flex flex-col text-sm">
               <DispatchUpdates
                 updates={submission.updates}
                 onAddUpdate={onAddUpdate}
                 onEditUpdate={onEditUpdate}
                 onRemoveUpdate={onRemoveUpdate}
+                afterComposer={<AfterActionReportGuide onAddUpdate={onAddUpdate} />}
               />
             </CardContent>
           </Card>

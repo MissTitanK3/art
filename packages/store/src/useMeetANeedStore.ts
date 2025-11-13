@@ -2,6 +2,11 @@ import { persist } from "zustand/middleware";
 import { createStore, type StateCreator } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { MeetANeed } from "./types/meet-a-need";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "./utils/storage";
 
 const DEFAULT_STORAGE_KEY = "meet-a-need-store";
 
@@ -48,11 +53,19 @@ function withPersistence(
 export function createMeetANeedStore({
   initialNeeds = [],
   persist: shouldPersist = true,
-  storageKey = DEFAULT_STORAGE_KEY,
+  storageKey,
 }: CreateMeetANeedStoreOptions = {}) {
   const initializer = createInitializer(initialNeeds);
+  const resolvedStorageKey = resolveScopedStorageKey(
+    DEFAULT_STORAGE_KEY,
+    storageKey,
+  );
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(DEFAULT_STORAGE_KEY, storageKey),
+  );
   return shouldPersist
-    ? createStore(withPersistence(initializer, storageKey))
+    ? createStore(withPersistence(initializer, resolvedStorageKey))
     : createStore(initializer);
 }
 

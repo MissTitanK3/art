@@ -74,7 +74,10 @@ export const metadata: Metadata = {
 
 // (Optional) nice address bar color
 export const viewport: Viewport = {
-  themeColor: "oklch(0.38 0.02 260)",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "oklch(0.98 0.03 95)" },
+    { media: "(prefers-color-scheme: dark)", color: "oklch(0.38 0.02 260)" },
+  ],
 };
 
 // ---------- Fonts ----------
@@ -97,38 +100,37 @@ export default async function RootLayout({
   const session: AuthSession | null =
     supaUser?.user && supaSession?.session
       ? {
-          user: {
-            id: supaUser.user.id,
-            email: supaUser.user.email ?? "",
-            // Prefer explicit metadata role, fallback to any server-provided role, else guest
-            role: ((supaUser.user as any)?.user_metadata?.role ??
-              (supaUser.user as any)?.role ??
-              "guest") as any,
-            fullName:
-              (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
-            avatarUrl:
-              (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
-            metadata: (supaUser.user as any)?.user_metadata ?? undefined,
-          },
-          accessToken: (supaSession.session as any)?.access_token ?? "",
-          refreshToken:
-            (supaSession.session as any)?.refresh_token ?? undefined,
-          expiresAt: (supaSession.session as any)?.expires_at ?? null,
-          provider: "supabase",
-        }
+        user: {
+          id: supaUser.user.id,
+          email: supaUser.user.email ?? "",
+          // Prefer explicit metadata role, fallback to any server-provided role, else guest
+          role: ((supaUser.user as any)?.user_metadata?.role ??
+            (supaUser.user as any)?.role ??
+            "guest") as any,
+          fullName:
+            (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
+          avatarUrl:
+            (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
+          metadata: (supaUser.user as any)?.user_metadata ?? undefined,
+        },
+        accessToken: (supaSession.session as any)?.access_token ?? "",
+        refreshToken:
+          (supaSession.session as any)?.refresh_token ?? undefined,
+        expiresAt: (supaSession.session as any)?.expires_at ?? null,
+        provider: "supabase",
+      }
       : null;
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
-        style={{ backgroundColor: "oklch(0.38 0.02 260)" }}
       >
         <AppProviders initialSession={session}>
           <RegisterServiceWorker />
           <InstallPrompt />
           <GlobalNavBridge />
-          <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
+          <div className="px-3 pt-3 space-y-4 mx-auto">{children}</div>
         </AppProviders>
       </body>
     </html>

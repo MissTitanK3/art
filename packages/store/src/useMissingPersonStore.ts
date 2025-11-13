@@ -3,6 +3,11 @@ import { createStore, type StateCreator } from "zustand/vanilla";
 import { useStore } from "zustand";
 
 import type { MissingPersonRecord } from "./types/missing-person";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "./utils/storage";
 
 const DEFAULT_STORAGE_KEY = "missing-person-records";
 
@@ -64,11 +69,19 @@ function withPersistence(
 export function createMissingPersonStore({
   initialRecords = [],
   persist: shouldPersist = true,
-  storageKey = DEFAULT_STORAGE_KEY,
+  storageKey,
 }: CreateMissingPersonStoreOptions = {}) {
   const initializer = createMissingPersonStoreInitializer(initialRecords);
+  const resolvedStorageKey = resolveScopedStorageKey(
+    DEFAULT_STORAGE_KEY,
+    storageKey,
+  );
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(DEFAULT_STORAGE_KEY, storageKey),
+  );
   return shouldPersist
-    ? createStore(withPersistence(initializer, storageKey))
+    ? createStore(withPersistence(initializer, resolvedStorageKey))
     : createStore(initializer);
 }
 

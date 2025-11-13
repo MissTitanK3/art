@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Check, Paperclip, Pencil, Trash2, X } from "lucide-react";
@@ -12,6 +13,7 @@ type DispatchUpdatesProps = {
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
   onEditUpdate: (updateId: string, text: string) => void;
   onRemoveUpdate: (updateId: string) => void;
+  afterComposer?: ReactNode;
 };
 
 export default function DispatchUpdates({
@@ -19,6 +21,7 @@ export default function DispatchUpdates({
   onAddUpdate,
   onEditUpdate,
   onRemoveUpdate,
+  afterComposer,
 }: DispatchUpdatesProps) {
   const displayName = useProfileStore((s) => s.profile?.display_name);
   const resolvedAuthor =
@@ -94,6 +97,8 @@ export default function DispatchUpdates({
           </Button>
         </div>
       </form>
+
+      {afterComposer ? <div>{afterComposer}</div> : null}
 
       <div className="flex-1 overflow-y-auto space-y-3 text-sm">
         {sortedUpdates.map((u) => (

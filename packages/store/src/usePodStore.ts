@@ -2,6 +2,7 @@ import { persist } from 'zustand/middleware';
 import { useStore } from 'zustand';
 import { createStore, StateCreator, StoreApi } from 'zustand/vanilla';
 import { NormalizedCertification, Pod, RosterEntry, Shift } from './types/pod.ts';
+import { cleanupLegacyStorageKeys, legacyStorageKeyCandidates, resolveScopedStorageKey } from './utils/storage';
 
 // -----------------------------------------------------------------------------
 // Store State
@@ -226,13 +227,14 @@ function withPersistence(initializer: StateCreator<PodStoreState>, storageKey: s
 export type PodStore = StoreApi<PodStoreState>;
 
 export function createPodStore(options?: CreatePodStoreOptions): PodStore {
+  const POD_BASE_STORAGE_KEY = 'pod-store';
   const {
     initialPods = [],
     initialShifts = [],
     initialRoster = [],
     initialAcademyClasses = [],
     persist: enablePersist = false,
-    storageKey = 'pod-store',
+    storageKey,
   } = options ?? {};
 
   const initializer = createPodStoreInitializer({
@@ -242,7 +244,13 @@ export function createPodStore(options?: CreatePodStoreOptions): PodStore {
     academyClasses: initialAcademyClasses,
   });
 
-  const creator = enablePersist ? withPersistence(initializer, storageKey) : initializer;
+  const resolvedStorageKey = resolveScopedStorageKey(POD_BASE_STORAGE_KEY, storageKey);
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(POD_BASE_STORAGE_KEY, storageKey),
+  );
+
+  const creator = enablePersist ? withPersistence(initializer, resolvedStorageKey) : initializer;
   return createStore<PodStoreState>(creator as any);
 }
 

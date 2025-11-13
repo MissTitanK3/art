@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useRef,
+  useMemo,
   createContext,
 } from "react";
 import { useStore } from "zustand";
@@ -19,6 +20,11 @@ import {
 import type { Profile } from "@workspace/store/types/global.ts";
 import { useAuth } from "@/hooks/useAuth";
 import { useRegionAdapters } from "@/providers/RegionProvider";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "@workspace/store/utils/storage";
 
 type ProfileStoreProviderProps = PropsWithChildren<{
   initialProfile?: Profile | null;
@@ -30,31 +36,52 @@ const ProfileStoreContext = createContext<StoreApi<ProfileStoreState> | null>(
   null,
 );
 
+const PROFILE_SYNC_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const PROFILE_BASE_STORAGE_KEY = "profile-store";
+
 export function ProfileStoreProvider({
   children,
   initialProfile = null,
   persist = true,
-  storageKey = `profile-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`,
+  storageKey,
 }: ProfileStoreProviderProps) {
   const storeRef = useRef<ProfileStore | null>(null);
+  const resolvedStorageKey = useMemo(
+    () => resolveScopedStorageKey(PROFILE_BASE_STORAGE_KEY, storageKey),
+    [storageKey],
+  );
+  const legacyKeys = useMemo(
+    () => legacyStorageKeyCandidates(PROFILE_BASE_STORAGE_KEY, storageKey),
+    [storageKey],
+  );
 
   if (!storeRef.current) {
     storeRef.current = createProfileStore({
       initialProfile,
       persist,
-      storageKey,
+      storageKey: resolvedStorageKey,
     });
   }
+
+  useEffect(() => {
+    cleanupLegacyStorageKeys(resolvedStorageKey, legacyKeys);
+  }, [resolvedStorageKey, legacyKeys]);
 
   useEffect(() => {
     const store = storeRef.current;
     if (!store) return;
 
-    const initial = store.getState().profile;
-    singletonProfileStore.setState({ profile: initial ?? null });
+    const initial = store.getState();
+    singletonProfileStore.setState({
+      profile: initial.profile ?? null,
+      profileSyncedAt: initial.profileSyncedAt ?? null,
+    });
 
     const unsubscribe = store.subscribe((state) => {
-      singletonProfileStore.setState({ profile: state.profile });
+      singletonProfileStore.setState({
+        profile: state.profile,
+        profileSyncedAt: state.profileSyncedAt ?? null,
+      });
     });
 
     return () => unsubscribe();
@@ -78,15 +105,18 @@ export function ProfileStoreProvider({
       const s = store!; // narrowed, provider ensures storeRef.current exists
       const state = s.getState();
       const profile = state.profile;
-
-      // consider either legacy `role` or typed `access_role`
-      const hasRole =
-        (profile as any)?.role != null || profile?.access_role != null;
       const userId = session?.user?.id ?? profile?.user_id;
 
-      if (hasRole) return;
       if (!userId) return;
       if (!profileAdapter?.loadProfile) return;
+      const lastSyncedAt = state.profileSyncedAt
+        ? Date.parse(state.profileSyncedAt)
+        : null;
+      const now = Date.now();
+      const needsInitialProfile = profile == null;
+      const isStale =
+        !!profile && (!lastSyncedAt || now - lastSyncedAt > PROFILE_SYNC_TTL_MS);
+      if (!needsInitialProfile && !isStale) return;
       if (isFetching.current) return;
 
       try {
@@ -95,7 +125,7 @@ export function ProfileStoreProvider({
         if (cancelled) return;
         if (remote) {
           // set into the per-app store; provider's subscription will mirror to singleton
-          s.getState().setProfile(remote as Profile);
+          s.getState().setProfile(remote as Profile, new Date().toISOString());
         }
       } catch (err) {
         // swallow - non-critical

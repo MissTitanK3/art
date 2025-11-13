@@ -1,6 +1,13 @@
 import { persist } from "zustand/middleware";
 import { createStore, type StateCreator, type StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "./utils/storage";
+
+const TELEPROMPTER_BASE_STORAGE_KEY = "teleprompter-store";
 
 // A lightweight, app-agnostic store for the Teleprompter UI preferences and content.
 // Note: keeps types generic (string/number) to avoid coupling with app unions.
@@ -225,13 +232,21 @@ export function createTeleprompterStore(
   const {
     initial = {},
     persist: enablePersist = true,
-    storageKey = "teleprompter-store",
+    storageKey,
   } = opts;
   const initializer = createTeleprompterInitializer(
     initial as TeleprompterStoreState,
   );
+  const resolvedStorageKey = resolveScopedStorageKey(
+    TELEPROMPTER_BASE_STORAGE_KEY,
+    storageKey,
+  );
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(TELEPROMPTER_BASE_STORAGE_KEY, storageKey),
+  );
   const creator = enablePersist
-    ? withPersistence(initializer, storageKey)
+    ? withPersistence(initializer, resolvedStorageKey)
     : initializer;
   return createStore<TeleprompterStoreState>(creator as any);
 }

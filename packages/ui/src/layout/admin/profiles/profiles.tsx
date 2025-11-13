@@ -287,6 +287,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Actions</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Verified</TableHead>
@@ -294,7 +295,6 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                   <TableHead>Affiliation</TableHead>
                   <TableHead>Signal</TableHead>
                   <TableHead>Zone</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -302,59 +302,18 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                   const isUnregistered = !p.user_id;
                   return (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <span>{p.display_name}</span>
-                          {!p.user_id ? (
-                            <Badge
-                              variant="outline"
-                              className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                            >
-                              Unregistered
-                            </Badge>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <AccessRoleBadge role={p.access_role} />
-                      </TableCell>
-                      <TableCell>
-                        <VerifiedBadge who={p.verified_by} />
-                      </TableCell>
-                      <TableCell>
-                        {p.state === "suspended" ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                          >
-                            Suspended
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                          >
-                            Active
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="max-w-[220px] truncate">
-                        {p.affiliation ?? ""}
-                      </TableCell>
-                      <TableCell className="max-w-[180px] truncate">
-                        {p.contact_signal ?? ""}
-                      </TableCell>
-                      <TableCell className="max-w-[160px] truncate">
-                        {p.coordination_zone ?? p.city ?? ""}
-                      </TableCell>
                       <TableCell className="text-right">
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" size="sm">
-                              <MoreVertical className="h-4 w-4 mr-2" />
+                              <MoreVertical className="h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent align="end" className="w-80 p-3">
+                          <PopoverContent
+                            align="start"
+                            sideOffset={8}
+                            className="w-[min(20rem,calc(100vw-2rem))] sm:w-80 p-3"
+                          >
                             <div className="space-y-3">
                               <div className="space-y-1">
                                 <div className="text-xs font-medium text-muted-foreground">
@@ -600,6 +559,52 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                           </PopoverContent>
                         </Popover>
                       </TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <span>{p.display_name}</span>
+                          {!p.user_id ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                            >
+                              Unregistered
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <AccessRoleBadge role={p.access_role} />
+                      </TableCell>
+                      <TableCell>
+                        <VerifiedBadge who={p.verified_by} />
+                      </TableCell>
+                      <TableCell>
+                        {p.state === "suspended" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                          >
+                            Suspended
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                          >
+                            Active
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-[220px] truncate">
+                        {p.affiliation ?? ""}
+                      </TableCell>
+                      <TableCell className="max-w-[180px] truncate">
+                        {p.contact_signal ?? ""}
+                      </TableCell>
+                      <TableCell className="max-w-[160px] truncate">
+                        {p.coordination_zone ?? p.city ?? ""}
+                      </TableCell>
+
                     </TableRow>
                   );
                 })}

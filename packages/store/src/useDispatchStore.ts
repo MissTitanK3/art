@@ -4,6 +4,11 @@ import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
 import { DispatchUpdate } from "./types/dispatch.ts";
 import { DispatchSubmission } from "./types/global.ts";
 import { fakeUUID } from "@workspace/ui/lib/utils";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "./utils/storage";
 
 // -----------------------------------------------------------------------------
 // Types
@@ -205,19 +210,28 @@ export type DispatchStore = StoreApi<DispatchStoreState>;
 export function createDispatchStore(
   options?: CreateDispatchStoreOptions,
 ): DispatchStore {
+  const DISPATCH_BASE_STORAGE_KEY = "dispatch-store";
   const {
     initialSubmissions,
     initialShifts,
     persist: enablePersist = true,
-    storageKey = "dispatch-store",
+    storageKey,
   } = options ?? {};
 
   const initializer = createDispatchStoreInitializer(
     initialSubmissions ?? [],
     initialShifts ?? [],
   );
+  const resolvedStorageKey = resolveScopedStorageKey(
+    DISPATCH_BASE_STORAGE_KEY,
+    storageKey,
+  );
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(DISPATCH_BASE_STORAGE_KEY, storageKey),
+  );
   const creator = enablePersist
-    ? withPersistence(initializer, storageKey)
+    ? withPersistence(initializer, resolvedStorageKey)
     : initializer;
   return createStore<DispatchStoreState>(creator as any);
 }

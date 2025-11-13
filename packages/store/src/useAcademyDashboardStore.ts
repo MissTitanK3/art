@@ -2,6 +2,7 @@
 
 import { persist } from 'zustand/middleware';
 import { createStore, type StateCreator, type StoreApi } from 'zustand/vanilla';
+import { cleanupLegacyStorageKeys, legacyStorageKeyCandidates, resolveScopedStorageKey } from './utils/storage';
 
 import type {
   AcademyCourseGroup,
@@ -128,8 +129,9 @@ export function createAcademyDashboardStore({
   initialTrainingClasses = [],
   initialSessions = [],
   persist: shouldPersist = false,
-  storageKey = 'pod-academy-dashboard-store',
+  storageKey,
 }: CreateAcademyDashboardStoreOptions = {}): StoreApi<AcademyDashboardStoreState> {
+  const BASE_STORAGE_KEY = 'pod-academy-dashboard-store';
   const normalizedInitialSessions = initialSessions.map((session) => ({
     ...session,
     participants: normalizeParticipants(session.participants),
@@ -234,10 +236,13 @@ export function createAcademyDashboardStore({
       }),
   });
 
+  const resolvedStorageKey = resolveScopedStorageKey(BASE_STORAGE_KEY, storageKey);
+  cleanupLegacyStorageKeys(resolvedStorageKey, legacyStorageKeyCandidates(BASE_STORAGE_KEY, storageKey));
+
   if (shouldPersist) {
     return createStore(
       persist(initializer, {
-        name: storageKey,
+        name: resolvedStorageKey,
       }),
     );
   }

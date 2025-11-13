@@ -72,7 +72,10 @@ export const metadata: Metadata = {
 
 // (Optional) nice address bar color
 export const viewport: Viewport = {
-  themeColor: "oklch(0.38 0.02 260)",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "oklch(0.98 0.03 95)" },
+    { media: "(prefers-color-scheme: dark)", color: "oklch(0.38 0.02 260)" },
+  ],
 };
 
 // ---------- Fonts ----------
@@ -91,14 +94,13 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
-        style={{ backgroundColor: "oklch(0.38 0.02 260)" }}
       >
         <AppProviders initialSession={session}>
           {/* Register service worker for PWA installability */}
           <ServiceWorkerRegister />
           <InstallPrompt />
           <GlobalNavBridge />
-          <div className="px-3 pt-3 space-y-4 md:ml-20 mx-auto">{children}</div>
+          <div className="px-3 pt-3 space-y-4 mx-auto">{children}</div>
         </AppProviders>
       </body>
     </html>

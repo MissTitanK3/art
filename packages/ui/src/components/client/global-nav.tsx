@@ -122,7 +122,7 @@ export function GlobalNavCore({
     const applyOffsets = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (isDesktop) {
-        document.body.style.paddingLeft = desktopCollapsed ? "7rem" : "16rem";
+        document.body.style.paddingLeft = desktopCollapsed ? "7rem" : "18rem";
         document.body.style.paddingTop = "0px";
       } else {
         document.body.style.paddingLeft = "0px";
@@ -215,8 +215,8 @@ function MobileTopBar({
       ) : null}
       <div className="flex items-center gap-1">
         <Bell popoverSide="bottom" popoverAlign="end" />
-        <ThemeToggle />
-        <DistanceUnitToggle />
+        {/* <ThemeToggle /> */}
+        {/* <DistanceUnitToggle /> */}
       </div>
     </div>
   );
@@ -283,12 +283,11 @@ function DesktopSideNav({
       <ScrollArea className="flex-1">
         <div
           className={cn(
-            "mt-1 flex items-center gap-2",
-            collapsed ? "justify-center flex-col" : "justify-start",
+            "mt-3 flex items-center gap-2",
+            collapsed ? "justify-center flex-col" : "justify-evenly",
           )}
         >
           <ThemeToggle />
-          <Bell popoverSide="right" popoverAlign="start" />
           <DistanceUnitToggle />
           {!isAuthenticated ? (
             <a href="/sign-in">
@@ -297,6 +296,7 @@ function DesktopSideNav({
               </Button>
             </a>
           ) : null}
+          <Bell popoverSide="right" popoverAlign="start" />
         </div>
         <Separator className="my-3 bg-sidebar-border" />
         <div

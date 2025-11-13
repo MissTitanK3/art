@@ -5,7 +5,9 @@ import { Profile } from "./types/global.ts";
 
 export interface ProfileStoreState {
   profile: Profile | null;
-  setProfile: (p: Profile) => void;
+  profileSyncedAt: string | null;
+  setProfile: (p: Profile | null, syncedAt?: string | number | Date) => void;
+  setProfileSyncedAt: (syncedAt?: string | number | Date | null) => void;
   clearProfile: () => void;
   restoreDemo: () => void;
   setOperatingCounties: (counties: string[]) => void;
@@ -18,6 +20,22 @@ export interface CreateProfileStoreOptions {
   demoProfileFactory?: () => Profile;
 }
 
+function toIsoString(input?: string | number | Date | null): string | null {
+  if (!input && input !== 0) return new Date().toISOString();
+  if (typeof input === "string") {
+    const date = new Date(input);
+    return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+  }
+  if (typeof input === "number") {
+    const date = new Date(input);
+    return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+  }
+  if (input instanceof Date) {
+    return Number.isNaN(input.getTime()) ? new Date().toISOString() : input.toISOString();
+  }
+  return new Date().toISOString();
+}
+
 const createProfileStoreInitializer =
   (
     initialProfile: Profile | null,
@@ -25,13 +43,26 @@ const createProfileStoreInitializer =
   ): StateCreator<ProfileStoreState> =>
   (set) => ({
     profile: initialProfile,
-    setProfile: (p) => set({ profile: p }),
-    clearProfile: () => set({ profile: null }),
+    profileSyncedAt: initialProfile ? new Date().toISOString() : null,
+    setProfile: (p, syncedAt) =>
+      set({
+        profile: p,
+        profileSyncedAt:
+          syncedAt === null ? null : toIsoString(syncedAt),
+      }),
+    setProfileSyncedAt: (syncedAt) =>
+      set({
+        profileSyncedAt: syncedAt == null ? null : toIsoString(syncedAt),
+      }),
+    clearProfile: () => set({ profile: null, profileSyncedAt: null }),
     restoreDemo: () => {
       if (!demoProfileFactory) {
         return;
       }
-      set({ profile: demoProfileFactory() });
+      set({
+        profile: demoProfileFactory(),
+        profileSyncedAt: new Date().toISOString(),
+      });
     },
     setOperatingCounties: (counties) =>
       set((state) =>
@@ -48,8 +79,23 @@ function withPersistence(
   return persist(initializer, {
     name: storageKey,
     version: 1,
-    migrate: (persistedState: any) => persistedState as ProfileStoreState,
-    partialize: (state) => ({ profile: state.profile }),
+    migrate: (persistedState: any) => {
+      if (
+        persistedState &&
+        typeof persistedState === "object" &&
+        !("profileSyncedAt" in persistedState)
+      ) {
+        return {
+          ...persistedState,
+          profileSyncedAt: null,
+        } as ProfileStoreState;
+      }
+      return persistedState as ProfileStoreState;
+    },
+    partialize: (state) => ({
+      profile: state.profile,
+      profileSyncedAt: state.profileSyncedAt,
+    }),
   });
 }
 
@@ -75,7 +121,9 @@ export function createProfileStore(
 }
 
 // Temporary compatibility hook until we wire contexts per app.
-export const singletonProfileStore = createProfileStore();
+// Singleton instance shares profile data across packages but should not persist
+// to localStorage directly. Persistence is handled by per-app providers.
+export const singletonProfileStore = createProfileStore({ persist: false });
 export function useProfileStore<T>(
   selector: (state: ProfileStoreState) => T,
   equalityFn?: (a: T, b: T) => boolean,

@@ -1,6 +1,13 @@
 import { useStore } from "zustand";
 import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "./utils/storage";
+
+const NOTIFICATIONS_BASE_STORAGE_KEY = "notifications-store-v1";
 
 export type NotificationLevel = "info" | "success" | "warning" | "error";
 
@@ -124,14 +131,22 @@ export function createNotificationsStore(
     initialItems = [],
     initialMuted = {},
     persist: enablePersist = true,
-    storageKey = "notifications-store-v1",
+    storageKey,
   } = options ?? {};
   const initializer = createNotificationsInitializer(
     initialItems,
     initialMuted,
   );
+  const resolvedStorageKey = resolveScopedStorageKey(
+    NOTIFICATIONS_BASE_STORAGE_KEY,
+    storageKey,
+  );
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(NOTIFICATIONS_BASE_STORAGE_KEY, storageKey),
+  );
   const creator = enablePersist
-    ? withPersistence(initializer, storageKey)
+    ? withPersistence(initializer, resolvedStorageKey)
     : initializer;
   return createStore<NotificationsStoreState>(creator as any);
 }
@@ -152,7 +167,7 @@ const GLOBAL_STORAGE_KEY: string | undefined =
 const singletonNotificationsStore =
   GLOBAL_STORE ??
   createNotificationsStore({
-    storageKey: GLOBAL_STORAGE_KEY ?? "notifications-store-v1",
+    storageKey: GLOBAL_STORAGE_KEY ?? NOTIFICATIONS_BASE_STORAGE_KEY,
   });
 export const notificationsStore = singletonNotificationsStore;
 

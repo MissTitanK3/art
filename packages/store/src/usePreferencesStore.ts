@@ -1,6 +1,13 @@
 import { useStore } from "zustand";
 import { createStore, StateCreator, StoreApi } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
+import {
+  cleanupLegacyStorageKeys,
+  legacyStorageKeyCandidates,
+  resolveScopedStorageKey,
+} from "./utils/storage";
+
+const PREFERENCES_BASE_STORAGE_KEY = "preferences-store-v1";
 
 export type DistanceUnit = "mi" | "km";
 
@@ -45,12 +52,20 @@ export function createPreferencesStore(
   const {
     initialUnit = "mi",
     persist: enablePersist = true,
-    storageKey = "preferences-store-v1",
+    storageKey,
   } = options ?? {};
 
   const initializer = createPreferencesInitializer(initialUnit);
+  const resolvedStorageKey = resolveScopedStorageKey(
+    PREFERENCES_BASE_STORAGE_KEY,
+    storageKey,
+  );
+  cleanupLegacyStorageKeys(
+    resolvedStorageKey,
+    legacyStorageKeyCandidates(PREFERENCES_BASE_STORAGE_KEY, storageKey),
+  );
   const creator = enablePersist
-    ? withPersistence(initializer, storageKey)
+    ? withPersistence(initializer, resolvedStorageKey)
     : initializer;
   return createStore<PreferencesStoreState>(creator as any);
 }
@@ -69,7 +84,7 @@ const GLOBAL_STORAGE_KEY: string | undefined =
 const singletonPreferencesStore =
   GLOBAL_STORE ??
   createPreferencesStore({
-    storageKey: GLOBAL_STORAGE_KEY ?? "preferences-store-v1",
+    storageKey: GLOBAL_STORAGE_KEY ?? PREFERENCES_BASE_STORAGE_KEY,
   });
 
 export const preferencesStore = singletonPreferencesStore;
