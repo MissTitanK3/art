@@ -53,6 +53,52 @@ const FORMAT = args.format || 'json'; // json or diff
 
 function log(...s) { if (args.verbose) console.log(...s); }
 
+// Provides throttled progress updates so long tasks emit feedback every few seconds.
+function createStatusReporter(intervalMs = 2000) {
+  let phase = null;
+  let lastLogged = 0;
+  let lastMessage = '';
+
+  function emit(message, force = false) {
+    const now = Date.now();
+    if (!force && now - lastLogged < intervalMs) {
+      lastMessage = message;
+      return;
+    }
+    const prefix = phase ? `${phase} - ` : '';
+    console.log(`[status] ${prefix}${message}`);
+    lastLogged = now;
+    lastMessage = message;
+  }
+
+  return {
+    start(label, detail) {
+      phase = label;
+      if (detail) {
+        emit(detail, true);
+      } else {
+        console.log(`[status] ${label}`);
+        lastLogged = Date.now();
+        lastMessage = label;
+      }
+    },
+    tick(detail, force = false) {
+      if (!detail) return;
+      emit(detail, force);
+    },
+    done(detail) {
+      const message = detail || 'done';
+      emit(message, true);
+      phase = null;
+    },
+    flush() {
+      if (phase && lastMessage !== 'done') {
+        emit('still running', true);
+      }
+    }
+  };
+}
+
 function isIgnored(relative) {
   // support glob patterns via minimatch and also exact path segment matches
   return IGNORE_PATTERNS.some((p) => {
@@ -131,7 +177,7 @@ function normalizeContentForAlignment(filePath, content) {
   return content;
 }
 
-function walkDir(dir, base = dir, trackedSet = null) {
+function walkDir(dir, base = dir, trackedSet = null, progress = null, progressState = null) {
   const files = [];
   if (!fs.existsSync(dir)) return files;
   const list = fs.readdirSync(dir, { withFileTypes: true });
@@ -143,8 +189,16 @@ function walkDir(dir, base = dir, trackedSet = null) {
       const repoRelative = path.relative(ROOT, full);
       if (!trackedSet.has(path.normalize(repoRelative))) continue;
     }
+    if (progress && progressState) {
+      progressState.count = (progressState.count || 0) + 1;
+      if (progressState.count === 1 || progressState.count % 50 === 0) {
+        const prefix = progressState.labelPrefix || '';
+        const detail = rel || ent.name || '.';
+        progress.tick(`${prefix}${detail}`);
+      }
+    }
     if (ent.isDirectory()) {
-      files.push(...walkDir(full, base, trackedSet));
+      files.push(...walkDir(full, base, trackedSet, progress, progressState));
     } else if (ent.isFile()) {
       files.push({ full, rel });
     }
@@ -565,14 +619,17 @@ function compareRegions() {
     process.exit(2);
   }
 
-  // Clear previous logs to avoid buildup
+  const status = createStatusReporter();
+
   clearOut();
   ensureOut();
 
-  // Determine regions
+  status.start(`Discovering region apps inside ${APPS_DIR}`);
   const allRegions = fs.readdirSync(APPS_DIR, { withFileTypes: true })
     .filter(d => d.isDirectory() && d.name.startsWith('region-'))
     .map(d => d.name);
+  status.tick(`Found ${allRegions.length} region app(s)`);
+  status.done('Region discovery complete');
 
   let baselineName = BASELINE_NAME;
   if (!allRegions.includes(baselineName)) {
@@ -580,17 +637,17 @@ function compareRegions() {
     process.exit(2);
   }
 
-  // Only include region-template when --demo flag is present. Otherwise exclude it from checks.
   const compareTargets = args.demo
     ? ['region-template']
     : allRegions.filter((r) => r !== baselineName && r !== 'region-template');
 
-  // Git-aware tracked set (git ls-files) or staged files when requested
+  console.log(`[status] Starting alignment check with baseline ${baselineName}. Target regions: ${compareTargets.length ? compareTargets.join(', ') : 'none'}.`);
+
   let tracked = null;
   if (args.git) tracked = gitTrackedFiles();
   if (args.staged) {
     const s = gitStagedFiles();
-    if (s) tracked = s; // staged takes precedence
+    if (s) tracked = s;
   }
 
   const whitelist = readWhitelist(args.whitelist);
@@ -598,28 +655,52 @@ function compareRegions() {
   if (whitelist) whitelistMatchers = whitelist.map(p => p.trim());
 
   const baselinePath = path.join(APPS_DIR, baselineName);
-  const baselineFiles = walkDir(baselinePath, baselinePath, tracked).reduce((acc, f) => {
-    acc[f.rel] = { full: f.full, hash: hashFile(f.full) };
-    return acc;
-  }, {});
+  status.start(`Collecting baseline file hashes for ${baselineName}`);
+  const baselineProgressState = { count: 0, labelPrefix: `${baselineName}: ` };
+  const baselineEntries = walkDir(baselinePath, baselinePath, tracked, status, baselineProgressState);
+  const baselineFiles = {};
+  let baselineHashCount = 0;
+  for (const entry of baselineEntries) {
+    baselineHashCount += 1;
+    if (baselineHashCount === 1 || baselineHashCount % 100 === 0) {
+      status.tick(`hash baseline ${baselineHashCount}/${baselineEntries.length}`);
+    }
+    baselineFiles[entry.rel] = { full: entry.full, hash: hashFile(entry.full) };
+  }
+  status.done(`Baseline inventory ready (${Object.keys(baselineFiles).length} files)`);
 
   const summary = { baseline: baselineName, comparedAt: new Date().toISOString(), format: FORMAT, regions: {} };
   let anyDiff = false;
 
   for (const region of compareTargets) {
     const regionPath = path.join(APPS_DIR, region);
-    const regionFiles = walkDir(regionPath, regionPath, tracked).reduce((acc, f) => {
-      acc[f.rel] = { full: f.full, hash: hashFile(f.full) };
-      return acc;
-    }, {});
+    status.start(`Collecting file hashes for ${region}`);
+    const regionProgressState = { count: 0, labelPrefix: `${region}: ` };
+    const regionEntries = walkDir(regionPath, regionPath, tracked, status, regionProgressState);
+    const regionFiles = {};
+    let regionHashCount = 0;
+    for (const entry of regionEntries) {
+      regionHashCount += 1;
+      if (regionHashCount === 1 || regionHashCount % 100 === 0) {
+        status.tick(`hash ${region} ${regionHashCount}/${regionEntries.length}`);
+      }
+      regionFiles[entry.rel] = { full: entry.full, hash: hashFile(entry.full) };
+    }
+    status.done(`Collected ${Object.keys(regionFiles).length} files for ${region}`);
 
     const diffs = [];
-    const fileIssues = {}; // per-file issue list
+    const fileIssues = {};
     const jsTsTouched = new Set();
 
-    // Files present in baseline
-    for (const rel of Object.keys(baselineFiles)) {
-      if (whitelistMatchers && whitelistMatchers.some(pattern => minimatch(rel, pattern))) continue; // allowed difference
+    status.start(`Diffing ${region} against ${baselineName}`);
+    const baselineKeys = Object.keys(baselineFiles);
+    let processedBaseline = 0;
+    for (const rel of baselineKeys) {
+      processedBaseline += 1;
+      if (processedBaseline === 1 || processedBaseline % 200 === 0) {
+        status.tick(`baseline ${processedBaseline}/${baselineKeys.length}`);
+      }
+      if (whitelistMatchers && whitelistMatchers.some(pattern => minimatch(rel, pattern))) continue;
       const base = baselineFiles[rel];
       const other = regionFiles[rel];
       if (!other) {
@@ -632,44 +713,49 @@ function compareRegions() {
         diffs.push({ type: 'content_mismatch', path: rel });
         fileIssues[rel] = fileIssues[rel] || [];
         fileIssues[rel].push({ type: 'content_mismatch' });
-        // mark js/ts touched
         if (/\.(?:ts|tsx|js|jsx)$/.test(rel)) jsTsTouched.add(region);
       }
     }
 
-    // Extra files in region not in baseline
+    status.tick('checking extras');
+    let processedExtras = 0;
     for (const rel of Object.keys(regionFiles)) {
+      processedExtras += 1;
+      if (processedExtras === 1 || processedExtras % 200 === 0) {
+        status.tick(`extras ${processedExtras}`);
+      }
       if (whitelistMatchers && whitelistMatchers.some(pattern => minimatch(rel, pattern))) continue;
       if (!baselineFiles[rel]) {
         diffs.push({ type: 'extra_in_region', path: rel });
       }
     }
+    status.done(`Diffing complete for ${region} (${diffs.length} diff(s))`);
 
-    // Now run per-file scans for critical things and secret leaks
-    for (const d of diffs) {
+    status.start(`Classifying findings for ${region}`);
+    for (let index = 0; index < diffs.length; index += 1) {
+      if (diffs.length && ((index + 1) === 1 || (index + 1) % 50 === 0)) {
+        status.tick(`diff ${index + 1}/${diffs.length}`);
+      }
+      const d = diffs[index];
       const relPath = d.path;
       const severity = classifyPath(relPath);
       const fullRegionPath = path.join(regionPath, relPath);
       const fullBaselinePath = path.join(baselinePath, relPath);
       const issues = [];
 
-      // Secret scan (only for non-ignored files)
       const secretIssues = secretScanFile(fullRegionPath);
       if (secretIssues.length) issues.push(...secretIssues);
 
-      // Manifest check
       if (/^public\/site\.webmanifest$/.test(relPath)) {
         const manIssues = validateManifest(fullRegionPath);
         if (manIssues.length) issues.push(...manIssues);
       }
 
-      // Service worker check
       if (/^public\/sw\.js$/.test(relPath)) {
         const swIssues = validateServiceWorker(fullBaselinePath, fullRegionPath);
         if (swIssues.length) issues.push(...swIssues);
       }
 
-      // Package.json checks
       if (/^package\.json$/.test(relPath)) {
         const lockIssues = checkPackageLockConsistency();
         if (lockIssues.length) issues.push(...lockIssues);
@@ -677,10 +763,10 @@ function compareRegions() {
 
       if (issues.length) fileIssues[relPath] = (fileIssues[relPath] || []).concat(issues);
 
-      // attach classification to the diff object for reporting
       d.severity = severity;
       d.issues = fileIssues[relPath] || [];
     }
+    status.done(`Classification complete for ${region}`);
 
     summary.regions[region] = { diffsCount: diffs.length, diffs };
 
@@ -689,7 +775,15 @@ function compareRegions() {
       const regionOut = path.join(OUT_DIR, region);
       fs.mkdirSync(regionOut, { recursive: true });
 
+      status.start(`Writing diff artifacts for ${region}`);
+      let artifactIndex = 0;
+
       for (const d of diffs) {
+        artifactIndex += 1;
+        if (artifactIndex === 1 || artifactIndex % 25 === 0) {
+          status.tick(`artifact ${artifactIndex}/${diffs.length}`);
+        }
+
         const outRelDir = path.dirname(d.path);
         const destDir = path.join(regionOut, outRelDir);
         if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
@@ -709,47 +803,42 @@ function compareRegions() {
           const destRegion = path.join(regionOut, d.path + '.region');
           if (fs.existsSync(srcBase)) fs.copyFileSync(srcBase, destBase);
           if (fs.existsSync(srcRegion)) fs.copyFileSync(srcRegion, destRegion);
-
-          if (FORMAT === 'diff') {
-            const diff = generateUnifiedDiff(destBase, destRegion);
-            const diffOut = path.join(regionOut, d.path + '.diff');
-            try {
-              fs.mkdirSync(path.dirname(diffOut), { recursive: true });
-              fs.writeFileSync(diffOut, diff);
-            } catch (e) {
-              // ignore write errors
-            }
-          } else {
-            // Always write a diff file for easier PR suggestions (truncate if large)
-            const diff = generateUnifiedDiff(destBase, destRegion);
-            const diffOut = path.join(regionOut, d.path + '.diff');
-            try {
-              fs.mkdirSync(path.dirname(diffOut), { recursive: true });
-              fs.writeFileSync(diffOut, diff);
-            } catch (e) {
-              // ignore write errors
-            }
+          const diff = generateUnifiedDiff(destBase, destRegion);
+          const diffOut = path.join(regionOut, d.path + '.diff');
+          try {
+            fs.mkdirSync(path.dirname(diffOut), { recursive: true });
+            fs.writeFileSync(diffOut, diff);
+          } catch (e) {
+            // ignore write errors
           }
         }
       }
+      status.done(`Artifacts generated for ${region}`);
     }
   }
 
-  // Save summary
-  // Run typecheck/lint for regions that touched JS/TS if requested
+  status.start('Aggregating summary data');
   const regionsWithJsTs = [];
   for (const r of Object.keys(summary.regions)) {
-    // simple heuristic: if any diff in region is a JS/TS file, include
     const diffs = summary.regions[r].diffs || [];
     if (diffs.some(d => /\.(?:ts|tsx|js|jsx)$/.test(d.path))) regionsWithJsTs.push(r);
   }
+  status.done('Summary aggregation complete');
 
+  status.start('Running optional validation commands');
   const validationResults = runTypecheckAndLintForRegions(regionsWithJsTs);
+  status.done('Validation commands finished');
   summary.validation = validationResults;
 
-  // Collect global issues and build report with recommended actions
+  status.start('Constructing final report');
   const report = { generatedAt: new Date().toISOString(), baseline: baselineName, regions: {}, summaryCounts: { critical: 0, review: 0, baseline: 0 }, anyDiff };
-  for (const [region, info] of Object.entries(summary.regions)) {
+  const regionEntries = Object.entries(summary.regions);
+  let regionIndex = 0;
+  for (const [region, info] of regionEntries) {
+    regionIndex += 1;
+    if (regionEntries.length && (regionIndex === 1 || regionIndex % 5 === 0)) {
+      status.tick(`region ${regionIndex}/${regionEntries.length}`);
+    }
     const rEntry = { diffsCount: info.diffsCount, diffs: [] };
     for (const d of info.diffs) {
       const rec = { path: d.path, type: d.type, severity: d.severity || classifyPath(d.path), issues: d.issues || [] };
@@ -758,11 +847,11 @@ function compareRegions() {
     }
     report.regions[region] = rEntry;
   }
+  status.done('Report construction complete');
 
-  // Optionally auto-accept baseline-only diffs into a branch
   const autoAccepted = [];
   if (args.autoAcceptBaseline) {
-    // find files that are baseline severity only and have no issues
+    status.start('Auto-accepting baseline candidates');
     const baselineFilesToAccept = [];
     for (const [region, rinfo] of Object.entries(report.regions)) {
       for (const d of rinfo.diffs) {
@@ -772,12 +861,12 @@ function compareRegions() {
       }
     }
     if (baselineFilesToAccept.length > 0) {
-      // create branch and copy baseline files into region paths
       const branchName = `auto/accept-baseline-${new Date().toISOString().replace(/[:.]/g, '-')}`;
       const checkout = runCmd('git', ['checkout', '-b', branchName]);
       if (checkout.status !== 0) {
         console.error('Failed to create branch for auto-accept:', checkout.stderr);
       } else {
+        let acceptedCount = 0;
         for (const f of baselineFilesToAccept) {
           const src = path.join(APPS_DIR, baselineName, f.path);
           const dest = path.join(APPS_DIR, f.region, f.path);
@@ -786,11 +875,14 @@ function compareRegions() {
             fs.copyFileSync(src, dest);
             runCmd('git', ['add', path.relative(ROOT, dest)]);
             autoAccepted.push(path.relative(ROOT, dest));
+            acceptedCount += 1;
+            if (acceptedCount % 10 === 0) {
+              status.tick(`auto-accepted ${acceptedCount}/${baselineFilesToAccept.length}`);
+            }
           } catch (e) {
             console.error('auto-accept copy failed for', f.path, e && e.message);
           }
         }
-        // run lint/typecheck if requested
         const vt = runTypecheckAndLintForRegions(regionsWithJsTs);
         const anyFail = Object.values(vt).some(v => (v.typecheck && v.typecheck.status !== 0) || (v.lint && v.lint.status !== 0));
         if (anyFail) {
@@ -803,37 +895,35 @@ function compareRegions() {
         }
       }
     }
+    status.done('Auto-accept processing complete');
   }
 
-  // Write out report to OUT_DIR/report.json and optionally to args.output
+  status.start('Writing reports to disk');
   const outReportPath = path.join(OUT_DIR, 'report.json');
   writeReport(outReportPath, report);
   if (args.output) writeReport(path.resolve(ROOT, args.output), report);
-
-  // Generate human-readable markdown report
   try {
     const mdPath = writeHumanReport(OUT_DIR, report);
     console.log('Wrote human-readable report:', mdPath);
   } catch (e) {
     console.error('Failed to write human-readable report:', e && e.message);
   }
-
-  // Generate PR suggestion markdown
   try {
     const prPath = writePrSuggestion(OUT_DIR, report);
     console.log('Wrote PR suggestion:', prPath);
   } catch (e) {
     console.error('Failed to write PR suggestion:', e && e.message);
   }
+  status.done('Report writing complete');
 
-  // Print human summary
+  status.flush();
+
   if (anyDiff) {
     console.log('Differences found. See', OUT_DIR, 'for details.');
   } else {
     console.log('All compared regions are aligned with', baselineName);
   }
 
-  // Determine final exit code: critical issues -> 1, review -> 1 if --fail-on-review
   let exitCode = 0;
   if (Object.values(report.summaryCounts).length) {
     const criticalCount = report.summaryCounts.critical || 0;

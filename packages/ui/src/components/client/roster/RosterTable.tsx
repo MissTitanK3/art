@@ -8,10 +8,11 @@ import { Edit3 } from "lucide-react";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
 import { RemoveMemberButton } from "../buttons/RemoveMemberButton.tsx";
 import { humanize } from "@workspace/ui/lib/utils";
+import type { RosterEditorSection } from "./types.ts";
 
 type RosterTableProps = {
   rows: RosterEntry[];
-  onEdit?: (id: string) => void;
+  onEdit?: (id: string, section: RosterEditorSection) => void;
   podName: string;
   onRemoveMember: (memberId: string) => void;
 };
@@ -147,7 +148,7 @@ export function RosterTable({
               />
               {onEdit && (
                 <Button
-                  onClick={() => onEdit(r.id)}
+                  onClick={() => onEdit(r.id, "details")}
                   size="sm"
                   variant="outline"
                 >

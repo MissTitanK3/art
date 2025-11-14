@@ -9,6 +9,7 @@ import {
   PodRosterLayout,
   PodRosterLayoutProps,
 } from "@workspace/ui/layout/pods/PodRosterLayout";
+import type { RosterEditorSection } from "@workspace/ui/components/client/roster/types";
 
 async function fetchPodRosterFromDatabase(
   slug: string,
@@ -60,6 +61,9 @@ export default function PodRosterDataLayer() {
   const storePodId = pod?.id;
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [selectedSection, setSelectedSection] = React.useState<
+    RosterEditorSection | null
+  >(null);
   const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
     null,
   );
@@ -124,6 +128,7 @@ export default function PodRosterDataLayer() {
     );
 
     setSelectedId(null); // close sheet after save
+    setSelectedSection(null);
   };
 
   const handleAddMember = async (entry: RosterEntry) => {
@@ -176,8 +181,15 @@ export default function PodRosterDataLayer() {
     podName: pod?.name,
     rows,
     editingEntry: editing,
-    onEdit: (entryId) => setSelectedId(entryId),
-    onCloseEditor: () => setSelectedId(null),
+    editingSection: selectedSection,
+    onEdit: (entryId, section = "details") => {
+      setSelectedId(entryId);
+      setSelectedSection(section);
+    },
+    onCloseEditor: () => {
+      setSelectedId(null);
+      setSelectedSection(null);
+    },
     onSaveEntry: handleSave,
     onRemoveMember: handleRemoveMember,
     addMemberAction,

@@ -13,7 +13,7 @@ import type {
   RegionOperationalMinimumDefinition,
   RegionOperationalMinimumKey,
 } from "@workspace/store/types/academy-readiness.ts";
-import { humanize } from "@workspace/ui/lib/utils";
+import { humanize, splitCommaSeparatedList } from "@workspace/ui/lib/utils";
 
 type DraftMinimum = {
   key: string;
@@ -57,14 +57,6 @@ function toDraft(definition: RegionOperationalMinimumDefinition): DraftMinimum {
   };
 }
 
-function splitList(value: string): string[] {
-  if (!value) return [];
-  return value
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-}
-
 function parseNumber(value: string): number | undefined {
   if (!value && value !== "0") return undefined;
   const parsed = Number(value);
@@ -89,7 +81,7 @@ function draftToDefinition(draft: DraftMinimum): RegionOperationalMinimumDefinit
   const label = draft.label.trim().length > 0 ? draft.label.trim() : humanize(draft.key);
   const description = draft.description.trim().length > 0 ? draft.description.trim() : undefined;
   const emphasis = draft.emphasis.trim().length > 0 ? draft.emphasis.trim() : undefined;
-  const tags = splitList(draft.tags);
+  const tags = splitCommaSeparatedList(draft.tags);
   const requiredCourses = Array.from(
     new Set(
       draft.requiredCourses

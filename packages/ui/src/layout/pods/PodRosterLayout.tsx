@@ -10,6 +10,10 @@ import {
 } from "@workspace/ui/components/sheet";
 import { RosterCardList } from "@workspace/ui/components/client/roster/RosterCardList";
 import { EditRosterEntryForm } from "@workspace/ui/components/client/roster/RosterEntryEditor";
+import {
+  ROSTER_EDITOR_SECTION_META,
+  type RosterEditorSection,
+} from "@workspace/ui/components/client/roster/types";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
 
 export type PodRosterLayoutProps = {
@@ -18,7 +22,8 @@ export type PodRosterLayoutProps = {
   podName?: string;
   rows: RosterEntry[];
   editingEntry: RosterEntry | null;
-  onEdit: (id: string) => void;
+  editingSection: RosterEditorSection | null;
+  onEdit: (id: string, section: RosterEditorSection) => void;
   onCloseEditor: () => void;
   onSaveEntry: (entry: RosterEntry) => void;
   onRemoveMember: (memberId: string) => void;
@@ -34,6 +39,7 @@ export function PodRosterLayout({
   podName,
   rows,
   editingEntry,
+  editingSection,
   onEdit,
   onCloseEditor,
   onSaveEntry,
@@ -65,6 +71,11 @@ export function PodRosterLayout({
       ))
     );
 
+  const sheetOpen = Boolean(editingEntry && editingSection);
+  const activeSection: RosterEditorSection = editingSection ?? "details";
+  const sectionMeta = ROSTER_EDITOR_SECTION_META[activeSection];
+  const formId = `edit-roster-entry-${activeSection}-form`;
+
   return (
     <section className="mx-auto w-full max-w-4xl">
       <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
@@ -80,20 +91,15 @@ export function PodRosterLayout({
 
       {rosterList}
 
-      <Sheet
-        open={Boolean(editingEntry)}
-        onOpenChange={(next) => !next && onCloseEditor()}
-      >
+      <Sheet open={sheetOpen} onOpenChange={(next) => !next && onCloseEditor()}>
         <SheetContent
           side="right"
           className="flex max-w-none flex-col p-0 sm:w-[480px] md:w-[640px] lg:w-[720px] bg-accent text-accent-foreground"
         >
           <div className="border-b px-4 py-3">
             <SheetHeader>
-              <SheetTitle>Edit Roster Entry</SheetTitle>
-              <SheetDescription>
-                Update role, status, languages and skills.
-              </SheetDescription>
+              <SheetTitle>{sectionMeta.title}</SheetTitle>
+              <SheetDescription>{sectionMeta.description}</SheetDescription>
             </SheetHeader>
           </div>
 
@@ -102,6 +108,8 @@ export function PodRosterLayout({
               <EditRosterEntryForm
                 initial={editingEntry}
                 onSave={onSaveEntry}
+                section={activeSection}
+                formId={formId}
               />
             </div>
           ) : null}
@@ -110,11 +118,7 @@ export function PodRosterLayout({
             <SheetClose asChild>
               <Button variant="outline">Close</Button>
             </SheetClose>
-            <Button
-              type="submit"
-              form="edit-roster-entry-form"
-              className="min-w-24"
-            >
+            <Button type="submit" form={formId} className="min-w-24">
               Save
             </Button>
           </div>

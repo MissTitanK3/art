@@ -8,3 +8,5 @@ if (typeof globalThis !== 'undefined') {
     (globalThis as any).__ART_NOTIFICATIONS_STORAGE_KEY = `notifications-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`;
   }
 }
+
+export {};
