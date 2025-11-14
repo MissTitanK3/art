@@ -20,13 +20,6 @@ import {
 } from "@workspace/ui/components/dialog";
 import { Label } from "@workspace/ui/components/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -174,7 +167,6 @@ export function InstructorBench({
   const addFormRef = React.useRef<InstructorFormHandle | null>(null);
 
   const [manageInstructorId, setManageInstructorId] = React.useState<string | null>(null);
-  const [manageFormError, setManageFormError] = React.useState<string | null>(null);
   const manageFormRef = React.useRef<InstructorFormHandle | null>(null);
 
   const selectedInstructor = React.useMemo(
@@ -184,30 +176,22 @@ export function InstructorBench({
     [instructors, manageInstructorId],
   );
 
-
-  React.useEffect(() => {
-    if (!isManageSheetOpen) return;
-    if (instructors.length === 0) return;
-    setManageInstructorId((current) => current ?? instructors[0]?.id ?? null);
-  }, [isManageSheetOpen, instructors]);
-
   React.useEffect(() => {
     if (!isManageSheetOpen) {
       setManageInstructorId(null);
-      setManageFormError(null);
       return;
     }
-    if (!selectedInstructor) return;
-    setManageFormError(null);
-  }, [selectedInstructor, isManageSheetOpen]);
+  }, [isManageSheetOpen]);
+
+  const openManageSheetForInstructor = React.useCallback((instructorId: string) => {
+    setManageInstructorId(instructorId);
+    setIsManageSheetOpen(true);
+  }, []);
 
   // No add form local state — InstructorForm handles it
 
   function handleRemoveSelectedInstructor() {
-    if (!selectedInstructor) {
-      setManageFormError("Select an instructor to manage.");
-      return;
-    }
+    if (!selectedInstructor) return;
     // console.debug("InstructorBench: invoking handleRemoveInstructor", selectedInstructor.id);
     handleRemoveInstructor(selectedInstructor.id);
     setIsManageSheetOpen(false);
@@ -227,19 +211,9 @@ export function InstructorBench({
           </p>
         </div>
         {effectiveCanManageInstructors ? (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Button type="button" onClick={() => setIsAddDialogOpen(true)}>
-              Add instructor
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsManageSheetOpen(true)}
-              disabled={instructors.length === 0}
-            >
-              Manage instructors
-            </Button>
-          </div>
+          <Button type="button" onClick={() => setIsAddDialogOpen(true)}>
+            Add instructor
+          </Button>
         ) : null}
       </div>
 
@@ -253,7 +227,12 @@ export function InstructorBench({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {instructors.map((instructor) => (
-            <InstructorCard key={instructor.id} instructor={instructor} />
+            <InstructorCard
+              key={instructor.id}
+              instructor={instructor}
+              canManage={effectiveCanManageInstructors}
+              onManage={() => openManageSheetForInstructor(instructor.id)}
+            />
           ))}
         </div>
       )}
@@ -292,36 +271,22 @@ export function InstructorBench({
       <Sheet open={isManageSheetOpen} onOpenChange={setIsManageSheetOpen}>
         <SheetContent side="right" className="max-w-xl bg-card text-card-foreground p-4">
           <SheetHeader>
-            <SheetTitle>Manage instructors</SheetTitle>
+            <SheetTitle>
+              Manage {selectedInstructor ? selectedInstructor.name : "instructor"}
+            </SheetTitle>
             <SheetDescription>
-              Make edits to an existing instructor on your bench.
+              Update instructor details and vetting information.
             </SheetDescription>
           </SheetHeader>
 
           <div className="space-y-4">
-            <div>
-              <Label>Selected</Label>
-              <div className="mt-2 flex items-center gap-2">
-                <Select
-                  value={manageInstructorId ?? undefined}
-                  onValueChange={(value) => setManageInstructorId(value ?? null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select instructor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {instructors.map((ins) => (
-                      <SelectItem key={ins.id} value={ins.id}>
-                        {ins.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
             {selectedInstructor ? (
-              <div>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Instructor</Label>
+                  <p className="mt-1 text-base font-semibold">{selectedInstructor.name}</p>
+                </div>
+
                 <InstructorForm
                   ref={manageFormRef}
                   initial={selectedInstructor}
@@ -331,17 +296,21 @@ export function InstructorBench({
                     setIsManageSheetOpen(false);
                   }}
                 />
-                {manageFormError ? (
-                  <p className="mt-2 text-sm text-destructive">{manageFormError}</p>
-                ) : null}
               </div>
-            ) : null}
+            ) : (
+              <p className="text-sm text-muted-foreground">Select an instructor to manage.</p>
+            )}
           </div>
 
           <SheetFooter>
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
-                <Button variant="destructive" type="button" onClick={handleRemoveSelectedInstructor}>
+                <Button
+                  variant="destructive"
+                  type="button"
+                  onClick={handleRemoveSelectedInstructor}
+                  disabled={!selectedInstructor}
+                >
                   Remove
                 </Button>
               </div>
@@ -352,6 +321,7 @@ export function InstructorBench({
                 <Button
                   type="button"
                   onClick={() => manageFormRef.current?.requestSubmit?.()}
+                  disabled={!selectedInstructor}
                 >
                   Save
                 </Button>

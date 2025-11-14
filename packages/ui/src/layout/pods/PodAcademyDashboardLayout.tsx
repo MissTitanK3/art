@@ -8,6 +8,8 @@ import { ActiveClassesSection } from "@workspace/ui/components/academy/pod/Activ
 import { SessionsBoard } from "@workspace/ui/components/academy/pod/SessionsBoard";
 import { InstructorBench } from "@workspace/ui/components/academy/pod/InstructorBench";
 import { QualificationPathwaysSection } from "@workspace/ui/components/academy/pod/QualificationPathwaysSection";
+import { OperationalMinimumsBoard } from "@workspace/ui/components/academy/pod/OperationalMinimumsBoard";
+import { OperationalMinimumsManagerSheet } from "@workspace/ui/components/academy/pod/OperationalMinimumsManagerSheet";
 import type {
   AcademyCourseGroup,
   AcademyInstructorProfile,
@@ -23,6 +25,11 @@ import {
   canManageInstructorsFromRoles,
 } from "@workspace/ui/lib/permissions";
 import { useProfileStore } from "@workspace/store/useProfileStore";
+import type {
+  RegionOperationalMinimumSnapshot,
+  RegionReadinessChecklistItem,
+  RegionOperationalMinimumDefinition,
+} from "@workspace/store/types/academy-readiness.ts";
 
 export type {
   AcademySummaryStat,
@@ -54,6 +61,11 @@ export type PodAcademyDashboardLayoutProps = {
   sessions: AcademyTrainingSession[];
   /** Whether current user can manage instructors (admin dispatcher). */
   canManageInstructors?: boolean;
+  operationalMinimums?: RegionOperationalMinimumSnapshot[];
+  operationalMinimumDefinitions?: RegionOperationalMinimumDefinition[];
+  readinessChecklist?: RegionReadinessChecklistItem[];
+  onSaveOperationalMinimums?: (definitions: RegionOperationalMinimumDefinition[]) => Promise<void> | void;
+  isSavingOperationalMinimums?: boolean;
   onScheduleClass?: (classId: string) => void;
   onUpdateSessionStatus?: (
     sessionId: string,
@@ -88,6 +100,11 @@ export function PodAcademyDashboardLayout({
   trainingClasses,
   sessions,
   canManageInstructors = false,
+  operationalMinimums = [],
+  operationalMinimumDefinitions = [],
+  readinessChecklist = [],
+  onSaveOperationalMinimums,
+  isSavingOperationalMinimums = false,
   onScheduleClass,
   onUpdateSessionStatus,
   onCreateInstructor,
@@ -175,6 +192,7 @@ export function PodAcademyDashboardLayout({
     () => onDeleteTrainingSession ?? (() => { }),
     [onDeleteTrainingSession],
   );
+  const [isMinimumsSheetOpen, setIsMinimumsSheetOpen] = React.useState(false);
   // Wrap handlers so they only run when the current role set has permission. No-ops otherwise.
   const guardedScheduleClass = React.useCallback(
     (classId: string) => {
@@ -413,6 +431,36 @@ export function PodAcademyDashboardLayout({
     const filtered = stats.filter((stat) => stat.label !== "Instructor Bench");
     return [benchStat, ...filtered];
   }, [benchStat, stats]);
+  const courseOptions = React.useMemo(() => {
+    const map = new Map<string, { id: string; title: string }>();
+    for (const group of courseGroups) {
+      if (!group?.courses) continue;
+      for (const course of group.courses) {
+        if (!course?.slug) continue;
+        if (map.has(course.slug)) continue;
+        map.set(course.slug, {
+          id: course.slug,
+          title: course.title || course.slug,
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.title.localeCompare(b.title));
+  }, [courseGroups]);
+
+  const handleManageMinimumsClick = React.useCallback(() => {
+    if (operationalMinimumDefinitions.length === 0) return;
+    setIsMinimumsSheetOpen(true);
+  }, [operationalMinimumDefinitions]);
+
+  const handleMinimumsSubmit = React.useCallback(
+    (definitions: RegionOperationalMinimumDefinition[]) => {
+      if (!onSaveOperationalMinimums) {
+        return Promise.resolve();
+      }
+      return onSaveOperationalMinimums(definitions);
+    },
+    [onSaveOperationalMinimums],
+  );
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
@@ -432,6 +480,18 @@ export function PodAcademyDashboardLayout({
       </header>
 
       <AcademyStatsGrid stats={statsWithBench} />
+
+      {operationalMinimums.length > 0 || readinessChecklist.length > 0 ? (
+        <OperationalMinimumsBoard
+          minimums={operationalMinimums}
+          checklist={readinessChecklist}
+          onManageMinimums={
+            operationalMinimumDefinitions.length > 0 || onSaveOperationalMinimums
+              ? handleManageMinimumsClick
+              : undefined
+          }
+        />
+      ) : null}
 
       <Callout type="info">
         Classes are the training container — a group of learners working through
@@ -470,6 +530,15 @@ export function PodAcademyDashboardLayout({
       <QualificationPathwaysSection
         courseGroups={courseGroups}
         onCreatePathwayClass={guardedCreatePathwayClass}
+      />
+
+      <OperationalMinimumsManagerSheet
+        open={isMinimumsSheetOpen}
+        onOpenChange={setIsMinimumsSheetOpen}
+        definitions={operationalMinimumDefinitions}
+        courseOptions={courseOptions}
+        onSubmit={handleMinimumsSubmit}
+        isSaving={isSavingOperationalMinimums}
       />
     </section>
   );

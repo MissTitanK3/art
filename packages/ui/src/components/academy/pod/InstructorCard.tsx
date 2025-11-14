@@ -5,12 +5,13 @@ import { Badge } from "@workspace/ui/components/badge";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
   CardDescription,
 } from "@workspace/ui/components/card";
+import { Button } from "@workspace/ui/components/button";
 import type { AcademyInstructorProfile, AcademyInstructorVettingStatus } from "@workspace/store/types/academy";
-import type { NormalizedCertification } from "@workspace/store/types/pod";
 import {
   availabilityLabels,
   instructorTypeLabels,
@@ -22,10 +23,11 @@ import CertificationBadges from "./CertificationBadges";
 
 type Props = {
   instructor: AcademyInstructorProfile;
+  onManage?: (instructorId: string) => void;
+  canManage?: boolean;
 };
 
-export default function InstructorCard({ instructor }: Props) {
-  const previewCerts: NormalizedCertification[] = instructor.certifications?.slice(0, 3) ?? [];
+export default function InstructorCard({ instructor, onManage, canManage = false }: Props) {
   const registrationStatus = instructor.registrationStatus ?? "registered";
   const registrationLabel = registrationStatus === "unregistered" ? "Unregistered" : "Registered";
   const isGuestInstructor = registrationStatus === "unregistered";
@@ -82,6 +84,18 @@ export default function InstructorCard({ instructor }: Props) {
           <p className="text-xs text-muted-foreground"><span className={`font-semibold ${vettingClass}`}>{vettingLabel}</span> · {vettingMessage}</p>
         </div>
       </CardContent>
+      {canManage ? (
+        <CardFooter className="pt-0 flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            type="button"
+            onClick={() => onManage?.(instructor.id)}
+          >
+            Manage
+          </Button>
+        </CardFooter>
+      ) : null}
     </Card>
   );
 }

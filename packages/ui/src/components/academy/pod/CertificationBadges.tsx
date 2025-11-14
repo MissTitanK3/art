@@ -15,7 +15,7 @@ export default function CertificationBadges({ certifications, maxPreview = 3, on
   const more = certifications.length - preview.length;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-start gap-2">
       <div className="flex flex-wrap gap-2">
         {preview.map((cert) => (
           onRemove ? (
@@ -23,12 +23,18 @@ export default function CertificationBadges({ certifications, maxPreview = 3, on
               key={cert.id}
               type="button"
               onClick={() => onRemove(cert.id)}
-              className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
+              className="inline-flex max-w-[200px] items-start justify-start gap-1 rounded-full border border-border/60 bg-secondary px-3 py-1 text-xs font-medium leading-tight text-left text-secondary-foreground transition hover:bg-secondary/80 whitespace-normal break-words"
             >
-              {cert.display_name}
+              <span className="min-w-0 break-words leading-tight">{cert.display_name}</span>
             </button>
           ) : (
-            <Badge key={cert.id} variant="outline" className="text-xs">{cert.display_name}</Badge>
+            <Badge
+              key={cert.id}
+              variant="outline"
+              className="text-xs max-w-[200px] whitespace-normal break-words leading-tight text-left items-start justify-start"
+            >
+              <span className="min-w-0 break-words leading-tight">{cert.display_name}</span>
+            </Badge>
           )
         ))}
       </div>

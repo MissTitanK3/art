@@ -8,6 +8,13 @@ import {
   certificationLabel,
 } from "../../../lib/utils.ts";
 import { X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 
 type Props = {
   value: NormalizedCertification[];
@@ -96,24 +103,30 @@ export default function CertificationEditor({
             </div>
 
             {/* Selector */}
-            <select
-              className="text-sm rounded-md border bg-background px-2 py-1"
-              disabled={disabled}
-              value={lvl ?? ""}
-              onChange={(e) =>
+            <Select
+              value={lvl ?? "unset"}
+              onValueChange={(value) =>
                 setLevel(
                   c.id,
-                  (e.target.value || undefined) as CertificationLevel,
+                  value === "unset"
+                    ? undefined
+                    : (value as CertificationLevel),
                 )
               }
+              disabled={disabled}
             >
-              <option value="">—</option>
-              {CERTIFICATION_LEVELS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {certificationLabel(opt)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full text-sm">
+                <SelectValue placeholder="Set status" />
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectItem value="unset">—</SelectItem>
+                {CERTIFICATION_LEVELS.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {certificationLabel(opt)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         );
       })}

@@ -1,21 +1,41 @@
 "use client";
 
-import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+
+import { Button } from "@workspace/ui/components/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@workspace/ui/components/command";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
+import {
+  academyCertificationOptions,
+  createCertification,
+  slugifyIdentifier,
+} from "@workspace/ui/lib/academy-utils.ts";
+import { humanize } from "@workspace/ui/lib/utils";
 import { RosterEntry, rosterEntrySchema } from "@workspace/store/types/pod.ts";
-import { Button } from "@workspace/ui/components/button";
-import LanguagePicker from "../language/LanguagePicker.tsx";
+import type { FieldRole } from "@workspace/store/types/roles.ts";
+
+import CertificationEditor from "../certifications/CertificationsEditor.tsx";
 import LanguageFluencyEditor from "../language/LanguageFluencyEditor.tsx";
+import LanguagePicker from "../language/LanguagePicker.tsx";
 import { RoleSelect } from "../roles/RoleSelect.tsx";
 import { StatusSelect } from "../status/StatusSelect.tsx";
-import CertificationEditor from "../certifications/CertificationsEditor.tsx";
-import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
-import { humanize } from "@workspace/ui/lib/utils";
-import type { FieldRole } from "@workspace/store/types/roles.ts";
 
 const REGISTERED_ID_PREFIX = "registered-profile";
 
@@ -24,6 +44,36 @@ const editorSchema = rosterEntrySchema;
 type FormValues = z.input<typeof editorSchema>;
 type FormOutput = z.output<typeof editorSchema>;
 
+type CertificationDraft = {
+  id: string;
+  label: string;
+};
+
+function toDateTimeLocal(iso?: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const tzOffset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - tzOffset * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function fromDateTimeLocal(value: string): string | undefined {
+  if (!value) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return new Date(parsed.getTime()).toISOString();
+}
+
+function normalizeSkills(value?: string | null): string[] {
+  if (!value) return [];
+  const parts = value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  return Array.from(new Set(parts));
+}
+
 export function EditRosterEntryForm({
   initial,
   onSave,
@@ -31,11 +81,10 @@ export function EditRosterEntryForm({
   initial: RosterEntry;
   onSave: (v: RosterEntry) => void;
 }) {
-  // Treat an entry as registered when it links to a profile row
   const isRegistered =
     Boolean(
       (initial as any).profile_id &&
-        String((initial as any).profile_id).trim().length > 0,
+      String((initial as any).profile_id).trim().length > 0,
     ) || initial.id.startsWith(REGISTERED_ID_PREFIX);
 
   const [loadedProfile, setLoadedProfile] = useState<any | null>(null);
@@ -45,6 +94,13 @@ export function EditRosterEntryForm({
     : initial.profile?.id
       ? String(initial.profile.id)
       : undefined;
+
+  const [certPickerOpen, setCertPickerOpen] = useState(false);
+  const [certDraft, setCertDraft] = useState<CertificationDraft>({
+    id: "",
+    label: "",
+  });
+  const [certError, setCertError] = useState<string | null>(null);
 
   const {
     register,
@@ -58,8 +114,11 @@ export function EditRosterEntryForm({
     mode: "onChange",
     defaultValues: {
       id: initial.id,
+      handle: initial.handle ?? initial.profile?.display_name ?? "",
       role: initial.role,
       status: initial.status,
+      joinedAt: initial.joinedAt ?? undefined,
+      lastShiftAt: initial.lastShiftAt ?? undefined,
       langs: initial.langs ?? [],
       skills: initial.skills?.join(", ") ?? "",
       certs: initial.certs ?? [],
@@ -68,12 +127,23 @@ export function EditRosterEntryForm({
     },
   });
 
-  // If RLS prevented joining the profile on the roster query, fetch it via server route when authorized
+  const joinedAtIso = watch("joinedAt");
+  const lastShiftAtIso = watch("lastShiftAt");
+  const joinedAtDisplay = useMemo(
+    () => toDateTimeLocal(joinedAtIso),
+    [joinedAtIso],
+  );
+  const lastShiftAtDisplay = useMemo(
+    () => toDateTimeLocal(lastShiftAtIso),
+    [lastShiftAtIso],
+  );
+  const certs = watch("certs") ?? [];
+  const langs = watch("langs") ?? [];
+
   useEffect(() => {
     let cancelled = false;
     async function loadProfile() {
       if (!isRegistered || !profileId) return;
-      // If we already have a matching profile with fields, skip
       if (initial.profile && String(initial.profile.id) === profileId) return;
       try {
         setLoadingProfile(true);
@@ -86,14 +156,16 @@ export function EditRosterEntryForm({
         const p = Array.isArray(json?.profiles) ? json.profiles[0] : null;
         if (!cancelled && p) {
           setLoadedProfile(p);
-          // Set signal handle if empty and profile has one
           const currentSignal = (watch("signal_handle") ?? "").trim();
           if (!currentSignal && p.contact_signal) {
-            setValue("signal_handle", p.contact_signal);
+            setValue("signal_handle", p.contact_signal, {
+              shouldDirty: true,
+              shouldTouch: true,
+            });
           }
         }
       } catch {
-        // ignore
+        // ignore load error
       } finally {
         if (!cancelled) setLoadingProfile(false);
       }
@@ -104,13 +176,19 @@ export function EditRosterEntryForm({
     };
   }, [isRegistered, profileId, initial.profile, setValue, watch]);
 
+  useEffect(() => {
+    if (!certDraft.id) return;
+    const match = academyCertificationOptions.find(
+      (option) => option.id === certDraft.id,
+    );
+    if (match && certDraft.label.trim().length === 0) {
+      setCertDraft((prev) => ({ ...prev, label: match.label }));
+    }
+  }, [certDraft.id, certDraft.label]);
+
   const registeredProfile = isRegistered
     ? (loadedProfile ?? initial.profile)
     : undefined;
-
-  // Dispatch access removed from this editor; managed in Admin.
-
-  const [newCert, setNewCert] = useState("");
 
   const submit: SubmitHandler<FormOutput> = (vals) => {
     const nextProfile =
@@ -118,12 +196,15 @@ export function EditRosterEntryForm({
 
     const transformed: RosterEntry = {
       ...initial,
+      handle: vals.handle.trim() || initial.handle,
       role: vals.role,
       status: vals.status,
+      joinedAt: vals.joinedAt ?? initial.joinedAt ?? undefined,
+      lastShiftAt: vals.lastShiftAt ?? undefined,
       langs: vals.langs ?? [],
-      skills: vals.skills ? vals.skills.split(",").map((s) => s.trim()) : [],
+      skills: normalizeSkills(vals.skills),
       certs: vals.certs ?? [],
-      notes: vals.notes?.trim(),
+      notes: vals.notes?.trim() || undefined,
       signal_handle: vals.signal_handle?.trim() || undefined,
       profile: nextProfile,
     };
@@ -203,6 +284,35 @@ export function EditRosterEntryForm({
     return detailItems;
   }, [registeredProfile]);
 
+  const handleSelectCertification = (id: string, label: string) => {
+    setCertDraft({ id, label });
+    setCertPickerOpen(false);
+    setCertError(null);
+  };
+
+  const handleAddCertification = () => {
+    const slug = slugifyIdentifier(certDraft.id);
+    const label = certDraft.label.trim();
+    if (!slug || !label) {
+      setCertError("Select or enter a certification before adding.");
+      return;
+    }
+    if (certs.some((cert) => cert.id === slug)) {
+      setCertError("Certification already added.");
+      return;
+    }
+    const newCertification = {
+      ...createCertification(label, slug),
+      level: "in_progress" as const,
+    };
+    setValue("certs", [...certs, newCertification], {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    setCertDraft({ id: "", label: "" });
+    setCertError(null);
+  };
+
   return (
     <form
       id="edit-roster-entry-form"
@@ -238,7 +348,22 @@ export function EditRosterEntryForm({
           </dl>
         </section>
       ) : null}
-      {/* Role */}
+
+      <div className="grid gap-1">
+        <Label htmlFor="handle">Call sign</Label>
+        <Input
+          id="handle"
+          placeholder="e.g. Atlas-1"
+          {...register("handle")}
+        />
+        <p className="text-xs text-muted-foreground">
+          Used across pods and readiness boards. Keep it unique.
+        </p>
+        {errors.handle && (
+          <p className="text-xs text-destructive">{errors.handle.message}</p>
+        )}
+      </div>
+
       <div className="grid gap-1">
         <Label>Role</Label>
         <Controller
@@ -259,7 +384,6 @@ export function EditRosterEntryForm({
         )}
       </div>
 
-      {/* Status */}
       <div className="grid gap-1">
         <Label>Status</Label>
         <Controller
@@ -279,7 +403,69 @@ export function EditRosterEntryForm({
         )}
       </div>
 
-      {/* Dispatch Access removed; now managed in Admin */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-1">
+          <Label htmlFor="joinedAt">Joined roster</Label>
+          <Input
+            id="joinedAt"
+            type="datetime-local"
+            value={joinedAtDisplay}
+            onChange={(event) => {
+              const iso = fromDateTimeLocal(event.target.value);
+              setValue("joinedAt", iso, {
+                shouldDirty: true,
+                shouldTouch: true,
+              });
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Helps the academy hub chart onboarding velocity.
+          </p>
+          {errors.joinedAt && (
+            <p className="text-xs text-destructive">{errors.joinedAt.message}</p>
+          )}
+        </div>
+        <div className="grid gap-1">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="lastShiftAt">Last shift</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const nowIso = new Date().toISOString();
+                setValue("lastShiftAt", nowIso, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                });
+              }}
+            >
+              Set to now
+            </Button>
+          </div>
+          <Input
+            id="lastShiftAt"
+            type="datetime-local"
+            value={lastShiftAtDisplay}
+            onChange={(event) => {
+              const iso = fromDateTimeLocal(event.target.value);
+              setValue("lastShiftAt", iso, {
+                shouldDirty: true,
+                shouldTouch: true,
+              });
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Surfaces in pod activity panels on the academy hub.
+          </p>
+          {errors.lastShiftAt && (
+            <p className="text-xs text-destructive">
+              {errors.lastShiftAt.message}
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-1">
         <Label>Signal Handle</Label>
         <label
@@ -295,7 +481,8 @@ export function EditRosterEntryForm({
             <Input
               id="signal_handle"
               placeholder="@handle"
-              {...register("signal_handle")}
+              value={field.value ?? ""}
+              onChange={field.onChange}
             />
           )}
         />
@@ -306,17 +493,20 @@ export function EditRosterEntryForm({
         )}
       </div>
 
-      {/* Languages */}
       <div className="grid gap-1">
         <Label>Languages</Label>
         <LanguagePicker
-          value={watch("langs") ?? []}
-          onChange={(next) => setValue("langs", next)}
-          showProficiency={false} // only adding languages here
+          value={langs}
+          onChange={(next) =>
+            setValue("langs", next, { shouldDirty: true, shouldTouch: true })
+          }
+          showProficiency={false}
         />
         <LanguageFluencyEditor
-          value={watch("langs") ?? []}
-          onChange={(next) => setValue("langs", next)}
+          value={langs}
+          onChange={(next) =>
+            setValue("langs", next, { shouldDirty: true, shouldTouch: true })
+          }
         />
         {errors.langs && (
           <p className="text-xs text-destructive">
@@ -325,46 +515,102 @@ export function EditRosterEntryForm({
         )}
       </div>
 
-      {/* Skills */}
       <div className="grid gap-1">
         <Label>Skills</Label>
         <Input placeholder="Comma separated" {...register("skills")} />
       </div>
 
-      {/* Certs */}
       <div className="grid gap-1">
         <Label>Certifications</Label>
-        <div className="flex gap-2">
-          <Input
-            placeholder="New certification name (e.g. Medic Basics)"
-            value={newCert}
-            onChange={(e) => setNewCert(e.target.value)}
-            className="flex-1"
-          />
-          <Button
-            type="button"
-            onClick={() => {
-              if (!newCert.trim()) return;
-              const current = watch("certs") ?? [];
-              setValue("certs", [
-                ...current,
-                {
-                  id: crypto.randomUUID(),
-                  display_name: newCert.trim(),
-                  level: "incomplete", // sensible default
-                },
-              ]);
-              setNewCert("");
-            }}
-            disabled={!newCert.trim()}
-          >
-            Add
-          </Button>
+        <div className="space-y-3 rounded-lg border border-dashed bg-muted/40 p-3">
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr),auto]">
+            <Popover open={certPickerOpen} onOpenChange={setCertPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="justify-between"
+                >
+                  {certDraft.id
+                    ? certDraft.label || certDraft.id
+                    : "Search academy courses"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[340px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search course or slug" />
+                  <CommandList>
+                    <CommandEmpty>No course found</CommandEmpty>
+                    <CommandGroup heading="Academy courses">
+                      {academyCertificationOptions.map((option) => (
+                        <CommandItem
+                          key={option.id}
+                          value={`${option.id} ${option.label}`}
+                          onSelect={() =>
+                            handleSelectCertification(option.id, option.label)
+                          }
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${certDraft.id === option.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                              }`}
+                          />
+                          <div className="flex flex-col text-left">
+                            <span className="font-medium leading-tight">
+                              {option.label}
+                            </span>
+                            <span className="text-xs text-muted-foreground leading-tight">
+                              {option.id}
+                            </span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleAddCertification}
+              disabled={!certDraft.id || !certDraft.label}
+            >
+              Add
+            </Button>
+          </div>
+          {certError ? (
+            <p className="text-xs text-destructive">{certError}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Added certifications appear below. Set their status to reflect
+              progress so the operational minimum board stays accurate.
+            </p>
+          )}
         </div>
+
         <CertificationEditor
-          value={watch("certs") ?? []}
-          onChange={(next) => setValue("certs", next)}
+          value={certs}
+          onChange={(next) =>
+            setValue("certs", next, { shouldDirty: true, shouldTouch: true })
+          }
         />
+
+        {certs.length > 0 ? (
+          <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+            {certs.map((cert) => (
+              <span
+                key={`${cert.id}-slug`}
+                className="rounded border border-border/50 bg-background/60 px-2 py-1"
+              >
+                {cert.id}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         {errors.certs && (
           <p className="text-xs text-destructive">
             {errors.certs.message as string}
@@ -372,7 +618,6 @@ export function EditRosterEntryForm({
         )}
       </div>
 
-      {/* Notes */}
       <div className="grid gap-1">
         <Label>Notes</Label>
         <Input placeholder="Optional notes" {...register("notes")} />

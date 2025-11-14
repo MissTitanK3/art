@@ -8,6 +8,54 @@ ALTER TABLE dispatch_updates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dispatch_logistics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dispatch_shifts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pod_shifts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE region_settings ENABLE ROW LEVEL SECURITY;
+
+-- Region settings policies
+CREATE POLICY region_settings_read_authenticated
+ON region_settings
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+CREATE POLICY region_settings_insert_admins
+ON region_settings
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+CREATE POLICY region_settings_update_admins
+ON region_settings
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+CREATE POLICY region_settings_delete_admins
+ON region_settings
+FOR DELETE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
 
 ALTER TABLE academy_instructors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE academy_classes ENABLE ROW LEVEL SECURITY;

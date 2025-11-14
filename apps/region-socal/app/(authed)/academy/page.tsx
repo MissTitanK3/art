@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Button } from "@workspace/ui/components/button";
@@ -28,6 +29,29 @@ import {
 import type { AcademyTrainingSessionParticipant } from "@workspace/store/types/academy.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import { useProfileStore } from "@workspace/store/useProfileStore";
+import type {
+  RegionOperationalMinimumDefinition,
+  RegionOperationalMinimumsOverridesPayload,
+} from "@workspace/store/types/academy-readiness.ts";
+import {
+  DEFAULT_REGION_OPERATIONAL_MINIMUMS,
+  buildRegionOperationalMinimums,
+  createRegionReadinessChecklist,
+  evaluateOperationalMinimums,
+  deriveRegionOperationalMinimumOverrides,
+  parseRegionOperationalMinimumOverrides,
+} from "@/lib/academy/region-minimums";
+
+const REGION_SETTINGS_SLUG =
+  process.env.NEXT_PUBLIC_REGION_ID || process.env.NEXT_PUBLIC_BRAND_SLUG || "default";
+
+type RegionSettingsRow = {
+  id?: string;
+  region_slug?: string;
+  settings?: Record<string, any> | null;
+  operational_minimums?: unknown;
+  updated_at?: string;
+};
 
 export default function AcademyDashboardPage() {
   const router = useRouter();
@@ -133,12 +157,66 @@ function AcademyDashboardContent({
   const removeTrainingSession = usePodAcademyDashboardStore(
     (state) => state.removeTrainingSession,
   );
+  const [operationalMinimumDefinitions, setOperationalMinimumDefinitions] =
+    React.useState(() =>
+      DEFAULT_REGION_OPERATIONAL_MINIMUMS.map((definition) => ({
+        ...definition,
+      })),
+    );
+  const [regionSettingsRecord, setRegionSettingsRecord] = React.useState<RegionSettingsRow | null>(null);
+  const [isSavingMinimums, setIsSavingMinimums] = React.useState(false);
 
   useEffect(() => {
     setStats(stats);
     setCourseGroups(courseGroups);
     setMembers(members);
   }, [courseGroups, members, setCourseGroups, setMembers, setStats, stats]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadOperationalMinimumOverrides() {
+      try {
+        const client = getSupabaseBrowserClient();
+        const { data, error } = await client
+          .from("region_settings")
+          .select("id, region_slug, operational_minimums, settings, updated_at")
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw error;
+
+        const row = (data ?? null) as RegionSettingsRow | null;
+        const overridesPayload =
+          row?.operational_minimums ??
+          row?.settings?.operational_minimums ??
+          row?.settings?.academy?.operational_minimums;
+
+        const overrides = parseRegionOperationalMinimumOverrides(
+          overridesPayload as RegionOperationalMinimumsOverridesPayload,
+        );
+        if (!cancelled && overrides.length > 0) {
+          setOperationalMinimumDefinitions(
+            buildRegionOperationalMinimums(overrides),
+          );
+        }
+        if (!cancelled) {
+          setRegionSettingsRecord(row);
+        }
+      } catch (overrideError) {
+        console.warn(
+          "[AcademyDashboard] region operational minimum overrides unavailable",
+          overrideError,
+        );
+      }
+    }
+
+    loadOperationalMinimumOverrides();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Supabase: hydrate sessions + participants and persist changes
   const supabaseSetSessions = usePodAcademyDashboardStore(
@@ -440,6 +518,22 @@ function AcademyDashboardContent({
     (state) => state.trainingClasses,
   );
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
+  const operationalMinimumSnapshots = React.useMemo(
+    () =>
+      evaluateOperationalMinimums(
+        operationalMinimumDefinitions,
+        storeMembers,
+      ),
+    [operationalMinimumDefinitions, storeMembers],
+  );
+  const readinessChecklist = React.useMemo(
+    () =>
+      createRegionReadinessChecklist(
+        operationalMinimumSnapshots,
+        storeSessions,
+      ),
+    [operationalMinimumSnapshots, storeSessions],
+  );
   const notifyAcademyChange = React.useCallback(
     async (payload: {
       id: string;
@@ -471,6 +565,60 @@ function AcademyDashboardContent({
   const profile = useProfileStore((s) => s.profile);
   const roles = profile?.access_role ? [String(profile.access_role)] : [];
 
+  const handleSaveOperationalMinimums = React.useCallback(
+    async (definitions: RegionOperationalMinimumDefinition[]) => {
+      setIsSavingMinimums(true);
+      try {
+        const client = getSupabaseBrowserClient();
+        const overrides = deriveRegionOperationalMinimumOverrides(
+          definitions,
+          DEFAULT_REGION_OPERATIONAL_MINIMUMS,
+        );
+
+        const existingSettings = (regionSettingsRecord?.settings ?? {}) as Record<string, any>;
+        const nextSettings = {
+          ...existingSettings,
+          academy: {
+            ...(existingSettings?.academy ?? {}),
+            operational_minimums: overrides,
+          },
+        };
+
+        const payload: RegionSettingsRow = {
+          id: regionSettingsRecord?.id,
+          region_slug: regionSettingsRecord?.region_slug || REGION_SETTINGS_SLUG,
+          operational_minimums: overrides,
+          settings: nextSettings,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { data, error } = await client
+          .from("region_settings")
+          .upsert(payload, { onConflict: "region_slug" })
+          .select("id, region_slug, operational_minimums, settings, updated_at")
+          .single();
+        if (error) throw error;
+
+        const nextRecord = (data as RegionSettingsRow) ?? payload;
+        setRegionSettingsRecord(nextRecord);
+        setOperationalMinimumDefinitions(
+          definitions.map((definition) => ({ ...definition })),
+        );
+        toast.success("Operational minimums updated");
+      } catch (error) {
+        console.error(
+          "[AcademyDashboard] unable to save operational minimums",
+          error,
+        );
+        toast.error("Failed to save operational minimums");
+        throw error;
+      } finally {
+        setIsSavingMinimums(false);
+      }
+    },
+    [regionSettingsRecord],
+  );
+
   return (
     <PodAcademyDashboardLayout
       roles={roles}
@@ -481,6 +629,11 @@ function AcademyDashboardContent({
       instructors={storeInstructors}
       trainingClasses={storeTrainingClasses}
       sessions={storeSessions}
+      operationalMinimums={operationalMinimumSnapshots}
+      operationalMinimumDefinitions={operationalMinimumDefinitions}
+      readinessChecklist={readinessChecklist}
+      onSaveOperationalMinimums={handleSaveOperationalMinimums}
+      isSavingOperationalMinimums={isSavingMinimums}
       onScheduleClass={onScheduleClass}
       onUpdateSessionStatus={async (sessionId, status) => {
         const targetSession = storeSessions.find((s) => s.id === sessionId);
