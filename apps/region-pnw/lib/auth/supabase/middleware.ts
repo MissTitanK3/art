@@ -2,10 +2,29 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { ensureSupabaseEnv } from "./utils";
 
+const PUBLIC_PWA_PATHS = new Set([
+  "/site.webmanifest",
+  "/manifest.json",
+  "/manifest.webmanifest",
+  "/sw.js",
+  "/service-worker.js",
+  "/robots.txt",
+  "/sitemap.xml",
+]);
+
+const PUBLIC_PWA_PREFIXES = ["/splash"];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
   const isApi = pathname.startsWith("/api/");
+
+  const isPublicPwaAsset =
+    PUBLIC_PWA_PATHS.has(pathname) ||
+    PUBLIC_PWA_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  if (isPublicPwaAsset) {
+    return supabaseResponse;
+  }
 
   // If env vars are missing, skip to avoid throwing during local/tutorial flows
   let env: ReturnType<typeof ensureSupabaseEnv>;

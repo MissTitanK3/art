@@ -40,6 +40,7 @@ export default function RootLayout({
 export const metadata: Metadata = {
   title: "ART Academy",
   description: "Learn, train, and certify with the ART Academy.",
+  applicationName: "ART Academy",
   openGraph: {
     title: "ART Academy",
     description: "Learn, train, and certify with the ART Academy.",
@@ -47,5 +48,19 @@ export const metadata: Metadata = {
   twitter: {
     title: "ART Academy",
     description: "Learn, train, and certify with the ART Academy.",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    shortcut: ["/favicon.ico"],
+  },
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black",
   },
 };

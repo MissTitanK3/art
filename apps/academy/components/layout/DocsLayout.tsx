@@ -9,6 +9,7 @@ import DocsSidebarServer from "./DocsSidebarServer";
 import SearchCoursesModal from "@/components/client/SearchCoursesModal";
 import Link from "next/link";
 import PrintButton from "@/components/client/PrintButton";
+import ShareCourseButton from "@/components/client/ShareCourseButton";
 
 export default async function DocsLayout({
   children,
@@ -53,15 +54,18 @@ export default async function DocsLayout({
             </Link>{" "}
             / <span className="font-medium">{title}</span>
           </nav>
-          {/* Actions: Search, Print and mobile course list */}
-          <div className="flex items-center gap-2">
-            <SearchCoursesModal />
-            <PrintButton />
-            <div className="lg:hidden">
-              <MobileCourseSheet>
-                <DocsSidebarServer />
-              </MobileCourseSheet>
+          {/* Actions: Search, Share, Print and mobile course list */}
+          <div className="flex flex-col md:flex-row items-center gap-2">
+            <div className="flex items-center gap-2 mt-2 md:mt-0">
+              <ShareCourseButton title={title} />
+              <PrintButton />
+              <div className="lg:hidden">
+                <MobileCourseSheet>
+                  <DocsSidebarServer />
+                </MobileCourseSheet>
+              </div>
             </div>
+            <SearchCoursesModal />
           </div>
         </div>
         <div className="prose dark:prose-invert max-w-4xl mx-auto px-2">
