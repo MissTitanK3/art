@@ -28,6 +28,7 @@ import {
   Bug,
   CalendarDays,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import AdminNotificationsDataLayer from "@/components/dataLayer/admin/notifications/AdminNotificationsDataLayer";
 
@@ -36,6 +37,7 @@ import { useRouter } from "next/navigation";
 import { DispatchSubmission } from "@workspace/store/types/global";
 import { Pod } from "@workspace/store/types/pod";
 import type { Profile } from "@workspace/store/types/global.ts";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 
 // Map component (client-only)
 const WatchMap = dynamic(
@@ -45,6 +47,8 @@ const WatchMap = dynamic(
 
 export default function AdminPage() {
   const router = useRouter();
+  const profile = useProfileStore((s) => s.profile);
+  const isNationalAdmin = profile?.access_role === "national_admin";
   // Aggregated metrics from demo data
   const [uniqueProfiles, setUniqueProfiles] = React.useState<number>(0);
   const [uniquePods, setUniquePods] = React.useState<number>(0);
@@ -156,6 +160,61 @@ export default function AdminPage() {
 
   const trainingPct = trainingStats.completionPct;
 
+  const [iceoutSyncing, setIceoutSyncing] = React.useState(false);
+  const [iceoutLastSyncedAt, setIceoutLastSyncedAt] =
+    React.useState<string | null>(null);
+  const [iceoutStatusMessage, setIceoutStatusMessage] =
+    React.useState<string | null>(null);
+
+  const fetchIceoutStatus = React.useCallback(async () => {
+    if (!isNationalAdmin) return;
+    try {
+      const res = await fetch("/api/admin/iceout", {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setIceoutLastSyncedAt(data?.lastSyncedAt ?? null);
+      setIceoutStatusMessage(data?.message ?? null);
+    } catch (error) {
+      console.warn("[AdminPage] failed to load Iceout status", error);
+    }
+  }, [isNationalAdmin]);
+
+  React.useEffect(() => {
+    if (!isNationalAdmin) return;
+    fetchIceoutStatus();
+  }, [fetchIceoutStatus, isNationalAdmin]);
+
+  const syncIceoutReports = React.useCallback(async () => {
+    if (!isNationalAdmin) return;
+    setIceoutSyncing(true);
+    try {
+      const res = await fetch("/api/admin/iceout", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast.error(data?.error ?? "Failed to sync Iceout reports");
+      } else {
+        setIceoutLastSyncedAt(data?.lastSyncedAt ?? new Date().toISOString());
+        setIceoutStatusMessage(
+          data?.message ??
+          `Imported ${data?.inserted ?? 0} new reports (checked ${data?.checked ?? 0})`,
+        );
+        toast.success(
+          data?.message ?? `Imported ${data?.inserted ?? 0} Iceout reports`,
+        );
+      }
+    } catch (error) {
+      console.error("[AdminPage] Iceout sync failed", error);
+      toast.error("Failed to sync Iceout reports");
+    } finally {
+      setIceoutSyncing(false);
+    }
+  }, [isNationalAdmin]);
+
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
   const { reports, idMap } = React.useMemo(
     () => toWatchReports(dispatches),
@@ -218,6 +277,50 @@ export default function AdminPage() {
           icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
+
+      {isNationalAdmin && (
+        <Card>
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                Iceout Reports
+              </CardTitle>
+              <CardDescription>
+                Import approved third-party reports into the regional database.
+              </CardDescription>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Last synced:{" "}
+                {iceoutLastSyncedAt
+                  ? new Date(iceoutLastSyncedAt).toLocaleString()
+                  : "Never"}
+              </p>
+              {iceoutStatusMessage && (
+                <p className="text-xs text-muted-foreground">
+                  {iceoutStatusMessage}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchIceoutStatus}
+                disabled={iceoutSyncing}
+              >
+                Refresh status
+              </Button>
+              <Button
+                size="sm"
+                onClick={syncIceoutReports}
+                disabled={iceoutSyncing}
+              >
+                {iceoutSyncing ? "Syncing..." : "Sync now"}
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Quick navigation */}
       <Card>

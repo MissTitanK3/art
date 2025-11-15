@@ -13,7 +13,6 @@ import { Button } from "@workspace/ui/components/button";
 import DonutChart from "@workspace/ui/components/charts/DonutChart";
 import StatCard from "@workspace/ui/components/stat-card";
 import NavTile from "@workspace/ui/components/nav-tile";
-import KeyValueItem from "@workspace/ui/components/key-value-item";
 import { percent } from "@workspace/ui/lib/utils";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
 import {
@@ -26,7 +25,6 @@ import {
   Package,
   GraduationCap,
   Handshake,
-  Database,
 } from "lucide-react";
 
 import { TraingingSessionsDemoData } from "@/data/demoAcademy";
@@ -110,6 +108,7 @@ export default function AdminPage() {
     if (!subjectId || !signerId) return null;
     return { subjectId, signerId };
   }, [activeRoster]);
+
 
   const toggleFlagged = async () => {
     if (!firstSubmission) return;

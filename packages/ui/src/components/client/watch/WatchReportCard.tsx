@@ -2,7 +2,7 @@
 
 import { WizardReport } from "@workspace/store/types/watch.ts";
 import { Button } from "../../button.tsx";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { resolveLocationInfo } from "@workspace/ui/lib/location-resolver";
 
 interface WatchReportCardProps {
@@ -20,7 +20,53 @@ export default function WatchReportCard({
   const rawLng = (report.location as any)?.lng;
   const lat = typeof rawLat === "string" ? Number(rawLat) : rawLat;
   const lng = typeof rawLng === "string" ? Number(rawLng) : rawLng;
-  const [city, setCity] = useState<string | null>(null);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
+
+  const recency = useMemo(() => {
+    const parsed = Date.parse(report.timestamp);
+    if (Number.isNaN(parsed)) return null;
+
+    const ageMinutes = Math.max(0, (Date.now() - parsed) / (1000 * 60));
+
+    if (ageMinutes <= 15) {
+      return {
+        label: "Last 15 min",
+        badgeClass:
+          "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-500",
+        dotClass: "bg-red-500",
+      } as const;
+    }
+
+    if (ageMinutes <= 30) {
+      return {
+        label: "Last 30 min",
+        badgeClass:
+          "border-orange-500/40 bg-orange-500/10 text-orange-600 dark:text-orange-500",
+        dotClass: "bg-orange-500",
+      } as const;
+    }
+
+    if (ageMinutes <= 60) {
+      return {
+        label: "Last hour",
+        badgeClass:
+          "border-yellow-500/40 bg-yellow-500/10 text-yellow-600 dark:text-yellow-500",
+        dotClass: "bg-yellow-500",
+      } as const;
+    }
+
+    return null;
+  }, [report.timestamp]);
+
+  const locationDisplay = useMemo(() => {
+    if (locationLabel) return locationLabel;
+    if (typeof lat === "number" && typeof lng === "number") {
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      }
+    }
+    return "No location";
+  }, [lat, lng, locationLabel]);
 
   useEffect(() => {
     if (typeof lat !== "number" || typeof lng !== "number") return;
@@ -29,7 +75,7 @@ export default function WatchReportCard({
     let active = true;
     resolveLocationInfo(lat, lng).then((info) => {
       if (!active) return;
-      setCity(info.city);
+      setLocationLabel(info.county ?? info.city ?? info.state ?? null);
     });
 
     return () => {
@@ -45,13 +91,20 @@ export default function WatchReportCard({
           "Unknown presence"}
       </div>
 
-      <div className="text-sm text-muted-foreground">
-        {new Date(report.timestamp).toLocaleString()} •{" "}
-        {city
-          ? city
-          : typeof lat === "number" && typeof lng === "number"
-            ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
-            : "No location"}
+      <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span>{new Date(report.timestamp).toLocaleString()}</span>
+        {recency ? (
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${recency.badgeClass}`}
+          >
+            <span className={`h-2 w-2 rounded-full ${recency.dotClass}`} />
+            {recency.label}
+          </span>
+        ) : null}
+        <span className="flex items-center gap-1">
+          <span aria-hidden>•</span>
+          <span>{locationDisplay}</span>
+        </span>
       </div>
 
       {report.media_url && (

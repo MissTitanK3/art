@@ -5,7 +5,7 @@ export interface SupabaseEnv {
 }
 
 export function ensureSupabaseEnv(
-  target: "server" | "client" | "admin" = "server",
+  target: "server" | "client" | "admin" | "wizard" = "server",
 ): SupabaseEnv {
   let url: string | undefined;
   let anonKey: string | undefined;
@@ -21,6 +21,18 @@ export function ensureSupabaseEnv(
     case "client":
       url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      break;
+
+    case "wizard":
+      url =
+        process.env.NEXT_PUBLIC_SUPABASE_URL_WIZZARD ??
+        process.env.NEXT_PUBLIC_SUPABASE_URL;
+      anonKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_WIZZARD ??
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      serviceRoleKey =
+        process.env.SUPABASE_SERVICE_ROLE_KEY_WIZZARD ??
+        process.env.SUPABASE_SERVICE_ROLE_KEY;
       break;
 
     default:

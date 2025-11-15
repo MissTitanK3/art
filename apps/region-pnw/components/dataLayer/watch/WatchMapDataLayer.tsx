@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchReports } from "@/lib/adapters/fetchReports";
 import { MapFocus, WizardReport } from "@workspace/store/types/watch.ts";
 import dynamic from "next/dynamic";
@@ -24,6 +24,7 @@ const FOCUS_ZOOM = 11;
 
 export default function WatchMapDataLayer() {
   const [reports, setReports] = useState<WizardReport[]>([]);
+  const [visibleReports, setVisibleReports] = useState<WizardReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -49,6 +50,7 @@ export default function WatchMapDataLayer() {
       try {
         const data = await fetchReports();
         setReports(data);
+        setVisibleReports(data);
       } catch (err: any) {
         console.error(err);
         setError(err.message ?? "Failed to load reports");
@@ -176,6 +178,24 @@ export default function WatchMapDataLayer() {
     selectedAgencies,
   ]);
 
+  useEffect(() => {
+    setVisibleReports(filteredReports);
+  }, [filteredReports]);
+
+  const handleVisibleReportsChange = useCallback((next: WizardReport[]) => {
+    setVisibleReports((prev) => {
+      if (
+        prev.length === next.length &&
+        prev.every((item, index) => item.id === next[index]?.id)
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, []);
+
+  const listReports = visibleReports;
+
   const resetFilters = () => {
     setQuery("");
     setHideTest(true);
@@ -238,13 +258,16 @@ export default function WatchMapDataLayer() {
                 movingOnly={movingOnly}
                 onMovingOnlyChange={(v) => setMovingOnly(Boolean(v))}
                 onResetFilters={resetFilters}
+                onVisibleReportsChange={handleVisibleReportsChange}
               />
-              {filteredReports.length === 0 ? (
+              {listReports.length === 0 ? (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <div className="rounded-md bg-background/80 px-3 py-2 text-sm text-muted-foreground shadow">
-                    {reports.length === 0
-                      ? "No reports yet."
-                      : "No reports match current filters."}
+                    {filteredReports.length === 0
+                      ? reports.length === 0
+                        ? "No reports yet."
+                        : "No reports match current filters."
+                      : "No reports match current map view."}
                   </div>
                 </div>
               ) : null}
@@ -255,8 +278,8 @@ export default function WatchMapDataLayer() {
         </TabsContent>
 
         <TabsContent value="list" className="mt-4 space-y-3">
-          {filteredReports.length > 0 ? (
-            filteredReports.map((r) => (
+          {listReports.length > 0 ? (
+            listReports.map((r) => (
               <WatchReportCard
                 key={r.id}
                 report={r}
@@ -265,9 +288,11 @@ export default function WatchMapDataLayer() {
             ))
           ) : (
             <div className="text-muted-foreground">
-              {reports.length === 0
-                ? "No reports yet."
-                : "No reports match current filters."}
+              {filteredReports.length === 0
+                ? reports.length === 0
+                  ? "No reports yet."
+                  : "No reports match current filters."
+                : "No reports match current map view."}
             </div>
           )}
         </TabsContent>

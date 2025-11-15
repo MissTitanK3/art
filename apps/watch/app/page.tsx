@@ -7,7 +7,6 @@ import type { LatLngLiteral } from "leaflet";
 import { RefreshCw } from "lucide-react";
 import RightSidebar from "@/components/ui/RightSidebar";
 import InfoTabs from "@/components/info/InfoTabs";
-import JoinDispatchPanel from "@/components/features/JoinDispatch/JoinDispatchPanel";
 import MapSettingsPanel from "@/components/features/MapSettings/MapSettingsPanel";
 import FilterSidebar from "@/components/features/Filters/FilterSidebar";
 import FABStack from "@/components/ui/FABStack";
@@ -209,7 +208,7 @@ export default function Home() {
       setUserPos(null as any);
       try {
         clearCachedLocation();
-      } catch {}
+      } catch { }
       setSelecting(true);
     }
   }, [pendingAuto, geoError]);
@@ -249,7 +248,7 @@ export default function Home() {
       if (!Number.isNaN(r) && r > 0) setRadius(r);
       const u = localStorage.getItem("unit_pref") as "km" | "mi" | null;
       if (u === "km" || u === "mi") setUnit(u);
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -260,7 +259,7 @@ export default function Home() {
         const parsed = JSON.parse(storedAgencies);
         if (Array.isArray(parsed)) setAgencyFilter(parsed);
       }
-    } catch {}
+    } catch { }
     try {
       const storedRange = localStorage.getItem("timeRange");
       if (storedRange) {
@@ -275,7 +274,7 @@ export default function Home() {
           setTimeRange([start, end]);
         }
       }
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -321,12 +320,12 @@ export default function Home() {
   useEffect(() => {
     try {
       localStorage.setItem("agencyFilter", JSON.stringify(agencyFilter));
-    } catch {}
+    } catch { }
   }, [agencyFilter]);
   useEffect(() => {
     try {
       localStorage.setItem("timeRange", JSON.stringify(timeRange));
-    } catch {}
+    } catch { }
   }, [timeRange]);
 
   const filteredReports = useMemo(
@@ -522,7 +521,7 @@ export default function Home() {
           setUserPos(null as any);
           try {
             clearCachedLocation();
-          } catch {}
+          } catch { }
           // reset draft
           setDraft(initialDraft);
         }}
@@ -612,7 +611,7 @@ export default function Home() {
             setUserPos(null as any);
             try {
               clearCachedLocation();
-            } catch {}
+            } catch { }
           }
         }}
         showRadius={showRadius}
@@ -625,7 +624,7 @@ export default function Home() {
             localStorage.removeItem("loc_mode");
             localStorage.removeItem("loc_radius");
             localStorage.removeItem("loc_radius_show");
-          } catch {}
+          } catch { }
           setLocMode("off");
           setShowRadius(false);
           setRadius(200);

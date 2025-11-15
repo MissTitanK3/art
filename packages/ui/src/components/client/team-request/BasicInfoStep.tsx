@@ -103,11 +103,11 @@ export function BasicInfoStep({ initial, onNext }: BasicInfoStepProps) {
             ? stateLookup.get(info.state.toLowerCase())
             : undefined;
       const stateDisplay = resolvedStateCode ?? info.state ?? "";
+      const locality = info.city ?? info.county ?? null;
       const resolvedLabel =
-        info.city && stateDisplay
-          ? `${info.city}, ${stateDisplay}`
-          : (info.city ??
-            `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+        locality && stateDisplay
+          ? `${locality}, ${stateDisplay}`
+          : locality ?? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
 
       setLocationLabel((prev) => {
         if (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -90,6 +90,7 @@ export default function MapWrapper({
   children,
 }: Props) {
   const mapRef = useRef<LeafletMap | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const { tile } = useMapTile();
   useEffect(() => {
     if (!mapRef.current) return;
@@ -106,7 +107,8 @@ export default function MapWrapper({
   }, [onZoomChange]);
 
   useEffect(() => {
-    if (!mapRef.current || (!onBoundsChange && !onBoundsIdle)) return;
+    if (!mapReady || !mapRef.current || (!onBoundsChange && !onBoundsIdle))
+      return;
     const map = mapRef.current;
     const emit = () => {
       const b = map.getBounds();
@@ -130,6 +132,7 @@ export default function MapWrapper({
     };
     // Emit immediately and on any movement/zoom changes
     emit();
+    emitEnd();
     map.on("move", emit);
     map.on("zoom", emit);
     map.on("moveend", emitEnd);
@@ -140,7 +143,7 @@ export default function MapWrapper({
       map.off("moveend", emitEnd);
       map.off("zoomend", emitEnd);
     };
-  }, [onBoundsChange, onBoundsIdle, position, zoom]);
+  }, [mapReady, onBoundsChange, onBoundsIdle, position, zoom]);
 
   return (
     <MapContainer
@@ -151,7 +154,8 @@ export default function MapWrapper({
       scrollWheelZoom={true}
       style={{ height: "100%", width: "100%", zIndex: 0 }}
       ref={(ref) => {
-        if (ref) mapRef.current = ref;
+        mapRef.current = ref;
+        setMapReady(!!ref);
       }}
     >
       <TileLayer attribution={tile.attribution} url={tile.url} />
