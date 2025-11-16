@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 import {
   Select,
   SelectContent,
@@ -115,32 +116,6 @@ function LengthMeter({ text }: { text: string }) {
   );
 }
 
-function useLocalStorage<T>(key: string, initial: T) {
-  const [state, setState] = React.useState<T>(initial);
-  const hydratedRef = React.useRef(false);
-  React.useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(key);
-      if (raw != null) {
-        setState(JSON.parse(raw) as T);
-      }
-    } catch {
-      /* ignore */
-    }
-    hydratedRef.current = true;
-  }, [key]);
-
-  React.useEffect(() => {
-    if (!hydratedRef.current) return;
-    try {
-      window.localStorage.setItem(key, JSON.stringify(state));
-    } catch {
-      /* ignore */
-    }
-  }, [key, state]);
-  return [state, setState] as const;
-}
-
 function download(filename: string, text: string) {
   const blob = new Blob([text], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -159,14 +134,34 @@ export default function TeleprompterScriptBuilder({
   const ns = (k: string) => `${storageNamespace}.${k}`;
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
-  const [name, setName] = useLocalStorage<string>(ns("name"), "My Script");
-  const [lines, setLines] = useLocalStorage<BuilderLine[]>(ns("lines"), []);
+  const emptyLines = React.useMemo<BuilderLine[]>(() => [], []);
+  const emptySaved = React.useMemo(
+    () => [] as { id: string; name: string; lines: BuilderLine[] }[],
+    [],
+  );
+  const [name, setName] = useLocalStorage<string>(ns("name"), "My Script", {
+    sync: true,
+  });
+  const [lines, setLines] = useLocalStorage<BuilderLine[]>(
+    ns("lines"),
+    emptyLines,
+    {
+      sync: true,
+      debounceMs: 200,
+    },
+  );
   const [currentText, setCurrentText] = React.useState("");
   const [currentCues, setCurrentCues] = React.useState<string[]>([]);
   const [customCue, setCustomCue] = React.useState("");
   const [saved, setSaved] = useLocalStorage<
     { id: string; name: string; lines: BuilderLine[] }[]
-  >(ns("saved"), []);
+  >(
+    ns("saved"),
+    emptySaved,
+    {
+      sync: true,
+    },
+  );
   const [placeholderMap, setPlaceholderMap] = React.useState<
     Record<string, string>
   >({});
@@ -280,8 +275,8 @@ export default function TeleprompterScriptBuilder({
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "")}'\n[\n${compiledLines
-    .map((l) => `  ${JSON.stringify(l)}`)
-    .join(",\n")}\n].join("\\n\\n")`;
+      .map((l) => `  ${JSON.stringify(l)}`)
+      .join(",\n")}\n].join("\\n\\n")`;
 
   const suggestedId = React.useMemo(
     () =>
@@ -342,9 +337,9 @@ export default function TeleprompterScriptBuilder({
       .map((id) => ({ id, meta: builtinMeta.find((m) => m.id === id) }))
       .filter((x) => !!x.meta)
       .slice(0, 3) as Array<{
-      id: string;
-      meta: { id: string; label: string };
-    }>;
+        id: string;
+        meta: { id: string; label: string };
+      }>;
     return picks.map((p) => ({
       id: p.meta.id,
       title: p.meta.label,
@@ -383,7 +378,7 @@ export default function TeleprompterScriptBuilder({
                   setLines(asLines);
                   setName(
                     builtinMeta.find((m) => m.id === tpl.id)?.label ||
-                      tpl.title,
+                    tpl.title,
                   );
                 }}
                 className="flex flex-col items-start rounded-md border bg-background p-3 text-left hover:bg-accent"
@@ -429,7 +424,7 @@ export default function TeleprompterScriptBuilder({
                 if (!name || name === "My Script")
                   setName(
                     builtinMeta.find((m) => m.id === presetId)?.label ||
-                      "Preset",
+                    "Preset",
                   );
               }}
               className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
@@ -782,8 +777,8 @@ export default function TeleprompterScriptBuilder({
                       const cues = Array.isArray(item.cues)
                         ? (item.cues as string[])
                         : Array.from(t.matchAll(/\[(.*?)\]/g))
-                            .map((m: any) => m[0])
-                            .filter(Boolean);
+                          .map((m: any) => m[0])
+                          .filter(Boolean);
                       return {
                         id: uid(),
                         text: t.replace(/\s*\[(.*?)\]/g, "").trim(),
@@ -839,8 +834,8 @@ export default function TeleprompterScriptBuilder({
                         const cues = Array.isArray(item.cues)
                           ? (item.cues as string[])
                           : Array.from(t.matchAll(/\[(.*?)\]/g))
-                              .map((m: any) => m[0])
-                              .filter(Boolean);
+                            .map((m: any) => m[0])
+                            .filter(Boolean);
                         return {
                           id: uid(),
                           text: t.replace(/\s*\[(.*?)\]/g, "").trim(),

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 import type {
   ComTeam,
   ComChannel,
@@ -32,6 +33,17 @@ import { CommsAlertsCard } from "@workspace/ui/components/dispatch/CommsAlertsCa
 
 const CHECK_IN_STORAGE_KEY = "comms.defaultCheckInMinutes";
 const DEFAULT_CHECK_IN_MINUTES = 60;
+
+const coerceMinutes = (value: unknown): number | undefined => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : undefined;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : undefined;
+  }
+  return undefined;
+};
 
 type Props = {
   teams: ComTeam[];
@@ -75,76 +87,81 @@ export function CommsDashboardView({
   createAlert,
   updateAlert,
   deleteAlert,
-}: Props) {
-  const [checkInInput, setCheckInInput] = React.useState<string>(() => {
-    const fallback = (globalCheckInMinutes ?? DEFAULT_CHECK_IN_MINUTES).toString();
-    if (typeof window === "undefined") return fallback;
-    const stored = window.localStorage.getItem(CHECK_IN_STORAGE_KEY);
-    const parsed = stored ? parseInt(stored, 10) : NaN;
-    return Number.isFinite(parsed) && parsed > 0 ? String(parsed) : fallback;
-  });
-  const hasHydratedStoredCheckIn = React.useRef(false);
-
-  const persistGlobalCheckInMinutes = React.useCallback(
-    (mins: number) => {
-      if (!Number.isFinite(mins) || mins <= 0) return;
-      setCheckInInput(String(mins));
-      try {
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(CHECK_IN_STORAGE_KEY, String(mins));
-        }
-      } catch {
-        /* ignore persistence errors */
-      }
-      setGlobalCheckInMinutes(mins);
-    },
-    [setGlobalCheckInMinutes],
-  );
-
-  React.useEffect(() => {
-    if (hasHydratedStoredCheckIn.current) return;
-    if (typeof window === "undefined") return;
-
-    const stored = window.localStorage.getItem(CHECK_IN_STORAGE_KEY);
-    const parsed = stored ? parseInt(stored, 10) : NaN;
-
-    if (Number.isFinite(parsed) && parsed > 0) {
-      if (globalCheckInMinutes !== parsed) {
-        persistGlobalCheckInMinutes(parsed);
-      } else {
-        setCheckInInput(String(parsed));
-      }
-    } else if (
+}: Props): React.ReactElement {
+  const resolvedInitialMinutes = React.useMemo(() => {
+    if (
       typeof globalCheckInMinutes === "number" &&
       Number.isFinite(globalCheckInMinutes) &&
       globalCheckInMinutes > 0
     ) {
-      setCheckInInput(String(globalCheckInMinutes));
+      return globalCheckInMinutes;
     }
+    return DEFAULT_CHECK_IN_MINUTES;
+  }, [globalCheckInMinutes]);
+  const [storedCheckInMinutes, setStoredCheckInMinutes] = useLocalStorage<number>(
+    CHECK_IN_STORAGE_KEY,
+    resolvedInitialMinutes,
+    {
+      debounceMs: 150,
+      sync: true,
+      serialize: (value) => String(value),
+      deserialize: (raw) => coerceMinutes(raw) ?? resolvedInitialMinutes,
+      migrate: (payload) => coerceMinutes(payload) ?? resolvedInitialMinutes,
+    },
+  );
 
-    hasHydratedStoredCheckIn.current = true;
-  }, [globalCheckInMinutes, persistGlobalCheckInMinutes]);
+  const [checkInInput, setCheckInInput] = React.useState<string>(() =>
+    String(resolvedInitialMinutes),
+  );
+
+  const persistGlobalCheckInMinutes = React.useCallback(
+    (mins: number) => {
+      const normalized = coerceMinutes(mins);
+      if (!normalized) return;
+      setCheckInInput(String(normalized));
+      setStoredCheckInMinutes(normalized);
+      setGlobalCheckInMinutes(normalized);
+    },
+    [setGlobalCheckInMinutes, setStoredCheckInMinutes],
+  );
+
+  const effectiveCheckInMinutes = React.useMemo(() => {
+    const globalMinutes = coerceMinutes(globalCheckInMinutes);
+    if (globalMinutes) return globalMinutes;
+    const storedMinutes = coerceMinutes(storedCheckInMinutes);
+    if (storedMinutes) return storedMinutes;
+    return resolvedInitialMinutes;
+  }, [globalCheckInMinutes, resolvedInitialMinutes, storedCheckInMinutes]);
 
   React.useEffect(() => {
-    if (!hasHydratedStoredCheckIn.current) return;
-    if (
-      typeof globalCheckInMinutes !== "number" ||
-      !Number.isFinite(globalCheckInMinutes) ||
-      globalCheckInMinutes <= 0
-    ) {
+    setCheckInInput((prev) => {
+      const prevValue = coerceMinutes(prev);
+      return prevValue === effectiveCheckInMinutes
+        ? prev
+        : String(effectiveCheckInMinutes);
+    });
+  }, [effectiveCheckInMinutes]);
+
+  React.useEffect(() => {
+    const globalMinutes = coerceMinutes(globalCheckInMinutes);
+    if (globalMinutes) {
+      if (storedCheckInMinutes !== globalMinutes) {
+        setStoredCheckInMinutes(globalMinutes);
+      }
       return;
     }
-    setCheckInInput((prev) => {
-      const parsedPrev = parseInt(prev, 10);
-      return parsedPrev === globalCheckInMinutes
-        ? prev
-        : String(globalCheckInMinutes);
-    });
-  }, [globalCheckInMinutes]);
+    setGlobalCheckInMinutes(effectiveCheckInMinutes);
+  }, [
+    effectiveCheckInMinutes,
+    globalCheckInMinutes,
+    setGlobalCheckInMinutes,
+    setStoredCheckInMinutes,
+    storedCheckInMinutes,
+  ]);
 
   const applyGlobalInterval = () => {
-    const v = parseInt(checkInInput || "0", 10);
-    if (Number.isFinite(v) && v > 0) persistGlobalCheckInMinutes(v);
+    const next = coerceMinutes(checkInInput);
+    if (next) persistGlobalCheckInMinutes(next);
   };
 
   return (

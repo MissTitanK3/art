@@ -11,6 +11,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 type Props = {
   onLog?: (entry: {
@@ -32,6 +33,27 @@ type Props = {
 };
 
 type CustomAlert = { id: string; direction: string; description: string };
+
+const NOOP_STORAGE: Storage = {
+  get length() {
+    return 0;
+  },
+  clear() {
+    /* noop */
+  },
+  getItem() {
+    return null;
+  },
+  key() {
+    return null;
+  },
+  removeItem() {
+    /* noop */
+  },
+  setItem() {
+    /* noop */
+  },
+};
 
 const EXAMPLES: CustomAlert[] = [
   {
@@ -62,36 +84,54 @@ export function CommsAlertsCard({
   onUpdateAlert,
   onDeleteAlert,
   storageKey = "comms-alerts:default",
-}: Props) {
-  const [localAlerts, setLocalAlerts] = React.useState<CustomAlert[]>(EXAMPLES);
+}: Props): React.ReactElement {
+  const shouldPersist = Boolean(storageKey);
+  const [localAlerts, setLocalAlerts] = useLocalStorage<CustomAlert[]>(
+    storageKey || "__comms-alerts__noop__",
+    EXAMPLES,
+    {
+      sync: shouldPersist,
+      storage: shouldPersist ? undefined : NOOP_STORAGE,
+      serialize: (value) => JSON.stringify(value),
+      deserialize: (raw) => {
+        try {
+          const parsed = JSON.parse(raw) as unknown;
+          return Array.isArray(parsed)
+            ? (parsed as CustomAlert[])
+            : EXAMPLES.map((example) => ({ ...example }));
+        } catch {
+          return EXAMPLES.map((example) => ({ ...example }));
+        }
+      },
+      migrate: (payload) => {
+        if (Array.isArray(payload)) {
+          return payload
+            .map((entry) => {
+              if (!entry || typeof entry !== "object") return undefined;
+              const candidate = entry as Partial<CustomAlert>;
+              const direction =
+                typeof candidate.direction === "string"
+                  ? candidate.direction
+                  : "";
+              const description =
+                typeof candidate.description === "string"
+                  ? candidate.description
+                  : "";
+              const id =
+                typeof candidate.id === "string" && candidate.id
+                  ? candidate.id
+                  : typeof crypto !== "undefined" && crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : `alert-${Math.random().toString(36).slice(2, 11)}`;
+              return { id, direction, description } as CustomAlert;
+            })
+            .filter((entry): entry is CustomAlert => Boolean(entry));
+        }
+        return EXAMPLES.map((example) => ({ ...example }));
+      },
+    },
+  );
   const useExternal = Array.isArray(extAlerts);
-
-  React.useEffect(() => {
-    if (useExternal) return;
-    try {
-      const raw =
-        typeof window !== "undefined"
-          ? window.localStorage.getItem(storageKey)
-          : null;
-      if (raw) {
-        const parsed = JSON.parse(raw) as CustomAlert[];
-        if (Array.isArray(parsed)) setLocalAlerts(parsed);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [storageKey, useExternal]);
-
-  React.useEffect(() => {
-    if (useExternal) return;
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(storageKey, JSON.stringify(localAlerts));
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [localAlerts, storageKey, useExternal]);
 
   const addAlert = async () => {
     if (useExternal && onCreateAlert) {
@@ -99,7 +139,14 @@ export function CommsAlertsCard({
     } else {
       setLocalAlerts((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), direction: "", description: "" },
+        {
+          id:
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `alert-${Math.random().toString(36).slice(2, 11)}`,
+          direction: "",
+          description: "",
+        },
       ]);
     }
   };
@@ -203,11 +250,11 @@ export function CommsAlertsCard({
             ))}
             {(useExternal ? (extAlerts?.length ?? 0) : localAlerts.length) ===
               0 && (
-              <p className="text-muted-foreground text-xs">
-                No alerts yet. Click “Add alert” or “Reset to examples” to get
-                started.
-              </p>
-            )}
+                <p className="text-muted-foreground text-xs">
+                  No alerts yet. Click “Add alert” or “Reset to examples” to get
+                  started.
+                </p>
+              )}
           </div>
         </div>
 

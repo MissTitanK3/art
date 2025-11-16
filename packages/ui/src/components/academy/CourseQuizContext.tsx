@@ -2,11 +2,12 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
-  useEffect,
-  useState,
+  useMemo,
   type ReactNode,
 } from "react";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 type QuizContextType = {
   passed: boolean;
@@ -16,6 +17,26 @@ type QuizContextType = {
 };
 
 const QuizContext = createContext<QuizContextType | null>(null);
+
+const sanitizeAnswerMap = (
+  payload: unknown,
+): Record<string, string | string[]> => {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return {};
+  }
+  const next: Record<string, string | string[]> = {};
+  for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
+    if (typeof value === "string") {
+      next[key] = value;
+    } else if (
+      Array.isArray(value) &&
+      value.every((item) => typeof item === "string")
+    ) {
+      next[key] = [...value];
+    }
+  }
+  return next;
+};
 
 export function useQuizStatus() {
   const ctx = useContext(QuizContext);
@@ -29,38 +50,74 @@ export function QuizProvider({
 }: {
   children: ReactNode;
   slug: string;
-}) {
-  const [passed, setPassedState] = useState(false);
-  const [answers, setAnswersState] = useState<
-    Record<string, string | string[]>
-  >({});
+}): React.ReactElement {
+  const [passed, setPassed] = useLocalStorage<boolean>(
+    `quiz_passed:${slug}`,
+    false,
+    {
+      sync: true,
+      serialize: (value) => String(Boolean(value)),
+      deserialize: (raw) => raw === "true",
+      migrate: (payload) => {
+        if (typeof payload === "boolean") return payload;
+        if (payload === "true") return true;
+        if (payload === "false") return false;
+        return undefined;
+      },
+    },
+  );
 
-  useEffect(() => {
-    const storedPassed = localStorage.getItem(`quiz_passed:${slug}`);
-    if (storedPassed === "true") setPassedState(true);
+  const defaultAnswers = useMemo<Record<string, string | string[]>>(
+    () => ({}),
+    [slug],
+  );
 
-    const storedAnswers = localStorage.getItem(`quiz_answers:${slug}`);
-    if (storedAnswers) {
-      try {
-        setAnswersState(JSON.parse(storedAnswers));
-      } catch {
-        setAnswersState({});
+  const [answers, setAnswers] = useLocalStorage<Record<string, string | string[]>>(
+    `quiz_answers:${slug}`,
+    defaultAnswers,
+    {
+      sync: true,
+      serialize: (value) => JSON.stringify(value),
+      deserialize: (raw) => {
+        try {
+          return sanitizeAnswerMap(JSON.parse(raw));
+        } catch {
+          return {};
+        }
+      },
+      migrate: (payload) => sanitizeAnswerMap(payload),
+    },
+  );
+
+  const handleSetPassed = useCallback(
+    (value: boolean) => {
+      setPassed(Boolean(value));
+    },
+    [setPassed],
+  );
+
+  const handleSetAnswers = useCallback(
+    (updated: Record<string, string | string[]>) => {
+      const sanitized: Record<string, string | string[]> = {};
+      for (const [key, value] of Object.entries(updated)) {
+        if (typeof value === "string") {
+          sanitized[key] = value;
+        } else if (
+          Array.isArray(value) &&
+          value.every((item) => typeof item === "string")
+        ) {
+          sanitized[key] = [...value];
+        }
       }
-    }
-  }, [slug]);
-
-  const setPassed = (value: boolean) => {
-    setPassedState(value);
-    localStorage.setItem(`quiz_passed:${slug}`, value.toString());
-  };
-
-  const setAnswers = (updated: Record<string, string | string[]>) => {
-    setAnswersState(updated);
-    localStorage.setItem(`quiz_answers:${slug}`, JSON.stringify(updated));
-  };
+      setAnswers(sanitized);
+    },
+    [setAnswers],
+  );
 
   return (
-    <QuizContext.Provider value={{ passed, setPassed, answers, setAnswers }}>
+    <QuizContext.Provider
+      value={{ passed, setPassed: handleSetPassed, answers, setAnswers: handleSetAnswers }}
+    >
       {children}
     </QuizContext.Provider>
   );

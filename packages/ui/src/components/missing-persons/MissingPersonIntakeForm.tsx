@@ -31,6 +31,7 @@ import {
   LegalSupportSection,
   VerificationSection,
 } from "../client/intake";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 type ExportFormat = "pdf" | "json";
 
@@ -90,6 +91,16 @@ const emptyValues: DetaineeIntakeFormValues = {
   version: undefined,
 };
 
+const sanitizeCaseIdList = (payload: unknown): string[] => {
+  if (Array.isArray(payload)) {
+    return payload.filter((id): id is string => typeof id === "string");
+  }
+  if (typeof payload === "string" && payload) {
+    return [payload];
+  }
+  return [];
+};
+
 export function MissingPersonIntakeForm({
   seedRecords,
   defaultCaseZone = DEFAULT_CASE_ZONE,
@@ -97,12 +108,10 @@ export function MissingPersonIntakeForm({
   onPersistRecord,
   region,
   loadLastCaseId,
-}: MissingPersonIntakeFormProps) {
+}: MissingPersonIntakeFormProps): React.ReactElement {
   const [lastJson, setLastJson] = React.useState<string>("");
   const [exportingFormat, setExportingFormat] =
     React.useState<ExportFormat | null>(null);
-  const [storedCaseIds, setStoredCaseIds] = React.useState<string[]>([]);
-  const [storedIdsLoaded, setStoredIdsLoaded] = React.useState(false);
   const [caseIdInitialized, setCaseIdInitialized] = React.useState(false);
   const [persistedCaseId, setPersistedCaseId] = React.useState<string | null>(
     null,
@@ -131,27 +140,23 @@ export function MissingPersonIntakeForm({
     [seedRecords],
   );
 
-  React.useEffect(() => {
-    if (typeof window === "undefined") {
-      setStoredIdsLoaded(true);
-      return;
-    }
-    try {
-      const raw = window.localStorage.getItem(CASE_ID_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setStoredCaseIds(
-            parsed.filter((id): id is string => typeof id === "string"),
-          );
+  const [storedCaseIds, setStoredCaseIds] = useLocalStorage<string[]>(
+    CASE_ID_STORAGE_KEY,
+    [],
+    {
+      version: 1,
+      sync: true,
+      serialize: (value) => JSON.stringify(value),
+      deserialize: (raw) => {
+        try {
+          return sanitizeCaseIdList(JSON.parse(raw));
+        } catch {
+          return [];
         }
-      }
-    } catch (error) {
-      console.warn("Failed to parse stored case IDs", error);
-    } finally {
-      setStoredIdsLoaded(true);
-    }
-  }, []);
+      },
+      migrate: (payload) => sanitizeCaseIdList(payload),
+    },
+  );
 
   const storeCaseIds = React.useMemo(
     () => collectCaseIds(storeRecords),
@@ -188,25 +193,22 @@ export function MissingPersonIntakeForm({
   }, [form, hasRecord]);
 
   React.useEffect(() => {
-    if (caseIdInitialized || !storedIdsLoaded) return;
+    if (caseIdInitialized) return;
     const generated = generateNextCaseId(defaultCaseZone, allCaseIds);
     form.setValue("caseId", generated, { shouldDirty: false });
     setCaseIdInitialized(true);
-  }, [allCaseIds, caseIdInitialized, storedIdsLoaded, form, defaultCaseZone]);
+  }, [allCaseIds, caseIdInitialized, form, defaultCaseZone]);
 
   const rememberCaseId = React.useCallback((caseId: string) => {
     const normalised = normaliseCaseId(caseId);
     setStoredCaseIds((prev) => {
-      if (prev.some((id) => normaliseCaseId(id) === normalised)) {
-        return prev;
+      const existing = Array.isArray(prev) ? prev : [];
+      if (existing.some((id) => normaliseCaseId(id) === normalised)) {
+        return existing;
       }
-      const next = [...prev, caseId];
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(CASE_ID_STORAGE_KEY, JSON.stringify(next));
-      }
-      return next;
+      return [...existing, caseId];
     });
-  }, []);
+  }, [setStoredCaseIds]);
 
   const persistRecord = React.useCallback(
     async (record: DetaineeIntake, caseId: string) => {

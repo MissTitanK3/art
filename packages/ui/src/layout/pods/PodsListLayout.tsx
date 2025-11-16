@@ -20,6 +20,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@workspace/ui/components/pagination";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 export type PodsListLayoutPod = {
   id?: string | number;
@@ -48,6 +49,14 @@ export type PodsListLayoutProps<TPod extends PodsListLayoutPod> = {
   persistKey?: string;
 };
 
+type PersistedPodsFilters = {
+  query: string;
+  area: string;
+  channel: string;
+  pageSize: number;
+  page: number;
+};
+
 export function PodsListLayout<TPod extends PodsListLayoutPod>({
   pods,
   title = "Pods Directory",
@@ -61,7 +70,7 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
   initialUrlParams,
   onUrlChange,
   persistKey,
-}: PodsListLayoutProps<TPod>) {
+}: PodsListLayoutProps<TPod>): React.ReactElement {
   const heading =
     typeof title === "string" ? (
       <h1 className="text-2xl font-bold">{title}</h1>
@@ -73,6 +82,60 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
     <p className="text-sm text-muted-foreground">No pods available.</p>
   );
 
+  const resolvedInitialPageSize =
+    typeof initialPageSize === "number" && initialPageSize > 0
+      ? initialPageSize
+      : pageSizeOptions?.[0] ?? 9;
+  const storageKey = persistKey ?? "__pods-list-layout__fallback__";
+
+  const defaultPersistedFilters = React.useMemo<PersistedPodsFilters>(
+    () => ({
+      query: "",
+      area: "all",
+      channel: "all",
+      pageSize: resolvedInitialPageSize,
+      page: 1,
+    }),
+    [resolvedInitialPageSize],
+  );
+
+  const [persistedFilters, setPersistedFilters] = useLocalStorage<
+    PersistedPodsFilters
+  >(
+    storageKey,
+    defaultPersistedFilters,
+    {
+      version: 2,
+      sync: Boolean(persistKey),
+      migrate: (payload) => {
+        if (!payload || typeof payload !== "object") {
+          return {
+            query: "",
+            area: "all",
+            channel: "all",
+            pageSize: resolvedInitialPageSize,
+            page: 1,
+          } as PersistedPodsFilters;
+        }
+        const candidate = payload as Partial<PersistedPodsFilters>;
+        const coerceString = (value: unknown, fallback: string) =>
+          typeof value === "string" ? value : fallback;
+        const coerceNumber = (value: unknown, fallback: number) => {
+          const num = Number(value);
+          return Number.isFinite(num) && num > 0 ? num : fallback;
+        };
+        return {
+          query: coerceString(candidate.query, ""),
+          area: coerceString(candidate.area, "all"),
+          channel: coerceString(candidate.channel, "all"),
+          pageSize: coerceNumber(candidate.pageSize, resolvedInitialPageSize),
+          page: coerceNumber(candidate.page, 1),
+        } as PersistedPodsFilters;
+      },
+      persist: Boolean(persistKey),
+    },
+  );
+
   const [query, setQuery] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
   React.useEffect(() => {
@@ -81,13 +144,12 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
   }, [query]);
   const [area, setArea] = React.useState<string>("all");
   const [channel, setChannel] = React.useState<string>("all");
-  const [pageSize, setPageSize] = React.useState<number>(() =>
-    typeof initialPageSize === "number" && initialPageSize > 0
-      ? initialPageSize
-      : (pageSizeOptions?.[0] ?? 9),
+  const [pageSize, setPageSize] = React.useState<number>(
+    resolvedInitialPageSize,
   );
   const [page, setPage] = React.useState<number>(1);
   const lastQueryRef = React.useRef<string | null>(null);
+  const persistHydratedRef = React.useRef<boolean>(!persistKey);
 
   // derive filter options from data
   const options = React.useMemo(() => {
@@ -110,35 +172,42 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
 
   // initialize from URL or localStorage
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (persistKey) {
-      try {
-        const raw = window.localStorage.getItem(persistKey);
-        if (raw) {
-          const saved = JSON.parse(raw);
-          if (typeof saved?.query === "string") setQuery(saved.query);
-          if (typeof saved?.area === "string") setArea(saved.area);
-          if (typeof saved?.channel === "string") setChannel(saved.channel);
-          if (typeof saved?.pageSize === "number") setPageSize(saved.pageSize);
-          if (typeof saved?.page === "number") setPage(saved.page);
-        }
-      } catch {
-        /* ignore */
-      }
+    if (!persistKey || persistHydratedRef.current) return;
+    persistHydratedRef.current = true;
+    if (typeof persistedFilters.query === "string") setQuery(persistedFilters.query);
+    if (typeof persistedFilters.area === "string") setArea(persistedFilters.area);
+    if (typeof persistedFilters.channel === "string") setChannel(persistedFilters.channel);
+    if (
+      typeof persistedFilters.pageSize === "number" &&
+      Number.isFinite(persistedFilters.pageSize) &&
+      persistedFilters.pageSize > 0
+    ) {
+      setPageSize(persistedFilters.pageSize);
     }
+    if (
+      typeof persistedFilters.page === "number" &&
+      Number.isFinite(persistedFilters.page) &&
+      persistedFilters.page > 0
+    ) {
+      setPage(persistedFilters.page);
+    }
+  }, [persistKey, persistedFilters]);
 
-    const src =
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const source =
       initialUrlParams ??
       Object.fromEntries(new URLSearchParams(window.location.search).entries());
-    if (typeof src.q === "string") setQuery(src.q);
-    if (typeof src.area === "string") setArea(src.area);
-    if (typeof src.channel === "string") setChannel(src.channel);
-    if (typeof src.size === "string") {
-      const n = Number(src.size);
+    if (typeof source.q === "string") setQuery(source.q);
+    if (typeof source.area === "string") setArea(source.area);
+    if (typeof source.channel === "string") setChannel(source.channel);
+    if (typeof source.size === "string") {
+      const n = Number(source.size);
       if (!Number.isNaN(n) && n > 0) setPageSize(n);
     }
-    if (typeof src.page === "string") {
-      const n = Number(src.page);
+    if (typeof source.page === "string") {
+      const n = Number(source.page);
       if (!Number.isNaN(n) && n > 0) setPage(n);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,16 +251,23 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
         else window.history.replaceState({}, "", newUrl);
       }
     }
-    if (persistKey) {
-      try {
-        window.localStorage.setItem(
-          persistKey,
-          JSON.stringify({ query, area, channel, pageSize, page }),
-        );
-      } catch {
-        /* ignore */
-      }
-    }
+    if (!persistKey || !persistHydratedRef.current) return;
+    const next: PersistedPodsFilters = {
+      query,
+      area,
+      channel,
+      pageSize,
+      page,
+    };
+    const prev = persistedFilters;
+    const hasDiff =
+      prev.query !== next.query ||
+      prev.area !== next.area ||
+      prev.channel !== next.channel ||
+      prev.pageSize !== next.pageSize ||
+      prev.page !== next.page;
+    if (!hasDiff) return;
+    setPersistedFilters(next);
   }, [
     buildQueryString,
     currentCanonicalQueryString,
@@ -202,6 +278,8 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
     channel,
     pageSize,
     page,
+    persistedFilters,
+    setPersistedFilters,
   ]);
 
   const filtered = React.useMemo(() => {

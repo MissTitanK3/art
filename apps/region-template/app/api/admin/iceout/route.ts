@@ -72,16 +72,22 @@ export async function POST(req: NextRequest) {
 
     const { data: lastRow } = await adminClient
       .from('wizard')
-      .select('timestamp')
+      .select('synced_at, timestamp')
       .eq('external_source', 'iceout')
-      .order('timestamp', { ascending: false })
+      .order('synced_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    const sinceIso =
-      overrideSince ??
-      lastRow?.timestamp ??
-      new Date(Date.now() - SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const fallbackSince = new Date(Date.now() - SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const baseSince = overrideSince ?? lastRow?.synced_at ?? lastRow?.timestamp ?? null;
+
+    let sinceIso = baseSince ?? fallbackSince;
+    const parsed = new Date(sinceIso);
+    if (isNaN(parsed.getTime()) || parsed.getTime() > Date.now()) {
+      sinceIso = fallbackSince;
+    } else {
+      sinceIso = parsed.toISOString();
+    }
 
     const reports = await fetchIceoutReports({
       sinceIso,

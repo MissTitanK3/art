@@ -5,6 +5,7 @@ import {
   TELEPROMPTER_PRESETS,
   PresetId,
   parseCues,
+  CueChunk,
 } from "@workspace/ui/lib/teleprompter";
 
 export type TeleprompterTheme =
@@ -17,6 +18,73 @@ type CountdownSegment = {
   name: "base" | "pause" | "breathe" | "lookup" | "custom";
   durationMs: number;
 };
+
+type CueName = "pause" | "breathe" | "lookup" | "custom";
+
+const CUE_STYLE_MAP: Record<
+  CueName,
+  { label: string; chipBg: string; chipText: string; segmentBg: string }
+> = {
+  pause: {
+    label: "pause",
+    chipBg: "bg-amber-500/20",
+    chipText: "text-amber-300",
+    segmentBg: "bg-amber-500/70",
+  },
+  breathe: {
+    label: "breathe",
+    chipBg: "bg-emerald-500/20",
+    chipText: "text-emerald-300",
+    segmentBg: "bg-emerald-500/70",
+  },
+  lookup: {
+    label: "look up",
+    chipBg: "bg-sky-500/20",
+    chipText: "text-sky-300",
+    segmentBg: "bg-sky-500/70",
+  },
+  custom: {
+    label: "custom",
+    chipBg: "bg-fuchsia-500/20",
+    chipText: "text-fuchsia-300",
+    segmentBg: "bg-fuchsia-500/70",
+  },
+};
+
+const CUE_CHIP_BASE = "inline-flex items-center gap-1 rounded";
+const CUE_CHIP_VARIANTS = {
+  default: "px-2 py-0.5 text-xs",
+  compact: "px-1.5 py-0.5 text-[10px]",
+  legend: "px-2 py-0.5",
+} as const;
+
+type CueChipVariant = keyof typeof CUE_CHIP_VARIANTS;
+
+const cueLabel = (cue: CueName) => CUE_STYLE_MAP[cue].label;
+
+const cueChipClasses = (
+  cue: CueName,
+  opts: { variant?: CueChipVariant; className?: string } = {},
+) => {
+  const variant = opts.variant ?? "default";
+  return [
+    CUE_CHIP_BASE,
+    CUE_STYLE_MAP[cue].chipBg,
+    CUE_STYLE_MAP[cue].chipText,
+    CUE_CHIP_VARIANTS[variant],
+    opts.className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+};
+
+const cueSegmentClass = (name: CountdownSegment["name"]) => {
+  if (name === "base") return "bg-muted-foreground/40";
+  return CUE_STYLE_MAP[name as CueName]?.segmentBg ?? "bg-muted-foreground/40";
+};
+
+const isCueName = (value: string): value is CueName =>
+  value === "pause" || value === "breathe" || value === "lookup" || value === "custom";
 
 export type TeleprompterViewerProps = {
   text: string;
@@ -108,10 +176,7 @@ const useActiveCountdownColor = (
   for (const seg of segments) {
     acc += Math.max(0, seg.durationMs || 0);
     if (elapsed <= acc) {
-      if (seg.name === "pause") return "text-amber-300";
-      if (seg.name === "breathe") return "text-emerald-300";
-      if (seg.name === "lookup") return "text-sky-300";
-      if (seg.name === "custom") return "text-fuchsia-300";
+      if (isCueName(seg.name)) return CUE_STYLE_MAP[seg.name].chipText;
       return undefined; // base
     }
   }
@@ -206,11 +271,9 @@ export const TeleprompterViewer = React.forwardRef<
         />
       ) : null}
       <div
-        className={`relative z-0 mx-auto flex max-w-full flex-col gap-6 text-center p-4 md:p-10 ${
-          font?.sizeClass ?? "text-xl"
-        } ${font?.lineHeightClass ?? "leading-8"} ${mirror?.h ? "scale-x-[-1]" : ""} ${
-          mirror?.v ? "scale-y-[-1]" : ""
-        } max-h-[70vh] md:max-h-[75vh] overflow-y-auto pb-16 break-words`}
+        className={`relative z-0 mx-auto flex max-w-full flex-col gap-6 text-center p-4 md:p-10 ${font?.sizeClass ?? "text-xl"
+          } ${font?.lineHeightClass ?? "leading-8"} ${mirror?.h ? "scale-x-[-1]" : ""} ${mirror?.v ? "scale-y-[-1]" : ""
+          } max-h-[70vh] md:max-h-[75vh] overflow-y-auto pb-16 break-words`}
         ref={scrollRef}
         style={{
           ...fontFamilyFor(font?.face),
@@ -222,17 +285,17 @@ export const TeleprompterViewer = React.forwardRef<
         {showLegend && (
           <div className="mb-2 rounded-md border bg-muted/40 p-3 text-sm">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-1 rounded bg-amber-500/20 px-2 py-0.5 text-amber-300">
-                [pause] adds ~{legendDurations?.pauseMs ?? 600}ms
+              <span className={cueChipClasses("pause", { variant: "legend" })}>
+                [{cueLabel("pause")}] adds ~{legendDurations?.pauseMs ?? 600}ms
               </span>
-              <span className="inline-flex items-center gap-1 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300">
-                [breathe] adds ~{legendDurations?.breatheMs ?? 300}ms
+              <span className={cueChipClasses("breathe", { variant: "legend" })}>
+                [{cueLabel("breathe")}] adds ~{legendDurations?.breatheMs ?? 300}ms
               </span>
-              <span className="inline-flex items-center gap-1 rounded bg-sky-500/20 px-2 py-0.5 text-sky-300">
-                [look up] adds ~{legendDurations?.lookupMs ?? 1200}ms
+              <span className={cueChipClasses("lookup", { variant: "legend" })}>
+                [{cueLabel("lookup")}] adds ~{legendDurations?.lookupMs ?? 1200}ms
               </span>
-              <span className="inline-flex items-center gap-1 rounded bg-fuchsia-500/20 px-2 py-0.5 text-fuchsia-300">
-                [custom] adds ~250ms
+              <span className={cueChipClasses("custom", { variant: "legend" })}>
+                [{cueLabel("custom")}] adds ~250ms
               </span>
             </div>
           </div>
@@ -240,6 +303,7 @@ export const TeleprompterViewer = React.forwardRef<
         {lines.map((ln, i) => {
           const isCurrent = i === index;
           const isNext = i === index + 1;
+          const parsedCues = parseCues(ln);
           const baseCls = isCurrent
             ? `${typeof theme === "string" && theme !== "custom" ? highlightCls : ""}`
             : isNext
@@ -273,42 +337,24 @@ export const TeleprompterViewer = React.forwardRef<
                           aria-hidden
                         >
                           {(() => {
-                            const chunks = parseCues(ln);
-                            const items: React.ReactNode[] = [];
-                            for (const c of chunks) {
-                              if (c.t === "pause")
-                                items.push(
-                                  <span
-                                    key={items.length}
-                                    className="inline-flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-300"
-                                  >
-                                    pause
-                                  </span>,
-                                );
-                              if (c.t === "breathe")
-                                items.push(
-                                  <span
-                                    key={items.length}
-                                    className="inline-flex items-center gap-1 rounded bg-emerald-500/20 px-1.5 py-0.5 text-emerald-300"
-                                  >
-                                    breathe
-                                  </span>,
-                                );
-                              if (c.t === "lookup")
-                                items.push(
-                                  <span
-                                    key={items.length}
-                                    className="inline-flex items-center gap-1 rounded bg-sky-500/20 px-1.5 py-0.5 text-sky-300"
-                                  >
-                                    look up
-                                  </span>,
-                                );
-                            }
-                            return items.length ? (
+                            const cueChunks = parsedCues.filter(
+                              (chunk) => chunk.t !== "text",
+                            ) as Array<{ t: Exclude<CueChunk["t"], "text">; v: string }>;
+                            if (!cueChunks.length) return null;
+                            return (
                               <span className="inline-flex items-center gap-1">
-                                {items}
+                                {cueChunks.map((chunk, cueIdx) => (
+                                  <span
+                                    key={cueIdx}
+                                    className={cueChipClasses(chunk.t as CueName, {
+                                      variant: "compact",
+                                    })}
+                                  >
+                                    {cueLabel(chunk.t as CueName)}
+                                  </span>
+                                ))}
                               </span>
-                            ) : null;
+                            );
                           })()}
                         </span>
                       </span>
@@ -316,16 +362,7 @@ export const TeleprompterViewer = React.forwardRef<
                         <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded bg-muted justify-center mx-auto">
                           <div className="flex h-full w-full">
                             {countdown.segments.map((seg, i) => {
-                              const color =
-                                seg.name === "pause"
-                                  ? "bg-amber-500/70"
-                                  : seg.name === "breathe"
-                                    ? "bg-emerald-500/70"
-                                    : seg.name === "lookup"
-                                      ? "bg-sky-500/70"
-                                      : seg.name === "custom"
-                                        ? "bg-fuchsia-500/70"
-                                        : "bg-muted-foreground/40";
+                              const color = cueSegmentClass(seg.name);
                               const widthPct = Math.max(
                                 0,
                                 Math.min(
@@ -333,7 +370,7 @@ export const TeleprompterViewer = React.forwardRef<
                                   Math.round(
                                     ((seg.durationMs || 0) /
                                       Math.max(1, countdown.totalMs || 1)) *
-                                      100,
+                                    100,
                                   ),
                                 ),
                               );
@@ -351,34 +388,18 @@ export const TeleprompterViewer = React.forwardRef<
                       <hr />
                     </>
                   ) : null}
-                  {parseCues(ln).map((chunk, idx) => {
+                  {parsedCues.map((chunk, idx) => {
                     if (chunk.t === "text")
                       return <span key={idx}>{chunk.v}</span>;
-                    if (chunk.t === "pause")
+                    if (isCueName(chunk.t))
                       return (
                         <span
                           key={idx}
-                          className="mx-1 inline-flex items-center gap-1 rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-300"
+                          className={cueChipClasses(chunk.t, {
+                            className: "mx-1",
+                          })}
                         >
-                          pause
-                        </span>
-                      );
-                    if (chunk.t === "lookup")
-                      return (
-                        <span
-                          key={idx}
-                          className="mx-1 inline-flex items-center gap-1 rounded bg-sky-500/20 px-2 py-0.5 text-xs text-sky-300"
-                        >
-                          look up
-                        </span>
-                      );
-                    if (chunk.t === "breathe")
-                      return (
-                        <span
-                          key={idx}
-                          className="mx-1 inline-flex items-center gap-1 rounded bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300"
-                        >
-                          breathe
+                          {cueLabel(chunk.t)}
                         </span>
                       );
                     return null;

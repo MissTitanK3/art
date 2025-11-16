@@ -4,13 +4,8 @@ import React from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@workspace/ui/components/card";
-import { Badge } from "@workspace/ui/components/badge";
-import { DispatchTypeBadge } from "@workspace/ui/components/client/DispatchTypeBadge";
 import { humanize } from "@workspace/ui/lib/utils";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { DISPATCH_TYPE_LABELS } from "@workspace/store/types/dispatch.ts";
@@ -42,10 +37,11 @@ import {
 } from "@workspace/ui/components/popover";
 import {
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
+import { DispatchCard } from "./DispatchCard";
+import { useDispatchFilterState } from "./useDispatchFilterState";
 
 type LinkWrapperProps = {
   href: string;
@@ -63,7 +59,6 @@ export type DispatchListLayoutProps = {
   enablePagination?: boolean;
   pageSizeOptions?: number[];
   initialPageSize?: number;
-  // URL + persistence integrations (optional)
   initialUrlParams?: Record<string, string | undefined>;
   onUrlChange?: (url: string) => void;
   persistKey?: string;
@@ -97,41 +92,33 @@ export function DispatchListLayout({
   onUrlChange,
   persistKey,
 }: DispatchListLayoutProps) {
-  const [query, setQuery] = React.useState("");
-  const [debouncedQuery, setDebouncedQuery] = React.useState("");
-  React.useEffect(() => {
-    const h = setTimeout(() => setDebouncedQuery(query), 300);
-    return () => clearTimeout(h);
-  }, [query]);
-  const [status, setStatus] = React.useState<string>("all");
-  const [type, setType] = React.useState<string>("all");
-  // Default to filtering from now into the future
-  const [dateRange, setDateRange] = React.useState<{ from?: Date; to?: Date }>(
-    () => ({ from: new Date() }),
-  );
-  const [pageSize, setPageSize] = React.useState<number>(() => {
-    if (typeof initialPageSize === "number" && initialPageSize > 0)
-      return initialPageSize;
-    return pageSizeOptions?.[0] ?? 9;
+  const {
+    query,
+    setQuery,
+    debouncedQuery,
+    status,
+    setStatus,
+    type,
+    setType,
+    dateRange,
+    setDateRange,
+    clearDateRange,
+    resetFilters,
+    pageSize,
+    setPageSize,
+    page,
+    setPage,
+  } = useDispatchFilterState({
+    persistKey,
+    initialUrlParams,
+    onUrlChange,
+    initialPageSize,
+    defaultPageSize: pageSizeOptions?.[0] ?? 9,
   });
-  const [page, setPage] = React.useState<number>(1);
-  const lastQueryRef = React.useRef<string | null>(null);
   const [calendarMonths, setCalendarMonths] = React.useState<number>(2);
   const [activeTab, setActiveTab] = React.useState<"upcoming" | "past">(
     "upcoming",
   );
-
-  // Adjust date range defaults when switching tabs
-  React.useEffect(() => {
-    if (activeTab === "past") {
-      const now = new Date();
-      const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
-      setDateRange({ from: startOfYear, to: undefined });
-    } else {
-      // upcoming defaults from now
-      setDateRange({ from: new Date(), to: undefined });
-    }
-  }, [activeTab]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -139,42 +126,6 @@ export function DispatchListLayout({
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const buildQueryString = React.useCallback(() => {
-    const params = new URLSearchParams();
-    const q = debouncedQuery.trim();
-    if (q) params.set("q", q);
-    if (status !== "all") params.set("status", status);
-    if (type !== "all") params.set("type", type);
-    if (dateRange.from)
-      params.set("from", dateRange.from.toISOString().slice(0, 10));
-    if (dateRange.to) params.set("to", dateRange.to.toISOString().slice(0, 10));
-    params.set("size", String(pageSize));
-    params.set("page", String(page));
-    return params.toString();
-  }, [debouncedQuery, status, type, dateRange, pageSize, page]);
-
-  const currentCanonicalQueryString = React.useCallback(() => {
-    const src = new URLSearchParams(window.location.search);
-    ["_rsc", "__nextDataReq", "next-router-state-tree", "next-url"].forEach(
-      (k) => src.delete(k),
-    );
-    const params = new URLSearchParams();
-    const order = [
-      "q",
-      "status",
-      "type",
-      "from",
-      "to",
-      "size",
-      "page",
-    ] as const;
-    for (const key of order) {
-      const v = src.get(key);
-      if (v && v.length > 0) params.set(key, v);
-    }
-    return params.toString();
   }, []);
 
   // available options from constants (fall back to derivation if needed)
@@ -186,137 +137,32 @@ export function DispatchListLayout({
         statusKeys.length > 0
           ? (statusKeys as string[])
           : Array.from(
-              new Set(
-                submissions.map((s) => s.status).filter(Boolean) as string[],
-              ),
-            ).sort(),
+            new Set(
+              submissions.map((s) => s.status).filter(Boolean) as string[],
+            ),
+          ).sort(),
       types:
         typeKeys.length > 0
           ? (typeKeys as string[])
           : Array.from(
-              new Set(
-                submissions.map((s) => s.type).filter(Boolean) as string[],
-              ),
-            ).sort(),
+            new Set(
+              submissions.map((s) => s.type).filter(Boolean) as string[],
+            ),
+          ).sort(),
     };
   }, [submissions]);
 
-  // Initialize from URL query params or localStorage (client-only)
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    // Load persisted state first
-    if (persistKey) {
-      try {
-        const raw = window.localStorage.getItem(persistKey);
-        if (raw) {
-          const saved = JSON.parse(raw);
-          if (typeof saved?.query === "string") setQuery(saved.query);
-          if (typeof saved?.status === "string") setStatus(saved.status);
-          if (typeof saved?.type === "string") setType(saved.type);
-          if (saved?.from || saved?.to) {
-            setDateRange({
-              from: saved?.from ? new Date(saved.from) : undefined,
-              to: saved?.to ? new Date(saved.to) : undefined,
-            });
-          }
-          if (typeof saved?.pageSize === "number") setPageSize(saved.pageSize);
-          if (typeof saved?.page === "number") setPage(saved.page);
-        }
-      } catch {
-        /* ignore */
-      }
+    if (status !== "all" && !options.statuses.includes(status)) {
+      setStatus("all");
     }
+  }, [options.statuses, setStatus, status]);
 
-    const sourceParams =
-      initialUrlParams ??
-      (typeof window !== "undefined"
-        ? Object.fromEntries(
-            new URLSearchParams(window.location.search).entries(),
-          )
-        : {});
-    const q = sourceParams["q"] ?? "";
-    const st = sourceParams["status"] ?? "all";
-    const tp = sourceParams["type"] ?? "all";
-    const from = sourceParams["from"];
-    const to = sourceParams["to"];
-    const size = sourceParams["size"];
-    const pg = sourceParams["page"];
-
-    setQuery(q);
-    setStatus(
-      options.statuses.includes(st as string) || st === "all"
-        ? (st as string)
-        : "all",
-    );
-    setType(
-      options.types.includes(tp as string) || tp === "all"
-        ? (tp as string)
-        : "all",
-    );
-    if (from || to) {
-      const f = from ? new Date(from) : undefined;
-      const t = to ? new Date(to) : undefined;
-      setDateRange({
-        from: f && !isNaN(f as any) ? f : undefined,
-        to: t && !isNaN(t as any) ? t : undefined,
-      });
-    }
-    if (size) {
-      const n = Number(size);
-      if (!Number.isNaN(n) && n > 0) setPageSize(n);
-    }
-    if (pg) {
-      const n = Number(pg);
-      if (!Number.isNaN(n) && n > 0) setPage(n);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Sync state to URL query params and persistence
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const qs = buildQueryString();
-    const currentQs = currentCanonicalQueryString();
-    if (qs !== lastQueryRef.current) {
-      lastQueryRef.current = qs;
-      const newUrl = `${window.location.pathname}?${qs}`;
-      const currentCleanUrl = `${window.location.pathname}?${currentQs}`;
-      if (qs !== currentQs) {
-        if (onUrlChange) onUrlChange(newUrl);
-        else window.history.replaceState({}, "", newUrl);
-      }
+    if (type !== "all" && !options.types.includes(type)) {
+      setType("all");
     }
-
-    if (persistKey) {
-      try {
-        window.localStorage.setItem(
-          persistKey,
-          JSON.stringify({
-            query,
-            status,
-            type,
-            from: dateRange.from ? dateRange.from.toISOString() : undefined,
-            to: dateRange.to ? dateRange.to.toISOString() : undefined,
-            pageSize,
-            page,
-          }),
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [
-    buildQueryString,
-    currentCanonicalQueryString,
-    onUrlChange,
-    persistKey,
-    query,
-    status,
-    type,
-    dateRange,
-    pageSize,
-    page,
-  ]);
+  }, [options.types, setType, type]);
 
   // Subset submissions per tab first
   const tabScopedSubmissions = React.useMemo(() => {
@@ -385,11 +231,6 @@ export function DispatchListLayout({
     });
     return list;
   }, [tabScopedSubmissions, debouncedQuery, status, type, dateRange]);
-
-  // Reset page when filters change
-  React.useEffect(() => {
-    setPage(1);
-  }, [debouncedQuery, status, type, dateRange, pageSize]);
 
   // --- Group by urgency windows based on date_of_event ---
   function diffMs(a: Date, b: Date) {
@@ -652,7 +493,7 @@ export function DispatchListLayout({
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => setDateRange({})}
+                        onClick={clearDateRange}
                       >
                         Clear
                       </Button>
@@ -682,19 +523,18 @@ export function DispatchListLayout({
                   </div>
                 </PopoverContent>
               </Popover>
-              {(query || status !== "all" || type !== "all") && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setQuery("");
-                    setStatus("all");
-                    setType("all");
-                    setDateRange({ from: new Date() });
-                  }}
-                >
-                  Clear
-                </Button>
-              )}
+              {(query ||
+                status !== "all" ||
+                type !== "all" ||
+                dateRange.from ||
+                dateRange.to) && (
+                  <Button
+                    variant="ghost"
+                    onClick={resetFilters}
+                  >
+                    Clear
+                  </Button>
+                )}
             </div>
 
             {enablePagination ? (
@@ -764,107 +604,12 @@ export function DispatchListLayout({
                     {items.length > 0 ? (
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {items.map((submission) => (
-                          <LinkComponent
+                          <DispatchCard
                             key={submission.id}
+                            submission={submission}
+                            LinkComponent={LinkComponent}
                             href={getHref(submission)}
-                          >
-                            <Card
-                              className="h-full transition hover:shadow-lg hover:ring-2 hover:ring-primary/40 dark:hover:shadow-[0_0_15px_rgba(0,0,0,0.6)]"
-                              suppressHydrationWarning
-                            >
-                              <CardHeader>
-                                <CardTitle className="flex items-center justify-between gap-2">
-                                  <span className="truncate min-w-0">
-                                    {submission.location_label ??
-                                      "Unknown Location"}
-                                  </span>
-                                  <Badge>{humanize(submission.status)}</Badge>
-                                </CardTitle>
-                                {submission.state ? (
-                                  <CardDescription className="text-xs line-clamp-1">
-                                    {submission.type ? (
-                                      <DispatchTypeBadge
-                                        type={submission.type}
-                                      />
-                                    ) : null}
-                                    {submission.type ? " • " : null}
-                                    {submission.state}
-                                  </CardDescription>
-                                ) : null}
-                              </CardHeader>
-                              <CardContent className="space-y-3 text-sm">
-                                {submission.required_roles_by_type &&
-                                Object.keys(submission.required_roles_by_type)
-                                  .length > 0 ? (
-                                  <div>
-                                    <p className="mb-1 text-xs font-medium uppercase">
-                                      Roles Needed
-                                    </p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {Object.entries(
-                                        submission.required_roles_by_type,
-                                      ).map(([role, count]) => (
-                                        <Badge
-                                          key={role}
-                                          variant="outline"
-                                          className="text-xs"
-                                        >
-                                          {role} ({count})
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                ) : null}
-                                {submission.intended_actions &&
-                                submission.intended_actions.length > 0 ? (
-                                  <div>
-                                    <p className="mb-1 text-xs font-medium uppercase">
-                                      Intended Actions
-                                    </p>
-                                    <ul className="list-inside list-disc space-y-1 text-muted-foreground">
-                                      {submission.intended_actions
-                                        .slice(0, 3)
-                                        .map((action) => (
-                                          <li key={action}>{action}</li>
-                                        ))}
-                                    </ul>
-                                    {submission.intended_actions.length > 3 ? (
-                                      <p className="mt-1 text-xs text-muted-foreground">
-                                        +
-                                        {submission.intended_actions.length - 3}{" "}
-                                        more
-                                      </p>
-                                    ) : null}
-                                  </div>
-                                ) : null}
-                              </CardContent>
-                              <CardFooter
-                                className="text-xs text-muted-foreground"
-                                suppressHydrationWarning
-                              >
-                                <div className="flex flex-col gap-0.5">
-                                  {submission.date_of_event ? (
-                                    <span>
-                                      <span className="font-medium">
-                                        Date of event:
-                                      </span>{" "}
-                                      {new Date(
-                                        submission.date_of_event,
-                                      ).toLocaleString()}
-                                    </span>
-                                  ) : null}
-                                  <span>
-                                    <span className="font-medium">
-                                      Created:
-                                    </span>{" "}
-                                    {new Date(
-                                      submission.timestamp,
-                                    ).toLocaleString()}
-                                  </span>
-                                </div>
-                              </CardFooter>
-                            </Card>
-                          </LinkComponent>
+                          />
                         ))}
                       </div>
                     ) : (
@@ -885,98 +630,12 @@ export function DispatchListLayout({
               {pageItems.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {pageItems.map((submission) => (
-                    <LinkComponent
+                    <DispatchCard
                       key={submission.id}
+                      submission={submission}
+                      LinkComponent={LinkComponent}
                       href={getHref(submission)}
-                    >
-                      <Card
-                        className="h-full transition hover:shadow-lg hover:ring-2 hover:ring-primary/40 dark:hover:shadow-[0_0_15px_rgba(0,0,0,0.6)]"
-                        suppressHydrationWarning
-                      >
-                        <CardHeader>
-                          <CardTitle className="flex items-center justify-between gap-2">
-                            <span className="truncate min-w-0">
-                              {submission.location_label ?? "Unknown Location"}
-                            </span>
-                            <Badge>{humanize(submission.status)}</Badge>
-                          </CardTitle>
-                          {submission.state ? (
-                            <CardDescription className="text-xs line-clamp-1">
-                              {submission.type ? (
-                                <DispatchTypeBadge type={submission.type} />
-                              ) : null}
-                              {submission.type ? " • " : null}
-                              {submission.state}
-                            </CardDescription>
-                          ) : null}
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm">
-                          {submission.required_roles_by_type &&
-                          Object.keys(submission.required_roles_by_type)
-                            .length > 0 ? (
-                            <div>
-                              <p className="mb-1 text-xs font-medium uppercase">
-                                Roles Needed
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {Object.entries(
-                                  submission.required_roles_by_type,
-                                ).map(([role, count]) => (
-                                  <Badge
-                                    key={role}
-                                    variant="outline"
-                                    className="text-xs"
-                                  >
-                                    {role} ({count})
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          ) : null}
-                          {submission.intended_actions &&
-                          submission.intended_actions.length > 0 ? (
-                            <div>
-                              <p className="mb-1 text-xs font-medium uppercase">
-                                Intended Actions
-                              </p>
-                              <ul className="list-inside list-disc space-y-1 text-muted-foreground">
-                                {submission.intended_actions
-                                  .slice(0, 3)
-                                  .map((action) => (
-                                    <li key={action}>{action}</li>
-                                  ))}
-                              </ul>
-                              {submission.intended_actions.length > 3 ? (
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  +{submission.intended_actions.length - 3} more
-                                </p>
-                              ) : null}
-                            </div>
-                          ) : null}
-                        </CardContent>
-                        <CardFooter
-                          className="text-xs text-muted-foreground"
-                          suppressHydrationWarning
-                        >
-                          <div className="flex flex-col gap-0.5">
-                            {submission.date_of_event ? (
-                              <span>
-                                <span className="font-medium">
-                                  Date of event:
-                                </span>{" "}
-                                {new Date(
-                                  submission.date_of_event,
-                                ).toLocaleString()}
-                              </span>
-                            ) : null}
-                            <span>
-                              <span className="font-medium">Created:</span>{" "}
-                              {new Date(submission.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    </LinkComponent>
+                    />
                   ))}
                 </div>
               ) : (

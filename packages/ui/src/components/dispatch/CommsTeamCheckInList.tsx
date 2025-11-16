@@ -5,6 +5,39 @@ import type { ComTeam } from "@workspace/store/types/comms.ts";
 import { Button } from "@workspace/ui/components/button";
 import { CheckInTimerBadge } from "@workspace/ui/components/dispatch/CheckInTimerBadge";
 import { EmptyText } from "@workspace/ui/components/status-text";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
+
+const NOOP_STORAGE: Storage = {
+  get length() {
+    return 0;
+  },
+  clear() {
+    /* noop */
+  },
+  getItem(_key: string) {
+    return null;
+  },
+  key(_index: number) {
+    return null;
+  },
+  removeItem(_key: string) {
+    /* noop */
+  },
+  setItem(_key: string, _value: string) {
+    /* noop */
+  },
+};
+
+const coerceMinutes = (value: unknown): number | undefined => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : undefined;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : undefined;
+  }
+  return undefined;
+};
 
 type Props = {
   teams: ComTeam[];
@@ -23,40 +56,48 @@ export function CommsTeamCheckInList({
   checkInInput,
   setCheckInInput,
   setGlobalCheckInMinutes,
-}: Props) {
-  const [localDefault, setLocalDefault] = React.useState<number>(() => {
-    if (typeof window === "undefined") return defaultCheckInMinutes;
-    const stored = window.localStorage.getItem("comms.defaultCheckInMinutes");
-    const parsed = stored ? parseInt(stored, 10) : NaN;
-    return Number.isFinite(parsed) && parsed > 0
-      ? parsed
-      : defaultCheckInMinutes;
-  });
+}: Props): React.ReactElement {
+  const isControlled =
+    typeof setGlobalCheckInMinutes === "function" &&
+    typeof setCheckInInput === "function";
+
+  const storageKey = isControlled
+    ? "comms.defaultCheckInMinutes:controlled"
+    : "comms.defaultCheckInMinutes";
+
+  const fallbackDefault = React.useMemo(
+    () => coerceMinutes(defaultCheckInMinutes) ?? 60,
+    [defaultCheckInMinutes],
+  );
+
+  const [storedDefault, setStoredDefault] = useLocalStorage<number>(
+    storageKey,
+    fallbackDefault,
+    {
+      debounceMs: 150,
+      sync: !isControlled,
+      serialize: (value) => String(value),
+      deserialize: (raw) => coerceMinutes(raw) ?? fallbackDefault,
+      migrate: (payload) => coerceMinutes(payload) ?? fallbackDefault,
+      storage: isControlled ? NOOP_STORAGE : undefined,
+    },
+  );
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("comms.defaultCheckInMinutes");
-    if (!stored) setLocalDefault(defaultCheckInMinutes);
-  }, [defaultCheckInMinutes]);
+    if (isControlled) return;
+    const nextDefault = coerceMinutes(defaultCheckInMinutes);
+    if (!nextDefault) return;
+    setStoredDefault((prev) => (coerceMinutes(prev) ? prev : nextDefault));
+  }, [defaultCheckInMinutes, isControlled, setStoredDefault]);
 
   const setDefault = (mins: number) => {
-    setLocalDefault(mins);
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(
-          "comms.defaultCheckInMinutes",
-          String(mins),
-        );
-      }
-    } catch {
-      /* ignore */
-    }
+    const next = coerceMinutes(mins);
+    if (!next) return;
+    setStoredDefault(next);
   };
 
   const choices = [10, 20, 30, 40, 50, 60];
-  const selectedFromParent = Number.isFinite(parseInt(checkInInput || "", 10))
-    ? parseInt(checkInInput || "", 10)
-    : undefined;
+  const selectedFromParent = coerceMinutes(checkInInput ?? undefined);
 
   return (
     <div className="space-y-2 text-sm">
@@ -90,7 +131,7 @@ export function CommsTeamCheckInList({
                   key={v}
                   size="sm"
                   variant={
-                    (selectedFromParent ?? localDefault) === v
+                    (selectedFromParent ?? storedDefault) === v
                       ? "default"
                       : "outline"
                   }
@@ -111,7 +152,7 @@ export function CommsTeamCheckInList({
           const interval =
             t.default_check_in_interval_minutes ??
             selectedFromParent ??
-            localDefault;
+            storedDefault;
           return (
             <div key={t.id} className="rounded-md border p-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">

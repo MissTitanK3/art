@@ -47,6 +47,7 @@ import type {
   DetaineeIntake,
   DetaineeIntakeFormValues,
 } from "../../types/missing-person-intake";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 type ExportFormat = "pdf" | "json";
 
@@ -63,6 +64,16 @@ const navigateToHref = (href: string) => {
   } catch (error) {
     console.warn("MissingPersonDetail: failed to navigate", error);
   }
+};
+
+const sanitizeCaseIdList = (payload: unknown): string[] => {
+  if (Array.isArray(payload)) {
+    return payload.filter((id): id is string => typeof id === "string");
+  }
+  if (typeof payload === "string" && payload) {
+    return [payload];
+  }
+  return [];
 };
 
 export interface MissingPersonDetailProps {
@@ -100,7 +111,7 @@ export function MissingPersonDetail({
   onDeleteSuccess,
   onSaveRecord,
   onDeleteRecord,
-}: MissingPersonDetailProps) {
+}: MissingPersonDetailProps): React.ReactElement {
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
   const updateRecordInStore = useMissingPersonStore(
     (state) => state.updateRecord,
@@ -116,6 +127,24 @@ export function MissingPersonDetail({
   const [exporting, setExporting] = React.useState<ExportFormat | null>(null);
   const [deleting, setDeleting] = React.useState(false);
   const [finalizing, setFinalizing] = React.useState(false);
+
+  const [, setStoredCaseIds] = useLocalStorage<string[]>(
+    CASE_ID_STORAGE_KEY,
+    [],
+    {
+      version: 1,
+      sync: true,
+      serialize: (value) => JSON.stringify(value),
+      deserialize: (raw) => {
+        try {
+          return sanitizeCaseIdList(JSON.parse(raw));
+        } catch {
+          return [];
+        }
+      },
+      migrate: (payload) => sanitizeCaseIdList(payload),
+    },
+  );
 
   const form = useForm<DetaineeIntakeFormValues>({
     defaultValues: toFormValues(record),
@@ -137,57 +166,32 @@ export function MissingPersonDetail({
     [normalizedCaseId, hasRecordInStore],
   );
 
-  const rememberCaseId = React.useCallback((caseId: string) => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(CASE_ID_STORAGE_KEY);
-      if (!raw) {
-        window.localStorage.setItem(
-          CASE_ID_STORAGE_KEY,
-          JSON.stringify([caseId]),
-        );
-        return;
-      }
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        const exists = parsed.some(
-          (id: unknown) =>
-            typeof id === "string" &&
-            normaliseCaseId(id) === normaliseCaseId(caseId),
-        );
-        if (!exists) {
-          parsed.push(caseId);
-          window.localStorage.setItem(
-            CASE_ID_STORAGE_KEY,
-            JSON.stringify(parsed),
-          );
+  const rememberCaseId = React.useCallback(
+    (caseId: string) => {
+      const normalisedTarget = normaliseCaseId(caseId);
+      setStoredCaseIds((prev) => {
+        const existing = Array.isArray(prev) ? prev : [];
+        if (existing.some((id) => normaliseCaseId(id) === normalisedTarget)) {
+          return existing;
         }
-      }
-    } catch (error) {
-      console.warn("Failed to store case ID", error);
-    }
-  }, []);
+        return [...existing, caseId];
+      });
+    },
+    [setStoredCaseIds],
+  );
 
-  const removeCaseIdFromStorage = React.useCallback((caseId: string) => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(CASE_ID_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return;
-      const remaining = parsed.filter(
-        (id: unknown) =>
-          typeof id === "string" &&
-          normaliseCaseId(id) !== normaliseCaseId(caseId),
-      );
-      window.localStorage.setItem(
-        CASE_ID_STORAGE_KEY,
-        JSON.stringify(remaining),
-      );
-    } catch (error) {
-      console.warn("Failed to remove case ID from storage", error);
-    }
-  }, []);
+  const removeCaseIdFromStorage = React.useCallback(
+    (caseId: string) => {
+      const normalisedTarget = normaliseCaseId(caseId);
+      setStoredCaseIds((prev) => {
+        const existing = Array.isArray(prev) ? prev : [];
+        return existing.filter(
+          (id) => normaliseCaseId(id) !== normalisedTarget,
+        );
+      });
+    },
+    [setStoredCaseIds],
+  );
 
   const handleDelete = React.useCallback(async () => {
     if (!normalizedCaseId) {

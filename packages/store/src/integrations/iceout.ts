@@ -34,13 +34,18 @@ export type NormalizedIceoutReport = {
   external_source: "iceout";
 };
 
-const CATEGORY_TO_AGENCY: Record<number, string> = {
-  1: "ICE",
-  2: "Police",
-  3: "Sheriff",
-  4: "Border Patrol",
-  5: "Detention Facility",
-  6: "Military",
+// Iceout sends category_enum integers. These labels are taken directly from their API
+// and mapped onto our Confirmed Watch agency options.
+const CATEGORY_TO_AGENCY: Record<
+  number,
+  { agency: string; label: string }
+> = {
+  1: { agency: "ICE", label: "ICE presence" },
+  2: { agency: "Police", label: "Police" },
+  3: { agency: "Sheriff", label: "Sheriff" },
+  4: { agency: "Border Patrol", label: "Border Patrol" },
+  5: { agency: "Detention Facility", label: "Detention Facility" },
+  6: { agency: "Military", label: "Military" },
 };
 
 function normalizeIceoutReport(report: IceoutApiReport): NormalizedIceoutReport | null {
@@ -51,14 +56,28 @@ function normalizeIceoutReport(report: IceoutApiReport): NormalizedIceoutReport 
   const timestamp = report.incident_time ?? report.created_at ?? null;
   if (!timestamp) return null;
 
-  const agency =
-    (report.category_enum && CATEGORY_TO_AGENCY[report.category_enum]) || "Other";
+  const categoryInfo =
+    typeof report.category_enum === "number"
+      ? CATEGORY_TO_AGENCY[report.category_enum] ?? null
+      : null;
+  const agency = categoryInfo?.agency ?? "Other";
+
+  // Keep raw enum hints alongside our mapped agency for easier auditing/debugging.
+  const hints: string[] = [];
+  if (categoryInfo && typeof report.category_enum === "number") {
+    hints.push(`iceout_category_enum:${report.category_enum} (${categoryInfo.label})`);
+  } else if (typeof report.category_enum === "number") {
+    hints.push(`iceout_category_enum:${report.category_enum}`);
+  }
+  if (typeof report.status === "number") {
+    hints.push(`iceout_status:${report.status}`);
+  }
 
   return {
     external_id: `iceout-${report.id}`,
     timestamp,
     agency_type: [agency],
-    agency_other: "",
+    agency_other: hints.join(" | "),
     location: { lat, lng },
     media_url: report.small_thumbnail ?? null,
     officer_moving: null,

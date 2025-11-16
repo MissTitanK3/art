@@ -33,6 +33,7 @@ import {
   DrawerTrigger,
   DrawerClose,
 } from "@workspace/ui/components/drawer";
+import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 type ActionMode = "create" | "view" | "none";
 
@@ -144,6 +145,9 @@ const TILE_PROVIDERS: TileProvider[] = [
 const DEFAULT_TILE_PROVIDER = TILE_PROVIDERS[0]!;
 const TILE_PROVIDER_STORAGE_KEY = "watch-map-tile-provider";
 
+const isValidTileProvider = (id: string): boolean =>
+  TILE_PROVIDERS.some((provider) => provider.id === id);
+
 // default icon for unconfirmed reports
 const reportIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -202,19 +206,25 @@ export default function WatchMap({
   onMovingOnlyChange,
   onResetFilters,
   onVisibleReportsChange,
-}: WatchMapProps) {
-  const [tileProviderId, setTileProviderId] = useState<string>(() => {
-    if (typeof window === "undefined") return DEFAULT_TILE_PROVIDER.id;
-    const stored = window.localStorage.getItem(TILE_PROVIDER_STORAGE_KEY);
-    if (!stored) return DEFAULT_TILE_PROVIDER.id;
-    return TILE_PROVIDERS.some((provider) => provider.id === stored)
-      ? stored
-      : DEFAULT_TILE_PROVIDER.id;
-  });
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(TILE_PROVIDER_STORAGE_KEY, tileProviderId);
-  }, [tileProviderId]);
+}: WatchMapProps): React.ReactElement {
+  const [tileProviderId, setTileProviderId] = useLocalStorage<string>(
+    TILE_PROVIDER_STORAGE_KEY,
+    DEFAULT_TILE_PROVIDER.id,
+    {
+      sync: true,
+      serialize: (value) => value,
+      deserialize: (raw) =>
+        typeof raw === "string" && isValidTileProvider(raw)
+          ? raw
+          : DEFAULT_TILE_PROVIDER.id,
+      migrate: (payload) => {
+        if (typeof payload === "string" && isValidTileProvider(payload)) {
+          return payload;
+        }
+        return DEFAULT_TILE_PROVIDER.id;
+      },
+    },
+  );
   const activeProvider = useMemo<TileProvider>(() => {
     return (
       TILE_PROVIDERS.find((provider) => provider.id === tileProviderId) ??
@@ -222,8 +232,8 @@ export default function WatchMap({
     );
   }, [tileProviderId]);
 
-  if (window === undefined) {
-    return null;
+  if (typeof window === "undefined") {
+    return <></>;
   }
   const effectiveMode: ActionMode = actionMode
     ? actionMode

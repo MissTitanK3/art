@@ -75,33 +75,48 @@ export function SpeedControl({
 }: SpeedControlProps) {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
-  const content = (
-    <>
-      <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-        <span>Speed</span>
-        <span suppressHydrationWarning>
-          {mounted ? `${value.toFixed(2)}x` : "--"}
-        </span>
+  const label = (
+    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+      <span>Speed</span>
+      <span suppressHydrationWarning>
+        {mounted ? `${value.toFixed(2)}x` : "--"}
+      </span>
+    </div>
+  );
+
+  const selectMenu = (
+    <Select
+      value={closestSpeedPresetId(value)}
+      onValueChange={(v) =>
+        onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)
+      }
+    >
+      <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm">
+        <SelectValue placeholder="Speed" />
+      </SelectTrigger>
+      <SelectContent>
+        {Object.entries(SPEED_PRESETS).map(([id, p]) => (
+          <SelectItem key={id} value={id}>
+            {p.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  if (layout === "select") {
+    return (
+      <div className={className}>
+        {label}
+        {selectMenu}
       </div>
-      <div className="md:hidden">
-        <Select
-          value={closestSpeedPresetId(value)}
-          onValueChange={(v) =>
-            onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)
-          }
-        >
-          <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm">
-            <SelectValue placeholder="Speed" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(SPEED_PRESETS).map(([id, p]) => (
-              <SelectItem key={id} value={id}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      {label}
+      <div className="md:hidden">{selectMenu}</div>
       <div className="hidden md:grid grid-cols-5 gap-1 w-full">
         {Object.entries(SPEED_PRESETS).map(([id, p]) => (
           <Button
@@ -116,40 +131,8 @@ export function SpeedControl({
           </Button>
         ))}
       </div>
-    </>
+    </div>
   );
-
-  if (layout === "select") {
-    return (
-      <div className={className}>
-        <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-          <span>Speed</span>
-          <span suppressHydrationWarning>
-            {mounted ? `${value.toFixed(2)}x` : "--"}
-          </span>
-        </div>
-        <Select
-          value={closestSpeedPresetId(value)}
-          onValueChange={(v) =>
-            onChange(SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value)
-          }
-        >
-          <SelectTrigger className="w-full h-11 sm:h-10 text-base sm:text-sm">
-            <SelectValue placeholder="Speed" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(SPEED_PRESETS).map(([id, p]) => (
-              <SelectItem key={id} value={id}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  }
-
-  return <div className={className}>{content}</div>;
 }
 
 export default TransportControls;
