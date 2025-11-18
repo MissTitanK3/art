@@ -198,27 +198,39 @@ export default function DispatchRolesManager({
         .filter((id) => !id.startsWith("manual-"))
         .map((rosterId) => {
           const rosterEntry = allRoster.find((r) => r.id === rosterId);
+          const existing = assignedVolunteers.find(
+            (v) => v.id === rosterId && v.role === role,
+          );
+          const status = (existing?.status as PodMemberStatus) ?? "active";
+
           return rosterEntry
             ? {
-                id: rosterEntry.id,
-                profile: rosterEntry.profile,
-                role: role as PodRole,
-                status: "active" as PodMemberStatus,
-              }
+              id: rosterEntry.id,
+              profile: rosterEntry.profile,
+              role: role as PodRole,
+              status,
+            }
             : {
-                id: rosterId,
-                role: role as PodRole,
-                status: "active" as PodMemberStatus,
-              };
+              id: rosterId,
+              role: role as PodRole,
+              status,
+            };
         }),
       ...manualVolunteers
         .filter((m) => selected.includes(m.id))
-        .map((m) => ({
-          id: m.id,
-          profile: { display_name: m.name } as any,
-          role: role as PodRole,
-          status: "active" as PodMemberStatus,
-        })),
+        .map((m) => {
+          const existing = assignedVolunteers.find(
+            (v) => v.id === m.id && v.role === role,
+          );
+          const status = (existing?.status as PodMemberStatus) ?? "active";
+
+          return {
+            id: m.id,
+            profile: { display_name: m.name } as any,
+            role: role as PodRole,
+            status,
+          };
+        }),
     ];
 
     onUpdate({ assigned_volunteers: updatedAssignments });
@@ -249,9 +261,11 @@ export default function DispatchRolesManager({
     submission.required_roles_by_type &&
     Object.keys(submission.required_roles_by_type).length > 0;
 
-  const roles = hasRoleTypes
-    ? Object.keys(submission.required_roles_by_type!)
-    : (submission.required_roles ?? []);
+  const roles = [
+    ...(hasRoleTypes
+      ? Object.keys(submission.required_roles_by_type!)
+      : (submission.required_roles ?? [])),
+  ].sort((a, b) => a.localeCompare(b));
 
   return (
     <Card suppressHydrationWarning>
@@ -324,14 +338,14 @@ export default function DispatchRolesManager({
                               {(rosterEntry?.profile.contact_signal ??
                                 v.profile?.contact_signal ??
                                 v.volunteer?.contact_signal) && (
-                                <CopySignalHandleButton
-                                  handle={
-                                    (rosterEntry?.profile.contact_signal ??
-                                      v.profile?.contact_signal ??
-                                      v.volunteer?.contact_signal)!
-                                  }
-                                />
-                              )}
+                                  <CopySignalHandleButton
+                                    handle={
+                                      (rosterEntry?.profile.contact_signal ??
+                                        v.profile?.contact_signal ??
+                                        v.volunteer?.contact_signal)!
+                                    }
+                                  />
+                                )}
                             </div>
 
                             <div className="flex flex-col items-center gap-2 md:flex-row md:gap-3">

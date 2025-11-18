@@ -167,19 +167,22 @@ export function DispatchListLayout({
   // Subset submissions per tab first
   const tabScopedSubmissions = React.useMemo(() => {
     const now = new Date();
+    // Include events from the last 24 hours in "upcoming" so they appear as "Immediately"
+    const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
     if (activeTab === "upcoming") {
       return submissions.filter(
         (s) =>
           s.status !== "archived" &&
           s.date_of_event &&
-          new Date(s.date_of_event) >= now,
+          new Date(s.date_of_event) >= cutoff,
       );
     }
     // past & archived
     return submissions.filter(
       (s) =>
         s.status === "archived" ||
-        (s.date_of_event && new Date(s.date_of_event) < now),
+        (s.date_of_event && new Date(s.date_of_event) < cutoff),
     );
   }, [submissions, activeTab]);
 

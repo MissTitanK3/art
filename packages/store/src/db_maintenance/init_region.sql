@@ -1,5 +1,5 @@
   -- Always Ready Tools: Region Database Schema
-  -- Version: 2025-10-24
+  -- Version: 2025-11-17
   -- Each region runs its own instance using this schema.
   -- This script is idempotent and safe to re-run.
   -- =========================================================
@@ -81,6 +81,33 @@
     updated_at TIMESTAMPTZ DEFAULT now(),
     last_shift_at TIMESTAMPTZ,
     signal_handle TEXT
+  );
+
+  -- Organizations (for grouping pods under a shared identity)
+  CREATE TABLE IF NOT EXISTS public.organizations (
+    id TEXT PRIMARY KEY,
+    region_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+  );
+
+  -- Organization ↔ Pod membership (many-to-many)
+  CREATE TABLE IF NOT EXISTS public.organization_pods (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+    pod_id TEXT NOT NULL REFERENCES public.pods(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (org_id, pod_id)
+  );
+
+  -- Organization roles (user-level permissions)
+  CREATE TABLE IF NOT EXISTS public.organization_roles (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    role TEXT NOT NULL, -- owner | admin | editor | viewer
+    created_at TIMESTAMPTZ DEFAULT now()
   );
 
   -- Dispatch submissions
@@ -531,7 +558,22 @@
     label TEXT,
     dispatch_link TEXT,
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    visibility TEXT DEFAULT 'public',
+    needed INTEGER DEFAULT 0,
+    route JSONB,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT pod_shifts_visibility_check CHECK (
+      visibility IN ('public','org','private')
+    )
+  );
+
+  -- Crew signups per shift
+  CREATE TABLE IF NOT EXISTS public.pod_shift_signups (
+    id TEXT PRIMARY KEY,
+    shift_id TEXT NOT NULL REFERENCES public.pod_shifts(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT pod_shift_signups_unique_shift_user UNIQUE (shift_id, user_id)
   );
 
   -- Academy
@@ -916,6 +958,31 @@
       EXECUTE 'CREATE INDEX idx_shifts_volunteer_id ON public.dispatch_shifts (volunteer_id)';
     END IF;
 
+    -- Organization tables
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_organization_roles_org_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_organization_roles_org_id ON public.organization_roles (org_id)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_organization_roles_user_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_organization_roles_user_id ON public.organization_roles (user_id)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_organization_pods_org_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_organization_pods_org_id ON public.organization_pods (org_id)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_organization_pods_pod_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_organization_pods_pod_id ON public.organization_pods (pod_id)';
+    END IF;
+
     -- Pod shifts indexes
     IF NOT EXISTS (
       SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_pod_shifts_pod_id'
@@ -927,6 +994,18 @@
       SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_pod_shifts_start'
     ) THEN
       EXECUTE 'CREATE INDEX idx_pod_shifts_start ON public.pod_shifts (start)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_pod_shift_signups_shift_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_pod_shift_signups_shift_id ON public.pod_shift_signups (shift_id)';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c WHERE c.relkind = 'i' AND c.relname = 'idx_pod_shift_signups_user_id'
+    ) THEN
+      EXECUTE 'CREATE INDEX idx_pod_shift_signups_user_id ON public.pod_shift_signups (user_id)';
     END IF;
 
     -- Comms indexes
@@ -1010,6 +1089,51 @@
       WHERE table_schema = 'public' AND table_name = 'pod_shifts' AND column_name = 'created_at'
     ) THEN
       ALTER TABLE public.pod_shifts ADD COLUMN created_at TIMESTAMPTZ DEFAULT now();
+    END IF;
+
+    -- pod_shifts.visibility / needed / route (shadow, needs crew, rough route)
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'pod_shifts' AND column_name = 'visibility'
+    ) THEN
+      ALTER TABLE public.pod_shifts ADD COLUMN visibility TEXT DEFAULT 'public';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'pod_shifts' AND column_name = 'needed'
+    ) THEN
+      ALTER TABLE public.pod_shifts ADD COLUMN needed INTEGER DEFAULT 0;
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'pod_shifts' AND column_name = 'route'
+    ) THEN
+      ALTER TABLE public.pod_shifts ADD COLUMN route JSONB;
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'pod_shifts_visibility_check'
+        AND conrelid = 'public.pod_shifts'::regclass
+    ) THEN
+      ALTER TABLE public.pod_shifts
+        ADD CONSTRAINT pod_shifts_visibility_check CHECK (visibility IN ('public','org','private'));
+    END IF;
+
+    -- pod_shift_signups table
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'pod_shift_signups'
+    ) THEN
+      CREATE TABLE public.pod_shift_signups (
+        id TEXT PRIMARY KEY,
+        shift_id TEXT NOT NULL REFERENCES public.pod_shifts(id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        CONSTRAINT pod_shift_signups_unique_shift_user UNIQUE (shift_id, user_id)
+      );
     END IF;
 
     -- academy_instructors.created_at

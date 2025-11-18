@@ -44,8 +44,37 @@ export default function RolesEditorDrawer({
   };
 
   // 🔍 Filtered roles list
-  const filteredRoles = FIELD_ROLE_OPTIONS.filter((role) =>
+  const allFiltered = FIELD_ROLE_OPTIONS.filter((role) =>
     role.toLowerCase().includes(query.toLowerCase()),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const selectedRoles = allFiltered.filter((r) => rolesState[r] !== undefined);
+  const unselectedRoles = allFiltered.filter(
+    (r) => rolesState[r] === undefined,
+  );
+
+  const renderRoleRow = (role: string) => (
+    <div
+      key={role}
+      className="flex items-center justify-between gap-2 text-sm"
+    >
+      <label className="flex items-center gap-2 cursor-pointer">
+        <Checkbox
+          checked={rolesState[role] !== undefined}
+          onCheckedChange={() => toggleRole(role)}
+        />
+        <span className="capitalize">{humanize(role)}</span>
+      </label>
+      {rolesState[role] !== undefined && (
+        <Input
+          type="number"
+          min={1}
+          value={rolesState[role]}
+          onChange={(e) => updateCount(role, Number(e.target.value))}
+          className="w-16 text-center"
+        />
+      )}
+    </div>
   );
 
   return (
@@ -70,35 +99,37 @@ export default function RolesEditorDrawer({
           />
         </div>
 
-        <div className="max-h-[50vh] overflow-y-auto mt-2 space-y-2">
-          {filteredRoles.length > 0 ? (
-            filteredRoles.map((role) => (
-              <div
-                key={role}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={rolesState[role] !== undefined}
-                    onCheckedChange={() => toggleRole(role)}
-                  />
-                  <span className="capitalize">{humanize(role)}</span>
-                </label>
-                {rolesState[role] !== undefined && (
-                  <Input
-                    type="number"
-                    min={1}
-                    value={rolesState[role]}
-                    onChange={(e) => updateCount(role, Number(e.target.value))}
-                    className="w-16 text-center"
-                  />
-                )}
-              </div>
-            ))
-          ) : (
+        <div className="max-h-[50vh] overflow-y-auto mt-2 space-y-4">
+          {allFiltered.length === 0 ? (
             <p className="text-xs text-muted-foreground">
               No roles match your search.
             </p>
+          ) : (
+            <>
+              {selectedRoles.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Selected
+                  </h4>
+                  {selectedRoles.map(renderRoleRow)}
+                </div>
+              )}
+
+              {selectedRoles.length > 0 && unselectedRoles.length > 0 && (
+                <hr className="border-muted" />
+              )}
+
+              {unselectedRoles.length > 0 && (
+                <div className="space-y-2">
+                  {selectedRoles.length > 0 && (
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Available
+                    </h4>
+                  )}
+                  {unselectedRoles.map(renderRoleRow)}
+                </div>
+              )}
+            </>
           )}
         </div>
 

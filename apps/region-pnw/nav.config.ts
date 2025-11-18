@@ -68,6 +68,7 @@ export const navConfig: GlobalNavConfigInput = {
       children: [
         { label: 'Directory', href: '/pods', roles: completeOnboarding },
         { label: 'Create Pod', href: '/pods/new', roles: elevatedRoles },
+        // { label: 'Collective Calendar', href: '/pods/calendar', roles: completeOnboarding },
       ],
     },
     {

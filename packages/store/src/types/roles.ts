@@ -1,128 +1,117 @@
-import z from "zod";
+import z from 'zod';
 
 // Role types (used throughout the app)
 // Align AccessRole with NavRole from utils/nav.ts
 export const AccessRoles = [
-  "team_member",
-  "pod_leader",
-  "trainer",
-  "dispatcher_basic",
-  "dispatcher_verified",
-  "dispatcher_admin",
-  "admin",
-  "regional_admin",
-  "national_admin",
+  'team_member',
+  'pod_leader',
+  'trainer',
+  'dispatcher_basic',
+  'dispatcher_verified',
+  'dispatcher_admin',
+  'admin',
+  'regional_admin',
+  'national_admin',
 ] as const;
 export type AccessRole = (typeof AccessRoles)[number];
 
-export const VerifiedBy = [
-  "self",
-  "partner_org",
-  "admin",
-  "suspended",
-] as const;
+export const VerifiedBy = ['self', 'partner_org', 'admin', 'suspended'] as const;
 export type VerifiedBy = (typeof VerifiedBy)[number];
 
 // Descriptions for tooltips or help text
 export const AccessRoleDescriptions: Record<AccessRole, string> = {
-  team_member:
-    "Team members can use core features, view pods, and participate in operations after onboarding.",
-  pod_leader:
-    "Pod Leaders coordinate local pods and people, including elevated operational actions.",
-  trainer:
-    "Trainers can create and manage training content and certify others.",
-  dispatcher_basic:
-    "Basic Dispatchers can assist coordination and engage with dispatch features.",
-  dispatcher_verified:
-    "Verified Dispatchers are trusted coordinators with elevated permissions.",
-  dispatcher_admin:
-    "Dispatcher Admins oversee dispatch operations and have local administrative powers.",
-  admin: "Region Admin with full administrative powers for the region.",
-  regional_admin: "Regional Admin with broader oversight across the region.",
-  national_admin:
-    "National Admin with cross-region oversight and top-level permissions.",
+  team_member: 'Team members can use core features, view pods, and participate in operations after onboarding.',
+  pod_leader: 'Pod Leaders coordinate local pods and people, including elevated operational actions.',
+  trainer: 'Trainers can create and manage training content and certify others.',
+  dispatcher_basic: 'Basic Dispatchers can assist coordination and engage with dispatch features.',
+  dispatcher_verified: 'Verified Dispatchers are trusted coordinators with elevated permissions.',
+  dispatcher_admin: 'Dispatcher Admins oversee dispatch operations and have local administrative powers.',
+  admin: 'Region Admin with full administrative powers for the region.',
+  regional_admin: 'Regional Admin with broader oversight across the region.',
+  national_admin: 'National Admin with cross-region oversight and top-level permissions.',
 };
 
 export const VerifiedByDescriptions: Record<VerifiedBy, string> = {
-  self: "This user verified themselves during signup.",
-  partner_org: "Verified through a trusted partner organization.",
-  admin: "Verified directly by a system admin.",
-  suspended: "Account is suspended (set by admin).",
+  self: 'This user verified themselves during signup.',
+  partner_org: 'Verified through a trusted partner organization.',
+  admin: 'Verified directly by a system admin.',
+  suspended: 'Account is suspended (set by admin).',
 };
 
 export function verifierLabel(source: VerifiedBy): string {
   switch (source) {
-    case "self":
-      return "Self";
-    case "partner_org":
-      return "Partner Org";
-    case "admin":
-      return "Admin";
-    case "suspended":
-      return "Suspended";
+    case 'self':
+      return 'Self';
+    case 'partner_org':
+      return 'Partner Org';
+    case 'admin':
+      return 'Admin';
+    case 'suspended':
+      return 'Suspended';
   }
 }
 
 export function roleLabel(role: AccessRole): string {
   switch (role) {
-    case "team_member":
-      return "Team Member";
-    case "pod_leader":
-      return "Pod Leader";
-    case "trainer":
-      return "Trainer";
-    case "dispatcher_basic":
-      return "Dispatcher (Basic)";
-    case "dispatcher_verified":
-      return "Dispatcher (Verified)";
-    case "dispatcher_admin":
-      return "Dispatcher Admin";
-    case "admin":
-      return "Admin";
-    case "regional_admin":
-      return "Regional Admin";
-    case "national_admin":
-      return "National Admin";
+    case 'team_member':
+      return 'Team Member';
+    case 'pod_leader':
+      return 'Pod Leader';
+    case 'trainer':
+      return 'Trainer';
+    case 'dispatcher_basic':
+      return 'Dispatcher (Basic)';
+    case 'dispatcher_verified':
+      return 'Dispatcher (Verified)';
+    case 'dispatcher_admin':
+      return 'Dispatcher Admin';
+    case 'admin':
+      return 'Admin';
+    case 'regional_admin':
+      return 'Regional Admin';
+    case 'national_admin':
+      return 'National Admin';
   }
 }
 
 export const FIELD_ROLE_OPTIONS = [
-  "legal",
-  "arrest_tracker",
-  "rights_observer",
-  "media_observer",
-  "deescalation",
-  "safety_marshall",
-  "defensive",
-  "medic",
-  "mental_health",
-  "disability_aid",
-  "translator",
-  "asl_interpreter",
-  "dispatch_aide",
-  "tech_support",
-  "logistics",
-  "child_specialist",
-  "immigration_specialist",
-  "faith_leader",
-  "bondsman",
-  "social_worker",
-  "community_organizer",
-  "tech_jammer",
-  "vehicle_support",
-  "care_station",
-  "night_logistics",
-  "resource_drop",
-  "grounding_support",
-  "wellness_float",
-  "courthouse_marshal",
-  "legal_liaison",
-  "security_witness",
-  "docket_tracker",
-  "court_float_support",
-  "press_coordination",
-  "survivor_escort",
-  "line_scheduler",
+  'legal',
+  'arrest_tracker',
+  'rights_observer',
+  'media_observer',
+  'deescalation',
+  'safety_marshall',
+  'defensive',
+  'medic',
+  'mental_health',
+  'disability_aid',
+  'translator',
+  'asl_interpreter',
+  'dispatch_aide',
+  'tech_support',
+  'logistics',
+  'child_specialist',
+  'immigration_specialist',
+  'faith_leader',
+  'bondsman',
+  'social_worker',
+  'community_organizer',
+  'tech_jammer',
+  'vehicle_support',
+  'care_station',
+  'night_logistics',
+  'resource_drop',
+  'grounding_support',
+  'wellness_float',
+  'courthouse_marshal',
+  'legal_liaison',
+  'security_witness',
+  'docket_tracker',
+  'court_float_support',
+  'press_coordination',
+  'survivor_escort',
+  'line_scheduler',
+  'otg_general_support',
 ] as const;
 
 /** Zod schema — use in forms */
@@ -131,7 +120,7 @@ export const FieldRoleSchema = z.enum(FIELD_ROLE_OPTIONS);
 /** TS type — use in stores & props */
 export type FieldRole = z.infer<typeof FieldRoleSchema>;
 
-export type RoleValue = "lead" | "member" | "trainee";
+export type RoleValue = 'lead' | 'member' | 'trainee';
 
 export type RoleOption = {
   value: RoleValue;
@@ -142,83 +131,82 @@ export type RoleOption = {
 
 export const ROLE_OPTIONS: RoleOption[] = [
   {
-    value: "lead",
-    label: "Lead",
-    dotClass: "bg-emerald-500",
-    description: "Coordinates the pod",
+    value: 'lead',
+    label: 'Lead',
+    dotClass: 'bg-emerald-500',
+    description: 'Coordinates the pod',
   },
   {
-    value: "member",
-    label: "Member",
-    dotClass: "bg-amber-500",
-    description: "Active volunteer",
+    value: 'member',
+    label: 'Member',
+    dotClass: 'bg-amber-500',
+    description: 'Active volunteer',
   },
   {
-    value: "trainee",
-    label: "Trainee",
-    dotClass: "bg-indigo-500",
-    description: "In training / shadowing",
+    value: 'trainee',
+    label: 'Trainee',
+    dotClass: 'bg-indigo-500',
+    description: 'In training / shadowing',
   },
 ];
 
-export const ROLE_BY_VALUE = Object.fromEntries(
-  ROLE_OPTIONS.map((o) => [o.value, o] as const),
-);
+export const ROLE_BY_VALUE = Object.fromEntries(ROLE_OPTIONS.map((o) => [o.value, o] as const));
 
 export const FIELD_ROLE_LABELS: Record<FieldRole, string> = {
-  legal: "Legal Support",
-  arrest_tracker: "Arrest Tracker",
-  rights_observer: "Know Your Rights Observer",
-  media_observer: "Media/Press Monitor",
-  deescalation: "De-escalation",
-  safety_marshall: "Safety Marshal",
-  defensive: "Defensive Presence",
-  medic: "Street Medic",
-  mental_health: "Mental Health",
-  disability_aid: "Disability Aid",
-  translator: "Translator",
-  asl_interpreter: "ASL Interpreter",
-  dispatch_aide: "Dispatch Assistant",
-  tech_support: "Tech Support",
-  logistics: "Logistics Support",
-  child_specialist: "Child Specialist",
-  immigration_specialist: "Immigration Specialist",
-  faith_leader: "Faith Leader",
-  bondsman: "Bondsman",
-  social_worker: "Social Worker",
-  community_organizer: "Community Organizer",
-  tech_jammer: "Tech Jammer",
-  vehicle_support: "Vehicle Support",
-  care_station: "Care Station Coordinator",
-  night_logistics: "Night Logistics",
-  resource_drop: "Resource Drop Coordinator",
-  grounding_support: "Grounding Support",
-  wellness_float: "Wellness Float",
-  courthouse_marshal: "Courthouse Marshal",
-  legal_liaison: "Legal Liaison",
-  security_witness: "Security Witness",
-  docket_tracker: "Docket Tracker",
-  court_float_support: "Court Float Support",
-  press_coordination: "Press Coordination",
-  survivor_escort: "Survivor Escort",
-  line_scheduler: "Line Scheduler",
+  legal: 'Legal Support',
+  arrest_tracker: 'Arrest Tracker',
+  rights_observer: 'Know Your Rights Observer',
+  media_observer: 'Media/Press Monitor',
+  deescalation: 'De-escalation',
+  safety_marshall: 'Safety Marshal',
+  defensive: 'Defensive Presence',
+  medic: 'Street Medic',
+  mental_health: 'Mental Health',
+  disability_aid: 'Disability Aid',
+  translator: 'Translator',
+  asl_interpreter: 'ASL Interpreter',
+  dispatch_aide: 'Dispatch Assistant',
+  tech_support: 'Tech Support',
+  logistics: 'Logistics Support',
+  child_specialist: 'Child Specialist',
+  immigration_specialist: 'Immigration Specialist',
+  faith_leader: 'Faith Leader',
+  bondsman: 'Bondsman',
+  social_worker: 'Social Worker',
+  community_organizer: 'Community Organizer',
+  tech_jammer: 'Tech Jammer',
+  vehicle_support: 'Vehicle Support',
+  care_station: 'Care Station Coordinator',
+  night_logistics: 'Night Logistics',
+  resource_drop: 'Resource Drop Coordinator',
+  grounding_support: 'Grounding Support',
+  wellness_float: 'Wellness Float',
+  courthouse_marshal: 'Courthouse Marshal',
+  legal_liaison: 'Legal Liaison',
+  security_witness: 'Security Witness',
+  docket_tracker: 'Docket Tracker',
+  court_float_support: 'Court Float Support',
+  press_coordination: 'Press Coordination',
+  survivor_escort: 'Survivor Escort',
+  line_scheduler: 'Line Scheduler',
+  otg_general_support: 'OTG - General Support',
 };
 
 export type EventType =
-  | "scout_check"
-  | "routine_check"
-  | "community_event"
-  | "protest_low"
-  | "protest_high"
-  | "raid_in_progress"
-  | "detention_center_action"
-  | "checkpoint_monitoring"
-  | "court_support"
-  | "home_visitation"
-  | "post_raid_support"
-  | "border_encounter"
-  | "transport_interdiction"
-  | "community_defense_center";
+  | 'scout_check'
+  | 'routine_check'
+  | 'community_event'
+  | 'protest_low'
+  | 'protest_high'
+  | 'raid_in_progress'
+  | 'detention_center_action'
+  | 'checkpoint_monitoring'
+  | 'court_support'
+  | 'home_visitation'
+  | 'post_raid_support'
+  | 'border_encounter'
+  | 'transport_interdiction'
+  | 'community_defense_center';
 
 export type ActionPreset = (typeof ACTION_PRESETS)[number];
 
@@ -234,10 +222,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
       defensive: 2,
     },
-    actions: [
-      "Witnessing / observation only",
-      "Document and report ICE/law enforcement presence",
-    ],
+    actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement presence'],
   },
   routine_check: {
     roles: {
@@ -247,9 +232,9 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
     },
     actions: [
-      "Witnessing / observation only",
-      "Document and report ICE/law enforcement presence",
-      "Rights observation and legal witnessing",
+      'Witnessing / observation only',
+      'Document and report ICE/law enforcement presence',
+      'Rights observation and legal witnessing',
     ],
   },
   community_event: {
@@ -264,11 +249,11 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       wellness_float: 1,
     },
     actions: [
-      "Support community visibility and morale",
-      "Provide food, water, or comfort supplies",
-      "Coordinate check-ins and mutual aid relay",
-      "Media or livestream monitoring and amplification",
-      "Childcare or eldercare support on site",
+      'Support community visibility and morale',
+      'Provide food, water, or comfort supplies',
+      'Coordinate check-ins and mutual aid relay',
+      'Media or livestream monitoring and amplification',
+      'Childcare or eldercare support on site',
     ],
   },
   protest_low: {
@@ -283,9 +268,9 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       wellness_float: 1,
     },
     actions: [
-      "Provide trauma-informed de-escalation",
-      "Rights observation and legal witnessing",
-      "Document and report ICE/law enforcement presence",
+      'Provide trauma-informed de-escalation',
+      'Rights observation and legal witnessing',
+      'Document and report ICE/law enforcement presence',
     ],
   },
   protest_high: {
@@ -306,10 +291,10 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       resource_drop: 1,
     },
     actions: [
-      "Coordinate direct intervention or obstruction",
-      "Support disengagement and tactical withdrawal",
-      "Monitor and intervene in escalating group tensions",
-      "Media or livestream monitoring and amplification",
+      'Coordinate direct intervention or obstruction',
+      'Support disengagement and tactical withdrawal',
+      'Monitor and intervene in escalating group tensions',
+      'Media or livestream monitoring and amplification',
     ],
   },
   raid_in_progress: {
@@ -326,10 +311,10 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       night_logistics: 1,
     },
     actions: [
-      "Coordinate direct intervention or obstruction",
-      "Document and report ICE/law enforcement presence",
-      "Maintain Signal/radio/tech comms relay",
-      "Assist disabled individuals with access or evacuation",
+      'Coordinate direct intervention or obstruction',
+      'Document and report ICE/law enforcement presence',
+      'Maintain Signal/radio/tech comms relay',
+      'Assist disabled individuals with access or evacuation',
     ],
   },
   detention_center_action: {
@@ -345,10 +330,10 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
     },
     actions: [
-      "Rights observation and legal witnessing",
-      "Media or livestream monitoring and amplification",
-      "On-site emotional or mental health support",
-      "Support community visibility and morale",
+      'Rights observation and legal witnessing',
+      'Media or livestream monitoring and amplification',
+      'On-site emotional or mental health support',
+      'Support community visibility and morale',
     ],
   },
   checkpoint_monitoring: {
@@ -362,9 +347,9 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
     },
     actions: [
-      "Witnessing / observation only",
-      "Map and monitor enforcement movement live",
-      "Provide immigration-specific legal triage",
+      'Witnessing / observation only',
+      'Map and monitor enforcement movement live',
+      'Provide immigration-specific legal triage',
     ],
   },
   court_support: {
@@ -386,10 +371,10 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       line_scheduler: 1,
     },
     actions: [
-      "Court accompaniment or support presence",
-      "Assist individuals with legal navigation",
-      "Provide immigration-specific legal triage",
-      "Childcare or eldercare support on site",
+      'Court accompaniment or support presence',
+      'Assist individuals with legal navigation',
+      'Provide immigration-specific legal triage',
+      'Childcare or eldercare support on site',
     ],
   },
   home_visitation: {
@@ -402,10 +387,10 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       tech_support: 1,
     },
     actions: [
-      "Provide cultural or spiritual grounding",
-      "Assist individuals with legal navigation",
-      "Document and report ICE/law enforcement presence",
-      "Childcare or eldercare support on site",
+      'Provide cultural or spiritual grounding',
+      'Assist individuals with legal navigation',
+      'Document and report ICE/law enforcement presence',
+      'Childcare or eldercare support on site',
     ],
   },
   post_raid_support: {
@@ -422,10 +407,10 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       night_logistics: 1,
     },
     actions: [
-      "Coordinate check-ins and mutual aid relay",
-      "On-site emotional or mental health support",
-      "Support community visibility and morale",
-      "Childcare or eldercare support on site",
+      'Coordinate check-ins and mutual aid relay',
+      'On-site emotional or mental health support',
+      'Support community visibility and morale',
+      'Childcare or eldercare support on site',
     ],
   },
   border_encounter: {
@@ -440,9 +425,9 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       tech_jammer: 1,
     },
     actions: [
-      "Coordinate direct intervention or obstruction",
-      "Provide immigration-specific legal triage",
-      "Maintain Signal/radio/tech comms relay",
+      'Coordinate direct intervention or obstruction',
+      'Provide immigration-specific legal triage',
+      'Maintain Signal/radio/tech comms relay',
     ],
   },
   transport_interdiction: {
@@ -455,9 +440,9 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
     },
     actions: [
-      "Document and report ICE/law enforcement presence",
-      "Rights observation and legal witnessing",
-      "Track arrests or detentions for legal follow-up",
+      'Document and report ICE/law enforcement presence',
+      'Rights observation and legal witnessing',
+      'Track arrests or detentions for legal follow-up',
     ],
   },
   community_defense_center: {
@@ -477,12 +462,12 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       vehicle_support: 1,
     },
     actions: [
-      "Document and report ICE/law enforcement presence",
-      "Rights observation and legal witnessing",
-      "Coordinate direct intervention or obstruction",
-      "Support community visibility and morale",
-      "Maintain Signal/radio/tech comms relay",
-      "Assist individuals with legal navigation",
+      'Document and report ICE/law enforcement presence',
+      'Rights observation and legal witnessing',
+      'Coordinate direct intervention or obstruction',
+      'Support community visibility and morale',
+      'Maintain Signal/radio/tech comms relay',
+      'Assist individuals with legal navigation',
     ],
   },
 };
@@ -493,83 +478,81 @@ export function applyMultiplier(
 ): Partial<Record<FieldRole, number>> {
   const scaled: Partial<Record<FieldRole, number>> = {};
   for (const role in baseTeam) {
-    scaled[role as FieldRole] = Math.ceil(
-      (baseTeam[role as FieldRole] ?? 0) * multiplier,
-    );
+    scaled[role as FieldRole] = Math.ceil((baseTeam[role as FieldRole] ?? 0) * multiplier);
   }
   return scaled;
 }
 
 export const ACTION_PRESETS = [
-  "",
-  "Witnessing / observation only",
-  "Assist individuals with legal navigation",
-  "Document and report ICE/law enforcement presence",
-  "Provide trauma-informed de-escalation",
-  "Support community visibility and morale",
-  "Coordinate direct intervention or obstruction",
-  "Childcare or eldercare support on site",
-  "Media or livestream monitoring and amplification",
-  "Rights observation and legal witnessing",
-  "Track arrests or detentions for legal follow-up",
-  "On-site emotional or mental health support",
-  "Support disengagement and tactical withdrawal",
-  "Assist disabled individuals with access or evacuation",
-  "Provide cultural or spiritual grounding",
-  "Jam surveillance or hostile tech infrastructure",
-  "Map and monitor enforcement movement live",
-  "Custom action plan (see notes below)",
+  '',
+  'Witnessing / observation only',
+  'Assist individuals with legal navigation',
+  'Document and report ICE/law enforcement presence',
+  'Provide trauma-informed de-escalation',
+  'Support community visibility and morale',
+  'Coordinate direct intervention or obstruction',
+  'Childcare or eldercare support on site',
+  'Media or livestream monitoring and amplification',
+  'Rights observation and legal witnessing',
+  'Track arrests or detentions for legal follow-up',
+  'On-site emotional or mental health support',
+  'Support disengagement and tactical withdrawal',
+  'Assist disabled individuals with access or evacuation',
+  'Provide cultural or spiritual grounding',
+  'Jam surveillance or hostile tech infrastructure',
+  'Map and monitor enforcement movement live',
+  'Custom action plan (see notes below)',
 ];
 
 export const ACTION_PRESETS_GROUPED = {
-  "📋 Observation & Documentation": [
-    "Witnessing / observation only",
-    "Document and report ICE/law enforcement presence",
-    "Media or livestream monitoring and amplification",
-    "Rights observation and legal witnessing",
+  '📋 Observation & Documentation': [
+    'Witnessing / observation only',
+    'Document and report ICE/law enforcement presence',
+    'Media or livestream monitoring and amplification',
+    'Rights observation and legal witnessing',
   ],
-  "⚖️ Legal & Advocacy Support": [
-    "Assist individuals with legal navigation",
-    "Track arrests or detentions for legal follow-up",
-    "Court accompaniment or support presence",
-    "Provide immigration-specific legal triage",
+  '⚖️ Legal & Advocacy Support': [
+    'Assist individuals with legal navigation',
+    'Track arrests or detentions for legal follow-up',
+    'Court accompaniment or support presence',
+    'Provide immigration-specific legal triage',
   ],
-  "🧠 Mental Health & De-escalation": [
-    "Provide trauma-informed de-escalation",
-    "On-site emotional or mental health support",
-    "Monitor and intervene in escalating group tensions",
+  '🧠 Mental Health & De-escalation': [
+    'Provide trauma-informed de-escalation',
+    'On-site emotional or mental health support',
+    'Monitor and intervene in escalating group tensions',
   ],
-  "🤝 Community Support & Logistics": [
-    "Support community visibility and morale",
-    "Provide food, water, or comfort supplies",
-    "Assist with logistics and transportation needs",
-    "Coordinate check-ins and mutual aid relay",
+  '🤝 Community Support & Logistics': [
+    'Support community visibility and morale',
+    'Provide food, water, or comfort supplies',
+    'Assist with logistics and transportation needs',
+    'Coordinate check-ins and mutual aid relay',
   ],
-  "🚸 Care Roles": [
-    "Childcare or eldercare support on site",
-    "Assist disabled individuals with access or evacuation",
-    "Provide cultural or spiritual grounding",
+  '🚸 Care Roles': [
+    'Childcare or eldercare support on site',
+    'Assist disabled individuals with access or evacuation',
+    'Provide cultural or spiritual grounding',
   ],
-  "🚨 Direct Action / Protective Roles": [
-    "Coordinate direct intervention or obstruction",
-    "Act as defensive presence or human buffer",
-    "Support disengagement and tactical withdrawal",
+  '🚨 Direct Action / Protective Roles': [
+    'Coordinate direct intervention or obstruction',
+    'Act as defensive presence or human buffer',
+    'Support disengagement and tactical withdrawal',
   ],
-  "📡 Comms & Tech Support": [
-    "Maintain Signal/radio/tech comms relay",
-    "Jam surveillance or hostile tech infrastructure",
-    "Map and monitor enforcement movement live",
+  '📡 Comms & Tech Support': [
+    'Maintain Signal/radio/tech comms relay',
+    'Jam surveillance or hostile tech infrastructure',
+    'Map and monitor enforcement movement live',
   ],
-  "🛡️ Community Defense Center": [
-    "Rapid-response patrol or presence at high-risk areas (e.g., hotels, day laborer sites)",
-    "Deploys trained observers, defensive presence, legal support, and community liaisons",
-    "Aims to interrupt, document, and deter ICE operations or hostile presence",
+  '🛡️ Community Defense Center': [
+    'Rapid-response patrol or presence at high-risk areas (e.g., hotels, day laborer sites)',
+    'Deploys trained observers, defensive presence, legal support, and community liaisons',
+    'Aims to interrupt, document, and deter ICE operations or hostile presence',
   ],
 
-  "🧭 Custom Planning": ["Custom action plan (see notes below)"],
+  '🧭 Custom Planning': ['Custom action plan (see notes below)'],
 };
 
-export type RiskLevel = "low" | "medium" | "high";
+export type RiskLevel = 'low' | 'medium' | 'high';
 
 type FieldRoleDetail = {
   role: keyof typeof FIELD_ROLE_LABELS;
@@ -581,466 +564,400 @@ type FieldRoleDetail = {
 
 export const FIELD_ROLE_DETAILS: FieldRoleDetail[] = [
   {
-    role: "legal",
+    role: 'legal',
     description:
-      "Provides legal observation and coordination with legal teams, ensuring rights are upheld and escalations are documented.",
+      'Provides legal observation and coordination with legal teams, ensuring rights are upheld and escalations are documented.',
     requiredSkills: [
-      "Understanding of civil rights and protest law",
-      "Note-taking and documentation",
-      "Ability to identify violations quickly",
+      'Understanding of civil rights and protest law',
+      'Note-taking and documentation',
+      'Ability to identify violations quickly',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "People with legal training or experience working with legal observers.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'People with legal training or experience working with legal observers.',
   },
   {
-    role: "arrest_tracker",
+    role: 'arrest_tracker',
     description:
-      "Tracks who gets detained/arrested during actions, collects identifying info, and connects with jail support.",
+      'Tracks who gets detained/arrested during actions, collects identifying info, and connects with jail support.',
     requiredSkills: [
-      "Attention to detail",
-      "Clear communication under pressure",
-      "Comfort approaching witnesses or participants quickly",
+      'Attention to detail',
+      'Clear communication under pressure',
+      'Comfort approaching witnesses or participants quickly',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Quick thinkers who stay calm under stress and can manage sensitive data.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Quick thinkers who stay calm under stress and can manage sensitive data.',
   },
   {
-    role: "rights_observer",
+    role: 'rights_observer',
     description:
-      "Observes and records rights violations or police misconduct during actions. Supports later accountability.",
+      'Observes and records rights violations or police misconduct during actions. Supports later accountability.',
     requiredSkills: [
-      "Familiarity with constitutional rights",
-      "Strong observation and recording skills",
-      "Neutral, non-reactive presence",
+      'Familiarity with constitutional rights',
+      'Strong observation and recording skills',
+      'Neutral, non-reactive presence',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Observers who can remain composed and document facts without escalation.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Observers who can remain composed and document facts without escalation.',
   },
   {
-    role: "media_observer",
+    role: 'media_observer',
     description:
-      "Tracks and supports press presence. Ensures accurate coverage, protects vulnerable participants from unwanted media.",
+      'Tracks and supports press presence. Ensures accurate coverage, protects vulnerable participants from unwanted media.',
     requiredSkills: [
-      "Understanding of media rights and boundaries",
-      "Communication with journalists",
-      "Confidence in high-visibility roles",
+      'Understanding of media rights and boundaries',
+      'Communication with journalists',
+      'Confidence in high-visibility roles',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Media-savvy individuals who can advocate and deescalate with press present.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Media-savvy individuals who can advocate and deescalate with press present.',
   },
   {
-    role: "deescalation",
+    role: 'deescalation',
     description:
-      "Engages with tense situations to prevent violence or escalation, using trauma-informed and verbal techniques.",
+      'Engages with tense situations to prevent violence or escalation, using trauma-informed and verbal techniques.',
     requiredSkills: [
-      "Conflict resolution and active listening",
-      "Nonviolent communication",
-      "Situational awareness and calm demeanor",
+      'Conflict resolution and active listening',
+      'Nonviolent communication',
+      'Situational awareness and calm demeanor',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Experienced mediators, mental health workers, or trusted calm presences.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Experienced mediators, mental health workers, or trusted calm presences.',
   },
   {
-    role: "safety_marshall",
-    description:
-      "Coordinates crowd movement, identifies safety hazards, and maintains group cohesion.",
+    role: 'safety_marshall',
+    description: 'Coordinates crowd movement, identifies safety hazards, and maintains group cohesion.',
     requiredSkills: [
-      "Situational awareness",
-      "Crowd management or herding instincts",
-      "Ability to give clear, confident directions",
+      'Situational awareness',
+      'Crowd management or herding instincts',
+      'Ability to give clear, confident directions',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Organized and mobile people who can maintain overview and redirect calmly.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Organized and mobile people who can maintain overview and redirect calmly.',
   },
   {
-    role: "defensive",
-    description:
-      "Stands in visible solidarity to deter violence. Acts as a physical presence near vulnerable groups.",
+    role: 'defensive',
+    description: 'Stands in visible solidarity to deter violence. Acts as a physical presence near vulnerable groups.',
     requiredSkills: [
-      "Calm and physically grounded presence",
-      "Understanding of nonviolent discipline",
-      "Ability to stay put even in tense situations",
+      'Calm and physically grounded presence',
+      'Understanding of nonviolent discipline',
+      'Ability to stay put even in tense situations',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Trustworthy, grounded individuals comfortable with close proximity to threat.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Trustworthy, grounded individuals comfortable with close proximity to threat.',
   },
   {
-    role: "medic",
-    description:
-      "Provides first aid and trauma support. Responds to injuries, chemical exposure, or panic attacks.",
+    role: 'medic',
+    description: 'Provides first aid and trauma support. Responds to injuries, chemical exposure, or panic attacks.',
     requiredSkills: [
-      "Street medic or first responder training",
-      "Carrying a fully stocked kit",
-      "Ability to triage quickly",
+      'Street medic or first responder training',
+      'Carrying a fully stocked kit',
+      'Ability to triage quickly',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Certified medics, EMTs, nurses, or those trained in trauma care.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Certified medics, EMTs, nurses, or those trained in trauma care.',
   },
   {
-    role: "mental_health",
-    description:
-      "Supports emotional processing, trauma recovery, and grounding for distressed participants.",
+    role: 'mental_health',
+    description: 'Supports emotional processing, trauma recovery, and grounding for distressed participants.',
     requiredSkills: [
-      "Crisis counseling or peer support training",
-      "Empathetic listening",
-      "Understanding of trauma responses and debriefing",
+      'Crisis counseling or peer support training',
+      'Empathetic listening',
+      'Understanding of trauma responses and debriefing',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Counselors, therapists, or emotionally intelligent supporters.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Counselors, therapists, or emotionally intelligent supporters.',
   },
   {
-    role: "disability_aid",
+    role: 'disability_aid',
     description:
-      "Assists community members with mobility, sensory, or neurodiverse needs before, during, and after actions.",
+      'Assists community members with mobility, sensory, or neurodiverse needs before, during, and after actions.',
     requiredSkills: [
-      "Awareness of disability justice principles",
-      "Physical support or interpretation skills",
-      "Sensitivity and discretion",
+      'Awareness of disability justice principles',
+      'Physical support or interpretation skills',
+      'Sensitivity and discretion',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Disability advocates or those with lived experience and strong empathy.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Disability advocates or those with lived experience and strong empathy.',
   },
   {
-    role: "translator",
-    description:
-      "Translates spoken or written language for participants to ensure equitable access to information.",
+    role: 'translator',
+    description: 'Translates spoken or written language for participants to ensure equitable access to information.',
     requiredSkills: [
-      "Fluency in at least two relevant languages",
-      "Clarity and accuracy under pressure",
-      "Familiarity with relevant vocabulary (legal, medical, etc.)",
+      'Fluency in at least two relevant languages',
+      'Clarity and accuracy under pressure',
+      'Familiarity with relevant vocabulary (legal, medical, etc.)',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Bilingual/multilingual individuals comfortable with on-the-spot translation.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Bilingual/multilingual individuals comfortable with on-the-spot translation.',
   },
   {
-    role: "asl_interpreter",
-    description:
-      "Interprets spoken content into American Sign Language and vice versa during key moments.",
-    requiredSkills: [
-      "Fluent ASL skills",
-      "Visibility in group spaces",
-      "Respect for deaf community norms",
-    ],
-    riskLevel: "low",
-    bestSuitedFor: "Experienced ASL users or certified interpreters.",
+    role: 'asl_interpreter',
+    description: 'Interprets spoken content into American Sign Language and vice versa during key moments.',
+    requiredSkills: ['Fluent ASL skills', 'Visibility in group spaces', 'Respect for deaf community norms'],
+    riskLevel: 'low',
+    bestSuitedFor: 'Experienced ASL users or certified interpreters.',
   },
   {
-    role: "dispatch_aide",
-    description:
-      "Assists dispatchers by tracking statuses, relaying updates, and managing logistical coordination.",
-    requiredSkills: [
-      "Clarity under pressure",
-      "Comfort with apps or radios",
-      "Strong communication and documentation",
-    ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Reliable, detail-oriented supporters who work well with systems.",
+    role: 'dispatch_aide',
+    description: 'Assists dispatchers by tracking statuses, relaying updates, and managing logistical coordination.',
+    requiredSkills: ['Clarity under pressure', 'Comfort with apps or radios', 'Strong communication and documentation'],
+    riskLevel: 'low',
+    bestSuitedFor: 'Reliable, detail-oriented supporters who work well with systems.',
   },
   {
-    role: "tech_support",
-    description:
-      "Fixes, configures, or manages radios, encrypted devices, livestreams, and comms tools.",
+    role: 'tech_support',
+    description: 'Fixes, configures, or manages radios, encrypted devices, livestreams, and comms tools.',
     requiredSkills: [
-      "Technical troubleshooting skills",
-      "Understanding of privacy tools and comms apps",
-      "Ability to work calmly during disruptions",
+      'Technical troubleshooting skills',
+      'Understanding of privacy tools and comms apps',
+      'Ability to work calmly during disruptions',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Tech-savvy individuals who can operate under time pressure.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Tech-savvy individuals who can operate under time pressure.',
   },
   {
-    role: "logistics",
-    description:
-      "Manages physical supplies like food, water, rest areas, bathrooms, and signs.",
+    role: 'logistics',
+    description: 'Manages physical supplies like food, water, rest areas, bathrooms, and signs.',
     requiredSkills: [
-      "Organizational skills",
-      "Supply chain or prep knowledge",
-      "Ability to coordinate drop-offs and routes",
+      'Organizational skills',
+      'Supply chain or prep knowledge',
+      'Ability to coordinate drop-offs and routes',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Planners, helpers, or anyone good at anticipating group needs.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Planners, helpers, or anyone good at anticipating group needs.',
   },
   {
-    role: "child_specialist",
-    description:
-      "Ensures safety and emotional support for children present or impacted during actions.",
+    role: 'child_specialist',
+    description: 'Ensures safety and emotional support for children present or impacted during actions.',
     requiredSkills: [
-      "Experience with children",
-      "Crisis soothing and safety planning",
-      "Trauma-informed communication",
+      'Experience with children',
+      'Crisis soothing and safety planning',
+      'Trauma-informed communication',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Caregivers, teachers, or youth workers with high trust and awareness.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Caregivers, teachers, or youth workers with high trust and awareness.',
   },
   {
-    role: "immigration_specialist",
+    role: 'immigration_specialist',
     description:
-      "Supports non-citizens and mixed-status individuals by offering risk info, de-escalation, and legal navigation.",
+      'Supports non-citizens and mixed-status individuals by offering risk info, de-escalation, and legal navigation.',
     requiredSkills: [
-      "Knowledge of ICE tactics and immigrant rights",
-      "Cultural humility and language access",
-      "Discretion and rapid support coordination",
+      'Knowledge of ICE tactics and immigrant rights',
+      'Cultural humility and language access',
+      'Discretion and rapid support coordination',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Immigration advocates or those with legal/community defense experience.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Immigration advocates or those with legal/community defense experience.',
   },
   {
-    role: "faith_leader",
+    role: 'faith_leader',
     description:
-      "Provides spiritual or moral support, may lead prayer, hold space, or act as a trusted elder presence.",
-    requiredSkills: [
-      "Grounding practices or pastoral care",
-      "Community trust",
-      "Calm, visible presence",
-    ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Clergy, spiritual workers, or respected elders in community networks.",
+      'Provides spiritual or moral support, may lead prayer, hold space, or act as a trusted elder presence.',
+    requiredSkills: ['Grounding practices or pastoral care', 'Community trust', 'Calm, visible presence'],
+    riskLevel: 'low',
+    bestSuitedFor: 'Clergy, spiritual workers, or respected elders in community networks.',
   },
   {
-    role: "bondsman",
-    description:
-      "Coordinates bail-outs, connects people to legal resources, and navigates jail procedures.",
+    role: 'bondsman',
+    description: 'Coordinates bail-outs, connects people to legal resources, and navigates jail procedures.',
     requiredSkills: [
-      "Understanding of bail and booking systems",
-      "Rapid response communication",
-      "Trustworthiness and follow-through",
+      'Understanding of bail and booking systems',
+      'Rapid response communication',
+      'Trustworthiness and follow-through',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Legal support team members or those experienced in post-arrest support.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Legal support team members or those experienced in post-arrest support.',
   },
   {
-    role: "social_worker",
-    description:
-      "Provides crisis care and navigation of public support systems for impacted individuals.",
+    role: 'social_worker',
+    description: 'Provides crisis care and navigation of public support systems for impacted individuals.',
     requiredSkills: [
-      "Crisis intervention or peer support skills",
-      "Familiarity with housing, food, and health systems",
-      "Compassionate communication",
+      'Crisis intervention or peer support skills',
+      'Familiarity with housing, food, and health systems',
+      'Compassionate communication',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Trained social workers, peer support providers, or resource connectors.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Trained social workers, peer support providers, or resource connectors.',
   },
   {
-    role: "community_organizer",
-    description:
-      "Ties event goals to long-term strategy. Tracks impact, gathers contacts, and supports follow-up.",
-    requiredSkills: [
-      "Relational organizing",
-      "Campaign planning",
-      "Conflict resolution and group facilitation",
-    ],
-    riskLevel: "medium",
-    bestSuitedFor: "Experienced organizers or leaders in community formations.",
+    role: 'community_organizer',
+    description: 'Ties event goals to long-term strategy. Tracks impact, gathers contacts, and supports follow-up.',
+    requiredSkills: ['Relational organizing', 'Campaign planning', 'Conflict resolution and group facilitation'],
+    riskLevel: 'medium',
+    bestSuitedFor: 'Experienced organizers or leaders in community formations.',
   },
   {
-    role: "tech_jammer",
-    description:
-      "Interrupts surveillance or tracking tools to protect community members and data.",
+    role: 'tech_jammer',
+    description: 'Interrupts surveillance or tracking tools to protect community members and data.',
     requiredSkills: [
-      "Strong understanding of legal/ethical boundaries",
-      "Digital security knowledge",
-      "Ability to act quickly and discreetly",
+      'Strong understanding of legal/ethical boundaries',
+      'Digital security knowledge',
+      'Ability to act quickly and discreetly',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Highly trusted technologists with radical ethics and counter-surveillance experience.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Highly trusted technologists with radical ethics and counter-surveillance experience.',
   },
   {
-    role: "vehicle_support",
-    description:
-      "Transports people, gear, and emergency response teams. Also supports safe exits and drop-offs.",
+    role: 'vehicle_support',
+    description: 'Transports people, gear, and emergency response teams. Also supports safe exits and drop-offs.',
     requiredSkills: [
-      "Valid license and clean driving record",
-      "Navigation and rerouting",
-      "Vehicle prep (gas, supplies, emergency plan)",
+      'Valid license and clean driving record',
+      'Navigation and rerouting',
+      'Vehicle prep (gas, supplies, emergency plan)',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Drivers with reliable vehicles and comfort with flexible or chaotic routes.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Drivers with reliable vehicles and comfort with flexible or chaotic routes.',
   },
   {
-    role: "care_station",
-    description:
-      "Oversees setup and soft operation of decompression zones or quiet corners at large events.",
+    role: 'care_station',
+    description: 'Oversees setup and soft operation of decompression zones or quiet corners at large events.',
     requiredSkills: [
-      "Awareness of trauma-informed space setup",
-      "Ability to manage soft boundaries without confrontation",
-      "Coordination with mental health or medic teams",
+      'Awareness of trauma-informed space setup',
+      'Ability to manage soft boundaries without confrontation',
+      'Coordination with mental health or medic teams',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Grounded, trusted individuals who can maintain a calm zone under pressure.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Grounded, trusted individuals who can maintain a calm zone under pressure.',
   },
   {
-    role: "night_logistics",
-    description:
-      "Supports nighttime movement, cool-down access, and low-visibility supply runs.",
+    role: 'night_logistics',
+    description: 'Supports nighttime movement, cool-down access, and low-visibility supply runs.',
     requiredSkills: [
-      "Comfort moving during quiet/low-attention windows",
-      "Logistics coordination under minimal light/sound",
-      "Discretion and calm presence",
+      'Comfort moving during quiet/low-attention windows',
+      'Logistics coordination under minimal light/sound',
+      'Discretion and calm presence',
     ],
-    riskLevel: "medium",
-    bestSuitedFor: "Night owls, late-shift volunteers, or quiet operators.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Night owls, late-shift volunteers, or quiet operators.',
   },
   {
-    role: "resource_drop",
-    description:
-      "Coordinates supply drop-offs without requiring contact, such as water, blankets, or toiletries.",
+    role: 'resource_drop',
+    description: 'Coordinates supply drop-offs without requiring contact, such as water, blankets, or toiletries.',
     requiredSkills: [
-      "Efficient route planning",
-      "Comfort with anonymous drop logistics",
-      "Reliable communication with dispatch",
+      'Efficient route planning',
+      'Comfort with anonymous drop logistics',
+      'Reliable communication with dispatch',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Folks who prefer behind-the-scenes support and can follow protocols closely.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Folks who prefer behind-the-scenes support and can follow protocols closely.',
   },
   {
-    role: "grounding_support",
-    description:
-      "Provides quiet 1-on-1 support for people emotionally overwhelmed but not in full crisis.",
+    role: 'grounding_support',
+    description: 'Provides quiet 1-on-1 support for people emotionally overwhelmed but not in full crisis.',
     requiredSkills: [
-      "Somatic or peer grounding techniques",
-      "Consent-based physical/emotional support",
-      "Low-intervention holding space",
+      'Somatic or peer grounding techniques',
+      'Consent-based physical/emotional support',
+      'Low-intervention holding space',
     ],
-    riskLevel: "medium",
-    bestSuitedFor: "Peer support-trained individuals with calm presence.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Peer support-trained individuals with calm presence.',
   },
   {
-    role: "wellness_float",
-    description:
-      "Roams between sites or clusters to check for signs of burnout, overheating, or quiet distress.",
+    role: 'wellness_float',
+    description: 'Roams between sites or clusters to check for signs of burnout, overheating, or quiet distress.',
     requiredSkills: [
-      "Empathy and proactive care",
-      "Ability to defuse and redirect tension gently",
-      "Radio/dispatch communication",
+      'Empathy and proactive care',
+      'Ability to defuse and redirect tension gently',
+      'Radio/dispatch communication',
     ],
-    riskLevel: "low",
-    bestSuitedFor: "Trusted veterans who read crowds well and move lightly.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Trusted veterans who read crowds well and move lightly.',
   },
   {
-    role: "courthouse_marshal",
-    description:
-      "Manages courthouse flow, monitors LE presence, and coordinates with field legal teams.",
+    role: 'courthouse_marshal',
+    description: 'Manages courthouse flow, monitors LE presence, and coordinates with field legal teams.',
     requiredSkills: [
-      "Crowd movement and spatial awareness",
-      "Boundary-setting and calm authority",
-      "Radio or in-person communication with observers",
+      'Crowd movement and spatial awareness',
+      'Boundary-setting and calm authority',
+      'Radio or in-person communication with observers',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "People with presence and situational awareness near sensitive public institutions.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'People with presence and situational awareness near sensitive public institutions.',
   },
   {
-    role: "legal_liaison",
-    description:
-      "Serves as bridge between legal defense teams and field volunteers before, during, or after court.",
+    role: 'legal_liaison',
+    description: 'Serves as bridge between legal defense teams and field volunteers before, during, or after court.',
     requiredSkills: [
-      "Understanding of legal team dynamics",
-      "Field-to-court communication skills",
-      "Discretion and clarity",
+      'Understanding of legal team dynamics',
+      'Field-to-court communication skills',
+      'Discretion and clarity',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Legal support or community defense veterans comfortable translating across contexts.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Legal support or community defense veterans comfortable translating across contexts.',
   },
   {
-    role: "security_witness",
-    description:
-      "Observes courthouse security presence and documents violations or misconduct.",
+    role: 'security_witness',
+    description: 'Observes courthouse security presence and documents violations or misconduct.',
     requiredSkills: [
-      "Strong observational detail",
-      "Comfort documenting power imbalance",
-      "Familiarity with LE behavior patterns",
+      'Strong observational detail',
+      'Comfort documenting power imbalance',
+      'Familiarity with LE behavior patterns',
     ],
-    riskLevel: "high",
-    bestSuitedFor:
-      "Seasoned observers able to keep calm while witnessing potential intimidation.",
+    riskLevel: 'high',
+    bestSuitedFor: 'Seasoned observers able to keep calm while witnessing potential intimidation.',
   },
   {
-    role: "docket_tracker",
-    description:
-      "Tracks docket schedules, attendance, and updates for legal and observer teams.",
+    role: 'docket_tracker',
+    description: 'Tracks docket schedules, attendance, and updates for legal and observer teams.',
     requiredSkills: [
-      "Understanding of court calendars",
-      "Quick note-taking and update sharing",
-      "Phone or desktop literacy",
+      'Understanding of court calendars',
+      'Quick note-taking and update sharing',
+      'Phone or desktop literacy',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Detail-oriented logistics people who can check updates and share clearly.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Detail-oriented logistics people who can check updates and share clearly.',
   },
   {
-    role: "court_float_support",
-    description:
-      "Engages outside courthouse with impacted people after proceedings, offering soft support.",
+    role: 'court_float_support',
+    description: 'Engages outside courthouse with impacted people after proceedings, offering soft support.',
     requiredSkills: [
-      "Peer support or trauma sensitivity",
-      "Listening and quiet presence",
-      "Cultural humility and discretion",
+      'Peer support or trauma sensitivity',
+      'Listening and quiet presence',
+      'Cultural humility and discretion',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Empathetic community members who can be present without demanding attention.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Empathetic community members who can be present without demanding attention.',
   },
   {
-    role: "press_coordination",
+    role: 'press_coordination',
     description:
-      "Coordinates media presence, ensures safe coverage, and protects vulnerable individuals from exposure.",
+      'Coordinates media presence, ensures safe coverage, and protects vulnerable individuals from exposure.',
     requiredSkills: [
-      "Media rights knowledge",
-      "Confident communication with journalists",
-      "De-escalation and consent negotiation",
+      'Media rights knowledge',
+      'Confident communication with journalists',
+      'De-escalation and consent negotiation',
     ],
-    riskLevel: "medium",
-    bestSuitedFor:
-      "Media-savvy defenders who can mediate with press under public scrutiny.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Media-savvy defenders who can mediate with press under public scrutiny.',
   },
   {
-    role: "survivor_escort",
-    description:
-      "Supports survivors or witnesses navigating courthouse spaces, from arrival through exit.",
+    role: 'survivor_escort',
+    description: 'Supports survivors or witnesses navigating courthouse spaces, from arrival through exit.',
     requiredSkills: [
-      "Trauma-informed presence",
-      "Courthouse navigation and gentle guidance",
-      "Empathy and consent-based support",
+      'Trauma-informed presence',
+      'Courthouse navigation and gentle guidance',
+      'Empathy and consent-based support',
     ],
-    riskLevel: "medium",
-    bestSuitedFor: "Calm individuals trusted by survivor communities.",
+    riskLevel: 'medium',
+    bestSuitedFor: 'Calm individuals trusted by survivor communities.',
   },
   {
-    role: "line_scheduler",
-    description:
-      "Coordinates early arrival or queue rotation for high-demand court appearances.",
+    role: 'line_scheduler',
+    description: 'Coordinates early arrival or queue rotation for high-demand court appearances.',
+    requiredSkills: ['Time awareness and queue logistics', 'Friendly assertiveness', 'Clear texting or radio updates'],
+    riskLevel: 'low',
+    bestSuitedFor: 'Reliable early birds who can organize and update arrival flow under time pressure.',
+  },
+  {
+    role: 'otg_general_support',
+    description: 'Provides general on-the-ground support where needed, filling gaps and assisting other roles.',
     requiredSkills: [
-      "Time awareness and queue logistics",
-      "Friendly assertiveness",
-      "Clear texting or radio updates",
+      'Flexibility and adaptability',
+      'General situational awareness',
+      'Willingness to help with various tasks',
     ],
-    riskLevel: "low",
-    bestSuitedFor:
-      "Reliable early birds who can organize and update arrival flow under time pressure.",
+    riskLevel: 'low',
+    bestSuitedFor: 'Versatile volunteers ready to jump in and help with whatever is needed.',
   },
 ];
 
@@ -1081,18 +998,19 @@ export const FIELD_ROLE_TIERS: Record<FieldRole, 1 | 2 | 3 | 4> = {
   press_coordination: 4,
   survivor_escort: 4,
   line_scheduler: 4,
+  otg_general_support: 4,
 };
 
 export const tierColors: Record<1 | 2 | 3 | 4, string> = {
-  1: "text-red-400",
-  2: "text-yellow-400",
-  3: "text-green-400",
-  4: "text-gray-400",
+  1: 'text-red-400',
+  2: 'text-yellow-400',
+  3: 'text-green-400',
+  4: 'text-gray-400',
 };
 
 export const tierLabels: Record<1 | 2 | 3 | 4, string> = {
-  1: "Essential",
-  2: "Stabilizing",
-  3: "Supportive",
-  4: "Auxiliary",
+  1: 'Essential',
+  2: 'Stabilizing',
+  3: 'Supportive',
+  4: 'Auxiliary',
 };
