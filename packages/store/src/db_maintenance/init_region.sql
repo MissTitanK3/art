@@ -103,12 +103,17 @@
 
   -- Organization roles (user-level permissions)
   CREATE TABLE IF NOT EXISTS public.organization_roles (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY DEFAULT (gen_random_uuid())::text,
     org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     role TEXT NOT NULL, -- owner | admin | editor | viewer
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (org_id, user_id)
   );
+
+  CREATE UNIQUE INDEX IF NOT EXISTS organization_roles_owner_unique
+    ON public.organization_roles (org_id)
+    WHERE role = 'owner';
 
   -- Dispatch submissions
   CREATE TABLE IF NOT EXISTS public.dispatch_submissions (

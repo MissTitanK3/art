@@ -23,6 +23,7 @@ export type CalendarOrgSummary = {
   name: string;
   description?: string | null;
   role?: string | null;
+  pods?: CalendarPodSummary[];
 };
 
 export type CalendarRouteMeta = {
@@ -53,6 +54,25 @@ export type CollectiveCalendarMembership = {
   orgIds: string[];
   profileId?: string | null;
   userId?: string | null;
+};
+
+export type CollectiveCalendarShiftScope = "independent" | "org";
+
+export type CollectiveCalendarShiftInput = {
+  id?: string;
+  podId: string;
+  start: string;
+  end: string;
+  tz: string;
+  label: string;
+  location: string;
+  visibility: CalendarVisibility;
+  needed: number;
+  headcount?: number | null;
+  dispatchLink?: string | null;
+  notes?: string | null;
+  scope?: CollectiveCalendarShiftScope;
+  organizationId?: string | null;
 };
 
 export function EyeOpen(props: React.ComponentProps<"svg">) {

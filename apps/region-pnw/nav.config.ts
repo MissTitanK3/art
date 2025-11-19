@@ -66,9 +66,9 @@ export const navConfig: GlobalNavConfigInput = {
       icon: 'map-pin',
       roles: completeOnboarding,
       children: [
-        { label: 'Directory', href: '/pods', roles: completeOnboarding },
+        { label: 'Directory', href: '/pods', roles: completeOnboarding, match: 'exact' },
         { label: 'Create Pod', href: '/pods/new', roles: elevatedRoles },
-        // { label: 'Collective Calendar', href: '/pods/calendar', roles: completeOnboarding },
+        { label: 'Collective Calendar', href: '/pods/calendar', roles: completeOnboarding },
       ],
     },
     {

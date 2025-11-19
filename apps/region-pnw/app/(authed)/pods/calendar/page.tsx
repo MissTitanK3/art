@@ -2,7 +2,7 @@ import CollectiveCalendarDataLayer from "@/components/dataLayer/pods/CollectiveC
 
 export default function CollectiveCalendarPage() {
   return (
-    <div className="px-2">
+    <div className="md:px-2">
       <CollectiveCalendarDataLayer />
     </div>
   );

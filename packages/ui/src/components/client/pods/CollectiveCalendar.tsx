@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -9,8 +9,6 @@ import {
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
 import { Separator } from "@workspace/ui/components/separator";
-import { Switch } from "@workspace/ui/components/switch";
-import { Label } from "@workspace/ui/components/label";
 import {
   isSameDay,
   isWithinInterval,
@@ -23,11 +21,16 @@ import {
 import { toast } from "sonner";
 import { CollectiveCalendarOrgDialog } from "./CollectiveCalendarOrgDialog";
 import {
+  CollectiveCalendarOrgConsole,
+  type OrgPodFormInput,
+} from "./CollectiveCalendarOrgConsole";
+import {
   CalendarOrgSummary,
   CalendarPodSummary,
   CalendarVisibility,
   CollectiveCalendarMembership,
   CollectiveCalendarShift,
+  CollectiveCalendarShiftInput,
   computeRange,
   formatDay,
   isShiftVisibleToUser,
@@ -37,12 +40,7 @@ import { CollectiveCalendarShiftDetailsSheet } from "./CollectiveCalendarShiftDe
 import { CollectiveCalendarAdminPanel } from "./CollectiveCalendarAdminPanel";
 import { CollectiveCalendarFilters } from "./CollectiveCalendarFilters";
 import { CollectiveCalendarView } from "./CollectiveCalendarView";
-import {
-  mockMembership,
-  mockOrgs,
-  mockPods,
-  mockShifts,
-} from "./CollectiveCalendar.mock";
+import { CollectiveCalendarShiftForm } from "./CollectiveCalendarShiftForm";
 
 export {
   type CalendarOrgSummary,
@@ -50,6 +48,7 @@ export {
   type CalendarVisibility,
   type CollectiveCalendarMembership,
   type CollectiveCalendarShift,
+  type CollectiveCalendarShiftInput,
 };
 
 export type CollectiveCalendarProps = {
@@ -60,29 +59,48 @@ export type CollectiveCalendarProps = {
   organizations: CalendarOrgSummary[];
   membership: CollectiveCalendarMembership;
   onSignup: (shift: CollectiveCalendarShift) => Promise<void>;
+  onCreateShift?: (input: CollectiveCalendarShiftInput) => Promise<void>;
+  onUpdateShift?: (
+    shiftId: string,
+    input: CollectiveCalendarShiftInput,
+  ) => Promise<void>;
+  onDeleteShift?: (shiftId: string) => Promise<void>;
   onCreateOrg?: (name: string, description: string) => Promise<void>;
   onUpdateOrg?: (orgId: string, name: string, description: string) => Promise<void>;
   onDeleteOrg?: (orgId: string) => Promise<void>;
+  onCreateOrgPod?: (orgId: string, input: OrgPodFormInput) => Promise<void>;
+  onLinkOrgPod?: (orgId: string, podId: string) => Promise<void>;
+  onUpdateOrgPod?: (
+    orgId: string,
+    podId: string,
+    input: OrgPodFormInput,
+  ) => Promise<void>;
+  onRemoveOrgPod?: (
+    orgId: string,
+    podId: string,
+    options?: { hardDelete?: boolean },
+  ) => Promise<void>;
 };
 
 export function CollectiveCalendar({
   loading,
   error,
-  shifts: propShifts,
-  pods: propPods,
-  organizations: propOrgs,
-  membership: propMembership,
+  shifts,
+  pods,
+  organizations,
+  membership,
   onSignup,
+  onCreateShift,
+  onUpdateShift,
+  onDeleteShift,
   onCreateOrg,
   onUpdateOrg,
   onDeleteOrg,
+  onCreateOrgPod,
+  onLinkOrgPod,
+  onUpdateOrgPod,
+  onRemoveOrgPod,
 }: CollectiveCalendarProps) {
-  const [showMockData, setShowMockData] = useState(false);
-
-  const shifts = showMockData ? mockShifts : propShifts;
-  const pods = showMockData ? mockPods : propPods;
-  const organizations = showMockData ? mockOrgs : propOrgs;
-  const membership = showMockData ? mockMembership : propMembership;
 
   const membershipPods = useMemo(
     () => new Set(membership.podIds ?? []),
@@ -91,6 +109,14 @@ export function CollectiveCalendar({
   const membershipOrgs = useMemo(
     () => new Set(membership.orgIds ?? []),
     [membership.orgIds],
+  );
+  const memberOrganizations = useMemo(
+    () => organizations.filter((org) => membershipOrgs.has(org.id)),
+    [organizations, membershipOrgs],
+  );
+  const membershipPodIdList = useMemo(
+    () => Array.from(membershipPods),
+    [membershipPods],
   );
   const viewerId = membership.profileId ?? membership.userId ?? null;
 
@@ -112,9 +138,23 @@ export function CollectiveCalendar({
   const [selectedShift, setSelectedShift] =
     useState<CollectiveCalendarShift | null>(null);
   const [signupLoadingId, setSignupLoadingId] = useState<string | null>(null);
+  const [shiftFormOpen, setShiftFormOpen] = useState(false);
+  const [editingShift, setEditingShift] =
+    useState<CollectiveCalendarShift | null>(null);
 
   const [orgDialogOpen, setOrgDialogOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<CalendarOrgSummary | null>(null);
+  const [orgConsoleOpen, setOrgConsoleOpen] = useState(false);
+  const [orgConsoleOrg, setOrgConsoleOrg] = useState<CalendarOrgSummary | null>(
+    null,
+  );
+
+  const hasOrgPodManagement = Boolean(
+    onCreateOrgPod || onLinkOrgPod || onUpdateOrgPod || onRemoveOrgPod,
+  );
+  const canManageShifts = Boolean(
+    onCreateShift && (membershipPods.size > 0 || membershipOrgs.size > 0),
+  );
 
   const handleOpenOrgDialog = (org?: CalendarOrgSummary) => {
     if (org) {
@@ -135,6 +175,38 @@ export function CollectiveCalendar({
       toast.error("Failed to delete organization");
     }
   };
+
+  const handleManageOrgPods = useCallback(
+    (org?: CalendarOrgSummary) => {
+      const target = org ?? organizations[0];
+      if (!target) {
+        toast.info("No organizations", {
+          description: "Create an organization to start managing pods.",
+        });
+        return;
+      }
+      setOrgConsoleOrg(target);
+      setOrgConsoleOpen(true);
+    },
+    [organizations],
+  );
+
+  useEffect(() => {
+    if (!orgConsoleOrg) return;
+    const next = organizations.find((o) => o.id === orgConsoleOrg.id) ?? null;
+    if (!next) {
+      if (organizations.length === 0) {
+        setOrgConsoleOpen(false);
+        setOrgConsoleOrg(null);
+      } else {
+        setOrgConsoleOrg(organizations[0] ?? null);
+      }
+      return;
+    }
+    if (next !== orgConsoleOrg) {
+      setOrgConsoleOrg(next);
+    }
+  }, [orgConsoleOrg, organizations]);
 
   const visibleShifts = useMemo(() => {
     return shifts.filter((shift) =>
@@ -250,47 +322,81 @@ export function CollectiveCalendar({
     }
   };
 
+  const handleOpenShiftForm = (shift?: CollectiveCalendarShift) => {
+    if (shift) {
+      setEditingShift(shift);
+    } else {
+      setEditingShift(null);
+    }
+    setShiftFormOpen(true);
+  };
+
+  const handleSaveShift = async (input: CollectiveCalendarShiftInput) => {
+    if (editingShift && onUpdateShift) {
+      await onUpdateShift(editingShift.id, input);
+    } else if (onCreateShift) {
+      await onCreateShift(input);
+    }
+  };
+
+  const handleDeleteShift = async (shiftId: string) => {
+    if (!onDeleteShift) return;
+    await onDeleteShift(shiftId);
+    if (selectedShift?.id === shiftId) {
+      setSelectedShift(null);
+    }
+  };
+
+  const canManageSelected =
+    !!selectedShift &&
+    canManageShifts &&
+    (membershipPods.has(selectedShift.pod.id) ||
+      selectedShift.organizations.some((o) => membershipOrgs.has(o.id)));
+
   return (
-    <div className="space-y-6 px-2 pb-10">
+    <div className="space-y-6 md:px-2 pb-10">
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1 text-center sm:text-left">
             <h1 className="text-2xl font-semibold">Collective Calendar</h1>
             <p className="text-sm text-muted-foreground">
               Region-wide view of pod shifts with org awareness, shadow mode,
               and crew needs.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="mock-mode"
-                checked={showMockData}
-                onCheckedChange={setShowMockData}
-              />
-              <Label htmlFor="mock-mode">Mock Data</Label>
-            </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <BadgeInfo className="h-4 w-4" />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
+              {canManageShifts ? (
+                <Button
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  onClick={() => handleOpenShiftForm()}
+                >
+                  New shift
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 text-sm">
-                <p className="font-semibold">RBAC + visibility</p>
-                <ul className="mt-2 space-y-1 text-muted-foreground">
-                  <li>Public: Visible region-wide.</li>
-                  <li>Org: Only pods in the same organization.</li>
-                  <li>Private: Only members of the pod.</li>
-                </ul>
-                <Separator className="my-2" />
-                <p className="font-semibold">Crew requests</p>
-                <p className="text-muted-foreground">
-                  “Needs Crew” badge counts down signups. Shifts keep original
-                  requested headcount.
-                </p>
-              </PopoverContent>
-            </Popover>
+              ) : null}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                    <BadgeInfo className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 text-sm">
+                  <p className="font-semibold">RBAC + visibility</p>
+                  <ul className="mt-2 space-y-1 text-muted-foreground">
+                    <li>Public: Visible region-wide.</li>
+                    <li>Org: Only pods in the same organization.</li>
+                    <li>Private: Only members of the pod.</li>
+                  </ul>
+                  <Separator className="my-2" />
+                  <p className="font-semibold">Crew requests</p>
+                  <p className="text-muted-foreground">
+                    “Needs Crew” badge counts down signups. Shifts keep original
+                    requested headcount.
+                  </p>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
         {activeOrgRole ? (
@@ -358,6 +464,7 @@ export function CollectiveCalendar({
         hasDeleteOrg={!!onDeleteOrg}
         onOpenOrgDialog={handleOpenOrgDialog}
         onDeleteOrgClick={handleDeleteOrg}
+        onManageOrgPods={hasOrgPodManagement ? handleManageOrgPods : undefined}
       />
 
       <CollectiveCalendarShiftDetailsSheet
@@ -369,6 +476,9 @@ export function CollectiveCalendar({
         viewerId={viewerId}
         onSignup={handleSignup}
         signupLoadingId={signupLoadingId}
+        canManage={canManageSelected}
+        onEditShift={(shift) => handleOpenShiftForm(shift)}
+        onDeleteShift={(shiftId) => handleDeleteShift(shiftId)}
       />
 
       <CollectiveCalendarOrgDialog
@@ -378,6 +488,61 @@ export function CollectiveCalendar({
         onCreateOrg={onCreateOrg}
         onUpdateOrg={onUpdateOrg}
       />
+
+      {hasOrgPodManagement && (
+        <CollectiveCalendarOrgConsole
+          open={orgConsoleOpen}
+          onOpenChange={(open) => {
+            setOrgConsoleOpen(open);
+            if (!open) setOrgConsoleOrg(null);
+          }}
+          org={orgConsoleOrg}
+          pods={orgConsoleOrg?.pods ?? []}
+          allPods={pods}
+          onCreatePod={
+            onCreateOrgPod
+              ? (orgId, input) => onCreateOrgPod(orgId, input)
+              : undefined
+          }
+          onLinkPod={
+            onLinkOrgPod
+              ? (orgId, podId) => onLinkOrgPod(orgId, podId)
+              : undefined
+          }
+          onUpdatePod={
+            onUpdateOrgPod
+              ? (orgId, podId, input) => onUpdateOrgPod(orgId, podId, input)
+              : undefined
+          }
+          onRemovePod={
+            onRemoveOrgPod
+              ? (orgId, podId, options) => onRemoveOrgPod(orgId, podId, options)
+              : undefined
+          }
+        />
+      )}
+
+      {canManageShifts && (
+        <CollectiveCalendarShiftForm
+          open={shiftFormOpen}
+          onOpenChange={(open) => {
+            setShiftFormOpen(open);
+            if (!open) setEditingShift(null);
+          }}
+          pods={pods}
+          organizations={memberOrganizations}
+          membershipPodIds={membershipPodIdList}
+          initialShift={editingShift}
+          defaultPodId={
+            selectedPod !== "all"
+              ? selectedPod
+              : memberOrganizations.find((o) => (o.pods?.length ?? 0) > 0)?.pods?.[0]?.id ??
+              pods[0]?.id
+          }
+          onSubmit={handleSaveShift}
+          onDelete={onDeleteShift ? handleDeleteShift : undefined}
+        />
+      )}
     </div>
   );
 }

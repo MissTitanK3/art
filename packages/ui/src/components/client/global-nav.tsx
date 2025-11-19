@@ -822,7 +822,7 @@ function NavItemIcon({
 }
 
 function navItemIsActive(item: NavItem, pathname: string): boolean {
-  if (isActive(item.href, pathname)) {
+  if (isActive(item.href, pathname, item.match)) {
     return true;
   }
   return (item.children ?? []).some((child) =>

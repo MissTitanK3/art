@@ -3,13 +3,13 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@workspace/ui/components/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer";
 import { formatDateRange } from "@workspace/ui/lib/utils";
 import { Clock3, LayoutList, MapPin, MapPinned, Users } from "lucide-react";
 import {
@@ -26,6 +26,9 @@ type CollectiveCalendarShiftDetailsSheetProps = {
   viewerId: string | null;
   onSignup: (shift: CollectiveCalendarShift) => void;
   signupLoadingId: string | null;
+  canManage?: boolean;
+  onEditShift?: (shift: CollectiveCalendarShift) => void;
+  onDeleteShift?: (shiftId: string) => void;
 };
 
 export function CollectiveCalendarShiftDetailsSheet({
@@ -35,6 +38,9 @@ export function CollectiveCalendarShiftDetailsSheet({
   viewerId,
   onSignup,
   signupLoadingId,
+  canManage,
+  onEditShift,
+  onDeleteShift,
 }: CollectiveCalendarShiftDetailsSheetProps) {
   if (!shift) return null;
 
@@ -44,16 +50,16 @@ export function CollectiveCalendarShiftDetailsSheet({
   const DetailIcon = detailVis.icon;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="bg-card text-card-foreground p-2">
-        <SheetHeader>
-          <SheetTitle>{shift.label ?? "Shift details"}</SheetTitle>
-          <SheetDescription>
+    <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
+      <DrawerContent className="bg-card text-card-foreground h-full max-h-[90vh] gap-4 overflow-y-auto p-3 sm:p-4 [&::after]:hidden max-w-4xl mx-auto">
+        <DrawerHeader>
+          <DrawerTitle>{shift.label ?? "Shift details"}</DrawerTitle>
+          <DrawerDescription className="text-sm text-muted-foreground">
             {shift.pod.name} •{" "}
             {shift.organizations.map((o) => o.name).join(", ") || "No org"}
-          </SheetDescription>
-        </SheetHeader>
-        <div className="space-y-3">
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Badge variant={detailVis.variant}>
               <span className="flex items-center gap-1">
@@ -67,7 +73,7 @@ export function CollectiveCalendarShiftDetailsSheet({
               </Badge>
             ))}
             {shift.pod.slug ? (
-              <Badge variant="outline">/{shift.pod.slug}</Badge>
+              <Badge variant="outline">{shift.pod.slug}</Badge>
             ) : null}
           </div>
 
@@ -125,25 +131,51 @@ export function CollectiveCalendarShiftDetailsSheet({
             ) : null}
           </div>
         </div>
-        <SheetFooter className="gap-3">
-          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-            <p>Routes remain rough-only. Dispatch links stay private.</p>
-            {shift.dispatchLink ? (
-              <a
-                className="text-primary underline"
-                href={shift.dispatchLink}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open dispatch / related link
-              </a>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={() => onOpenChange(false)}>
+        <DrawerFooter className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          {(shift.dispatchLink || canManage) && (
+            <div className="flex w-full flex-col gap-3 text-sm sm:w-auto">
+              {canManage ? (
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => onEditShift?.(shift)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-destructive sm:w-auto"
+                    onClick={() => onDeleteShift?.(shift.id)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              ) : null}
+              {shift.dispatchLink ? (
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                  <a
+                    className="text-primary underline"
+                    href={shift.dispatchLink}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open dispatch / related link
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          )}
+          <div className="flex w-full flex-col gap-2 sm:max-w-sm sm:flex-1 sm:flex-row">
+            <Button
+              variant="secondary"
+              className="w-full sm:flex-1"
+              onClick={() => onOpenChange(false)}
+            >
               Close
             </Button>
             <Button
+              className="w-full sm:flex-1"
               disabled={signupLoadingId === shift.id}
               onClick={() => onSignup(shift)}
             >
@@ -154,8 +186,8 @@ export function CollectiveCalendarShiftDetailsSheet({
                   : "Sign up"}
             </Button>
           </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

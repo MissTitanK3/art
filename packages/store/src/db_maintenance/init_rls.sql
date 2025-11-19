@@ -2,6 +2,10 @@
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pods ENABLE ROW LEVEL SECURITY;
 ALTER TABLE roster_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organization_pods ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organization_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pod_shift_signups ENABLE ROW LEVEL SECURITY;
 
 -- Core
 ALTER TABLE dispatch_updates ENABLE ROW LEVEL SECURITY;
@@ -238,6 +242,231 @@ USING (
         )
         OR public.pods.created_by = p.id
       )
+  )
+);
+
+-- Organizations + collective calendar helpers
+CREATE POLICY orgs_select_members
+ON public.organizations
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.organization_roles r
+    WHERE r.org_id = public.organizations.id
+      AND r.user_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.organization_pods op
+    JOIN public.roster_entries re ON re.pod_id = op.pod_id
+    WHERE op.org_id = public.organizations.id
+      AND re.profile_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+CREATE POLICY orgs_insert_elevated
+ON public.organizations
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (
+        ARRAY[
+          'pod_leader','trainer',
+          'dispatcher_basic','dispatcher_verified','dispatcher_admin',
+          'admin','regional_admin','national_admin'
+        ]
+      )
+  )
+);
+
+CREATE POLICY orgs_update_manage
+ON public.organizations
+FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.organization_roles r
+    WHERE r.org_id = public.organizations.id
+      AND r.user_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+      AND r.role = ANY (ARRAY['owner','admin'])
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (
+        ARRAY[
+          'pod_leader','trainer',
+          'dispatcher_basic','dispatcher_verified','dispatcher_admin',
+          'admin','regional_admin','national_admin'
+        ]
+      )
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.organization_roles r
+    WHERE r.org_id = public.organizations.id
+      AND r.user_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+      AND r.role = ANY (ARRAY['owner','admin'])
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (
+        ARRAY[
+          'pod_leader','trainer',
+          'dispatcher_basic','dispatcher_verified','dispatcher_admin',
+          'admin','regional_admin','national_admin'
+        ]
+      )
+  )
+);
+
+CREATE POLICY orgs_delete_manage
+ON public.organizations
+FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.organization_roles r
+    WHERE r.org_id = public.organizations.id
+      AND r.user_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+      AND r.role = ANY (ARRAY['owner','admin'])
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (
+        ARRAY[
+          'pod_leader','trainer',
+          'dispatcher_basic','dispatcher_verified','dispatcher_admin',
+          'admin','regional_admin','national_admin'
+        ]
+      )
+  )
+);
+
+CREATE POLICY org_roles_select_self
+ON public.organization_roles
+FOR SELECT
+TO authenticated
+USING (
+  public.organization_roles.user_id IN (
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+CREATE POLICY org_roles_insert_owner
+ON public.organization_roles
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  public.organization_roles.user_id IN (
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+  )
+  AND public.organization_roles.role = 'owner'
+);
+
+CREATE POLICY org_pods_select_members
+ON public.organization_pods
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.roster_entries r
+    WHERE r.pod_id = public.organization_pods.pod_id
+      AND r.profile_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.organization_roles r
+    WHERE r.org_id = public.organization_pods.org_id
+      AND r.user_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+CREATE POLICY pod_shift_signups_select_members
+ON public.pod_shift_signups
+FOR SELECT
+TO authenticated
+USING (
+  public.pod_shift_signups.user_id IN (
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.pod_shifts ps
+    JOIN public.roster_entries r ON r.pod_id = ps.pod_id
+    WHERE ps.id = public.pod_shift_signups.shift_id
+      AND r.profile_id IN (
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+CREATE POLICY pod_shift_signups_insert_self
+ON public.pod_shift_signups
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  public.pod_shift_signups.user_id IN (
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+  )
+  AND EXISTS (
+    SELECT 1 FROM public.pod_shifts ps
+    JOIN public.roster_entries r ON r.pod_id = ps.pod_id
+    WHERE ps.id = public.pod_shift_signups.shift_id
+      AND r.profile_id = public.pod_shift_signups.user_id
+  )
+);
+
+CREATE POLICY pod_shift_signups_delete_self
+ON public.pod_shift_signups
+FOR DELETE
+TO authenticated
+USING (
+  public.pod_shift_signups.user_id IN (
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
 

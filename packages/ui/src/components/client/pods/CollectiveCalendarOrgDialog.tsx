@@ -72,7 +72,7 @@ export function CollectiveCalendarOrgDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-card text-card-foreground">
         <DialogHeader>
           <DialogTitle>
             {editingOrg ? "Edit organization" : "New organization"}

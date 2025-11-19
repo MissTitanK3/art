@@ -1,8 +1,5 @@
 // Server-safe input (no functions/classes)
-import {
-  LucideIcon,
-  NavIconId,
-} from "@workspace/ui/components/icons/nav-icons";
+import { LucideIcon, NavIconId } from '@workspace/ui/components/icons/nav-icons';
 /**
  * Navigation roles and access helpers
  *
@@ -23,15 +20,15 @@ import {
  * - national_admin: cross‑region oversight
  */
 export type NavRole =
-  | "team_member"
-  | "pod_leader"
-  | "trainer"
-  | "dispatcher_basic"
-  | "dispatcher_verified"
-  | "dispatcher_admin"
-  | "admin"
-  | "regional_admin"
-  | "national_admin";
+  | 'team_member'
+  | 'pod_leader'
+  | 'trainer'
+  | 'dispatcher_basic'
+  | 'dispatcher_verified'
+  | 'dispatcher_admin'
+  | 'admin'
+  | 'regional_admin'
+  | 'national_admin';
 
 /**
  * Minimum: onboarded and can use core features
@@ -48,15 +45,15 @@ export type NavRole =
 // Minimum: onboarded and can use core features. Use this for items that
 // should appear to anyone with a real profile in the region.
 export const completeOnboarding: NavRole[] = [
-  "team_member",
-  "pod_leader",
-  "trainer",
-  "dispatcher_basic",
-  "dispatcher_verified",
-  "dispatcher_admin",
-  "admin",
-  "regional_admin",
-  "national_admin",
+  'team_member',
+  'pod_leader',
+  'trainer',
+  'dispatcher_basic',
+  'dispatcher_verified',
+  'dispatcher_admin',
+  'admin',
+  'regional_admin',
+  'national_admin',
 ];
 
 /**
@@ -69,14 +66,14 @@ export const completeOnboarding: NavRole[] = [
 // Elevated roles with trusted access to create/coordinate dispatch work and
 // scheduling. Use for items like Dispatches, Schedules, and Team Requests.
 export const elevatedRoles: NavRole[] = [
-  "pod_leader",
-  "trainer",
-  "dispatcher_admin",
-  "dispatcher_verified",
-  "dispatcher_basic",
-  "admin",
-  "regional_admin",
-  "national_admin",
+  'pod_leader',
+  'trainer',
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'dispatcher_basic',
+  'admin',
+  'regional_admin',
+  'national_admin',
 ];
 
 /**
@@ -86,22 +83,22 @@ export const elevatedRoles: NavRole[] = [
  */
 // Trusted to manage people, pods, and related admin areas. Grants /admin.
 export const podAdmins: NavRole[] = [
-  "dispatcher_admin",
-  "dispatcher_verified",
-  "dispatcher_basic",
-  "admin",
-  "regional_admin",
-  "national_admin",
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'dispatcher_basic',
+  'admin',
+  'regional_admin',
+  'national_admin',
 ];
 
 // Same as podAdmins — kept for semantic clarity when scoping local controls.
 export const localAdmins: NavRole[] = [
-  "dispatcher_admin",
-  "dispatcher_verified",
-  "dispatcher_basic",
-  "admin",
-  "regional_admin",
-  "national_admin",
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'dispatcher_basic',
+  'admin',
+  'regional_admin',
+  'national_admin',
 ];
 
 /**
@@ -111,23 +108,21 @@ export const localAdmins: NavRole[] = [
  */
 // Verified to manage people, pods, and related admin areas. Grants /admin.
 export const verifiedAdmins: NavRole[] = [
-  "dispatcher_admin",
-  "dispatcher_verified",
-  "admin",
-  "regional_admin",
-  "national_admin",
+  'dispatcher_admin',
+  'dispatcher_verified',
+  'admin',
+  'regional_admin',
+  'national_admin',
 ];
 
 /** Full administrative powers at the region level */
 // Full administrative powers at the region level and above.
-export const regionAdmins: NavRole[] = [
-  "admin",
-  "regional_admin",
-  "national_admin",
-];
+export const regionAdmins: NavRole[] = ['admin', 'regional_admin', 'national_admin'];
 
 /** Top-level oversight (cross-region) */
-export const nationalAdmins: NavRole[] = ["national_admin"];
+export const nationalAdmins: NavRole[] = ['national_admin'];
+
+export type NavMatchBehavior = 'exact' | 'startsWith';
 
 export type NavItemInput = {
   label: string;
@@ -137,6 +132,12 @@ export type NavItemInput = {
   badge?: string;
   roles?: NavRole[];
   children?: NavItemInput[];
+  /**
+   * Controls how active-state detection works for this item. Defaults to
+   * "startsWith" (match on the exact path or nested routes). Use "exact" for
+   * routes that should only highlight on a single pathname.
+   */
+  match?: NavMatchBehavior;
 };
 
 export type BrandInput = {
@@ -155,12 +156,12 @@ export type GlobalNavConfigInput = {
 
 // Client-resolved types
 
-export type NavItem = Omit<NavItemInput, "icon" | "children"> & {
+export type NavItem = Omit<NavItemInput, 'icon' | 'children'> & {
   icon?: LucideIcon;
   children?: NavItem[];
 };
 
-export type Brand = Omit<BrandInput, "logoSrc"> & {
+export type Brand = Omit<BrandInput, 'logoSrc'> & {
   logoSrc?: string;
 };
 
@@ -175,13 +176,41 @@ export type GlobalNavConfig = {
  * Returns true when the current URL pathname matches (or is nested under)
  * the item's href. Accepts absolute or relative hrefs.
  */
-export function isActive(href: string | undefined, pathname: string) {
+function normalizePath(path: string | undefined) {
+  if (!path) return '/';
+  if (path === '/') return '/';
+  return path.replace(/\/+$/, '') || '/';
+}
+
+export function isActive(href: string | undefined, pathname: string, match: NavMatchBehavior = 'startsWith') {
   if (!href) return false;
   try {
-    const u = new URL(href, "http://local");
-    return pathname === u.pathname || pathname.startsWith(u.pathname + "/");
+    const u = new URL(href, 'http://local');
+    const targetPath = normalizePath(u.pathname);
+    const currentPath = normalizePath(pathname);
+
+    if (match === 'exact') {
+      return currentPath === targetPath;
+    }
+
+    if (targetPath === '/') {
+      return currentPath === '/';
+    }
+
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
   } catch {
-    return pathname === href || pathname.startsWith(href + "/");
+    const targetPath = normalizePath(href);
+    const currentPath = normalizePath(pathname);
+
+    if (match === 'exact') {
+      return currentPath === targetPath;
+    }
+
+    if (targetPath === '/') {
+      return currentPath === '/';
+    }
+
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
   }
 }
 /**
@@ -194,11 +223,7 @@ export function isActive(href: string | undefined, pathname: string) {
  * Compose with the exported groupings (e.g., completeOnboarding, elevatedRoles)
  * when authoring nav configs so intent stays readable.
  */
-export function canSee(
-  item: NavItem,
-  role?: NavRole,
-  _isAuthenticated = false,
-) {
+export function canSee(item: NavItem, role?: NavRole, _isAuthenticated = false) {
   if (!item.roles?.length) return true;
   if (!role) return false;
   return item.roles.includes(role);

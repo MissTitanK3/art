@@ -2,14 +2,58 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import { REGION_IDENTIFIER } from "@/app/brand_settings";
+import { parseISO } from "date-fns";
 import {
   CollectiveCalendar,
   CollectiveCalendarMembership,
   CollectiveCalendarShift,
+  CollectiveCalendarShiftInput,
   CalendarOrgSummary,
   CalendarPodSummary,
 } from "@workspace/ui/components/client/pods/CollectiveCalendar";
 import { toast } from "sonner";
+
+type OrgPodInput = {
+  name: string;
+  area?: string | null;
+};
+
+type OrgPodUpdate = {
+  name?: string;
+  area?: string | null;
+};
+
+type CalendarOrgWithPods = CalendarOrgSummary & {
+  pods?: CalendarPodSummary[];
+};
+
+const sortPodsByName = (pods: CalendarPodSummary[]) =>
+  [...pods].sort((a, b) => a.name.localeCompare(b.name));
+
+const SHIFT_SELECT_FIELDS = `
+  id,
+  pod_id,
+  start,
+  end,
+  tz,
+  headcount,
+  location,
+  label,
+  dispatch_link,
+  notes,
+  visibility,
+  needed,
+  route,
+  pod:pods(
+    id,
+    name,
+    slug,
+    area,
+    orgs:organization_pods(org_id, organization:organizations(id, name, description))
+  ),
+  signups:pod_shift_signups(user_id)
+`;
 
 function normalizeVisibility(value: any): CollectiveCalendarShift["visibility"] {
   return value === "org" || value === "private" ? value : "public";
@@ -188,7 +232,7 @@ export default function CollectiveCalendarDataLayer() {
             area: p.area,
           })) as CalendarPodSummary[]
           : [];
-        if (active) setPods(knownPods);
+        if (active) setPods(sortPodsByName(knownPods));
 
         const podMembershipIds = new Set<string>();
         if (Array.isArray(rosterRes?.data)) {
@@ -212,7 +256,7 @@ export default function CollectiveCalendarDataLayer() {
           ? (orgPodsRes!.data as any[])
           : [];
         const orgIdsFromPods = new Set<string>();
-        const orgMap = new Map<string, CalendarOrgSummary>();
+        const orgMap = new Map<string, CalendarOrgWithPods>();
         for (const row of orgPodRows) {
           const orgId = row.org_id ?? row.organization?.id;
           if (!orgId) continue;
@@ -221,20 +265,47 @@ export default function CollectiveCalendarDataLayer() {
             name: row.organization?.name ?? "Organization",
             description: row.organization?.description ?? null,
           };
-          orgMap.set(entry.id, { ...(orgMap.get(entry.id) ?? entry), ...entry });
+          const podRow = row.pod ?? row.pods ?? {};
+          const podSummary: CalendarPodSummary = {
+            id: String(podRow.id ?? row.pod_id),
+            name: podRow.name ?? "Pod",
+            slug: podRow.slug ?? null,
+            area: podRow.area ?? null,
+          };
+          const existing = orgMap.get(entry.id);
+          const nextPods: CalendarPodSummary[] = existing?.pods ?? [];
+          const hasPod = nextPods.some((p) => p.id === podSummary.id);
+          const mergedPods = hasPod
+            ? nextPods
+            : sortPodsByName([...nextPods, podSummary]);
+          orgMap.set(entry.id, {
+            ...(existing ?? entry),
+            ...entry,
+            pods: mergedPods,
+          });
           if (row.pod_id && podMembershipIds.has(String(row.pod_id))) {
             orgIdsFromPods.add(String(orgId));
           }
         }
 
         for (const role of orgRoleRows) {
-          orgMap.set(role.id, { ...(orgMap.get(role.id) ?? role), ...role });
+          const existing = orgMap.get(role.id);
+          orgMap.set(role.id, {
+            ...(existing ?? role),
+            ...role,
+            pods: existing?.pods ?? [],
+          });
         }
 
         if (active) {
-          setOrganizations(Array.from(orgMap.values()).sort((a, b) =>
-            a.name.localeCompare(b.name),
-          ));
+          setOrganizations(
+            Array.from(orgMap.values())
+              .map((org) => ({
+                ...org,
+                pods: sortPodsByName(org.pods ?? []),
+              }))
+              .sort((a, b) => a.name.localeCompare(b.name)),
+          );
         }
 
         const combinedOrgIds = new Set<string>([
@@ -265,6 +336,50 @@ export default function CollectiveCalendarDataLayer() {
     return () => {
       active = false;
     };
+  }, []);
+
+  const callOrgApi = useCallback(async (path: string, init?: RequestInit) => {
+    const res = await fetch(path, {
+      cache: "no-store",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(json?.error ?? "Request failed");
+    }
+    return json;
+  }, []);
+
+  const mutateOrgPods = useCallback(
+    (
+      orgId: string,
+      updater: (pods: CalendarPodSummary[]) => CalendarPodSummary[],
+    ) => {
+      setOrganizations((prev) =>
+        prev
+          .map((org) => {
+            if (org.id !== orgId) return org;
+            const withPods = org as CalendarOrgWithPods;
+            const nextPods = updater(withPods.pods ?? []);
+            return { ...withPods, pods: nextPods } as CalendarOrgSummary;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+    },
+    [],
+  );
+
+  const syncGlobalPods = useCallback((pod: CalendarPodSummary) => {
+    setPods((prev) => {
+      const existing = prev.find((p) => p.id === pod.id);
+      if (!existing) return sortPodsByName([...prev, pod]);
+      return prev.map((p) => (p.id === pod.id ? { ...p, ...pod } : p));
+    });
   }, []);
 
   const handleSignup = useCallback(
@@ -308,6 +423,7 @@ export default function CollectiveCalendarDataLayer() {
       const newId = crypto.randomUUID();
       const { error } = await supabase.from("organizations").insert({
         id: newId,
+        region_id: REGION_IDENTIFIER,
         name,
         description,
       });
@@ -375,6 +491,152 @@ export default function CollectiveCalendarDataLayer() {
     [],
   );
 
+  const handleCreateOrgPod = useCallback(
+    async (orgId: string, input: OrgPodInput) => {
+      const json = await callOrgApi(`/api/orgs/${orgId}/pods`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: input.name,
+          area: input.area ?? null,
+        }),
+      });
+      const pod = json?.pod as CalendarPodSummary | undefined;
+      if (!pod) throw new Error("Missing pod payload");
+      mutateOrgPods(orgId, (pods) => sortPodsByName([...pods, pod]));
+      syncGlobalPods(pod);
+    },
+    [callOrgApi, mutateOrgPods, syncGlobalPods],
+  );
+
+  const handleLinkOrgPod = useCallback(
+    async (orgId: string, podId: string) => {
+      const json = await callOrgApi(`/api/orgs/${orgId}/pods`, {
+        method: "POST",
+        body: JSON.stringify({ existingPodId: podId }),
+      });
+      const pod = json?.pod as CalendarPodSummary | undefined;
+      if (pod) {
+        mutateOrgPods(orgId, (pods) => {
+          if (pods.some((p) => p.id === pod.id)) return pods;
+          return sortPodsByName([...pods, pod]);
+        });
+        syncGlobalPods(pod);
+      }
+    },
+    [callOrgApi, mutateOrgPods, syncGlobalPods],
+  );
+
+  const handleUpdateOrgPod = useCallback(
+    async (orgId: string, podId: string, patch: OrgPodUpdate) => {
+      const json = await callOrgApi(`/api/orgs/${orgId}/pods/${podId}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      });
+      const pod = json?.pod as CalendarPodSummary | undefined;
+      if (!pod) throw new Error("Missing pod payload");
+      mutateOrgPods(orgId, (pods) =>
+        sortPodsByName(pods.map((p) => (p.id === pod.id ? pod : p))),
+      );
+      syncGlobalPods(pod);
+    },
+    [callOrgApi, mutateOrgPods, syncGlobalPods],
+  );
+
+  const handleRemoveOrgPod = useCallback(
+    async (orgId: string, podId: string, options?: { hardDelete?: boolean }) => {
+      const params = options?.hardDelete ? "?hard=true" : "";
+      const json = await callOrgApi(
+        `/api/orgs/${orgId}/pods/${podId}${params}`,
+        {
+          method: "DELETE",
+        },
+      );
+      mutateOrgPods(orgId, (pods) => pods.filter((p) => p.id !== podId));
+      if (json?.podDeleted) {
+        setPods((prev) => prev.filter((p) => p.id !== podId));
+      }
+    },
+    [callOrgApi, mutateOrgPods],
+  );
+
+  const handleCreateShift = useCallback(
+    async (input: CollectiveCalendarShiftInput) => {
+      const supabase = getSupabaseBrowserClient();
+      const id = input.id ?? crypto.randomUUID();
+      const payload = {
+        id,
+        pod_id: input.podId,
+        start: input.start,
+        end: input.end,
+        tz: input.tz,
+        headcount: input.headcount ?? input.needed,
+        location: input.location,
+        label: input.label,
+        dispatch_link: input.dispatchLink,
+        notes: input.notes,
+        visibility: input.visibility,
+        needed: input.needed,
+      };
+      const { data, error } = await supabase
+        .from("pod_shifts")
+        .upsert(payload)
+        .select(SHIFT_SELECT_FIELDS)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Missing shift row");
+      const mapped = mapShiftRow(data);
+      setShifts((prev) =>
+        [...prev.filter((s) => s.id !== mapped.id), mapped].sort(
+          (a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime(),
+        ),
+      );
+    },
+    [],
+  );
+
+  const handleUpdateShift = useCallback(
+    async (shiftId: string, input: CollectiveCalendarShiftInput) => {
+      const supabase = getSupabaseBrowserClient();
+      const payload = {
+        pod_id: input.podId,
+        start: input.start,
+        end: input.end,
+        tz: input.tz,
+        headcount: input.headcount ?? input.needed,
+        location: input.location,
+        label: input.label,
+        dispatch_link: input.dispatchLink,
+        notes: input.notes,
+        visibility: input.visibility,
+        needed: input.needed,
+      };
+      const { data, error } = await supabase
+        .from("pod_shifts")
+        .update(payload)
+        .eq("id", shiftId)
+        .select(SHIFT_SELECT_FIELDS)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Missing shift row");
+      const mapped = mapShiftRow({ ...data, id: shiftId });
+      setShifts((prev) =>
+        prev
+          .map((s) => (s.id === shiftId ? mapped : s))
+          .sort(
+            (a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime(),
+          ),
+      );
+    },
+    [],
+  );
+
+  const handleDeleteShift = useCallback(async (shiftId: string) => {
+    const supabase = getSupabaseBrowserClient();
+    const { error } = await supabase.from("pod_shifts").delete().eq("id", shiftId);
+    if (error) throw error;
+    setShifts((prev) => prev.filter((s) => s.id !== shiftId));
+  }, []);
+
   const membershipMemo = useMemo<CollectiveCalendarMembership>(
     () => ({
       podIds: membership.podIds,
@@ -394,9 +656,16 @@ export default function CollectiveCalendarDataLayer() {
       organizations={organizations}
       membership={membershipMemo}
       onSignup={handleSignup}
+      onCreateShift={handleCreateShift}
+      onUpdateShift={handleUpdateShift}
+      onDeleteShift={handleDeleteShift}
       onCreateOrg={handleCreateOrg}
       onUpdateOrg={handleUpdateOrg}
       onDeleteOrg={handleDeleteOrg}
+      onCreateOrgPod={handleCreateOrgPod}
+      onLinkOrgPod={handleLinkOrgPod}
+      onUpdateOrgPod={handleUpdateOrgPod}
+      onRemoveOrgPod={handleRemoveOrgPod}
     />
   );
 }
