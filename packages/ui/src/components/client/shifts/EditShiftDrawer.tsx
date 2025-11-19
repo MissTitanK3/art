@@ -179,7 +179,7 @@ export default function EditShiftDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground z-[1201]">
         <DrawerHeader>
           <DrawerTitle>Edit Shift</DrawerTitle>
         </DrawerHeader>

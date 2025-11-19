@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { addHours } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -18,6 +19,8 @@ type CollectiveCalendarShiftFormProps = {
   membershipPodIds: string[];
   initialShift?: CollectiveCalendarShift | null;
   defaultPodId?: string;
+  draftStart?: string | null;
+  draftEnd?: string | null;
   onSubmit: (input: CollectiveCalendarShiftInput) => Promise<void>;
   onDelete?: (shiftId: string) => Promise<void>;
 };
@@ -73,6 +76,8 @@ export function CollectiveCalendarShiftForm({
   membershipPodIds,
   initialShift,
   defaultPodId,
+  draftStart,
+  draftEnd,
   onSubmit,
   onDelete,
 }: CollectiveCalendarShiftFormProps) {
@@ -196,13 +201,20 @@ export function CollectiveCalendarShiftForm({
     const podOrgId = findOrgForPod(basePodId);
     const resolvedOrgId = shiftOrgId ?? podOrgId;
     const useOrgMode = Boolean(resolvedOrgId && organizations.length > 0);
+    const startSource = initialShift?.start ?? draftStart ?? null;
+    const endSource =
+      initialShift?.end ??
+      draftEnd ??
+      (draftStart
+        ? addHours(new Date(draftStart), 1).toISOString()
+        : null);
 
     setForm({
       podId: basePodId,
       label: initialShift?.label ?? "",
       location: initialShift?.location ?? "",
-      startLocal: toLocalInput(initialShift?.start),
-      endLocal: toLocalInput(initialShift?.end),
+      startLocal: toLocalInput(startSource),
+      endLocal: toLocalInput(endSource),
       needed: initialShift?.needed ?? 1,
       visibility: initialShift?.visibility ?? "public",
       dispatchLink: initialShift?.dispatchLink ?? "",
@@ -222,6 +234,8 @@ export function CollectiveCalendarShiftForm({
     defaultTz,
     organizations,
     findOrgForPod,
+    draftStart,
+    draftEnd,
   ]);
 
   const handleSave = async () => {
@@ -297,7 +311,7 @@ export function CollectiveCalendarShiftForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card text-card-foreground max-h-[85vh] overflow-y-auto p-4 sm:max-w-2xl sm:p-6">
+      <DialogContent className="bg-card text-card-foreground max-h-[85vh] overflow-y-auto p-4 sm:max-w-2xl sm:p-6 z-[1201]">
         <DialogHeader>
           <DialogTitle>
             {initialShift ? "Edit shift" : "New shift"}
@@ -322,7 +336,7 @@ export function CollectiveCalendarShiftForm({
               <SelectTrigger>
                 <SelectValue placeholder="Independent shift" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[1202]">
                 <SelectItem value={INDEPENDENT_VALUE}>
                   Independent shift
                 </SelectItem>
@@ -352,7 +366,7 @@ export function CollectiveCalendarShiftForm({
               <SelectTrigger>
                 <SelectValue placeholder="Choose a pod" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[1202]">
                 {visiblePods.map((pod) => (
                   <SelectItem key={pod.id} value={pod.id}>
                     {pod.name}
@@ -446,7 +460,7 @@ export function CollectiveCalendarShiftForm({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[1202]">
                   <SelectItem value="public">Public (region-wide)</SelectItem>
                   <SelectItem value="org">Org only</SelectItem>
                   <SelectItem value="private">Pod only</SelectItem>

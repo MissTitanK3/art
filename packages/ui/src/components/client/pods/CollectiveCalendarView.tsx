@@ -55,6 +55,7 @@ type CollectiveCalendarViewProps = {
   selectedDayShifts: CollectiveCalendarShift[];
   busyDays: Set<string>;
   onSelectShift: (shift: CollectiveCalendarShift) => void;
+  onAddShiftAt?: (start: Date) => void;
 };
 
 const DATE_KEY_FORMAT = "yyyy-MM-dd";
@@ -146,6 +147,7 @@ export function CollectiveCalendarView({
   selectedDayShifts,
   busyDays,
   onSelectShift,
+  onAddShiftAt,
 }: CollectiveCalendarViewProps) {
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
 
@@ -254,15 +256,15 @@ export function CollectiveCalendarView({
 
   const renderDayTimeline = () => {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm font-semibold">{formatDay(selectedDay)}</p>
             <p className="text-xs text-muted-foreground">
-              Scroll horizontally to explore different days.
+              + Add shift will fill in that hour automatically.
             </p>
           </div>
-          <div className="flex w-full items-center justify-between gap-2 text-xs sm:w-auto sm:justify-end">
+          <div className="flex w-full flex-wrap items-center justify-between gap-2 text-xs sm:w-auto sm:justify-end">
             <Button
               size="icon"
               variant="outline"
@@ -281,22 +283,70 @@ export function CollectiveCalendarView({
         </div>
         {selectedDayShifts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No shifts on this day.
+            No shifts on this day yet — add one below.
           </p>
-        ) : (
-          <div className="space-y-2">
-            {selectedDayShifts.map((shift) => (
-              <div key={shift.id} className="relative pl-4">
-                <div className="absolute left-0 top-2 h-full w-px bg-border" />
-                <div className="absolute left-[-6px] top-2 h-3 w-3 rounded-full bg-primary" />
-                <CollectiveCalendarShiftCard
-                  shift={shift}
-                  onClick={onSelectShift}
-                />
+        ) : null}
+        <div className="rounded-md border">
+          {dayTimeline.map(({ hourStart, entries }) => (
+            <div
+              key={hourStart.toISOString()}
+              className="flex flex-col gap-3 border-b px-3 py-3 last:border-b-0 md:flex-row"
+            >
+              <div className="flex items-center justify-between gap-2 md:w-32 md:flex-col md:items-start">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {format(hourStart, "h a")}
+                </p>
+                {onAddShiftAt && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-2 text-xs"
+                    onClick={() => onAddShiftAt(hourStart)}
+                  >
+                    + Add shift
+                  </Button>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+              <div className="flex-1 space-y-2">
+                {entries.length === 0 ? (
+                  <div className="flex h-10 items-center justify-between rounded border border-dashed border-muted/50 px-3 text-xs text-muted-foreground">
+                    <span>No coverage registered</span>
+                    {!onAddShiftAt && <span>—</span>}
+                  </div>
+                ) : (
+                  entries.map(({ shift, isStart }) =>
+                    isStart ? (
+                      <CollectiveCalendarShiftCard
+                        key={`${shift.id}-${hourStart.toISOString()}`}
+                        shift={shift}
+                        onClick={onSelectShift}
+                      />
+                    ) : (
+                      <div
+                        key={`${shift.id}-${hourStart.toISOString()}-cont`}
+                        className="rounded-md border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs"
+                      >
+                        <p className="font-semibold leading-tight">
+                          {shift.label ?? shift.pod.name}
+                        </p>
+                        <p className="text-[0.65rem] text-muted-foreground">
+                          Continues through this hour
+                        </p>
+                        <p
+                          className="text-[0.65rem] text-muted-foreground"
+                          suppressHydrationWarning
+                        >
+                          {formatDateRange(shift.start, shift.end, shift.tz)}
+                        </p>
+                      </div>
+                    ),
+                  )
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
@@ -450,8 +500,21 @@ export function CollectiveCalendarView({
                     key={hourStart.toISOString()}
                     className="flex gap-3 border-b px-3 py-2 last:border-b-0"
                   >
-                    <div className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {format(hourStart, "h a")}
+                    <div className="flex flex-col items-center justify-between gap-2 md:w-32 md:flex-row md:items-start">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {format(hourStart, "h a")}
+                      </p>
+                      {onAddShiftAt && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => onAddShiftAt(hourStart)}
+                        >
+                          + Add shift
+                        </Button>
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col gap-2">
                       {entries.length === 0 ? (
@@ -505,19 +568,31 @@ export function CollectiveCalendarView({
           className="w-full mb-2"
         >
           <TabsList className="flex w-full h-full flex-col gap-2 sm:grid sm:grid-cols-4">
-            <TabsTrigger value="week" className="justify-start w-full sm:justify-center">
+            <TabsTrigger
+              value="week"
+              className="justify-start w-full sm:justify-center font-semibold border border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
+            >
               <LayoutList className="mr-2 h-4 w-4" />
               Weekly List
             </TabsTrigger>
-            <TabsTrigger value="day" className="justify-start w-full sm:justify-center">
+            <TabsTrigger
+              value="day"
+              className="justify-start w-full sm:justify-center font-semibold border border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
+            >
               <Clock3 className="mr-2 h-4 w-4" />
               Day Timeline
             </TabsTrigger>
-            <TabsTrigger value="month" className="justify-start w-full sm:justify-center">
+            <TabsTrigger
+              value="month"
+              className="justify-start w-full sm:justify-center font-semibold border border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
+            >
               <CalendarDays className="mr-2 h-4 w-4" />
               Month Overview
             </TabsTrigger>
-            <TabsTrigger value="mine" className="justify-start w-full sm:justify-center">
+            <TabsTrigger
+              value="mine"
+              className="justify-start w-full sm:justify-center font-semibold border border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
+            >
               <Sparkles className="mr-2 h-4 w-4" />
               My Shifts
             </TabsTrigger>
@@ -531,6 +606,10 @@ export function CollectiveCalendarView({
           </p>
         ) : error ? (
           <p className="text-sm text-destructive">{error}</p>
+        ) : viewMode === "month" ? (
+          renderMonthOverview()
+        ) : viewMode === "day" ? (
+          renderDayTimeline()
         ) : filteredShifts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No shifts match these filters.
@@ -538,8 +617,6 @@ export function CollectiveCalendarView({
         ) : (
           <>
             {viewMode === "week" && renderWeekList()}
-            {viewMode === "day" && renderDayTimeline()}
-            {viewMode === "month" && renderMonthOverview()}
             {viewMode === "mine" && renderWeekList()}
           </>
         )}

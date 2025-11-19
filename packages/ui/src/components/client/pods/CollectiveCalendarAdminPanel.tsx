@@ -55,11 +55,11 @@ export function CollectiveCalendarAdminPanel({
     <Card className="border-dashed">
       <div className="flex gap-1 border-b px-3 pb-2 text-sm font-semibold sm:flex-row sm:items-center">
         <Shield className="h-4 w-4" />
-        Organization admin panel
+        Organization Admin Panel
       </div>
       <div className="space-y-3 p-3 text-sm">
         <p className="text-muted-foreground">
-          Owners/Admins can group pods under shared organizations, manage roles,
+          Dispatchers can group pods under shared organizations, manage roles,
           and set default visibility for new shifts.
         </p>
         <div className="grid gap-3 md:grid-cols-2">
@@ -176,14 +176,14 @@ export function CollectiveCalendarAdminPanel({
                 size="sm"
                 className="w-full sm:w-auto"
                 onClick={() =>
-                  toast.info("Default visibility", {
+                  toast.info("Visibility defaults for new shifts", {
                     description:
-                      "Org-level visibility defaults will apply to new shifts.",
+                      "New shifts inherit the org visibility you configure in the org console (Defaults tab). Update it there to change who can see new shifts.",
                   })
                 }
               >
                 <Layers className="mr-2 h-4 w-4" />
-                Set default visibility
+                About visibility defaults
               </Button>
             </div>
           </div>

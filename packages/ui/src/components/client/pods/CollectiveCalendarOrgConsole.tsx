@@ -54,9 +54,7 @@ type CollectiveCalendarOrgConsoleProps = {
   org: CalendarOrgSummary | null;
   pods: CalendarPodSummary[];
   allPods: CalendarPodSummary[];
-  onCreatePod?: (orgId: string, input: OrgPodFormInput) => Promise<void>;
   onLinkPod?: (orgId: string, podId: string) => Promise<void>;
-  onUpdatePod?: (orgId: string, podId: string, input: OrgPodFormInput) => Promise<void>;
   onRemovePod?: (
     orgId: string,
     podId: string,
@@ -74,18 +72,14 @@ export function CollectiveCalendarOrgConsole({
   org,
   pods,
   allPods,
-  onCreatePod,
   onLinkPod,
-  onUpdatePod,
   onRemovePod,
 }: CollectiveCalendarOrgConsoleProps) {
-  const [createOpen, setCreateOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<{
     pod: CalendarPodSummary;
     hardDelete: boolean;
   } | null>(null);
-  const [formState, setFormState] = useState<OrgPodFormInput>(emptyForm);
   const [selectedPodId, setSelectedPodId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [editingPod, setEditingPod] = useState<CalendarPodSummary | null>(null);
@@ -95,58 +89,7 @@ export function CollectiveCalendarOrgConsole({
     return allPods.filter((pod) => !taken.has(pod.id));
   }, [allPods, pods]);
 
-  useEffect(() => {
-    if (!createOpen) {
-      setFormState(emptyForm);
-    }
-  }, [createOpen]);
-
-  useEffect(() => {
-    if (editingPod) {
-      setFormState({ name: editingPod.name, area: editingPod.area ?? "" });
-    } else {
-      setFormState(emptyForm);
-    }
-  }, [editingPod]);
-
   const canManage = org?.role ? manageRoles.has(org.role) : false;
-  const canEdit = org?.role ? editRoles.has(org.role) : false;
-
-  const handleCreate = async () => {
-    if (!org || !onCreatePod) return;
-    if (!formState.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await onCreatePod(org.id, formState);
-      toast.success("Pod created");
-      setCreateOpen(false);
-    } catch (error: any) {
-      toast.error(error?.message ?? "Failed to create pod");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleUpdate = async () => {
-    if (!org || !editingPod || !onUpdatePod) return;
-    if (!formState.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await onUpdatePod(org.id, editingPod.id, formState);
-      toast.success("Pod updated");
-      setEditingPod(null);
-    } catch (error: any) {
-      toast.error(error?.message ?? "Failed to update pod");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleLink = async () => {
     if (!org || !onLinkPod) return;
@@ -189,10 +132,8 @@ export function CollectiveCalendarOrgConsole({
     if (!nextOpen) {
       setEditingPod(null);
       setRemoveTarget(null);
-      setCreateOpen(false);
       setLinkOpen(false);
       setSelectedPodId("");
-      setFormState(emptyForm);
     }
     onOpenChange(nextOpen);
   };
@@ -253,14 +194,6 @@ export function CollectiveCalendarOrgConsole({
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => setEditingPod(pod)}
-                          disabled={!canEdit || !onUpdatePod}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
                           className="text-destructive"
                           onClick={() =>
                             setRemoveTarget({ pod, hardDelete: false })
@@ -284,45 +217,6 @@ export function CollectiveCalendarOrgConsole({
           </div>
         )}
       </SheetContent>
-
-      <Dialog open={!!editingPod} onOpenChange={(open) => (open ? null : setEditingPod(null))}>
-        <DialogContent className="bg-card text-card-foreground">
-          <DialogHeader>
-            <DialogTitle>Edit pod</DialogTitle>
-            <DialogDescription>Rename or update this pod.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="edit-pod-name">Name</Label>
-              <Input
-                id="edit-pod-name"
-                value={formState.name}
-                onChange={(e) => setFormState((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Pod name"
-                disabled={submitting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-pod-area">Area</Label>
-              <Input
-                id="edit-pod-area"
-                value={formState.area ?? ""}
-                onChange={(e) => setFormState((prev) => ({ ...prev, area: e.target.value }))}
-                placeholder="Optional area"
-                disabled={submitting}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setEditingPod(null)} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdate} disabled={submitting || !canEdit || !onUpdatePod}>
-              {submitting ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
         <DialogContent className="bg-card text-card-foreground z-[1100]">

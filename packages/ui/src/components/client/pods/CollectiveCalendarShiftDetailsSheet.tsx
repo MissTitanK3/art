@@ -51,7 +51,7 @@ export function CollectiveCalendarShiftDetailsSheet({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
-      <DrawerContent className="bg-card text-card-foreground h-full max-h-[90vh] gap-4 overflow-y-auto p-3 sm:p-4 [&::after]:hidden max-w-4xl mx-auto">
+      <DrawerContent className="bg-card text-card-foreground h-full max-h-[90vh] gap-4 overflow-y-auto p-3 sm:p-4 [&::after]:hidden max-w-4xl mx-auto z-[1200]">
         <DrawerHeader>
           <DrawerTitle>{shift.label ?? "Shift details"}</DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground">
@@ -137,18 +137,18 @@ export function CollectiveCalendarShiftDetailsSheet({
               {canManage ? (
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Button
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    onClick={() => onEditShift?.(shift)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
                     variant="ghost"
                     className="w-full text-destructive sm:w-auto"
                     onClick={() => onDeleteShift?.(shift.id)}
                   >
                     Delete
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => onEditShift?.(shift)}
+                  >
+                    Edit
                   </Button>
                 </div>
               ) : null}
