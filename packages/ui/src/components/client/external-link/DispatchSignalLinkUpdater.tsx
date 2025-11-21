@@ -14,6 +14,18 @@ import { useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner"; // ✅ toast import
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import type { RosterEntry } from "@workspace/store/types/pod.ts";
+import { useProfileStore } from "@workspace/store/useProfileStore";
+
+type AssignmentEntry = Partial<RosterEntry> & {
+  volunteer?: {
+    id?: string;
+    user_id?: string | null;
+    profile_id?: string | null;
+    display_name?: string;
+    contact_signal?: string;
+  };
+};
 
 type DispatchSignalLinkUpdaterProps = {
   submission: DispatchSubmission;
@@ -26,6 +38,46 @@ export default function DispatchSignalLinkUpdater({
 }: DispatchSignalLinkUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(submission?.signal_link ?? "");
+  const profile = useProfileStore((s) => s.profile);
+  const assignedVolunteers = (submission.assigned_volunteers ?? []) as AssignmentEntry[];
+
+  const normalizeId = (value?: string | null) =>
+    typeof value === "string" ? value.toLowerCase() : null;
+
+  const viewerProfileId = profile?.id ? profile.id.toLowerCase() : null;
+  const viewerUserId = profile?.user_id ? profile.user_id.toLowerCase() : null;
+
+  const matchesProfile = (candidate?: string | null) =>
+    Boolean(
+      viewerProfileId && candidate && normalizeId(candidate) === viewerProfileId,
+    );
+
+  const matchesUser = (candidate?: string | null) =>
+    Boolean(viewerUserId && candidate && normalizeId(candidate) === viewerUserId);
+
+  const isAssignedToDispatch = assignedVolunteers.some((vol) => {
+    const profileRef = vol.profile as { id?: string; user_id?: string } | undefined;
+    const candidateProfileValues = [
+      vol.id,
+      (vol as { profile_id?: string | null }).profile_id,
+      profileRef?.id,
+      vol.volunteer?.profile_id ?? null,
+    ];
+
+    if (candidateProfileValues.some((value) => matchesProfile(value))) {
+      return true;
+    }
+
+    const candidateUserValues = [
+      profileRef?.user_id ?? null,
+      (vol as { user_id?: string | null }).user_id ?? null,
+      vol.volunteer?.user_id ?? null,
+    ];
+
+    return candidateUserValues.some((value) => matchesUser(value));
+  });
+
+  const canViewPrivateLink = Boolean(isAssignedToDispatch && submission.signal_link);
 
   useEffect(() => {
     setDraft(submission.signal_link ?? "");
@@ -38,10 +90,15 @@ export default function DispatchSignalLinkUpdater({
   };
 
   const copyLink = async () => {
-    if (submission.signal_link) {
-      await navigator.clipboard.writeText(submission.signal_link);
-      toast.success("Signal link copied to clipboard ✅");
+    if (!submission.signal_link) {
+      return;
     }
+    if (!isAssignedToDispatch) {
+      toast.error("You need to be assigned to this dispatch to copy the private link.");
+      return;
+    }
+    await navigator.clipboard.writeText(submission.signal_link);
+    toast.success("Signal link copied to clipboard ✅");
   };
 
   return (
@@ -49,24 +106,31 @@ export default function DispatchSignalLinkUpdater({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <p className="font-medium">Private Dispatch Signal Link</p>
         {submission.signal_link ? (
-          <div className="flex items-center gap-2">
-            <a
-              href={submission.signal_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline break-all"
-            >
-              {submission.signal_link}
-            </a>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={copyLink}
-              title="Copy private dispatch link"
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
-          </div>
+          canViewPrivateLink ? (
+            <div className="flex items-center gap-2">
+              <a
+                href={submission.signal_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline break-all"
+              >
+                {submission.signal_link}
+              </a>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={copyLink}
+                title="Copy private dispatch link"
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">
+              You need to be assigned to this dispatch to view the private Signal
+              link.
+            </p>
+          )
         ) : (
           <p className="text-sm text-muted-foreground">No private link set.</p>
         )}

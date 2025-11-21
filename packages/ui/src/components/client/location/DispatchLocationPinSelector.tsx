@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+} from "react";
 
 import {
   Drawer,
@@ -18,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import { cn } from "@workspace/ui/lib/utils";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { toast } from "sonner";
 
@@ -194,13 +200,13 @@ export default function DispatchLocationPinSelector({
         </div>
       </div>
 
-      <Drawer
-        open={open}
-        onOpenChange={setOpen}
-        direction="right"
-        dismissible={false}
-      >
-        <DrawerContent className="p-4 max-w-4xl bg-card text-card-foreground">
+      <Drawer open={open} onOpenChange={setOpen} direction="bottom" dismissible={false}>
+        <DrawerContent
+          className={cn(
+            "p-4 w-full bg-card text-card-foreground z-[1100]",
+            "max-w-2xl h-full max-h-[95vh] overflow-y-auto mx-auto",
+          )}
+        >
           <DrawerHeader>
             <DrawerTitle>Select Pin Location</DrawerTitle>
             <DrawerDescription>
@@ -210,10 +216,9 @@ export default function DispatchLocationPinSelector({
 
           <div className="mt-2">
             <div
-              className="w-full rounded-md overflow-hidden border"
-              style={{ height: "60vh", minHeight: 320 }}
-              onPointerDownCapture={(e) => e.stopPropagation()}
-              onTouchStartCapture={(e) => e.stopPropagation()}
+              className="w-full rounded-md overflow-hidden border z-[1101]"
+              style={{ height: "50vh", minHeight: 320 }}
+              data-vaul-no-drag
             >
               {MapComp ? (
                 <MapComp
@@ -234,35 +239,7 @@ export default function DispatchLocationPinSelector({
           </div>
 
           <DrawerFooter>
-            <div className="flex-1 flex items-center gap-2 mr-auto">
-              <Select value={mapProvider} onValueChange={setMapProvider}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Choose map" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="google">Google Maps</SelectItem>
-                  <SelectItem value="apple">Apple Maps</SelectItem>
-                  <SelectItem value="osm">OpenStreetMap</SelectItem>
-                  <SelectItem value="waze">Waze</SelectItem>
-                  <SelectItem value="bing">Bing Maps</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  handleOpenInMaps(tempLat ?? undefined, tempLng ?? undefined)
-                }
-                disabled={
-                  !(
-                    typeof (tempLat ?? currentLat) === "number" &&
-                    typeof (tempLng ?? currentLng) === "number"
-                  )
-                }
-              >
-                Open Maps
-              </Button>
-            </div>
-            <Button onClick={handleSave}>Save</Button>
+            <Button className="z-[1102]" onClick={handleSave}>Confirm</Button>
             <Button variant="secondary" onClick={() => setOpen(false)}>
               Cancel
             </Button>

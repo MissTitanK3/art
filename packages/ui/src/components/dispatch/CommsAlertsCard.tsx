@@ -11,6 +11,15 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Label } from "@workspace/ui/components/label";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 
 type Props = {
@@ -33,6 +42,13 @@ type Props = {
 };
 
 type CustomAlert = { id: string; direction: string; description: string };
+type PresetAlert = {
+  id: string;
+  label: string;
+  direction: string;
+  description: string;
+  group: "basic" | "code";
+};
 
 const NOOP_STORAGE: Storage = {
   get length() {
@@ -55,28 +71,94 @@ const NOOP_STORAGE: Storage = {
   },
 };
 
-const EXAMPLES: CustomAlert[] = [
+const BASIC_PRESETS: readonly PresetAlert[] = [
   {
-    id: "ex-consolidate",
+    id: "basic-consolidate",
+    group: "basic",
+    label: "Consolidate ×3",
     direction: "Consolidate ×3",
-    description: "Consolidate, Consolidate, Consolidate — {location}.",
+    description:
+      "Call it three times on the net: \"Consolidate, Consolidate, Consolidate — link up at {location}.\" Assign a lead to confirm headcount and report when the rally is complete.",
   },
   {
-    id: "ex-break",
+    id: "basic-break",
+    group: "basic",
+    label: "Break ×3 (urgent)",
     direction: "Break ×3 (urgent)",
-    description: "Break, Break, Break — {location}.",
+    description:
+      "Announce \"Break, Break, Break — priority traffic\" to seize the channel, then deliver the message and direct a specific unit to acknowledge so the net stays orderly.",
   },
   {
-    id: "ex-silence",
+    id: "basic-silence",
+    group: "basic",
+    label: "Radio silence",
     direction: "Radio silence",
-    description: "All stations, radio silence — reason: {location}.",
-  },
-  {
-    id: "ex-hail",
-    direction: "Hailing format",
-    description: "Recipient, this is {your_callsign}, over.",
+    description:
+      "Order \"All stations, radio silence — traffic pending at {location}.\" Name who can break the silence, note the trigger that will lift it, and log the time it went into effect.",
   },
 ];
+
+const CODE_PRESETS: readonly PresetAlert[] = [
+  {
+    id: "code-black",
+    group: "code",
+    label: "Code Black",
+    direction: "Code Black",
+    description:
+      "Call twice with the location: \"Code Black, Code Black — {location}.\" Order immediate shelter-in-place, lock doors, move to hard cover, and await law-enforcement confirmation before clearing.",
+  },
+  {
+    id: "code-blue",
+    group: "code",
+    label: "Code Blue",
+    direction: "Code Blue {Location}",
+    description:
+      "Transmit \"Code Blue — {location}.\" Immediately designate a 911 caller, assign airway/bleeding control, deploy an AED runner, and stage an escort for arriving responders.",
+  },
+  {
+    id: "code-silver",
+    group: "code",
+    label: "Code Silver",
+    direction: "Code Silver {Location}",
+    description:
+      "Announce \"Code Silver — {location}.\" Describe the individual, establish a buffer zone, keep eyes-on from cover, and relay behavior until security relieves you.",
+  },
+  {
+    id: "code-red",
+    group: "code",
+    label: "Code Red",
+    direction: "Code Red {Avoid Location}",
+    description:
+      "Broadcast \"Code Red — avoid {location}.\" Confirm alarms are pulled, direct teams to evac routes, and broadcast wind/exposure notes so units stay clear of smoke and flame.",
+  },
+  {
+    id: "code-gold",
+    group: "code",
+    label: "Code Gold",
+    direction: "Code Gold {Location}",
+    description:
+      "State \"Code Gold — {location}.\" Establish a 300 ft (100 m) exclusion zone, stop radios within line-of-sight if advised, and log anyone entering or exiting the cordon.",
+  },
+  {
+    id: "code-green",
+    group: "code",
+    label: "Code Green",
+    direction: "Code Green {All Clear}",
+    description:
+      "Declare \"Code Green — all clear.\" Direct teams to resume prior assignments, reset accountability, and note any zones that remain restricted before full reopening.",
+  },
+];
+
+const ALL_PRESETS: readonly PresetAlert[] = [
+  ...BASIC_PRESETS,
+  ...CODE_PRESETS,
+];
+
+const EXAMPLES: CustomAlert[] = BASIC_PRESETS.map((preset) => ({
+  id: preset.id,
+  direction: preset.direction,
+  description: preset.description,
+}));
 
 export function CommsAlertsCard({
   alerts: extAlerts,
@@ -132,24 +214,83 @@ export function CommsAlertsCard({
     },
   );
   const useExternal = Array.isArray(extAlerts);
+  const alerts = useExternal ? extAlerts ?? [] : localAlerts;
 
-  const addAlert = async () => {
-    if (useExternal && onCreateAlert) {
-      await onCreateAlert({ direction: "", description: "" });
-    } else {
-      setLocalAlerts((prev) => [
-        ...prev,
-        {
-          id:
-            typeof crypto !== "undefined" && crypto.randomUUID
-              ? crypto.randomUUID()
-              : `alert-${Math.random().toString(36).slice(2, 11)}`,
-          direction: "",
-          description: "",
-        },
-      ]);
+  const generateId = React.useCallback(() => {
+    return typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `alert-${Math.random().toString(36).slice(2, 11)}`;
+  }, []);
+
+  const [editorDrawerOpen, setEditorDrawerOpen] = React.useState(false);
+  const [presetDrawerOpen, setPresetDrawerOpen] = React.useState(false);
+  const [formState, setFormState] = React.useState<
+    Pick<CustomAlert, "direction" | "description">
+  >({
+    direction: "",
+    description: "",
+  });
+  const [editingAlertId, setEditingAlertId] = React.useState<string | null>(
+    null,
+  );
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [selectedPresetIds, setSelectedPresetIds] = React.useState<string[]>(
+    [],
+  );
+  const [isPresetAdding, setIsPresetAdding] = React.useState(false);
+  const presetSectionRefs = React.useRef<Record<PresetAlert["group"], HTMLElement | null>>({
+    basic: null,
+    code: null,
+  });
+
+  const togglePresetSelection = (presetId: string) => {
+    setSelectedPresetIds((prev) =>
+      prev.includes(presetId)
+        ? prev.filter((id) => id !== presetId)
+        : [...prev, presetId],
+    );
+  };
+
+  const clearPresetSelection = () => setSelectedPresetIds([]);
+
+  const selectedPresetObjects = React.useMemo(
+    () => ALL_PRESETS.filter((preset) => selectedPresetIds.includes(preset.id)),
+    [selectedPresetIds],
+  );
+  const selectedPresetCount = selectedPresetObjects.length;
+
+  const scrollToPresetSection = (group: PresetAlert["group"]) => {
+    const node = presetSectionRefs.current[group];
+    if (node) {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+
+  const addPresets = async (presets: readonly PresetAlert[]) => {
+    if (!presets.length) return;
+    setIsPresetAdding(true);
+    try {
+      for (const preset of presets) {
+        await createAlert({
+          direction: preset.direction,
+          description: preset.description,
+        });
+      }
+      clearPresetSelection();
+      setPresetDrawerOpen(false);
+    } finally {
+      setIsPresetAdding(false);
+    }
+  };
+
+  const addSelectedPresets = async () => {
+    await addPresets(selectedPresetObjects);
+  };
+
+  const addPresetGroup = async (group: PresetAlert["group"]) => {
+    await addPresets(group === "basic" ? BASIC_PRESETS : CODE_PRESETS);
+  };
+
   const removeAlert = async (id: string) => {
     if (useExternal && onDeleteAlert) {
       await onDeleteAlert(id);
@@ -157,6 +298,7 @@ export function CommsAlertsCard({
       setLocalAlerts((prev) => prev.filter((a) => a.id !== id));
     }
   };
+
   const updateAlert = async (id: string, patch: Partial<CustomAlert>) => {
     if (useExternal && onUpdateAlert) {
       await onUpdateAlert(id, patch);
@@ -166,8 +308,56 @@ export function CommsAlertsCard({
       );
     }
   };
+
+  const createAlert = async (
+    payload: Pick<CustomAlert, "direction" | "description">,
+  ) => {
+    if (useExternal && onCreateAlert) {
+      await onCreateAlert(payload);
+    } else {
+      setLocalAlerts((prev) => [
+        ...prev,
+        { id: generateId(), ...payload },
+      ]);
+    }
+  };
+
+  const handleEditorDrawerClose = () => {
+    setEditorDrawerOpen(false);
+    setEditingAlertId(null);
+  };
+
+  const openCreateDrawer = () => {
+    setFormState({ direction: "", description: "" });
+    setEditingAlertId(null);
+    setEditorDrawerOpen(true);
+  };
+
+  const openEditDrawer = (alert: CustomAlert) => {
+    setFormState({ direction: alert.direction, description: alert.description });
+    setEditingAlertId(alert.id);
+    setEditorDrawerOpen(true);
+  };
+
+  const handleSaveAlert = async () => {
+    const direction = formState.direction.trim();
+    const description = formState.description.trim();
+    if (!direction || !description) return;
+    setIsSaving(true);
+    try {
+      if (editingAlertId) {
+        await updateAlert(editingAlertId, { direction, description });
+      } else {
+        await createAlert({ direction, description });
+      }
+      handleEditorDrawerClose();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const resetExamples = async () => {
-    const exampleSet = EXAMPLES.map((e) => ({ ...e, id: crypto.randomUUID() }));
+    const exampleSet = EXAMPLES.map((e) => ({ ...e, id: generateId() }));
     if (
       useExternal &&
       onDeleteAlert &&
@@ -186,158 +376,374 @@ export function CommsAlertsCard({
     }
   };
 
+  const canSave = Boolean(
+    formState.direction.trim() && formState.description.trim(),
+  );
+  const hasAlerts = alerts.length > 0;
+  const presetSections: Array<{
+    id: PresetAlert["group"];
+    title: string;
+    description: string;
+    presets: readonly PresetAlert[];
+  }> = [
+      {
+        id: "code",
+        title: "Emergency codes",
+        description: "Structured color codes for fast-problem broadcasts.",
+        presets: CODE_PRESETS,
+      },
+      {
+        id: "basic",
+        title: "Plain-talk basics",
+        description:
+          "Foundational radio etiquette cues for quick reminders.",
+        presets: BASIC_PRESETS,
+      },
+    ];
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Alerts & Etiquette</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4 text-sm">
-        <div className="grid gap-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-medium">Custom alerts</p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={resetExamples}
-                className="w-full sm:w-auto"
-              >
-                Reset to examples
-              </Button>
-              <Button size="sm" onClick={addAlert} className="w-full sm:w-auto">
-                Add alert
-              </Button>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Alerts & Etiquette</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6 text-sm">
+          <section className="space-y-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-1">
+                <p className="font-medium">Custom alerts</p>
+                <p className="text-muted-foreground text-xs">
+                  Condensed list stays screenshot ready. Use the drawer to add or
+                  edit alerts without cluttering the view.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setPresetDrawerOpen(true)}
+                  className="w-full sm:w-auto"
+                >
+                  Preset library
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={openCreateDrawer}
+                  className="w-full sm:w-auto"
+                >
+                  Add custom alert
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-muted/5">
+              {hasAlerts ? (
+                <ol className="divide-y">
+                  {alerts.map((alert) => (
+                    <li
+                      key={alert.id}
+                      className="flex flex-col gap-3 p-3 sm:flex-row sm:items-start sm:justify-between"
+                    >
+                      <div className="min-w-0 space-y-2">
+                        <p className="font-semibold leading-tight">
+                          {alert.direction || "Untitled alert"}
+                        </p>
+                        <p className="text-muted-foreground text-xs leading-snug border-l border-border pl-4">
+                          {alert.description || "Add a description for quick context."}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-1 sm:justify-end">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openEditDrawer(alert)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                          onClick={() => void removeAlert(alert.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className="p-4 text-muted-foreground text-xs">
+                  No alerts yet. Click “Add alert” or “Reset to examples” to
+                  start a share-ready list.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className="grid gap-2">
+            <p className="font-medium">Standard radio identification format</p>
+            <p className="text-muted-foreground">
+              To identify yourself on a radio, state the recipient’s call sign
+              followed by “this is” and your own call sign, then “over”. For
+              example: “Nighthawk, this is Drifter 23, over”. Use the recipient’s
+              call sign first, then your call sign to make it clear who you are
+              calling and who is doing the calling. In an event context, use your
+              team’s established call signs and procedures for the specific
+              situation.
+            </p>
+            <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+              <li>Identify the recipient: state their call sign.</li>
+              <li>Use “this is”: precede your call sign with “this is”.</li>
+              <li>Identify yourself: state your team/individual call sign.</li>
+              <li>End with “over”: indicates you are waiting for a response.</li>
+            </ul>
+          </div>
+
+          <div className="grid gap-2">
+            <p className="font-medium">Civilian VHF — do’s and don’ts</p>
+            <div className="grid gap-1">
+              <p className="font-semibold">Do’s</p>
+              <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+                <li>
+                  Monitor Channel 16 when not actively talking on another channel.
+                </li>
+                <li>
+                  Hail on Channel 16, then switch immediately to a working channel
+                  to converse.
+                </li>
+                <li>
+                  Be clear and concise: speak slowly, use standard phrases, keep
+                  messages brief.
+                </li>
+                <li>
+                  Use proper terminology: “Roger”/“Copy that” to acknowledge;
+                  “Over” to yield; “Out” to end.
+                </li>
+                <li>
+                  Identify your vessel or party at the start and end of
+                  transmissions.
+                </li>
+                <li>
+                  Listen first: ensure the channel is clear before transmitting.
+                </li>
+                <li>
+                  Perform radio checks on a working channel with a specific
+                  station (e.g., a marina).
+                </li>
+              </ul>
+            </div>
+            <div className="grid gap-1">
+              <p className="font-semibold">Don’ts</p>
+              <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+                <li>
+                  Don’t use Channel 16 for casual chat; it’s for distress and
+                  hailing only.
+                </li>
+                <li>Don’t use profanity; transmissions are public.</li>
+                <li>
+                  Don’t monopolize channels; keep transmissions short so others
+                  can use them.
+                </li>
+                <li>
+                  Don’t interrupt or talk over others, especially during distress
+                  traffic.
+                </li>
+                <li>
+                  Don’t say “Over and out”; they are contradictory—use one or the
+                  other appropriately.
+                </li>
+                <li>
+                  Don’t transmit false distress calls; it’s a serious offense.
+                </li>
+              </ul>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="grid gap-3">
-            {(useExternal ? extAlerts! : localAlerts).map((a) => (
-              <div key={a.id} className="rounded-md border p-2">
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                  <div className="grid gap-1">
-                    <Label>Direction</Label>
-                    <Input
-                      placeholder="e.g., Consolidate ×3"
-                      value={a.direction}
-                      onChange={(e) =>
-                        void updateAlert(a.id, { direction: e.target.value })
-                      }
-                    />
+      <Drawer
+        open={presetDrawerOpen}
+        direction="bottom"
+        onOpenChange={(open) => {
+          if (open) {
+            setPresetDrawerOpen(true);
+          } else {
+            setPresetDrawerOpen(false);
+            if (!isPresetAdding) {
+              clearPresetSelection();
+            }
+          }
+        }}
+      >
+        <DrawerContent className="bg-card text-card-foreground h-full max-h-[95vh]">
+          <DrawerHeader>
+            <DrawerTitle>Preset library</DrawerTitle>
+            <DrawerDescription className="text-xs">
+              Pick individual codes or plain-talk examples, or drop entire
+              groups at once. Descriptions stay visible so everyone knows what
+              you’re sharing.
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="grid gap-6 p-4 h-full overflow-y-auto">
+            {presetSections.map((section) => (
+              <section
+                key={section.id}
+                ref={(node) => {
+                  presetSectionRefs.current[section.id] = node;
+                }}
+                className="space-y-3"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{section.title}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {section.description}
+                    </p>
                   </div>
-                  <div className="grid gap-1">
-                    <Label>Description</Label>
-                    <Textarea
-                      placeholder="e.g., Consolidate, Consolidate, Consolidate — {location}."
-                      value={a.description}
-                      onChange={(e) =>
-                        void updateAlert(a.id, { description: e.target.value })
-                      }
-                      rows={2}
-                    />
-                  </div>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2 justify-end sm:justify-start">
                   <Button
                     size="sm"
-                    variant="ghost"
-                    onClick={() => void removeAlert(a.id)}
+                    variant="outline"
                     className="w-full sm:w-auto"
+                    onClick={() => void addPresetGroup(section.id)}
+                    disabled={isPresetAdding}
                   >
-                    Delete
+                    Add entire group
                   </Button>
                 </div>
-              </div>
+                <div className="space-y-2 rounded-lg border bg-muted/20 p-2">
+                  {section.presets.map((preset) => {
+                    const checked = selectedPresetIds.includes(preset.id);
+                    return (
+                      <label
+                        key={preset.id}
+                        htmlFor={`preset-${preset.id}`}
+                        className="flex cursor-pointer gap-3 rounded-md border bg-background/80 p-3 text-sm shadow-sm transition hover:border-primary/50"
+                      >
+                        <Checkbox
+                          id={`preset-${preset.id}`}
+                          checked={checked}
+                          onCheckedChange={() => togglePresetSelection(preset.id)}
+                          className="mt-0.5"
+                        />
+                        <div className="space-y-1">
+                          <p className="font-semibold leading-tight">
+                            {preset.direction}
+                          </p>
+                          <p className="text-muted-foreground text-xs leading-snug">
+                            {preset.description}
+                          </p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </section>
             ))}
-            {(useExternal ? (extAlerts?.length ?? 0) : localAlerts.length) ===
-              0 && (
-                <p className="text-muted-foreground text-xs">
-                  No alerts yet. Click “Add alert” or “Reset to examples” to get
-                  started.
-                </p>
-              )}
           </div>
-        </div>
+          <DrawerFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isPresetAdding}
+              onClick={() => {
+                clearPresetSelection();
+                setPresetDrawerOpen(false);
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void addSelectedPresets()}
+              disabled={selectedPresetCount === 0 || isPresetAdding}
+            >
+              {isPresetAdding
+                ? "Adding…"
+                : selectedPresetCount > 0
+                  ? `Add ${selectedPresetCount} selected`
+                  : "Add selected"}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
-        <div className="grid gap-2">
-          <p className="font-medium">Standard radio identification format</p>
-          <p className="text-muted-foreground">
-            To identify yourself on a radio, state the recipient’s call sign
-            followed by “this is” and your own call sign, then “over”. For
-            example: “Nighthawk, this is Drifter 23, over”. Use the recipient’s
-            call sign first, then your call sign to make it clear who you are
-            calling and who is doing the calling. In an event context, use your
-            team’s established call signs and procedures for the specific
-            situation.
-          </p>
-          <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
-            <li>Identify the recipient: state their call sign.</li>
-            <li>Use “this is”: precede your call sign with “this is”.</li>
-            <li>Identify yourself: state your team/individual call sign.</li>
-            <li>End with “over”: indicates you are waiting for a response.</li>
-          </ul>
-        </div>
-
-        <div className="grid gap-2">
-          <p className="font-medium">Civilian VHF — do’s and don’ts</p>
-          <div className="grid gap-1">
-            <p className="font-semibold">Do’s</p>
-            <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
-              <li>
-                Monitor Channel 16 when not actively talking on another channel.
-              </li>
-              <li>
-                Hail on Channel 16, then switch immediately to a working channel
-                to converse.
-              </li>
-              <li>
-                Be clear and concise: speak slowly, use standard phrases, keep
-                messages brief.
-              </li>
-              <li>
-                Use proper terminology: “Roger”/“Copy that” to acknowledge;
-                “Over” to yield; “Out” to end.
-              </li>
-              <li>
-                Identify your vessel or party at the start and end of
-                transmissions.
-              </li>
-              <li>
-                Listen first: ensure the channel is clear before transmitting.
-              </li>
-              <li>
-                Perform radio checks on a working channel with a specific
-                station (e.g., a marina).
-              </li>
-            </ul>
+      <Drawer
+        open={editorDrawerOpen}
+        direction="bottom"
+        onOpenChange={(open) => {
+          if (open) {
+            setEditorDrawerOpen(true);
+          } else {
+            handleEditorDrawerClose();
+          }
+        }}
+      >
+        <DrawerContent className="bg-card text-card-foreground">
+          <DrawerHeader>
+            <DrawerTitle>
+              {editingAlertId ? "Edit alert" : "Add alert"}
+            </DrawerTitle>
+            <DrawerDescription>
+              Direction is the short cue you’ll transmit; description carries
+              the scripted language.
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="grid gap-4 p-4">
+            <div className="grid gap-1">
+              <Label htmlFor="alert-direction">Direction</Label>
+              <Input
+                id="alert-direction"
+                placeholder="e.g., Consolidate ×3"
+                value={formState.direction}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    direction: event.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="grid gap-1">
+              <Label htmlFor="alert-description">Description</Label>
+              <Textarea
+                id="alert-description"
+                placeholder="e.g., Consolidate, Consolidate, Consolidate — {location}."
+                value={formState.description}
+                rows={3}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    description: event.target.value,
+                  }))
+                }
+              />
+            </div>
           </div>
-          <div className="grid gap-1">
-            <p className="font-semibold">Don’ts</p>
-            <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
-              <li>
-                Don’t use Channel 16 for casual chat; it’s for distress and
-                hailing only.
-              </li>
-              <li>Don’t use profanity; transmissions are public.</li>
-              <li>
-                Don’t monopolize channels; keep transmissions short so others
-                can use them.
-              </li>
-              <li>
-                Don’t interrupt or talk over others, especially during distress
-                traffic.
-              </li>
-              <li>
-                Don’t say “Over and out”; they are contradictory—use one or the
-                other appropriately.
-              </li>
-              <li>
-                Don’t transmit false distress calls; it’s a serious offense.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          <DrawerFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isSaving}
+              onClick={handleEditorDrawerClose}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleSaveAlert()}
+              disabled={!canSave || isSaving}
+            >
+              {isSaving
+                ? "Saving..."
+                : editingAlertId
+                  ? "Update alert"
+                  : "Add alert"}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }
 

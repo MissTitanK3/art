@@ -165,8 +165,8 @@ export function CommsDashboardView({
   };
 
   return (
-    <div className="flex h-full w-full gap-3 flex-col xl:flex-row">
-      <div className="flex w-full flex-col gap-3 xl:w-1/3">
+    <div className="flex h-full w-full flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(320px,0.85fr)]">
+      <div className="flex flex-col gap-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Teams</CardTitle>
@@ -225,17 +225,13 @@ export function CommsDashboardView({
         </Card>
       </div>
 
-      <div className="flex w-full flex-col gap-3 xl:w-2/3">
+      <div className="flex flex-col gap-3">
         <Tabs defaultValue="log" className="flex h-full flex-col">
-          <TabsList className="mb-2 w-full overflow-x-auto flex flex-nowrap whitespace-nowrap gap-2">
-            <TabsTrigger value="briefing">Briefing</TabsTrigger>
+          <TabsList className="mb-2 flex w-full flex-nowrap gap-2 overflow-x-auto whitespace-nowrap">
             <TabsTrigger value="alerts">Alerts</TabsTrigger>
             <TabsTrigger value="log">Logs</TabsTrigger>
             <TabsTrigger value="scratch">Scratchpad</TabsTrigger>
           </TabsList>
-          <TabsContent value="briefing" className="flex-1">
-            <CommsBriefing briefing={briefing} onSave={upsertBriefing} />
-          </TabsContent>
           <TabsContent value="alerts" className="flex-1">
             <CommsAlertsCard
               alerts={alerts?.map((a) => ({
@@ -255,6 +251,13 @@ export function CommsDashboardView({
             <CommsScratchpad />
           </TabsContent>
         </Tabs>
+      </div>
+      <div className="flex flex-col">
+        <CommsBriefing
+          briefing={briefing}
+          onSave={upsertBriefing}
+          className="h-full"
+        />
       </div>
     </div>
   );
