@@ -1275,3 +1275,195 @@ BEGIN
     EXECUTE sql;
   END IF;
 END $$;
+
+-- Warehouse RLS Policies
+
+-- Enable RLS
+ALTER TABLE warehouses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_zones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_bins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_inventory ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_movement_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_pick_lists ENABLE ROW LEVEL SECURITY;
+
+-- Warehouses: Read accessible to all authenticated users
+CREATE POLICY "warehouses_read_authenticated"
+ON warehouses
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+-- Warehouses: Write restricted to admins and dispatchers
+CREATE POLICY "warehouses_write_privileged"
+ON warehouses
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Zones: Same as warehouses
+CREATE POLICY "warehouse_zones_read_authenticated"
+ON warehouse_zones
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+CREATE POLICY "warehouse_zones_write_privileged"
+ON warehouse_zones
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Bins: Same as warehouses
+CREATE POLICY "warehouse_bins_read_authenticated"
+ON warehouse_bins
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+CREATE POLICY "warehouse_bins_write_privileged"
+ON warehouse_bins
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Inventory: Same as warehouses
+CREATE POLICY "warehouse_inventory_read_authenticated"
+ON warehouse_inventory
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+CREATE POLICY "warehouse_inventory_write_privileged"
+ON warehouse_inventory
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Movement Logs: Read accessible to all, Write restricted to privileged
+CREATE POLICY "warehouse_movement_logs_read_authenticated"
+ON warehouse_movement_logs
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+CREATE POLICY "warehouse_movement_logs_write_privileged"
+ON warehouse_movement_logs
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Pick Lists: Read accessible to all, Write restricted to privileged
+CREATE POLICY "warehouse_pick_lists_read_authenticated"
+ON warehouse_pick_lists
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+CREATE POLICY "warehouse_pick_lists_write_privileged"
+ON warehouse_pick_lists
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+-- Warehouse Item Catalog RLS Policies
+
+-- Enable RLS
+ALTER TABLE warehouse_item_catalog ENABLE ROW LEVEL SECURITY;
+
+-- Read accessible to all authenticated users
+CREATE POLICY "warehouse_item_catalog_read_authenticated"
+ON warehouse_item_catalog
+FOR SELECT
+TO authenticated
+USING (TRUE);
+
+-- Write restricted to admins and dispatchers
+CREATE POLICY "warehouse_item_catalog_write_privileged"
+ON warehouse_item_catalog
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = (auth.uid())::text
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);

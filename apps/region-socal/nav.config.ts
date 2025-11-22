@@ -59,6 +59,7 @@ export const navConfig: GlobalNavConfigInput = {
           roles: verifiedAdmins,
         },
         { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
+        { label: 'Warehouse', href: '/warehouse', roles: elevatedRoles },
       ],
     },
     {
@@ -110,11 +111,11 @@ export const navConfig: GlobalNavConfigInput = {
         },
         ...(SIGNAL_GROUP_URL
           ? [
-              {
-                label: 'Region Onboarding Signal',
-                href: SIGNAL_GROUP_URL,
-              } as const,
-            ]
+            {
+              label: 'Region Onboarding Signal',
+              href: SIGNAL_GROUP_URL,
+            } as const,
+          ]
           : []),
         {
           label: 'New Region Setup Signal',

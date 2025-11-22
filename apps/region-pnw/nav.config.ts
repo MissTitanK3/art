@@ -59,6 +59,7 @@ export const navConfig: GlobalNavConfigInput = {
           roles: verifiedAdmins,
         },
         { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
+        { label: 'Warehouse', href: '/warehouse', roles: elevatedRoles },
       ],
     },
     {
