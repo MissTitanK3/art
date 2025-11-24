@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
 import { parseISO } from "date-fns";
 import {
@@ -134,117 +134,44 @@ export default function CollectiveCalendarDataLayer() {
   });
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
     let active = true;
 
     async function load() {
       setLoading(true);
       try {
-        const { data: userRes, error: userErr } =
-          await supabase.auth.getUser();
-        if (userErr) throw userErr;
-        const uid = userRes?.user?.id ?? null;
-        if (active) setUserId(uid);
+        const res = await fetch("/api/calendar", { credentials: "include" });
+        if (!res.ok) throw new Error("Failed to load calendar data");
+        const data = await res.json();
 
-        // Resolve profile id for joins
-        let resolvedProfileId: string | null = null;
-        if (uid) {
-          const { data: profileRow } = await supabase
-            .from("profiles")
-            .select("id, user_id")
-            .or(`user_id.eq.${uid},id.eq.${uid}`)
-            .maybeSingle();
-          resolvedProfileId =
-            profileRow?.id ?? profileRow?.user_id ?? userRes?.user?.id ?? null;
-        }
-        if (active) setProfileId(resolvedProfileId);
+        if (!active) return;
 
-        const shiftsPromise = supabase
-          .from("pod_shifts")
-          .select(
-            `
-            id,
-            pod_id,
-            start,
-            end,
-            tz,
-            headcount,
-            location,
-            label,
-            dispatch_link,
-            notes,
-            visibility,
-            needed,
-            route,
-            pod:pods(
-              id,
-              name,
-              slug,
-              area,
-              orgs:organization_pods(org_id, organization:organizations(id, name, description))
-            ),
-            signups:pod_shift_signups(user_id)
-          `,
-          )
-          .order("start", { ascending: true });
+        setUserId(data.userId);
+        setProfileId(data.profileId);
 
-        const podsPromise = supabase
-          .from("pods")
-          .select("id, name, slug, area")
-          .order("name", { ascending: true });
-
-        const rosterPromise = resolvedProfileId
-          ? supabase
-            .from("roster_entries")
-            .select("pod_id")
-            .eq("profile_id", resolvedProfileId)
-          : Promise.resolve({ data: null });
-
-        const orgRolesPromise = resolvedProfileId
-          ? supabase
-            .from("organization_roles")
-            .select(
-              "org_id, role, organization:organizations(id, name, description)",
-            )
-            .eq("user_id", resolvedProfileId)
-          : Promise.resolve({ data: null });
-
-        const orgPodsPromise = supabase
-          .from("organization_pods")
-          .select(
-            "org_id, pod_id, organization:organizations(id, name, description), pod:pods(id, name, slug)",
-          );
-
-        const shiftsRes = await shiftsPromise;
-        const podsRes = await podsPromise;
-        const rosterRes = await rosterPromise;
-        const orgRolesRes = await orgRolesPromise;
-        const orgPodsRes = await orgPodsPromise;
-
-        const mappedShifts = Array.isArray(shiftsRes?.data)
-          ? (shiftsRes!.data as any[]).map(mapShiftRow)
+        const mappedShifts = Array.isArray(data.shifts)
+          ? data.shifts.map(mapShiftRow)
           : [];
-        const knownPods = Array.isArray(podsRes?.data)
-          ? podsRes!.data.map((p: any) => ({
+        setShifts(mappedShifts);
+
+        const knownPods = Array.isArray(data.pods)
+          ? data.pods.map((p: any) => ({
             id: String(p.id),
             name: p.name,
             slug: p.slug,
             area: p.area,
           })) as CalendarPodSummary[]
           : [];
-        if (active) setPods(sortPodsByName(knownPods));
+        setPods(sortPodsByName(knownPods));
 
         const podMembershipIds = new Set<string>();
-        if (Array.isArray(rosterRes?.data)) {
-          for (const row of rosterRes!.data as any[]) {
+        if (Array.isArray(data.roster)) {
+          for (const row of data.roster) {
             if (row?.pod_id) podMembershipIds.add(String(row.pod_id));
           }
         }
 
-        const orgRoleRows: CalendarOrgSummary[] = Array.isArray(
-          orgRolesRes?.data,
-        )
-          ? (orgRolesRes!.data as any[]).map((row: any) => ({
+        const orgRoleRows: CalendarOrgSummary[] = Array.isArray(data.orgRoles)
+          ? data.orgRoles.map((row: any) => ({
             id: String(row.org_id ?? row.organization?.id),
             name: row.organization?.name ?? "Organization",
             description: row.organization?.description ?? null,
@@ -252,11 +179,10 @@ export default function CollectiveCalendarDataLayer() {
           }))
           : [];
 
-        const orgPodRows = Array.isArray(orgPodsRes?.data)
-          ? (orgPodsRes!.data as any[])
-          : [];
+        const orgPodRows = Array.isArray(data.orgPods) ? data.orgPods : [];
         const orgIdsFromPods = new Set<string>();
         const orgMap = new Map<string, CalendarOrgWithPods>();
+
         for (const row of orgPodRows) {
           const orgId = row.org_id ?? row.organization?.id;
           if (!orgId) continue;
@@ -297,31 +223,27 @@ export default function CollectiveCalendarDataLayer() {
           });
         }
 
-        if (active) {
-          setOrganizations(
-            Array.from(orgMap.values())
-              .map((org) => ({
-                ...org,
-                pods: sortPodsByName(org.pods ?? []),
-              }))
-              .sort((a, b) => a.name.localeCompare(b.name)),
-          );
-        }
+        setOrganizations(
+          Array.from(orgMap.values())
+            .map((org) => ({
+              ...org,
+              pods: sortPodsByName(org.pods ?? []),
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name)),
+        );
 
         const combinedOrgIds = new Set<string>([
           ...orgIdsFromPods,
           ...orgRoleRows.map((r) => r.id),
         ]);
-        if (active) {
-          setMembership({
-            podIds: Array.from(podMembershipIds),
-            orgIds: Array.from(combinedOrgIds),
-            profileId: resolvedProfileId,
-            userId: uid,
-          });
-          setShifts(mappedShifts);
-          setError(null);
-        }
+
+        setMembership({
+          podIds: Array.from(podMembershipIds),
+          orgIds: Array.from(combinedOrgIds),
+          profileId: data.profileId,
+          userId: data.userId,
+        });
+        setError(null);
       } catch (e: any) {
         if (active) {
           console.warn("[CollectiveCalendar] load failed", e);
@@ -395,15 +317,16 @@ export default function CollectiveCalendarDataLayer() {
         toast.message("Already signed up");
         return;
       }
-      const supabase = getSupabaseBrowserClient();
-      const { error: upsertError } = await supabase
-        .from("pod_shift_signups")
-        .upsert({
-          id: crypto.randomUUID(),
-          shift_id: shift.id,
-          user_id: signupId,
-        });
-      if (upsertError) throw upsertError;
+
+      const res = await fetch(`/api/calendar/shifts/${shift.id}/signup`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to sign up");
+      }
 
       setShifts((prev) =>
         prev.map((s) =>
@@ -419,52 +342,39 @@ export default function CollectiveCalendarDataLayer() {
 
   const handleCreateOrg = useCallback(
     async (name: string, description: string) => {
-      const supabase = getSupabaseBrowserClient();
-      const newId = crypto.randomUUID();
-      const { error } = await supabase.from("organizations").insert({
-        id: newId,
-        region_id: REGION_IDENTIFIER,
-        name,
-        description,
+      const res = await fetch("/api/orgs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description }),
+        credentials: "include",
       });
-      if (error) throw error;
 
-      // Assign owner role if we have a profile
-      if (profileId) {
-        const { error: roleError } = await supabase
-          .from("organization_roles")
-          .insert({
-            org_id: newId,
-            user_id: profileId,
-            role: "owner",
-          });
-        if (roleError) {
-          console.error("Failed to assign owner role", roleError);
-          // We don't throw here to avoid blocking the UI, but it's an issue.
-        }
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to create organization");
       }
 
-      const newOrg: CalendarOrgSummary = {
-        id: newId,
-        name,
-        description,
-        role: "owner",
-      };
+      const newOrg = await res.json();
       setOrganizations((prev) =>
         [...prev, newOrg].sort((a, b) => a.name.localeCompare(b.name)),
       );
     },
-    [profileId],
+    [],
   );
 
   const handleUpdateOrg = useCallback(
     async (orgId: string, name: string, description: string) => {
-      const supabase = getSupabaseBrowserClient();
-      const { error } = await supabase
-        .from("organizations")
-        .update({ name, description })
-        .eq("id", orgId);
-      if (error) throw error;
+      const res = await fetch(`/api/orgs/${orgId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to update organization");
+      }
 
       setOrganizations((prev) =>
         prev
@@ -479,12 +389,15 @@ export default function CollectiveCalendarDataLayer() {
 
   const handleDeleteOrg = useCallback(
     async (orgId: string) => {
-      const supabase = getSupabaseBrowserClient();
-      const { error } = await supabase
-        .from("organizations")
-        .delete()
-        .eq("id", orgId);
-      if (error) throw error;
+      const res = await fetch(`/api/orgs/${orgId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to delete organization");
+      }
 
       setOrganizations((prev) => prev.filter((o) => o.id !== orgId));
     },
@@ -561,29 +474,19 @@ export default function CollectiveCalendarDataLayer() {
 
   const handleCreateShift = useCallback(
     async (input: CollectiveCalendarShiftInput) => {
-      const supabase = getSupabaseBrowserClient();
-      const id = input.id ?? crypto.randomUUID();
-      const payload = {
-        id,
-        pod_id: input.podId,
-        start: input.start,
-        end: input.end,
-        tz: input.tz,
-        headcount: input.headcount ?? input.needed,
-        location: input.location,
-        label: input.label,
-        dispatch_link: input.dispatchLink,
-        notes: input.notes,
-        visibility: input.visibility,
-        needed: input.needed,
-      };
-      const { data, error } = await supabase
-        .from("pod_shifts")
-        .upsert(payload)
-        .select(SHIFT_SELECT_FIELDS)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("Missing shift row");
+      const res = await fetch("/api/calendar/shifts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to create shift");
+      }
+
+      const data = await res.json();
       const mapped = mapShiftRow(data);
       setShifts((prev) =>
         [...prev.filter((s) => s.id !== mapped.id), mapped].sort(
@@ -596,28 +499,19 @@ export default function CollectiveCalendarDataLayer() {
 
   const handleUpdateShift = useCallback(
     async (shiftId: string, input: CollectiveCalendarShiftInput) => {
-      const supabase = getSupabaseBrowserClient();
-      const payload = {
-        pod_id: input.podId,
-        start: input.start,
-        end: input.end,
-        tz: input.tz,
-        headcount: input.headcount ?? input.needed,
-        location: input.location,
-        label: input.label,
-        dispatch_link: input.dispatchLink,
-        notes: input.notes,
-        visibility: input.visibility,
-        needed: input.needed,
-      };
-      const { data, error } = await supabase
-        .from("pod_shifts")
-        .update(payload)
-        .eq("id", shiftId)
-        .select(SHIFT_SELECT_FIELDS)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("Missing shift row");
+      const res = await fetch(`/api/calendar/shifts/${shiftId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to update shift");
+      }
+
+      const data = await res.json();
       const mapped = mapShiftRow({ ...data, id: shiftId });
       setShifts((prev) =>
         prev
@@ -631,9 +525,16 @@ export default function CollectiveCalendarDataLayer() {
   );
 
   const handleDeleteShift = useCallback(async (shiftId: string) => {
-    const supabase = getSupabaseBrowserClient();
-    const { error } = await supabase.from("pod_shifts").delete().eq("id", shiftId);
-    if (error) throw error;
+    const res = await fetch(`/api/calendar/shifts/${shiftId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      throw new Error(json.error || "Failed to delete shift");
+    }
+
     setShifts((prev) => prev.filter((s) => s.id !== shiftId));
   }, []);
 

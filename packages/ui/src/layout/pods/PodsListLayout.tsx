@@ -12,6 +12,13 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -47,6 +54,12 @@ export type PodsListLayoutProps<TPod extends PodsListLayoutPod> = {
   initialUrlParams?: Record<string, string | undefined>;
   onUrlChange?: (url: string) => void;
   persistKey?: string;
+  // Create pod modal (optional)
+  createPodModal?: {
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    content: ReactNode;
+  };
 };
 
 type PersistedPodsFilters = {
@@ -70,6 +83,7 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
   initialUrlParams,
   onUrlChange,
   persistKey,
+  createPodModal,
 }: PodsListLayoutProps<TPod>): React.ReactElement {
   const heading =
     typeof title === "string" ? (
@@ -373,7 +387,25 @@ export function PodsListLayout<TPod extends PodsListLayoutPod>({
 
   return (
     <section>
-      {heading}
+      <div className="flex items-center justify-between">
+        {heading}
+        {createPodModal && (
+          <Dialog
+            open={createPodModal.isOpen}
+            onOpenChange={createPodModal.onOpenChange}
+          >
+            <DialogTrigger asChild>
+              <Button>Create Pod</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-xl bg-card text-card-foreground">
+              <DialogHeader>
+                <DialogTitle>Create Pod</DialogTitle>
+              </DialogHeader>
+              {createPodModal.content}
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
       {pods.length === 0 ? (
         <div className="mt-4">{empty}</div>
       ) : (

@@ -10,7 +10,7 @@ import {
   PodRosterLayoutProps,
 } from "@workspace/ui/layout/pods/PodRosterLayout";
 import type { RosterEditorSection } from "@workspace/ui/components/client/roster/types";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {
@@ -35,70 +35,58 @@ async function fetchPodRosterFromDatabase(
   slug: string,
 ): Promise<RosterEntry[] | null> {
   try {
-    const client = getSupabaseBrowserClient();
-    // first fetch pod id from slug
-    const { data: pod, error: podErr } = await client
-      .from("pods")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (podErr) throw podErr;
-    if (!pod?.id) return null;
+    const response = await fetch(`/api/pods/${encodeURIComponent(slug)}/roster`);
 
-    const { data, error } = await client
-      .from("roster_entries")
-      .select("*, profile:profiles(*)")
-      .eq("pod_id", pod.id)
-      .order("joined_at", { ascending: true });
-    if (error) throw error;
-    return (Array.isArray(data) ? data : []).map(mapRowToRosterEntry);
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error("Failed to fetch roster");
+    }
+
+    const { roster } = await response.json();
+    return (Array.isArray(roster) ? roster : []).map(mapRowToRosterEntry);
   } catch (e) {
-    console.warn("[PodRosterDataLayer] supabase fetch error", e);
+    console.warn("[PodRosterDataLayer] fetch error", e);
     return null;
   }
 }
 
 async function persistRosterEntryToDatabase(
-  podId: string,
+  podSlug: string,
   entry: RosterEntry,
 ): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const payload = {
-      id: entry.id,
-      pod_id: podId,
-      // DB stores a FK to profiles; send the id only
-      profile_id: entry.profile?.id ?? entry.profile_id,
-      role: entry.role,
-      status: entry.status,
-      langs: entry.langs,
-      skills: entry.skills,
-      certs: entry.certs,
-      notes: entry.notes,
-      handle: entry.handle,
-      joined_at: entry.joinedAt,
-      last_shift_at: entry.lastShiftAt,
-      signal_handle: entry.signal_handle,
-    };
-    const { error } = await client.from("roster_entries").upsert(payload);
-    if (error) throw error;
+    const response = await fetch(
+      `/api/pods/${encodeURIComponent(podSlug)}/roster`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entry }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to save roster entry");
+    }
   } catch (e: any) {
     throw new Error(e?.message ?? "Failed to save roster entry");
   }
 }
 
 async function deleteRosterEntryFromDatabase(
-  podId: string,
+  podSlug: string,
   rosterId: string,
 ): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { error } = await client
-      .from("roster_entries")
-      .delete()
-      .eq("pod_id", podId)
-      .eq("id", rosterId);
-    if (error) throw error;
+    const response = await fetch(
+      `/api/pods/${encodeURIComponent(podSlug)}/roster/${encodeURIComponent(rosterId)}`,
+      { method: "DELETE" }
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Failed to delete roster entry");
+    }
   } catch (e: any) {
     throw new Error(e?.message ?? "Failed to delete roster entry");
   }
@@ -162,7 +150,7 @@ export default function PodRosterDataLayer() {
     if (!pod) return;
 
     try {
-      await persistRosterEntryToDatabase(pod.id, entry);
+      await persistRosterEntryToDatabase(podId, entry);
     } catch (error) {
       console.warn("PodRosterDataLayer: failed to persist roster entry", error);
     }
@@ -189,7 +177,7 @@ export default function PodRosterDataLayer() {
     if (!pod) return;
 
     try {
-      await persistRosterEntryToDatabase(pod.id, entry);
+      await persistRosterEntryToDatabase(podId, entry);
     } catch (error) {
       console.warn("PodRosterDataLayer: failed to add roster entry", error);
     }
@@ -208,7 +196,7 @@ export default function PodRosterDataLayer() {
     if (!pod) return;
 
     try {
-      await deleteRosterEntryFromDatabase(pod.id, memberId);
+      await deleteRosterEntryFromDatabase(podId, memberId);
     } catch (error) {
       console.warn("PodRosterDataLayer: failed to remove roster entry", error);
     }

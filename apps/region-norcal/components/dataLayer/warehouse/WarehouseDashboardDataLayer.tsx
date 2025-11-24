@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { slugifyIdentifier } from "@workspace/ui/lib/academy-utils";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 import { useIntakeTabState } from "@workspace/ui/components/warehouse/useIntakeTabState";
 import { WarehouseDashboardLayout } from "@workspace/ui/components/warehouse/WarehouseDashboardLayout";
@@ -39,6 +39,7 @@ export default function WarehouseDashboardDataLayer() {
     const [movementLogs, setMovementLogs] = useState<MovementLogEntry[]>([]);
     const [pickList, setPickList] = useState<PickListItem[]>([]);
     const [confirmedPickLists, setConfirmedPickLists] = useState<PickListItem[]>([]);
+    const [isIntakeSheetOpen, setIsIntakeSheetOpen] = useState(false);
     const { intakeTab, handleIntakeTabChange: setIntakeTabMode } =
         useIntakeTabState(inventory.length);
     const [selectedInventoryId, setSelectedInventoryId] = useState<string>("");
@@ -64,159 +65,22 @@ export default function WarehouseDashboardDataLayer() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const client = getSupabaseBrowserClient();
+            try {
+                const response = await fetch("/api/warehouse/data");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch warehouse data");
+                }
+                const data = await response.json();
 
-            // Fetch Warehouses
-            const { data: warehouses, error: warehouseError } = await client
-                .from("warehouses")
-                .select(`
-                    *,
-                    zones:warehouse_zones(
-                        *,
-                        bins:warehouse_bins(*)
-                    )
-                `);
-
-            if (warehouseError) {
-                console.error("Error fetching warehouses:", warehouseError);
-            } else if (warehouses) {
-                const normalized: WarehouseRecord[] = warehouses.map((w: any) => ({
-                    id: w.id,
-                    regionId: w.region_id,
-                    displayName: w.display_name,
-                    stewardDisplayName: w.display_name,
-                    regionZone: w.region_zone,
-                    urbanType: w.urban_type,
-                    siteType: "home",
-                    maxCapacityRating: w.max_capacity_rating,
-                    capabilities: w.capabilities?.flags || [],
-                    quickNotes: w.capabilities?.quick_note || "",
-                    createdAt: w.created_at,
-                    zones: w.zones.map((z: any) => ({
-                        id: z.id,
-                        name: z.name,
-                        sortOrder: z.sort_order,
-                        bins: z.bins.map((b: any) => ({
-                            id: b.id,
-                            label: b.label,
-                            sortOrder: b.sort_order,
-                        })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
-                    })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
-                }));
-                setSavedWarehouses(normalized);
-            }
-
-            // Fetch Inventory
-            const { data: invData, error: invError } = await client
-                .from("warehouse_inventory")
-                .select("*");
-            if (invError) {
-                console.error("Error fetching inventory:", invError);
-            } else if (invData) {
-                const normalizedInv: InventoryEntry[] = invData.map((i: any) => ({
-                    id: i.id,
-                    warehouseId: i.warehouse_id,
-                    zoneId: i.zone_id,
-                    binId: i.bin_id,
-                    itemName: i.item_name,
-                    sku: i.sku,
-                    category: i.category,
-                    condition: i.condition,
-                    quantity: i.quantity,
-                    expirationDate: i.expiration_date,
-                    updatedAt: i.updated_at,
-                }));
-                setInventory(normalizedInv);
-            }
-
-            // Fetch Movement Logs
-            const { data: logData, error: logError } = await client
-                .from("warehouse_movement_logs")
-                .select("*")
-                .order("created_at", { ascending: false });
-            if (logError) {
-                console.error("Error fetching movement logs:", logError);
-            } else if (logData) {
-                const normalizedLogs: MovementLogEntry[] = logData.map((l: any) => {
-                    // Find warehouse name
-                    const warehouse = warehouses?.find((w: any) => w.id === l.warehouse_id);
-                    const warehouseName = warehouse?.steward_display_name || warehouse?.display_name || "Unknown Warehouse";
-
-                    return {
-                        id: l.id,
-                        warehouseId: l.warehouse_id,
-                        warehouseName,
-                        type: l.type,
-                        sku: l.sku,
-                        itemName: l.item_name,
-                        quantity: l.quantity,
-                        byDisplayName: l.by_display_name,
-                        createdAt: l.created_at,
-                        notes: l.notes,
-                        zoneId: l.zone_id,
-                        binId: l.bin_id,
-                    };
-                });
-                setMovementLogs(normalizedLogs);
-            }
-
-            // Fetch Pick Lists
-            const { data: pickListData, error: pickError } = await client
-                .from("warehouse_pick_lists")
-                .select(`
-                    *,
-                    confirmed_by_profile:profiles!warehouse_pick_lists_confirmed_by_fkey(display_name)
-                `);
-            if (pickError) {
-                console.error("Error fetching pick lists:", pickError);
-            } else if (pickListData) {
-                const normalizedPicks: PickListItem[] = pickListData
-                    .filter((p: any) => !p.confirmed)
-                    .map((p: any) => ({
-                        id: p.id,
-                        inventoryId: p.inventory_id,
-                        warehouseId: p.warehouse_id,
-                        zoneId: p.zone_id,
-                        binId: p.bin_id,
-                        itemName: p.item_name,
-                        sku: p.sku,
-                        quantity: p.quantity,
-                    }));
-                setPickList(normalizedPicks);
-
-                // Fetch confirmed pick lists
-                const normalizedConfirmed: PickListItem[] = pickListData
-                    .filter((p: any) => p.confirmed)
-                    .map((p: any) => ({
-                        id: p.id,
-                        inventoryId: p.inventory_id,
-                        warehouseId: p.warehouse_id,
-                        zoneId: p.zone_id,
-                        binId: p.bin_id,
-                        itemName: p.item_name,
-                        sku: p.sku,
-                        quantity: p.quantity,
-                        confirmed: p.confirmed,
-                        confirmedAt: p.confirmed_at,
-                        confirmedBy: p.confirmed_by,
-                        confirmedByDisplayName: p.confirmed_by_profile?.display_name || "Unknown",
-                    }));
-                setConfirmedPickLists(normalizedConfirmed);
-            }
-
-            // Fetch Catalog
-            const { data: catalogData, error: catalogError } = await client
-                .from("warehouse_item_catalog")
-                .select("*");
-            if (catalogError) {
-                console.error("Error fetching catalog:", catalogError);
-            } else if (catalogData) {
-                const normalizedCatalog: CatalogItem[] = catalogData.map((c: any) => ({
-                    sku: c.sku,
-                    itemName: c.item_name,
-                    category: c.category,
-                }));
-                setCatalogItems(normalizedCatalog);
+                setSavedWarehouses(data.warehouses || []);
+                setInventory(data.inventory || []);
+                setMovementLogs(data.movementLogs || []);
+                setPickList(data.pickList || []);
+                setConfirmedPickLists(data.confirmedPickLists || []);
+                setCatalogItems(data.catalogItems || []);
+            } catch (error) {
+                console.error("Error fetching warehouse data:", error);
+                toast.error("Failed to load warehouse data");
             }
         };
 
@@ -224,161 +88,23 @@ export default function WarehouseDashboardDataLayer() {
     }, []);
 
     const handleWarehouseUpdate = async (warehouseId: string, updates: Partial<WarehouseRecord>) => {
-        const client = getSupabaseBrowserClient();
-
         try {
-            // Update warehouse basic fields
-            const { error: warehouseError } = await client
-                .from("warehouses")
-                .update({
-                    display_name: updates.displayName,
-                    region_zone: updates.regionZone,
-                    urban_type: updates.urbanType,
-                    max_capacity_rating: updates.maxCapacityRating,
-                    capabilities: {
-                        flags: updates.capabilities || [],
-                        quick_note: updates.quickNotes || "",
-                    },
-                })
-                .eq("id", warehouseId);
+            const response = await fetch(`/api/warehouse/${warehouseId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updates),
+            });
 
-            if (warehouseError) {
-                console.error("Error updating warehouse:", warehouseError);
-                toast.error("Failed to update warehouse");
-                return;
+            if (!response.ok) {
+                throw new Error("Failed to update warehouse");
             }
 
-            // Handle zones and bins updates
-            if (updates.zones) {
-                // Get existing zones from database
-                const { data: existingZones } = await client
-                    .from("warehouse_zones")
-                    .select("id, name")
-                    .eq("warehouse_id", warehouseId);
+            const { warehouse } = await response.json();
 
-                const existingZoneIds = new Set(existingZones?.map(z => z.id) || []);
-                const updatedZoneIds = new Set(updates.zones.map(z => z.id));
-
-                // Delete removed zones
-                const zonesToDelete = Array.from(existingZoneIds).filter(id => !updatedZoneIds.has(id));
-                if (zonesToDelete.length > 0) {
-                    await client.from("warehouse_zones").delete().in("id", zonesToDelete);
-                }
-
-                // Process each zone
-                for (const zone of updates.zones) {
-                    if (zone.id.startsWith("temp-")) {
-                        // Insert new zone
-                        const { data: newZone, error: zoneError } = await client
-                            .from("warehouse_zones")
-                            .insert({
-                                warehouse_id: warehouseId,
-                                name: zone.name,
-                                sort_order: zone.sortOrder,
-                            })
-                            .select()
-                            .single();
-
-                        if (zoneError || !newZone) {
-                            console.error("Error creating zone:", zoneError);
-                            continue;
-                        }
-
-                        // Insert bins for new zone
-                        if (zone.bins.length > 0) {
-                            const binsToInsert = zone.bins.map(bin => ({
-                                zone_id: newZone.id,
-                                label: bin.label,
-                                sort_order: bin.sortOrder,
-                            }));
-                            await client.from("warehouse_bins").insert(binsToInsert);
-                        }
-                    } else {
-                        // Update existing zone
-                        await client
-                            .from("warehouse_zones")
-                            .update({
-                                name: zone.name,
-                                sort_order: zone.sortOrder,
-                            })
-                            .eq("id", zone.id);
-
-                        // Handle bins for existing zone
-                        const { data: existingBins } = await client
-                            .from("warehouse_bins")
-                            .select("id")
-                            .eq("zone_id", zone.id);
-
-                        const existingBinIds = new Set(existingBins?.map(b => b.id) || []);
-                        const updatedBinIds = new Set(zone.bins.filter(b => !b.id.startsWith("temp-")).map(b => b.id));
-
-                        // Delete removed bins
-                        const binsToDelete = Array.from(existingBinIds).filter(id => !updatedBinIds.has(id));
-                        if (binsToDelete.length > 0) {
-                            await client.from("warehouse_bins").delete().in("id", binsToDelete);
-                        }
-
-                        // Update or insert bins
-                        for (const bin of zone.bins) {
-                            if (bin.id.startsWith("temp-")) {
-                                await client.from("warehouse_bins").insert({
-                                    zone_id: zone.id,
-                                    label: bin.label,
-                                    sort_order: bin.sortOrder,
-                                });
-                            } else {
-                                await client
-                                    .from("warehouse_bins")
-                                    .update({
-                                        label: bin.label,
-                                        sort_order: bin.sortOrder,
-                                    })
-                                    .eq("id", bin.id);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Refresh warehouses from database
-            const { data: warehouses, error: fetchError } = await client
-                .from("warehouses")
-                .select(`
-                    *,
-                    zones:warehouse_zones(
-                        *,
-                        bins:warehouse_bins(*)
-                    )
-                `);
-
-            if (fetchError) {
-                console.error("Error refreshing warehouses:", fetchError);
-            } else if (warehouses) {
-                const normalized: WarehouseRecord[] = warehouses.map((w: any) => ({
-                    id: w.id,
-                    regionId: w.region_id,
-                    displayName: w.display_name,
-                    stewardDisplayName: w.display_name,
-                    regionZone: w.region_zone,
-                    urbanType: w.urban_type,
-                    siteType: "home",
-                    maxCapacityRating: w.max_capacity_rating,
-                    capabilities: w.capabilities?.flags || [],
-                    quickNotes: w.capabilities?.quick_note || "",
-                    createdAt: w.created_at,
-                    zones: w.zones.map((z: any) => ({
-                        id: z.id,
-                        name: z.name,
-                        sortOrder: z.sort_order,
-                        bins: z.bins.map((b: any) => ({
-                            id: b.id,
-                            label: b.label,
-                            sortOrder: b.sort_order,
-                        })),
-                    })),
-                }));
-                setSavedWarehouses(normalized);
-            }
+            // Update local state with returned warehouse
+            setSavedWarehouses((prev) =>
+                prev.map((w) => (w.id === warehouseId ? warehouse : w))
+            );
 
             toast.success("Warehouse updated successfully");
         } catch (error) {
@@ -388,13 +114,11 @@ export default function WarehouseDashboardDataLayer() {
     };
 
     const handleIntakeSubmit = async (values: InventoryIntakeValues) => {
-        const client = getSupabaseBrowserClient();
         const warehouse = savedWarehouses.find(
             (candidate) => candidate.id === values.warehouseId,
         );
         const zone = warehouse?.zones.find((candidate) => candidate.id === values.zoneId);
         const bin = zone?.bins.find((candidate) => candidate.id === values.binId);
-
         const now = new Date().toISOString();
 
         // Optimistic Update
@@ -419,91 +143,54 @@ export default function WarehouseDashboardDataLayer() {
             }),
         );
 
-        // DB Update
-        // Check if existing item to update
-        const existingItem = inventory.find(
-            (entry) =>
-                entry.warehouseId === values.warehouseId &&
-                entry.zoneId === values.zoneId &&
-                entry.binId === values.binId &&
-                entry.sku === values.sku &&
-                entry.condition === values.condition &&
-                entry.expirationDate === values.expirationDate,
-        );
+        // API Call for DB Update
+        try {
+            const response = await fetch("/api/warehouse/inventory", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(values),
+            });
 
-        if (existingItem) {
-            const { error } = await client
-                .from("warehouse_inventory")
-                .update({
-                    quantity: existingItem.quantity + values.quantity,
-                    updated_at: now
-                })
-                .eq("id", existingItem.id);
-            if (error) toast.error("Failed to sync inventory update");
-        } else {
-            const { error } = await client
-                .from("warehouse_inventory")
-                .insert({
-                    id: generateId(),
-                    warehouse_id: values.warehouseId,
-                    zone_id: values.zoneId,
-                    bin_id: values.binId,
-                    item_name: values.itemName,
-                    sku: values.sku,
-                    category: values.category,
-                    condition: values.condition,
-                    quantity: values.quantity,
-                    expiration_date: values.expirationDate,
-                    updated_at: now
-                });
-            if (error) toast.error("Failed to sync new inventory");
+            if (!response.ok) {
+                throw new Error("Failed to log intake");
+            }
+
+            const logEntry: MovementLogEntry = {
+                id: generateId(),
+                warehouseId: values.warehouseId,
+                warehouseName:
+                    warehouse?.stewardDisplayName ?? warehouse?.displayName ?? "Unknown warehouse",
+                type: "intake",
+                sku: values.sku,
+                itemName: values.itemName,
+                quantity: values.quantity,
+                byDisplayName: stewardName,
+                createdAt: now,
+                notes: values.notes,
+                locationLabel: [zone?.name, bin?.label].filter(Boolean).join(" → "),
+                zoneId: zone?.id,
+                binId: bin?.id,
+            };
+            setMovementLogs((prev) => [logEntry, ...prev]);
+
+            intakeForm.reset({
+                warehouseId: values.warehouseId,
+                zoneId: values.zoneId,
+                binId: values.binId,
+                itemName: "",
+                sku: "",
+                category: "",
+                quantity: 1,
+                condition: values.condition,
+                expirationDate: undefined,
+                notes: "",
+            });
+            toast.success("Intake logged");
+            setIsIntakeSheetOpen(false); // Close sheet after successful submission
+        } catch (error) {
+            console.error("Error logging intake:", error);
+            toast.error("Failed to log intake");
         }
-
-        const logEntry: MovementLogEntry = {
-            id: generateId(),
-            warehouseId: values.warehouseId,
-            warehouseName:
-                warehouse?.stewardDisplayName ?? warehouse?.displayName ?? "Unknown warehouse",
-            type: "intake",
-            sku: values.sku,
-            itemName: values.itemName,
-            quantity: values.quantity,
-            byDisplayName: stewardName,
-            createdAt: now,
-            notes: values.notes,
-            locationLabel: [zone?.name, bin?.label].filter(Boolean).join(" → "),
-            zoneId: zone?.id,
-            binId: bin?.id,
-        };
-        setMovementLogs((prev) => [logEntry, ...prev]);
-
-        await client.from("warehouse_movement_logs").insert({
-            id: logEntry.id,
-            warehouse_id: logEntry.warehouseId,
-            type: "intake",
-            sku: logEntry.sku,
-            item_name: logEntry.itemName,
-            quantity: logEntry.quantity,
-            by_display_name: logEntry.byDisplayName,
-            created_at: logEntry.createdAt,
-            notes: logEntry.notes,
-            zone_id: logEntry.zoneId,
-            bin_id: logEntry.binId
-        });
-
-        intakeForm.reset({
-            warehouseId: values.warehouseId,
-            zoneId: values.zoneId,
-            binId: values.binId,
-            itemName: "",
-            sku: "",
-            category: "",
-            quantity: 1,
-            condition: values.condition,
-            expirationDate: undefined,
-            notes: "",
-        });
-        toast.success("Intake logged");
     };
 
     const handleTabsValueChange = (value: string) => {
@@ -534,44 +221,36 @@ export default function WarehouseDashboardDataLayer() {
             return;
         }
 
-        const client = getSupabaseBrowserClient();
-        const existing = pickList.find((item) => item.inventoryId === entry.id);
-
-        if (existing) {
-            const newQty = Math.min(existing.quantity + 1, entry.quantity);
-            setPickList((prev) =>
-                prev.map((item) =>
-                    item.inventoryId === entry.id
-                        ? { ...item, quantity: newQty }
-                        : item,
-                ),
-            );
-            await client.from("warehouse_pick_lists").update({ quantity: newQty }).eq("id", existing.id);
-        } else {
-            const newItem: PickListItem = {
-                id: generateId(),
-                inventoryId: entry.id,
-                warehouseId: entry.warehouseId,
-                zoneId: entry.zoneId,
-                binId: entry.binId,
-                itemName: entry.itemName,
-                sku: entry.sku,
-                quantity: 1,
-            };
-            setPickList((prev) => [newItem, ...prev]);
-            await client.from("warehouse_pick_lists").insert({
-                id: newItem.id,
-                inventory_id: newItem.inventoryId,
-                warehouse_id: newItem.warehouseId,
-                zone_id: newItem.zoneId,
-                bin_id: newItem.binId,
-                item_name: newItem.itemName,
-                sku: newItem.sku,
-                quantity: newItem.quantity,
-                created_by: profile?.id
+        try {
+            const response = await fetch("/api/warehouse/pick-list", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inventoryId: entry.id }),
             });
+
+            if (!response.ok) {
+                throw new Error("Failed to add to pick list");
+            }
+
+            const { pickListItem } = await response.json();
+
+            const existing = pickList.find((item) => item.inventoryId === entry.id);
+            if (existing) {
+                setPickList((prev) =>
+                    prev.map((item) =>
+                        item.inventoryId === entry.id
+                            ? { ...item, quantity: pickListItem.quantity }
+                            : item,
+                    ),
+                );
+            } else {
+                setPickList((prev) => [pickListItem, ...prev]);
+            }
+            toast.success("Added to pick list");
+        } catch (error) {
+            console.error("Error adding to pick list:", error);
+            toast.error("Failed to add to pick list");
         }
-        toast.success("Added to pick list");
     };
 
     const handleGenerateSku = () => {
@@ -593,27 +272,40 @@ export default function WarehouseDashboardDataLayer() {
 
     const handlePickQuantityChange = async (pickId: string, nextQty: number) => {
         if (Number.isNaN(nextQty) || nextQty < 1) return;
-        const client = getSupabaseBrowserClient();
 
-        setPickList((prev) =>
-            prev.map((item) => {
-                if (item.id !== pickId) return item;
-                const entry = inventory.find((candidate) => candidate.id === item.inventoryId);
-                const maxAvailable = entry?.quantity ?? nextQty;
-                const finalQty = Math.min(nextQty, maxAvailable);
+        try {
+            const response = await fetch(`/api/warehouse/pick-list/${pickId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quantity: nextQty }),
+            });
 
-                // Fire and forget update
-                client.from("warehouse_pick_lists").update({ quantity: finalQty }).eq("id", pickId).then();
+            if (!response.ok) throw new Error("Failed to update pick quantity");
 
-                return { ...item, quantity: finalQty };
-            }),
-        );
+            const { quantity: finalQty } = await response.json();
+
+            setPickList((prev) =>
+                prev.map((item) => item.id === pickId ? { ...item, quantity: finalQty } : item)
+            );
+        } catch (error) {
+            console.error("Error updating pick quantity:", error);
+            toast.error("Failed to update quantity");
+        }
     };
 
     const handleRemovePickItem = async (pickId: string) => {
-        const client = getSupabaseBrowserClient();
-        setPickList((prev) => prev.filter((item) => item.id !== pickId));
-        await client.from("warehouse_pick_lists").delete().eq("id", pickId);
+        try {
+            const response = await fetch(`/api/warehouse/pick-list/${pickId}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) throw new Error("Failed to remove pick item");
+
+            setPickList((prev) => prev.filter((item) => item.id !== pickId));
+        } catch (error) {
+            console.error("Error removing pick item:", error);
+            toast.error("Failed to remove item");
+        }
     };
 
     const handleConfirmPickList = async () => {
@@ -621,244 +313,208 @@ export default function WarehouseDashboardDataLayer() {
             toast.info("Add at least one item to the pick list");
             return;
         }
-        const client = getSupabaseBrowserClient();
-        const now = new Date().toISOString();
-        let hasBlockingError = false;
-        const inventoryUpdates = new Map<string, InventoryEntry>();
-        const newLogs: MovementLogEntry[] = [];
 
-        for (const pick of pickList) {
-            const entry = inventory.find((candidate) => candidate.id === pick.inventoryId);
-            if (!entry) {
-                toast.error(`Inventory row for ${pick.itemName} is missing`);
-                hasBlockingError = true;
-                break;
-            }
-            if (pick.quantity > entry.quantity) {
-                toast.error(
-                    `Only ${entry.quantity} units of ${pick.itemName} are available at the selected location.`,
-                );
-                hasBlockingError = true;
-                break;
-            }
-            const updatedEntry: InventoryEntry = {
-                ...entry,
-                quantity: entry.quantity - pick.quantity,
-                updatedAt: now,
-            };
-            inventoryUpdates.set(entry.id, updatedEntry);
-            const warehouse =
-                savedWarehouses.find((candidate) => candidate.id === entry.warehouseId) ?? null;
-            const zone = warehouse?.zones.find((candidate) => candidate.id === entry.zoneId);
-            const bin = zone?.bins.find((candidate) => candidate.id === entry.binId);
-            newLogs.push({
-                id: generateId(),
-                warehouseId: entry.warehouseId,
-                warehouseName:
-                    warehouse?.stewardDisplayName ?? warehouse?.displayName ?? "Unknown warehouse",
-                type: "outflow",
-                sku: entry.sku,
-                itemName: entry.itemName,
-                quantity: pick.quantity,
-                byDisplayName: stewardName,
-                createdAt: now,
-                notes: undefined,
-                locationLabel: [zone?.name, bin?.label].filter(Boolean).join(" → "),
-                zoneId: zone?.id,
-                binId: bin?.id,
+        try {
+            const response = await fetch("/api/warehouse/pick-list/confirm", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pickListIds: pickList.map(p => p.id) }),
             });
-        }
 
-        if (hasBlockingError) return;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to confirm pick list");
+            }
 
-        // Optimistic update
-        setInventory((prev) => {
-            const next = prev
-                .map((entry) => inventoryUpdates.get(entry.id) ?? entry)
-                .filter((entry) => entry.quantity > 0);
-            return next;
-        });
-        setMovementLogs((prev) => [...newLogs, ...prev]);
-        setPickList([]);
+            const now = new Date().toISOString();
 
-        // DB Updates
-        // 1. Update Inventory
-        for (const [id, entry] of inventoryUpdates) {
-            await client.from("warehouse_inventory").update({
-                quantity: entry.quantity,
-                updated_at: now
-            }).eq("id", id);
-        }
+            // Update inventory (remove picked quantities)
+            setInventory((prev) =>
+                prev.map((entry) => {
+                    const pickItem = pickList.find(p => p.inventoryId === entry.id);
+                    if (pickItem) {
+                        return { ...entry, quantity: entry.quantity - pickItem.quantity, updatedAt: now };
+                    }
+                    return entry;
+                }).filter(entry => entry.quantity > 0)
+            );
 
-        // 2. Insert Logs
-        const logsPayload = newLogs.map(l => ({
-            id: l.id,
-            warehouse_id: l.warehouseId,
-            type: "outflow",
-            sku: l.sku,
-            item_name: l.itemName,
-            quantity: l.quantity,
-            by_display_name: l.byDisplayName,
-            created_at: l.createdAt,
-            zone_id: l.zoneId,
-            bin_id: l.binId
-        }));
-        await client.from("warehouse_movement_logs").insert(logsPayload);
+            // Add movement logs
+            const logs: MovementLogEntry[] = pickList.map(pick => {
+                const warehouse = savedWarehouses.find(w => w.id === pick.warehouseId);
+                const zone = warehouse?.zones.find(z => z.id === pick.zoneId);
+                const bin = zone?.bins.find(b => b.id === pick.binId);
+                return {
+                    id: generateId(),
+                    warehouseId: pick.warehouseId,
+                    warehouseName: warehouse?.stewardDisplayName || warehouse?.displayName || "Unknown",
+                    type: "outflow",
+                    sku: pick.sku,
+                    itemName: pick.itemName,
+                    quantity: pick.quantity,
+                    byDisplayName: stewardName,
+                    createdAt: now,
+                    locationLabel: [zone?.name, bin?.label].filter(Boolean).join(" → "),
+                };
+            });
+            setMovementLogs((prev) => [...logs, ...prev]);
 
-        // 3. Mark Pick List as Confirmed
-        const pickIds = pickList.map(p => p.id);
-        await client.from("warehouse_pick_lists")
-            .update({
+            // Move to confirmed list
+            const confirmedItems = pickList.map(item => ({
+                ...item,
                 confirmed: true,
-                confirmed_at: now,
-                confirmed_by: profile?.id
-            })
-            .in("id", pickIds);
+                confirmedAt: now,
+                confirmedBy: profile?.id,
+                confirmedByDisplayName: stewardName,
+            }));
+            setConfirmedPickLists(prev => [...confirmedItems, ...prev]);
 
-        // Move to confirmed list
-        const confirmedItems = pickList.map(item => ({
-            ...item,
-            confirmed: true,
-            confirmedAt: now,
-            confirmedBy: profile?.id,
-            confirmedByDisplayName: stewardName,
-        }));
-        setConfirmedPickLists(prev => [...confirmedItems, ...prev]);
-
-        toast.success("Pick list confirmed");
+            setPickList([]);
+            toast.success("Pick list confirmed");
+        } catch (error: any) {
+            console.error("Error confirming pick list:", error);
+            toast.error(error.message || "Failed to confirm pick list");
+        }
     };
 
     const handleUpdateConfirmedPickQuantity = async (pickId: string, quantity: number) => {
         if (Number.isNaN(quantity) || quantity < 1) return;
-        const client = getSupabaseBrowserClient();
 
-        // Find the confirmed pick item
-        const confirmedItem = confirmedPickLists.find(item => item.id === pickId);
-        if (!confirmedItem) return;
+        try {
+            const response = await fetch(`/api/warehouse/pick-list/confirmed/${pickId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quantity }),
+            });
 
-        const oldQuantity = confirmedItem.quantity;
-        const quantityDiff = quantity - oldQuantity;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to update quantity");
+            }
 
-        // Find the inventory entry
-        const inventoryEntry = inventory.find(entry => entry.id === confirmedItem.inventoryId);
-        if (!inventoryEntry) {
-            toast.error("Inventory entry not found");
-            return;
+            // Find the confirmed pick item for local state update
+            const confirmedItem = confirmedPickLists.find(item => item.id === pickId);
+            if (!confirmedItem) return;
+
+            const oldQuantity = confirmedItem.quantity;
+            const quantityDiff = quantity - oldQuantity;
+
+            // Update confirmed pick list
+            setConfirmedPickLists(prev =>
+                prev.map(item => item.id === pickId ? { ...item, quantity } : item)
+            );
+
+            // Adjust inventory
+            setInventory(prev =>
+                prev.map(entry =>
+                    entry.id === confirmedItem.inventoryId
+                        ? { ...entry, quantity: entry.quantity - quantityDiff, updatedAt: new Date().toISOString() }
+                        : entry
+                ).filter(entry => entry.quantity > 0)
+            );
+
+            toast.success("Quantity updated");
+        } catch (error: any) {
+            console.error("Error updating confirmed pick quantity:", error);
+            toast.error(error.message || "Failed to update quantity");
         }
-
-        // Check if we have enough inventory for an increase
-        if (quantityDiff > 0 && inventoryEntry.quantity < quantityDiff) {
-            toast.error(`Only ${inventoryEntry.quantity} units available`);
-            return;
-        }
-
-        // Update confirmed pick list
-        setConfirmedPickLists(prev =>
-            prev.map(item => item.id === pickId ? { ...item, quantity } : item)
-        );
-
-        // Adjust inventory (decrease if quantity increased, increase if quantity decreased)
-        const newInventoryQuantity = inventoryEntry.quantity - quantityDiff;
-        setInventory(prev =>
-            prev.map(entry =>
-                entry.id === confirmedItem.inventoryId
-                    ? { ...entry, quantity: newInventoryQuantity, updatedAt: new Date().toISOString() }
-                    : entry
-            ).filter(entry => entry.quantity > 0)
-        );
-
-        // Update database
-        await client.from("warehouse_pick_lists")
-            .update({ quantity })
-            .eq("id", pickId);
-
-        await client.from("warehouse_inventory")
-            .update({
-                quantity: newInventoryQuantity,
-                updated_at: new Date().toISOString()
-            })
-            .eq("id", confirmedItem.inventoryId);
-
-        toast.success("Quantity updated");
     };
 
     const handleRemoveConfirmedPickItem = async (pickId: string) => {
-        const client = getSupabaseBrowserClient();
+        try {
+            const response = await fetch(`/api/warehouse/pick-list/confirmed/${pickId}`, {
+                method: "DELETE",
+            });
 
-        // Find the confirmed pick item
-        const confirmedItem = confirmedPickLists.find(item => item.id === pickId);
-        if (!confirmedItem) return;
+            if (!response.ok) throw new Error("Failed to remove confirmed pick item");
 
-        // Return quantity back to inventory
-        setInventory(prev =>
-            prev.map(entry =>
-                entry.id === confirmedItem.inventoryId
-                    ? { ...entry, quantity: entry.quantity + confirmedItem.quantity, updatedAt: new Date().toISOString() }
-                    : entry
-            )
-        );
+            // Find the confirmed pick item for local state update
+            const confirmedItem = confirmedPickLists.find(item => item.id === pickId);
+            if (!confirmedItem) return;
 
-        // Update inventory in database
-        const inventoryEntry = inventory.find(entry => entry.id === confirmedItem.inventoryId);
-        if (inventoryEntry) {
-            await client.from("warehouse_inventory")
-                .update({
-                    quantity: inventoryEntry.quantity + confirmedItem.quantity,
-                    updated_at: new Date().toISOString()
-                })
-                .eq("id", confirmedItem.inventoryId);
+            // Return quantity back to inventory
+            setInventory(prev =>
+                prev.map(entry =>
+                    entry.id === confirmedItem.inventoryId
+                        ? { ...entry, quantity: entry.quantity + confirmedItem.quantity, updatedAt: new Date().toISOString() }
+                        : entry
+                )
+            );
+
+            setConfirmedPickLists(prev => prev.filter(item => item.id !== pickId));
+            toast.success("Item removed and quantity returned to inventory");
+        } catch (error) {
+            console.error("Error removing confirmed pick item:", error);
+            toast.error("Failed to remove item");
         }
-
-        setConfirmedPickLists(prev => prev.filter(item => item.id !== pickId));
-        await client.from("warehouse_pick_lists").delete().eq("id", pickId);
-        toast.success("Item removed and quantity returned to inventory");
     };
 
     const handleDeleteConfirmedPickList = async (warehouseId: string, confirmedAt: string) => {
-        const client = getSupabaseBrowserClient();
+        try {
+            const target = confirmedPickLists.find(
+                (item) => item.warehouseId === warehouseId && item.confirmedAt === confirmedAt
+            );
+            if (!target?.id) throw new Error("Pick list id not found for delete");
 
-        // Find all items in this confirmed list
-        const itemsToDelete = confirmedPickLists.filter(
-            item => item.warehouseId === warehouseId && item.confirmedAt === confirmedAt
-        );
+            const response = await fetch(`/api/warehouse/pick-list/confirmed/${target.id}`, {
+                method: "DELETE",
+            });
 
-        if (itemsToDelete.length === 0) return;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to delete pick list");
+            }
 
-        setConfirmedPickLists(prev =>
-            prev.filter(item => !(item.warehouseId === warehouseId && item.confirmedAt === confirmedAt))
-        );
+            setConfirmedPickLists(prev =>
+                prev.filter(item => !(item.warehouseId === warehouseId && item.confirmedAt === confirmedAt))
+            );
 
-        const pickIds = itemsToDelete.map(item => item.id);
-        await client.from("warehouse_pick_lists").delete().in("id", pickIds);
-        toast.success("Confirmed pick list deleted");
+            toast.success("Confirmed pick list deleted");
+        } catch (error: any) {
+            console.error("Error deleting confirmed pick list:", error);
+            toast.error(error.message || "Failed to delete pick list");
+        }
     };
 
     const handleDeleteInventory = async (inventoryId: string) => {
-        const client = getSupabaseBrowserClient();
+        try {
+            const response = await fetch(`/api/warehouse/inventory/${inventoryId}`, {
+                method: "DELETE",
+            });
 
-        // Remove from local state
-        setInventory(prev => prev.filter(entry => entry.id !== inventoryId));
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to delete inventory");
+            }
 
-        // Delete from database
-        await client.from("warehouse_inventory").delete().eq("id", inventoryId);
-        toast.success("Inventory item deleted");
+            setInventory(prev => prev.filter(entry => entry.id !== inventoryId));
+            toast.success("Inventory item deleted");
+        } catch (error: any) {
+            console.error("Error deleting inventory:", error);
+            toast.error(error.message || "Failed to delete inventory");
+        }
     };
 
     const handleUpdateInventory = async (inventoryId: string, quantity: number) => {
-        const client = getSupabaseBrowserClient();
+        try {
+            const response = await fetch(`/api/warehouse/inventory/${inventoryId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quantity }),
+            });
 
-        // Update local state
-        setInventory(prev =>
-            prev.map(entry =>
-                entry.id === inventoryId ? { ...entry, quantity } : entry
-            )
-        );
+            if (!response.ok) throw new Error("Failed to update inventory");
 
-        // Update database
-        await client.from("warehouse_inventory")
-            .update({ quantity })
-            .eq("id", inventoryId);
-        toast.success("Inventory item updated");
+            setInventory(prev =>
+                prev.map(entry =>
+                    entry.id === inventoryId ? { ...entry, quantity } : entry
+                )
+            );
+            toast.success("Inventory item updated");
+        } catch (error) {
+            console.error("Error updating inventory:", error);
+            toast.error("Failed to update inventory");
+        }
     };
 
     const watchWarehouseId = intakeForm.watch("warehouseId");
@@ -1036,6 +692,7 @@ export default function WarehouseDashboardDataLayer() {
             availableZones={availableZones}
             availableBins={availableBins}
             catalogItems={catalogItems}
+            isIntakeSheetOpen={isIntakeSheetOpen}
             handleIntakeSubmit={handleIntakeSubmit}
             handleTabsValueChange={handleTabsValueChange}
             handleLoadStandardItem={handleLoadStandardItem}
@@ -1051,6 +708,7 @@ export default function WarehouseDashboardDataLayer() {
             handleDeleteConfirmedPickList={handleDeleteConfirmedPickList}
             handleDeleteInventory={handleDeleteInventory}
             handleUpdateInventory={handleUpdateInventory}
+            onIntakeSheetOpenChange={setIsIntakeSheetOpen}
         />
     );
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { CommsDashboardView } from "@workspace/ui/components/dispatch/CommsDashboardView";
-import { useCommsData } from "@/components/dataLayer/dispatches/useCommsData";
+import { useCommsData } from "@/hooks/useCommsData";
 
 type Props = {
   eventId: string;

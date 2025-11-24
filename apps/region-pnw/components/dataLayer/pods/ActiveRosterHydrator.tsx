@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { RosterEntry } from "@workspace/store/types/pod";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {
@@ -28,26 +28,23 @@ async function fetchActiveRoster(): Promise<
   Array<{ podId: string; entry: RosterEntry }>
 > {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("roster_entries")
-      .select("*, profile:profiles(*)")
-      .order("joined_at", { ascending: true });
-    if (error) throw error;
-    const rows = (Array.isArray(data) ? data : []) as RosterRow[];
+    const response = await fetch("/api/roster");
+    if (!response.ok) throw new Error("Failed to fetch roster");
+    const { roster } = await response.json();
+    const rows = (Array.isArray(roster) ? roster : []) as RosterRow[];
     return rows.map((row) => ({
       podId: String(row.pod_id ?? ""),
       entry: mapRowToRosterEntry(row),
     }));
   } catch (e) {
-    console.warn("[ActiveRosterHydrator] supabase fetch error", e);
+    console.warn("[ActiveRosterHydrator] fetch error", e);
     return [];
   }
 }
 
 async function fetchProfilesAsEntries(): Promise<RosterEntry[]> {
   try {
-    // Prefer server route for pod admins: returns all profiles when authorized
+    // Try dispatch profiles first (admin view)
     let rows: any[] | null = null;
     try {
       const res = await fetch("/api/dispatch/profiles", {
@@ -58,18 +55,26 @@ async function fetchProfilesAsEntries(): Promise<RosterEntry[]> {
         rows = Array.isArray(json?.profiles) ? json.profiles : [];
       }
     } catch {
-      /* fall back to direct Supabase query */ void 0;
+      /* ignore */
     }
 
+    // Fallback to general profiles endpoint (user view)
     if (!rows) {
-      const client = getSupabaseBrowserClient();
-      const { data, error } = await client
-        .from("profiles")
-        .select("*")
-        .order("display_name", { ascending: true });
-      if (error) throw error;
-      rows = Array.isArray(data) ? data : [];
+      try {
+        const res = await fetch("/api/profiles", {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          rows = Array.isArray(json?.profiles) ? json.profiles : [];
+        }
+      } catch {
+        /* ignore */
+      }
     }
+
+    if (!rows) return [];
+
     // Convert each profile to a synthetic roster entry for selection purposes
     const entries: RosterEntry[] = rows.map((profile: any) => ({
       id: String(profile.id), // synthetic id for selection; real id will be generated on add
@@ -87,7 +92,7 @@ async function fetchProfilesAsEntries(): Promise<RosterEntry[]> {
     }));
     return entries;
   } catch (e) {
-    console.warn("[ActiveRosterHydrator] supabase profiles fetch error", e);
+    console.warn("[ActiveRosterHydrator] profiles fetch error", e);
     return [];
   }
 }

@@ -20,10 +20,8 @@ import type {
   AcademyTrainingSession,
   AcademyTrainingSessionDraft,
 } from "@workspace/store/types/academy.ts";
-import {
-  resolvePermissionsFromRoles,
-  canManageInstructorsFromRoles,
-} from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import type {
   RegionOperationalMinimumSnapshot,
@@ -128,34 +126,20 @@ export function PodAcademyDashboardLayout({
     return [];
   }, [roles, profileFromStore]);
 
-  const {
-    canManageInstructorsFromRole,
-    canManageSessions,
-    canScheduleClasses,
-    canCreatePathwayClass,
-  } = React.useMemo(
-    () => resolvePermissionsFromRoles(effectiveRoles),
-    [effectiveRoles],
-  );
+  // Use the first role as the primary NavRole for now
+  const primaryRole = effectiveRoles[0] as NavRole | undefined;
+  const ctx = React.useMemo(() => ({ navRole: primaryRole }), [primaryRole]);
 
-  // Final instructor management flag: prefer explicit prop, otherwise use the
-  // UI-layer helper which wraps the canonical resolver and applies the
-  // product-driven allowance (e.g. permitting `dispatcher_basic`). Memoize to
-  // keep hooks stable.
+  const { access: canManageInstructorsFromRole } = useUnifiedAccess('manage_instructors', ctx);
+  const { access: canManageSessions } = useUnifiedAccess('manage_sessions', ctx);
+  const { access: canScheduleClasses } = useUnifiedAccess('schedule_classes', ctx);
+  const { access: canCreatePathwayClass } = useUnifiedAccess('create_pathway_class', ctx);
+
   const resolvedCanManageInstructors = React.useMemo(
-    () => (canManageInstructors ?? canManageInstructorsFromRoles(effectiveRoles)),
-    [canManageInstructors, effectiveRoles],
+    () => (canManageInstructors ?? canManageInstructorsFromRole),
+    [canManageInstructors, canManageInstructorsFromRole],
   );
 
-  // React.useEffect(() => {
-  //   if (process.env.NODE_ENV !== "production") {
-  //     console.debug("PodAcademyDashboardLayout: effectiveRoles", effectiveRoles);
-  //     console.debug("PodAcademyDashboardLayout: resolvedCanManageInstructors", resolvedCanManageInstructors);
-  //     console.debug("PodAcademyDashboardLayout: onCreateInstructor provided", typeof onCreateInstructor === "function");
-  //     console.debug("PodAcademyDashboardLayout: onUpdateInstructor provided", typeof onUpdateInstructor === "function");
-  //     console.debug("PodAcademyDashboardLayout: onDeleteInstructor provided", typeof onDeleteInstructor === "function");
-  //   }
-  // }, [effectiveRoles, resolvedCanManageInstructors, onCreateInstructor, onUpdateInstructor, onDeleteInstructor]);
   const handleScheduleClass = React.useMemo(
     () => onScheduleClass ?? (() => { }),
     [onScheduleClass],

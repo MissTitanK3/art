@@ -161,6 +161,7 @@ export function deriveStats(
 export function convertPodsToMemberProgress(pods: Pod[]): AcademyMemberProgress[] {
   const results: AcademyMemberProgress[] = [];
   for (const pod of pods) {
+    if (!pod.team || !Array.isArray(pod.team)) continue;
     for (const member of pod.team) {
       const completedLessons = member.certs.filter(
         (cert) => cert.level === 'completed' || cert.level === 'mentor',
@@ -189,6 +190,7 @@ export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[]
   const instructors: AcademyInstructorProfile[] = [];
 
   for (const pod of pods) {
+    if (!pod.team || !Array.isArray(pod.team)) continue;
     for (const member of pod.team) {
       if (seen.has(member.id)) continue;
 

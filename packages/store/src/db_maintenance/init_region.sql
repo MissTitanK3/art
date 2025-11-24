@@ -5,11 +5,11 @@
   -- =========================================================
 
   -- Profiles
-  CREATE TABLE IF NOT EXISTS public.profiles (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    display_name TEXT NOT NULL,
-    access_role TEXT NOT NULL DEFAULT 'team_member',
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id TEXT PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE RESTRICT,
+  display_name TEXT NOT NULL,
+  access_role TEXT NOT NULL DEFAULT 'team_member',
     field_roles JSONB DEFAULT '[]',
     verified_by TEXT DEFAULT 'self',
     affiliation TEXT,
@@ -20,11 +20,12 @@
     state TEXT,
     weekly_availability JSONB,
     self_risk_acknowledged BOOLEAN DEFAULT FALSE,
-    self_status_flags JSONB DEFAULT '[]',
-    city TEXT,
-    operating_counties TEXT[],
-    inserted_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
+  self_status_flags JSONB DEFAULT '[]',
+  city TEXT,
+  operating_counties TEXT[],
+  inserted_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
     CONSTRAINT profiles_access_role_check CHECK (
       access_role IN (
         'team_member',
@@ -56,60 +57,63 @@
   );
 
   -- Pods
-  CREATE TABLE IF NOT EXISTS public.pods (
-    id TEXT PRIMARY KEY,
-    slug TEXT UNIQUE,
-    name TEXT NOT NULL,
-    area TEXT,
-    channels JSONB DEFAULT '[]',
-    created_by TEXT REFERENCES public.profiles(id) ON DELETE SET NULL
-  );
+CREATE TABLE IF NOT EXISTS public.pods (
+  id TEXT PRIMARY KEY,
+  slug TEXT UNIQUE,
+  name TEXT NOT NULL,
+  area TEXT,
+  channels JSONB DEFAULT '[]',
+  created_by TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+  deleted_at TIMESTAMPTZ
+);
 
-  -- Roster
-  CREATE TABLE IF NOT EXISTS public.roster_entries (
-    id TEXT PRIMARY KEY,
-    pod_id TEXT REFERENCES public.pods(id) ON DELETE CASCADE,
-    profile_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
-    role TEXT CHECK (role IN ('lead','member','trainee')),
-    status TEXT CHECK (status IN ('active','inactive','suspended')),
-    langs JSONB DEFAULT '[]',
-    skills TEXT[],
-    certs JSONB DEFAULT '[]',
+-- Roster
+CREATE TABLE IF NOT EXISTS public.roster_entries (
+  id TEXT PRIMARY KEY,
+  pod_id TEXT REFERENCES public.pods(id) ON DELETE RESTRICT,
+  profile_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+  role TEXT CHECK (role IN ('lead','member','trainee')),
+  status TEXT CHECK (status IN ('active','inactive','suspended')),
+  langs JSONB DEFAULT '[]',
+  skills TEXT[],
+  certs JSONB DEFAULT '[]',
     notes TEXT,
-    handle TEXT,
-    joined_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    last_shift_at TIMESTAMPTZ,
-    signal_handle TEXT
-  );
+  handle TEXT,
+  joined_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  last_shift_at TIMESTAMPTZ,
+  signal_handle TEXT,
+  deleted_at TIMESTAMPTZ
+);
 
   -- Organizations (for grouping pods under a shared identity)
-  CREATE TABLE IF NOT EXISTS public.organizations (
-    id TEXT PRIMARY KEY,
-    region_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
-  );
+CREATE TABLE IF NOT EXISTS public.organizations (
+  id TEXT PRIMARY KEY,
+  region_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ
+);
 
   -- Organization ↔ Pod membership (many-to-many)
-  CREATE TABLE IF NOT EXISTS public.organization_pods (
-    id TEXT PRIMARY KEY,
-    org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
-    pod_id TEXT NOT NULL REFERENCES public.pods(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE (org_id, pod_id)
-  );
+CREATE TABLE IF NOT EXISTS public.organization_pods (
+  id TEXT PRIMARY KEY,
+  org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  pod_id TEXT NOT NULL REFERENCES public.pods(id) ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (org_id, pod_id)
+);
 
   -- Organization roles (user-level permissions)
-  CREATE TABLE IF NOT EXISTS public.organization_roles (
-    id TEXT PRIMARY KEY DEFAULT (gen_random_uuid())::text,
-    org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
-    user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    role TEXT NOT NULL, -- owner | admin | editor | viewer
-    created_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE (org_id, user_id)
-  );
+CREATE TABLE IF NOT EXISTS public.organization_roles (
+  id TEXT PRIMARY KEY DEFAULT (gen_random_uuid())::text,
+  org_id TEXT NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
+  role TEXT NOT NULL, -- owner | admin | editor | viewer
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (org_id, user_id)
+);
 
   CREATE UNIQUE INDEX IF NOT EXISTS organization_roles_owner_unique
     ON public.organization_roles (org_id)
@@ -140,15 +144,16 @@
     intended_actions JSONB,
     intended_actions_custom TEXT,
     signal_link TEXT,
-    public_signal_link TEXT,
-    training BOOLEAN DEFAULT FALSE,
-    flagged BOOLEAN DEFAULT FALSE,
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT dispatch_status_check CHECK (
-      status IS NULL OR status IN (
-        'preplanning','unconfirmed','confirmed','mobilizing','in_progress','debriefing','completed','cancelled','expired','archived'
-      )
-    ),
+  public_signal_link TEXT,
+  training BOOLEAN DEFAULT FALSE,
+  flagged BOOLEAN DEFAULT FALSE,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
+  CONSTRAINT dispatch_status_check CHECK (
+    status IS NULL OR status IN (
+      'preplanning','unconfirmed','confirmed','mobilizing','in_progress','debriefing','completed','cancelled','expired','archived'
+    )
+  ),
     CONSTRAINT dispatch_source_check CHECK (
       source IS NULL OR source IN ('dispatch','manual','system')
     ),
@@ -211,12 +216,13 @@
   -- Dispatch shifts (lightweight)
   CREATE TABLE IF NOT EXISTS public.dispatch_shifts (
     id TEXT PRIMARY KEY,
-    pod_id TEXT REFERENCES public.pods(id),
-    volunteer_id TEXT REFERENCES public.profiles(id),
+    pod_id TEXT REFERENCES public.pods(id) ON DELETE RESTRICT,
+    volunteer_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
     starts_at TIMESTAMPTZ,
     ends_at TIMESTAMPTZ,
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
   );
 
   -- =========================================================
@@ -339,6 +345,151 @@
     END IF;
   END $$;
 
+  -- Enforce updated foreign key delete rules (idempotent)
+  ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_user_id_fkey;
+  ALTER TABLE public.profiles
+    ADD CONSTRAINT fk_profiles_user_id_auth
+    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE RESTRICT;
+
+  ALTER TABLE public.pods DROP CONSTRAINT IF EXISTS pods_created_by_fkey;
+  ALTER TABLE public.pods
+    ADD CONSTRAINT fk_pods_created_by_profile
+    FOREIGN KEY (created_by) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.roster_entries DROP CONSTRAINT IF EXISTS roster_entries_pod_id_fkey;
+  ALTER TABLE public.roster_entries
+    ADD CONSTRAINT fk_roster_entries_pod
+    FOREIGN KEY (pod_id) REFERENCES public.pods(id) ON DELETE RESTRICT;
+  ALTER TABLE public.roster_entries DROP CONSTRAINT IF EXISTS roster_entries_profile_id_fkey;
+  ALTER TABLE public.roster_entries
+    ADD CONSTRAINT fk_roster_entries_profile
+    FOREIGN KEY (profile_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.pod_shifts DROP CONSTRAINT IF EXISTS pod_shifts_pod_id_fkey;
+  ALTER TABLE public.pod_shifts
+    ADD CONSTRAINT fk_pod_shifts_pod
+    FOREIGN KEY (pod_id) REFERENCES public.pods(id) ON DELETE RESTRICT;
+
+  ALTER TABLE public.pod_shift_signups DROP CONSTRAINT IF EXISTS pod_shift_signups_shift_id_fkey;
+  ALTER TABLE public.pod_shift_signups
+    ADD CONSTRAINT fk_pod_shift_signups_shift
+    FOREIGN KEY (shift_id) REFERENCES public.pod_shifts(id) ON DELETE CASCADE;
+  ALTER TABLE public.pod_shift_signups DROP CONSTRAINT IF EXISTS pod_shift_signups_user_id_fkey;
+  ALTER TABLE public.pod_shift_signups
+    ADD CONSTRAINT fk_pod_shift_signups_profile
+    FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.dispatch_updates DROP CONSTRAINT IF EXISTS dispatch_updates_dispatch_id_fkey;
+  ALTER TABLE public.dispatch_updates
+    ADD CONSTRAINT fk_dispatch_updates_submission
+    FOREIGN KEY (dispatch_id) REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE;
+  ALTER TABLE public.dispatch_logistics DROP CONSTRAINT IF EXISTS dispatch_logistics_dispatch_id_fkey;
+  ALTER TABLE public.dispatch_logistics
+    ADD CONSTRAINT fk_dispatch_logistics_submission
+    FOREIGN KEY (dispatch_id) REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE;
+  ALTER TABLE public.com_logs DROP CONSTRAINT IF EXISTS com_logs_event_id_fkey;
+  ALTER TABLE public.com_logs
+    ADD CONSTRAINT fk_com_logs_dispatch_submission
+    FOREIGN KEY (event_id) REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE;
+  ALTER TABLE public.com_briefings DROP CONSTRAINT IF EXISTS com_briefings_event_id_fkey;
+  ALTER TABLE public.com_briefings
+    ADD CONSTRAINT fk_com_briefings_dispatch_submission
+    FOREIGN KEY (event_id) REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE;
+
+  ALTER TABLE public.dispatch_shifts DROP CONSTRAINT IF EXISTS dispatch_shifts_pod_id_fkey;
+  ALTER TABLE public.dispatch_shifts
+    ADD CONSTRAINT fk_dispatch_shifts_pod
+    FOREIGN KEY (pod_id) REFERENCES public.pods(id) ON DELETE RESTRICT;
+  ALTER TABLE public.dispatch_shifts DROP CONSTRAINT IF EXISTS dispatch_shifts_volunteer_id_fkey;
+  ALTER TABLE public.dispatch_shifts
+    ADD CONSTRAINT fk_dispatch_shifts_volunteer
+    FOREIGN KEY (volunteer_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.academy_sessions DROP CONSTRAINT IF EXISTS academy_sessions_class_id_fkey;
+  ALTER TABLE public.academy_sessions
+    ADD CONSTRAINT fk_academy_sessions_class
+    FOREIGN KEY (class_id) REFERENCES public.academy_classes(id) ON DELETE CASCADE;
+  ALTER TABLE public.academy_participants DROP CONSTRAINT IF EXISTS academy_participants_session_id_fkey;
+  ALTER TABLE public.academy_participants
+    ADD CONSTRAINT fk_academy_participants_session
+    FOREIGN KEY (session_id) REFERENCES public.academy_sessions(id) ON DELETE CASCADE;
+  ALTER TABLE public.academy_participants DROP CONSTRAINT IF EXISTS academy_participants_profile_id_fkey;
+  ALTER TABLE public.academy_participants
+    ADD CONSTRAINT fk_academy_participants_profile
+    FOREIGN KEY (profile_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+  ALTER TABLE public.academy_instructors DROP CONSTRAINT IF EXISTS academy_instructors_profile_id_fkey;
+  ALTER TABLE public.academy_instructors
+    ADD CONSTRAINT fk_academy_instructors_profile
+    FOREIGN KEY (profile_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.organization_roles DROP CONSTRAINT IF EXISTS organization_roles_org_id_fkey;
+  ALTER TABLE public.organization_roles
+    ADD CONSTRAINT fk_organization_roles_org
+    FOREIGN KEY (org_id) REFERENCES public.organizations(id) ON DELETE CASCADE;
+  ALTER TABLE public.organization_roles DROP CONSTRAINT IF EXISTS organization_roles_user_id_fkey;
+  ALTER TABLE public.organization_roles
+    ADD CONSTRAINT fk_organization_roles_profile
+    FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE RESTRICT;
+  ALTER TABLE public.organization_pods DROP CONSTRAINT IF EXISTS organization_pods_org_id_fkey;
+  ALTER TABLE public.organization_pods
+    ADD CONSTRAINT fk_organization_pods_org
+    FOREIGN KEY (org_id) REFERENCES public.organizations(id) ON DELETE CASCADE;
+  ALTER TABLE public.organization_pods DROP CONSTRAINT IF EXISTS organization_pods_pod_id_fkey;
+  ALTER TABLE public.organization_pods
+    ADD CONSTRAINT fk_organization_pods_pod
+    FOREIGN KEY (pod_id) REFERENCES public.pods(id) ON DELETE RESTRICT;
+
+  ALTER TABLE public.warehouse_zones DROP CONSTRAINT IF EXISTS warehouse_zones_warehouse_id_fkey;
+  ALTER TABLE public.warehouse_zones
+    ADD CONSTRAINT fk_warehouse_zones_warehouse
+    FOREIGN KEY (warehouse_id) REFERENCES public.warehouses(id) ON DELETE RESTRICT;
+  ALTER TABLE public.warehouse_bins DROP CONSTRAINT IF EXISTS warehouse_bins_zone_id_fkey;
+  ALTER TABLE public.warehouse_bins
+    ADD CONSTRAINT fk_warehouse_bins_zone
+    FOREIGN KEY (zone_id) REFERENCES public.warehouse_zones(id) ON DELETE RESTRICT;
+  ALTER TABLE public.warehouse_inventory DROP CONSTRAINT IF EXISTS warehouse_inventory_bin_id_fkey;
+  ALTER TABLE public.warehouse_inventory
+    ADD CONSTRAINT fk_warehouse_inventory_bin
+    FOREIGN KEY (bin_id) REFERENCES public.warehouse_bins(id) ON DELETE RESTRICT;
+  ALTER TABLE public.warehouse_inventory DROP CONSTRAINT IF EXISTS warehouse_inventory_warehouse_id_fkey;
+  ALTER TABLE public.warehouse_inventory
+    ADD CONSTRAINT fk_warehouse_inventory_warehouse
+    FOREIGN KEY (warehouse_id) REFERENCES public.warehouses(id) ON DELETE RESTRICT;
+  ALTER TABLE public.warehouse_inventory DROP CONSTRAINT IF EXISTS warehouse_inventory_zone_id_fkey;
+  ALTER TABLE public.warehouse_inventory
+    ADD CONSTRAINT fk_warehouse_inventory_zone
+    FOREIGN KEY (zone_id) REFERENCES public.warehouse_zones(id) ON DELETE RESTRICT;
+  ALTER TABLE public.warehouse_movement_logs DROP CONSTRAINT IF EXISTS warehouse_movement_logs_inventory_id_fkey;
+  ALTER TABLE public.warehouse_movement_logs
+    ADD CONSTRAINT fk_warehouse_movement_logs_inventory
+    FOREIGN KEY (inventory_id) REFERENCES public.warehouse_inventory(id) ON DELETE SET NULL;
+  ALTER TABLE public.warehouse_movement_logs DROP CONSTRAINT IF EXISTS warehouse_movement_logs_warehouse_id_fkey;
+  ALTER TABLE public.warehouse_movement_logs
+    ADD CONSTRAINT fk_warehouse_movement_logs_warehouse
+    FOREIGN KEY (warehouse_id) REFERENCES public.warehouses(id) ON DELETE RESTRICT;
+  ALTER TABLE public.warehouse_pick_lists DROP CONSTRAINT IF EXISTS warehouse_pick_lists_inventory_id_fkey;
+  ALTER TABLE public.warehouse_pick_lists
+    ADD CONSTRAINT fk_warehouse_pick_lists_inventory
+    FOREIGN KEY (inventory_id) REFERENCES public.warehouse_inventory(id) ON DELETE SET NULL;
+  ALTER TABLE public.warehouse_pick_lists DROP CONSTRAINT IF EXISTS warehouse_pick_lists_user_id_fkey;
+  ALTER TABLE public.warehouse_pick_lists
+    ADD CONSTRAINT fk_warehouse_pick_lists_user
+    FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.meet_a_need DROP CONSTRAINT IF EXISTS meet_a_need_created_by_fkey;
+  ALTER TABLE public.meet_a_need
+    ADD CONSTRAINT fk_meet_a_need_created_by
+    FOREIGN KEY (created_by) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+  ALTER TABLE public.trust_signatures DROP CONSTRAINT IF EXISTS trust_signatures_subject_id_fkey;
+  ALTER TABLE public.trust_signatures
+    ADD CONSTRAINT fk_trust_signatures_subject
+    FOREIGN KEY (subject_id) REFERENCES public.profiles(id) ON DELETE RESTRICT;
+  ALTER TABLE public.trust_signatures DROP CONSTRAINT IF EXISTS trust_signatures_signer_id_fkey;
+  ALTER TABLE public.trust_signatures
+    ADD CONSTRAINT fk_trust_signatures_signer
+    FOREIGN KEY (signer_id) REFERENCES public.profiles(id) ON DELETE RESTRICT;
+
   CREATE INDEX IF NOT EXISTS idx_com_teams_event ON public.com_teams(event_id);
 
   CREATE TABLE IF NOT EXISTS public.com_operators (
@@ -434,21 +585,22 @@
   );
 
   -- Meet-A-Need: lightweight mutual aid requests
-  CREATE TABLE IF NOT EXISTS public.meet_a_need (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_by TEXT REFERENCES public.profiles(id),
-    category TEXT NOT NULL,
-    description TEXT NOT NULL,
-    urgency TEXT CHECK (urgency IN ('low','normal','urgent')) DEFAULT 'normal',
+CREATE TABLE IF NOT EXISTS public.meet_a_need (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_by TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+  category TEXT NOT NULL,
+  description TEXT NOT NULL,
+  urgency TEXT CHECK (urgency IN ('low','normal','urgent')) DEFAULT 'normal',
     visibility TEXT DEFAULT 'role:team_member',
     location JSONB,
     contact_preference TEXT,
     status TEXT CHECK (status IN ('open','matched','fulfilled','closed')) DEFAULT 'open',
-    responders JSONB DEFAULT '[]',
-    assigned_to TEXT[],
-    fulfilled_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT now()
-  );
+  responders JSONB DEFAULT '[]',
+  assigned_to TEXT[],
+  fulfilled_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ
+);
 
   -- Ensure visibility constraint allows role-based thresholds (idempotent)
   DO $$ BEGIN
@@ -552,50 +704,53 @@
 
   -- Pod shifts (field operations scheduling)
   -- Separate from dispatch_shifts which track dispatch desk coverage
-  CREATE TABLE IF NOT EXISTS public.pod_shifts (
-    id TEXT PRIMARY KEY,
-    pod_id TEXT REFERENCES public.pods(id) ON DELETE CASCADE,
-    start TIMESTAMPTZ,
-    "end" TIMESTAMPTZ,
-    tz TEXT,
-    headcount INTEGER DEFAULT 1 CHECK (headcount >= 1),
+CREATE TABLE IF NOT EXISTS public.pod_shifts (
+  id TEXT PRIMARY KEY,
+  pod_id TEXT REFERENCES public.pods(id) ON DELETE RESTRICT,
+  start TIMESTAMPTZ,
+  "end" TIMESTAMPTZ,
+  tz TEXT,
+  headcount INTEGER DEFAULT 1 CHECK (headcount >= 1),
     location TEXT,
     label TEXT,
     dispatch_link TEXT,
     notes TEXT,
-    visibility TEXT DEFAULT 'public',
-    needed INTEGER DEFAULT 0,
-    route JSONB,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT pod_shifts_visibility_check CHECK (
-      visibility IN ('public','org','private')
-    )
-  );
+  visibility TEXT DEFAULT 'public',
+  needed INTEGER DEFAULT 0,
+  route JSONB,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
+  CONSTRAINT pod_shifts_visibility_check CHECK (
+    visibility IN ('public','org','private')
+  )
+);
 
   -- Crew signups per shift
-  CREATE TABLE IF NOT EXISTS public.pod_shift_signups (
-    id TEXT PRIMARY KEY,
-    shift_id TEXT NOT NULL REFERENCES public.pod_shifts(id) ON DELETE CASCADE,
-    user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT pod_shift_signups_unique_shift_user UNIQUE (shift_id, user_id)
-  );
+CREATE TABLE IF NOT EXISTS public.pod_shift_signups (
+  id TEXT PRIMARY KEY,
+  shift_id TEXT NOT NULL REFERENCES public.pod_shifts(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT pod_shift_signups_unique_shift_user UNIQUE (shift_id, user_id)
+);
 
   -- Academy
-  CREATE TABLE IF NOT EXISTS public.academy_instructors (
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    type TEXT,
-    focus TEXT,
-    availability TEXT,
+CREATE TABLE IF NOT EXISTS public.academy_instructors (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+  name TEXT,
+  type TEXT,
+  focus TEXT,
+  availability TEXT,
     timezone TEXT,
     certifications JSONB DEFAULT '[]',
-    registration_status TEXT,
-    vetting_status TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT academy_instructor_type_check CHECK (
-      type IS NULL OR type IN ('dispatcher','mentor','expert')
-    ),
+  registration_status TEXT,
+  vetting_status TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
+  CONSTRAINT academy_instructor_type_check CHECK (
+    type IS NULL OR type IN ('dispatcher','mentor','expert')
+  ),
     CONSTRAINT academy_instructor_availability_check CHECK (
       availability IS NULL OR availability IN ('available','limited','unavailable')
     ),
@@ -607,11 +762,11 @@
     )
   );
 
-  CREATE TABLE IF NOT EXISTS public.academy_classes (
-    id TEXT PRIMARY KEY,
-    pathway_id TEXT,
-    pathway_label TEXT,
-    track_label TEXT,
+CREATE TABLE IF NOT EXISTS public.academy_classes (
+  id TEXT PRIMARY KEY,
+  pathway_id TEXT,
+  pathway_label TEXT,
+  track_label TEXT,
     variant TEXT,
     title TEXT,
     description TEXT,
@@ -625,14 +780,15 @@
     meeting_url TEXT,
     notes TEXT,
     instructor_name TEXT,
-    sessions_scheduled INTEGER DEFAULT 0,
-    next_session TEXT,
-    status TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT academy_class_modality_check CHECK (
-      modality IS NULL OR modality IN ('in_person','online','hybrid')
-    ),
+  sessions_scheduled INTEGER DEFAULT 0,
+  next_session TEXT,
+  status TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
+  CONSTRAINT academy_class_modality_check CHECK (
+    modality IS NULL OR modality IN ('in_person','online','hybrid')
+  ),
     CONSTRAINT academy_class_instructor_type_check CHECK (
       instructor_type IS NULL OR instructor_type IN ('dispatcher','mentor','expert')
     ),
@@ -642,9 +798,9 @@
   );
 
 
-  CREATE TABLE IF NOT EXISTS public.academy_sessions (
-    id TEXT PRIMARY KEY,
-    class_id TEXT REFERENCES public.academy_classes(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS public.academy_sessions (
+  id TEXT PRIMARY KEY,
+  class_id TEXT REFERENCES public.academy_classes(id) ON DELETE CASCADE,
     title TEXT,
     start TIMESTAMPTZ,
     "end" TIMESTAMPTZ,
@@ -655,10 +811,10 @@
     instructor_type TEXT,
     status TEXT,
     seats JSONB,
-    timezone TEXT,
-    related_topic TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
+  timezone TEXT,
+  related_topic TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
     CONSTRAINT academy_session_seats_json_check CHECK (
       seats IS NULL OR jsonb_typeof(seats) = 'object'
     ),
@@ -675,13 +831,14 @@
 
   -- Allow sessions without a class; no default class_id
 
-  CREATE TABLE IF NOT EXISTS public.academy_participants (
-    id TEXT PRIMARY KEY,
-    session_id TEXT REFERENCES public.academy_sessions(id) ON DELETE CASCADE,
-    name TEXT,
-    signal_handle TEXT,
-    understanding TEXT,
-    status TEXT,
+CREATE TABLE IF NOT EXISTS public.academy_participants (
+  id TEXT PRIMARY KEY,
+  session_id TEXT REFERENCES public.academy_sessions(id) ON DELETE CASCADE,
+  profile_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+  name TEXT,
+  signal_handle TEXT,
+  understanding TEXT,
+  status TEXT,
     CONSTRAINT academy_participant_understanding_check CHECK (
       understanding IS NULL OR understanding IN ('needs_support','building','confident')
     ),
@@ -691,8 +848,8 @@
   );
 
   -- Missing person records
-  CREATE TABLE IF NOT EXISTS public.missing_person_records (
-    case_id TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS public.missing_person_records (
+  case_id TEXT PRIMARY KEY,
     detention_datetime TIMESTAMPTZ,
     detention_location TEXT,
     arresting_agency TEXT,
@@ -723,10 +880,11 @@
     information_sources JSONB,
     last_updated TIMESTAMPTZ,
   confidence_rating DOUBLE PRECISION,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    created_by TEXT,
-    version INTEGER
-  );
+  created_at TIMESTAMPTZ DEFAULT now(),
+  created_by TEXT,
+  version INTEGER,
+  deleted_at TIMESTAMPTZ
+);
 
   -- Regional advocacy groups (per region app)
   -- Stores trusted orgs that should receive missing-person reports when finalized.
@@ -747,10 +905,10 @@
   );
 
   -- Delivery logs for auditing where reports were sent upon finalization
-  CREATE TABLE IF NOT EXISTS public.advocacy_delivery_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    group_id UUID REFERENCES public.advocacy_groups(id) ON DELETE SET NULL,
-    case_id TEXT REFERENCES public.missing_person_records(case_id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS public.advocacy_delivery_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id UUID REFERENCES public.advocacy_groups(id) ON DELETE SET NULL,
+  case_id TEXT REFERENCES public.missing_person_records(case_id) ON DELETE CASCADE,
     format TEXT,
     status TEXT,
     details JSONB,
@@ -769,14 +927,14 @@
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
     )
   );
@@ -788,14 +946,14 @@
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['admin','regional_admin','national_admin'])
     )
   );
@@ -808,7 +966,7 @@
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
     )
   );
@@ -820,21 +978,22 @@
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
     )
   );
 
   -- Trust signatures
-  CREATE TABLE IF NOT EXISTS public.trust_signatures (
-    subject_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    signer_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    signer_role TEXT,
-    signer_rot TEXT,
-    signed_at TIMESTAMPTZ,
-    signed_entry_hash TEXT,
-    status TEXT,
-    PRIMARY KEY (subject_id, signer_id),
+CREATE TABLE IF NOT EXISTS public.trust_signatures (
+  subject_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
+  signer_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
+  signer_role TEXT,
+  signer_rot TEXT,
+  signed_at TIMESTAMPTZ,
+  signed_entry_hash TEXT,
+  status TEXT,
+  deleted_at TIMESTAMPTZ,
+  PRIMARY KEY (subject_id, signer_id),
     CONSTRAINT trust_signatures_role_check CHECK (
       signer_role IS NULL OR signer_role IN ('regional_admin','pod_leader','trainer')
     ),
@@ -1087,6 +1246,12 @@
     ) THEN
       ALTER TABLE public.dispatch_shifts ADD COLUMN created_at TIMESTAMPTZ DEFAULT now();
     END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'dispatch_shifts' AND column_name = 'deleted_at'
+    ) THEN
+      ALTER TABLE public.dispatch_shifts ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
 
     -- pod_shifts.created_at
     IF NOT EXISTS (
@@ -1163,7 +1328,7 @@
       WHERE table_schema = 'public' AND table_name = 'academy_sessions' AND column_name = 'updated_at'
     ) THEN
       ALTER TABLE public.academy_sessions ADD COLUMN updated_at TIMESTAMPTZ DEFAULT now();
-    END IF;
+  END IF;
 
     -- academy_sessions.seats JSON type check
     IF NOT EXISTS (
@@ -1174,6 +1339,102 @@
       ADD CONSTRAINT academy_session_seats_json_check CHECK (
         seats IS NULL OR jsonb_typeof(seats) = 'object'
       );
+    END IF;
+  END $$;
+
+  -- Backfill: add archive/delete-model columns and new relationship handles
+  DO $$
+  BEGIN
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pods' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.pods ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'roster_entries' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.roster_entries ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pod_shifts' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.pod_shifts ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'dispatch_submissions' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.dispatch_submissions ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'organizations' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.organizations ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'academy_classes' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.academy_classes ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'academy_instructors' AND column_name = 'profile_id';
+    IF NOT FOUND THEN
+      ALTER TABLE public.academy_instructors ADD COLUMN profile_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'academy_instructors' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.academy_instructors ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'academy_participants' AND column_name = 'profile_id';
+    IF NOT FOUND THEN
+      ALTER TABLE public.academy_participants ADD COLUMN profile_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'missing_person_records' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.missing_person_records ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'meet_a_need' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.meet_a_need ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'trust_signatures' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.trust_signatures ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouses' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouses ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_zones' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_zones ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_bins' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_bins ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_inventory' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_inventory ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_movement_logs' AND column_name = 'inventory_id';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_movement_logs ADD COLUMN inventory_id TEXT REFERENCES public.warehouse_inventory(id) ON DELETE SET NULL;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_movement_logs' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_movement_logs ADD COLUMN deleted_at TIMESTAMPTZ;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_pick_lists' AND column_name = 'user_id';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_pick_lists ADD COLUMN user_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;
+    END IF;
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'warehouse_pick_lists' AND column_name = 'deleted_at';
+    IF NOT FOUND THEN
+      ALTER TABLE public.warehouse_pick_lists ADD COLUMN deleted_at TIMESTAMPTZ;
     END IF;
   END $$;
 
@@ -1401,46 +1662,51 @@ CREATE TABLE IF NOT EXISTS public.warehouses (
     capabilities JSONB DEFAULT '[]',
     max_capacity_rating TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- Warehouse Zones
 CREATE TABLE IF NOT EXISTS public.warehouse_zones (
     id TEXT PRIMARY KEY,
-    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE CASCADE,
+    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE RESTRICT,
     name TEXT NOT NULL,
     sort_order INTEGER,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- Warehouse Bins
 CREATE TABLE IF NOT EXISTS public.warehouse_bins (
     id TEXT PRIMARY KEY,
-    zone_id TEXT NOT NULL REFERENCES public.warehouse_zones(id) ON DELETE CASCADE,
+    zone_id TEXT NOT NULL REFERENCES public.warehouse_zones(id) ON DELETE RESTRICT,
     label TEXT NOT NULL,
     sort_order INTEGER,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- Warehouse Inventory
 CREATE TABLE IF NOT EXISTS public.warehouse_inventory (
     id TEXT PRIMARY KEY,
-    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE CASCADE,
-    zone_id TEXT REFERENCES public.warehouse_zones(id) ON DELETE SET NULL,
-    bin_id TEXT REFERENCES public.warehouse_bins(id) ON DELETE SET NULL,
+    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE RESTRICT,
+    zone_id TEXT REFERENCES public.warehouse_zones(id) ON DELETE RESTRICT,
+    bin_id TEXT REFERENCES public.warehouse_bins(id) ON DELETE RESTRICT,
     item_name TEXT NOT NULL,
     sku TEXT,
     category TEXT,
     condition TEXT,
     quantity INTEGER DEFAULT 0,
     expiration_date TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- Warehouse Movement Logs
 CREATE TABLE IF NOT EXISTS public.warehouse_movement_logs (
     id TEXT PRIMARY KEY,
-    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE CASCADE,
+    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE RESTRICT,
+    inventory_id TEXT REFERENCES public.warehouse_inventory(id) ON DELETE SET NULL,
     type TEXT NOT NULL, -- intake, outflow, move, adjustment
     sku TEXT,
     item_name TEXT,
@@ -1449,21 +1715,24 @@ CREATE TABLE IF NOT EXISTS public.warehouse_movement_logs (
     created_at TIMESTAMPTZ DEFAULT now(),
     notes TEXT,
     zone_id TEXT,
-    bin_id TEXT
+    bin_id TEXT,
+    deleted_at TIMESTAMPTZ
 );
 
 -- Warehouse Pick Lists
 CREATE TABLE IF NOT EXISTS public.warehouse_pick_lists (
     id TEXT PRIMARY KEY,
-    inventory_id TEXT REFERENCES public.warehouse_inventory(id) ON DELETE CASCADE,
-    warehouse_id TEXT REFERENCES public.warehouses(id) ON DELETE CASCADE,
+    inventory_id TEXT REFERENCES public.warehouse_inventory(id) ON DELETE SET NULL,
+    warehouse_id TEXT REFERENCES public.warehouses(id) ON DELETE RESTRICT,
     zone_id TEXT,
     bin_id TEXT,
     item_name TEXT,
     sku TEXT,
     quantity INTEGER,
     created_by TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
+    user_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- Indexes
@@ -1560,14 +1829,221 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+
+-- =========================================================
+-- Archive delete helper + RPC wrappers (mirrors migration 20251201_04)
+CREATE OR REPLACE FUNCTION public._assert_archive_permission()
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.role() = 'service_role' THEN
+    RETURN;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (
+        ARRAY['pod_leader','trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin']
+      )
+  ) THEN
+    RAISE EXCEPTION 'not authorized to archive records' USING ERRCODE = '42501';
+  END IF;
+END $$;
+
+GRANT EXECUTE ON FUNCTION public._assert_archive_permission() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_pod(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.pods SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_roster_entry(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.roster_entries SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_pod_shift(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.pod_shifts SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_dispatch_submission(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.dispatch_submissions SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_dispatch_shift(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.dispatch_shifts SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_organization(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.organizations SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_academy_class(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.academy_classes SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_warehouse(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.warehouses SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_warehouse_zone(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.warehouse_zones SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_warehouse_bin(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.warehouse_bins SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_warehouse_inventory(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.warehouse_inventory SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_warehouse_movement_log(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.warehouse_movement_logs SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_warehouse_pick_list(p_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.warehouse_pick_lists SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_missing_person_record(p_case_id TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.missing_person_records SET deleted_at = now() WHERE case_id = p_case_id;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.safe_delete_meet_a_need(p_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM public._assert_archive_permission();
+  UPDATE public.meet_a_need SET deleted_at = now() WHERE id = p_id;
+END $$;
+
+GRANT EXECUTE ON FUNCTION public.safe_delete_pod(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_roster_entry(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_pod_shift(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_dispatch_submission(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_dispatch_shift(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_organization(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_academy_class(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_warehouse(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_warehouse_zone(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_warehouse_bin(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_warehouse_inventory(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_warehouse_movement_log(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_warehouse_pick_list(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_missing_person_record(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.safe_delete_meet_a_need(UUID) TO authenticated;

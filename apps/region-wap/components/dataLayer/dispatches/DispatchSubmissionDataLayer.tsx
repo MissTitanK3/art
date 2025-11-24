@@ -6,7 +6,7 @@ import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
 
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 import type {
   DispatchUpdate,
   LogisticsItem,
@@ -94,82 +94,45 @@ async function fetchDispatchSubmissionFromDatabase(
   id: string,
 ): Promise<DispatchSubmission | null> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("dispatch_submissions")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) return null;
-    return mapRowToSubmission(data);
+    const res = await fetch(`/api/dispatches/${id}`);
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] fetch error', res.status);
+      return null;
+    }
+    const json = await res.json();
+    return json.submission as DispatchSubmission;
   } catch (e) {
-    console.warn("[DispatchSubmissionDataLayer] supabase fetch error", e);
+    console.warn('[DispatchSubmissionDataLayer] fetch error', e);
     return null;
   }
 }
 
-function mapRowToUpdate(row: any): DispatchUpdate {
-  return {
-    id: String(row.id),
-    author: String(row.author ?? ""),
-    text: String(row.text ?? ""),
-    createdAt: String(row.created_at ?? new Date().toISOString()),
-    attachments: Array.isArray(row.attachments) ? row.attachments : [],
-  };
-}
-
-function mapRowToLogistics(row: any): LogisticsItem {
-  return {
-    id: String(row.id),
-    category: row.category ?? "other",
-    description: String(row.description ?? ""),
-    quantity: row.quantity ?? undefined,
-    priority: row.priority ?? "medium",
-    status: row.status ?? "pending",
-    responsibleParty: row.responsible_party ?? undefined,
-    warehouse: row.warehouse ?? undefined,
-    accountabilityNotes: row.accountability_notes ?? undefined,
-    updatedAt: String(row.updated_at ?? new Date().toISOString()),
-  } as LogisticsItem;
-}
-
 async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("dispatch_updates")
-      .select("*")
-      .eq("dispatch_id", id)
-      .order("created_at", { ascending: true });
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    return rows.map(mapRowToUpdate);
+    const res = await fetch(`/api/dispatches/${id}/updates`);
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] fetch updates error', res.status);
+      return [];
+    }
+    const json = await res.json();
+    return json.updates as DispatchUpdate[];
   } catch (e) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase fetch updates error",
-      e,
-    );
+    console.warn('[DispatchSubmissionDataLayer] fetch updates error', e);
     return [];
   }
 }
 
 async function fetchSubmissionLogistics(id: string): Promise<LogisticsItem[]> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("dispatch_logistics")
-      .select("*")
-      .eq("dispatch_id", id)
-      .order("updated_at", { ascending: true });
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    return rows.map(mapRowToLogistics);
+    const res = await fetch(`/api/dispatches/${id}/logistics`);
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] fetch logistics error', res.status);
+      return [];
+    }
+    const json = await res.json();
+    return json.logistics as LogisticsItem[];
   } catch (e) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase fetch logistics error",
-      e,
-    );
+    console.warn('[DispatchSubmissionDataLayer] fetch logistics error', e);
     return [];
   }
 }
@@ -178,54 +141,18 @@ async function persistSubmissionPatchToDatabase(
   id: string,
   patch: Partial<DispatchSubmission>,
 ): Promise<void> {
-  // Filter only top-level submission fields that live on dispatch_submissions
-  const allowed: Record<string, any> = {};
-  const keys: (keyof DispatchSubmission)[] = [
-    "type",
-    "location",
-    "date_of_event",
-    "required_roles",
-    "encrypted_payload",
-    "auto_delete_after",
-    "integrity_hash",
-    "submitted_by",
-    "source",
-    "visibility_radius_km",
-    "status",
-    "assigned_volunteers",
-    "required_roles_by_type",
-    "location_label",
-    "point_of_contact",
-    "state",
-    "intended_action_preset",
-    "intended_action_notes",
-    "intended_actions",
-    "intended_actions_custom",
-    "signal_link",
-    "public_signal_link",
-    "training",
-    "flagged",
-  ];
-  for (const k of keys) {
-    if (k in patch) {
-      (allowed as any)[k] = (patch as any)[k];
-    }
-  }
-  if (Object.keys(allowed).length === 0) return;
-
+  // Send patch to API
   try {
-    const client = getSupabaseBrowserClient();
-    // Use update to avoid insert path requiring NOT NULL columns like timestamp
-    const { error } = await client
-      .from("dispatch_submissions")
-      .update(allowed)
-      .eq("id", id);
-    if (error) throw error;
-  } catch (e: any) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase persist submission error",
-      e,
-    );
+    const res = await fetch(`/api/dispatches/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] PATCH error', res.status);
+    }
+  } catch (e) {
+    console.warn('[DispatchSubmissionDataLayer] PATCH error', e);
   }
 }
 
@@ -234,54 +161,44 @@ async function insertUpdateRow(
   update: DispatchUpdate,
 ): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const payload = {
-      id: update.id,
-      dispatch_id: dispatchId,
-      author: update.author,
-      text: update.text,
-      attachments: update.attachments ?? [],
-      created_at: update.createdAt,
-    };
-    const { error } = await client.from("dispatch_updates").insert(payload);
-    if (error) throw error;
+    const res = await fetch(`/api/dispatches/${dispatchId}/updates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(update),
+    });
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] insert update error', res.status);
+    }
   } catch (e) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase insert update error",
-      e,
-    );
+    console.warn('[DispatchSubmissionDataLayer] insert update error', e);
   }
 }
 
 async function updateUpdateRow(updateId: string, text: string): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { error } = await client
-      .from("dispatch_updates")
-      .update({ text })
-      .eq("id", updateId);
-    if (error) throw error;
+    const res = await fetch(`/api/dispatches/updates/${updateId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] update update error', res.status);
+    }
   } catch (e) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase update update error",
-      e,
-    );
+    console.warn('[DispatchSubmissionDataLayer] update update error', e);
   }
 }
 
 async function deleteUpdateRow(updateId: string): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { error } = await client
-      .from("dispatch_updates")
-      .delete()
-      .eq("id", updateId);
-    if (error) throw error;
+    const res = await fetch(`/api/dispatches/updates/${updateId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] delete update error', res.status);
+    }
   } catch (e) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase delete update error",
-      e,
-    );
+    console.warn('[DispatchSubmissionDataLayer] delete update error', e);
   }
 }
 
@@ -291,84 +208,18 @@ async function persistLogisticsDiff(
   nextItems: LogisticsItem[],
 ): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const prevMap = new Map(prevItems.map((i) => [i.id, i]));
-    const nextMap = new Map(nextItems.map((i) => [i.id, i]));
-
-    const toInsert: LogisticsItem[] = [];
-    const toUpdate: LogisticsItem[] = [];
-    const toDelete: string[] = [];
-
-    // Added / updated
-    for (const [id, item] of nextMap) {
-      if (!prevMap.has(id)) {
-        toInsert.push(item);
-      } else {
-        const prev = prevMap.get(id)!;
-        // naive compare: if JSON differs, update
-        if (JSON.stringify(prev) !== JSON.stringify(item)) {
-          toUpdate.push(item);
-        }
-      }
-    }
-
-    // Removed
-    for (const [id] of prevMap) {
-      if (!nextMap.has(id)) toDelete.push(id);
-    }
-
-    if (toInsert.length) {
-      const payload = toInsert.map((l) => ({
-        id: l.id,
-        dispatch_id: dispatchId,
-        category: l.category,
-        description: l.description,
-        quantity: l.quantity,
-        priority: l.priority,
-        status: l.status,
-        responsible_party: l.responsibleParty ?? null,
-        warehouse: l.warehouse ?? null,
-        accountability_notes: l.accountabilityNotes ?? null,
-      }));
-      const { error } = await client.from("dispatch_logistics").insert(payload);
-      if (error) throw error;
-    }
-
-    for (const l of toUpdate) {
-      const payload = {
-        category: l.category,
-        description: l.description,
-        quantity: l.quantity,
-        priority: l.priority,
-        status: l.status,
-        responsible_party: l.responsibleParty ?? null,
-        warehouse: l.warehouse ?? null,
-        accountability_notes: l.accountabilityNotes ?? null,
-      };
-      const { error } = await client
-        .from("dispatch_logistics")
-        .update(payload)
-        .eq("id", l.id)
-        .eq("dispatch_id", dispatchId);
-      if (error) throw error;
-    }
-
-    if (toDelete.length) {
-      const { error } = await client
-        .from("dispatch_logistics")
-        .delete()
-        .in("id", toDelete)
-        .eq("dispatch_id", dispatchId);
-      if (error) throw error;
+    const res = await fetch(`/api/dispatches/${dispatchId}/logistics`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: nextItems }),
+    });
+    if (!res.ok) {
+      console.warn('[DispatchSubmissionDataLayer] logistics diff error', res.status);
     }
   } catch (e) {
-    console.warn(
-      "[DispatchSubmissionDataLayer] supabase persist logistics error",
-      e,
-    );
+    console.warn('[DispatchSubmissionDataLayer] logistics diff error', e);
   }
 }
-
 export default function DispatchSubmissionDataLayer({ id }: Props) {
   const storeSubmission = useDispatchStore((s) =>
     s.submissions.find((sub) => sub.id === id),

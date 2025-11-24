@@ -8,7 +8,7 @@ import {
 import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
 
 function mapRowToDispatchShift(row: any): DispatchShift {
@@ -29,8 +29,8 @@ function mapRowToDispatchShift(row: any): DispatchShift {
     ),
     endsAt: String(
       row?.ends_at ??
-        row?.endsAt ??
-        new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      row?.endsAt ??
+      new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     ),
     notes: typeof row?.notes === "string" ? row.notes : undefined,
   } as DispatchShift;
@@ -40,18 +40,13 @@ async function fetchDispatchShiftsFromDatabase(): Promise<
   DispatchShift[] | null
 > {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("dispatch_shifts")
-      .select(
-        "id, pod_id, volunteer_id, starts_at, ends_at, notes, profile:profiles(display_name)",
-      )
-      .order("starts_at", { ascending: true });
-    if (error) throw error;
+    const response = await fetch("/api/dispatch/shifts");
+    if (!response.ok) throw new Error("Failed to fetch shifts");
+    const data = await response.json();
     const rows = Array.isArray(data) ? data : [];
     return rows.map(mapRowToDispatchShift);
   } catch (e) {
-    console.warn("[DispatchShiftsDataLayer] supabase fetch error", e);
+    console.warn("[DispatchShiftsDataLayer] fetch error", e);
     return null;
   }
 }
@@ -61,7 +56,6 @@ async function upsertDispatchShiftToDatabase(
   pods: Pod[],
   roster: RosterEntry[],
 ): Promise<void> {
-  const client = getSupabaseBrowserClient();
   // volunteerId from UI is a roster entry id; map to roster_entries.profile_id (or profile.id) if possible
   let volunteer_profile_id: string | null = null;
   if (shift.volunteerId) {
@@ -91,14 +85,15 @@ async function upsertDispatchShiftToDatabase(
     // As a final fallback, fetch the roster entry to resolve its profile_id directly
     if (!volunteer_profile_id) {
       try {
-        const client2 = getSupabaseBrowserClient();
-        const { data: r, error: rErr } = await client2
-          .from("roster_entries")
-          .select("profile_id")
-          .eq("id", shift.volunteerId)
-          .maybeSingle();
-        if (!rErr && r?.profile_id && typeof r.profile_id === "string") {
-          volunteer_profile_id = r.profile_id;
+        const response = await fetch(
+          `/api/roster?pod_id=${shift.podId}`, // Optimization: could filter by ID if API supported it, but pod_id is okay
+        );
+        if (response.ok) {
+          const { roster: rData } = await response.json();
+          const r = rData?.find((x: any) => x.id === shift.volunteerId);
+          if (r?.profile_id && typeof r.profile_id === "string") {
+            volunteer_profile_id = r.profile_id;
+          }
         }
       } catch {
         // ignore best-effort fallback
@@ -114,14 +109,27 @@ async function upsertDispatchShiftToDatabase(
     ends_at: shift.endsAt,
     notes: shift.notes ?? null,
   };
-  const { error } = await client.from("dispatch_shifts").upsert(payload);
-  if (error) throw error;
+
+  const response = await fetch("/api/dispatch/shifts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "Failed to upsert shift");
+  }
 }
 
 async function deleteDispatchShiftFromDatabase(id: string): Promise<void> {
-  const client = getSupabaseBrowserClient();
-  const { error } = await client.from("dispatch_shifts").delete().eq("id", id);
-  if (error) throw error;
+  const response = await fetch(`/api/dispatch/shifts/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "Failed to delete shift");
+  }
 }
 
 export default function DispatchShiftsDataLayer() {
@@ -189,11 +197,11 @@ export default function DispatchShiftsDataLayer() {
     : getActiveShifts();
   const upcomingShifts = remoteShifts
     ? remoteShifts
-        .filter((shift) => new Date(shift.startsAt) > new Date())
-        .sort(
-          (a, b) =>
-            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-        )
+      .filter((shift) => new Date(shift.startsAt) > new Date())
+      .sort(
+        (a, b) =>
+          new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+      )
     : getUpcomingShifts(24);
   // Use stable placeholder data until mounted to avoid hydration mismatches
   const effShifts = mounted ? mergedShifts : [];
@@ -277,15 +285,9 @@ export default function DispatchShiftsDataLayer() {
       }
       getVolunteersForPod={async (podId) => {
         try {
-          const client = getSupabaseBrowserClient();
-          const { data, error } = await client
-            .from("roster_entries")
-            .select(
-              "id, profile_id, role, status, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*)",
-            )
-            .eq("pod_id", podId)
-            .order("joined_at", { ascending: true });
-          if (error) throw error;
+          const response = await fetch(`/api/roster?pod_id=${podId}`);
+          if (!response.ok) throw new Error("Failed to fetch volunteers");
+          const { roster: data } = await response.json();
           const rows = Array.isArray(data) ? data : [];
           // Map to RosterEntry shape used by UI
           return rows.map((row: any) => ({

@@ -8,11 +8,11 @@ import { useRouter } from "next/navigation";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { channels, slugify, Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import {
   PodCreatorLayout,
   PodCreatorLayoutErrors,
 } from "@workspace/ui/layout/pods/PodCreatorLayout";
+
 
 const schema = z.object({
   name: z
@@ -35,22 +35,6 @@ const schema = z.object({
     .or(z.literal("").transform(() => undefined)),
 });
 
-async function createPodInDatabase(pod: Pod): Promise<void> {
-  try {
-    const client = getSupabaseBrowserClient();
-    const payload = {
-      id: pod.id,
-      slug: pod.slug,
-      name: pod.name,
-      area: pod.area,
-      channels: pod.channels,
-    };
-    const { error } = await client.from("pods").insert(payload);
-    if (error) throw error;
-  } catch (e: any) {
-    throw new Error(e?.message ?? "Failed to create pod");
-  }
-}
 
 export default function PodCreatorDataLayer() {
   const addPod = usePodStore((state) => state.addPod);
@@ -88,13 +72,30 @@ export default function PodCreatorDataLayer() {
     };
 
     try {
-      await createPodInDatabase(payload);
+      const response = await fetch("/api/admin/pods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: payload.name,
+          area: payload.area,
+          channels: payload.channels,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create pod");
+      }
+
+      const { pod } = await response.json();
+      addPod(pod || payload);
+      router.push(`/pods/${(pod || payload).slug}`);
     } catch (error) {
       console.warn("PodCreatorDataLayer: failed to persist pod", error);
+      // Still add to local store and navigate even if API fails
+      addPod(payload);
+      router.push(`/pods/${payload.slug}`);
     }
-
-    addPod(payload);
-    router.push(`/pods/${payload.slug}`);
   };
 
   const fieldBindings = React.useMemo(

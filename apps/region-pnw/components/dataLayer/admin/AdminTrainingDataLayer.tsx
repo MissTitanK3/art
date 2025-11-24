@@ -1,11 +1,11 @@
+"use client";
+
+import * as React from "react";
 import TrainingClient from "@workspace/ui/layout/admin/training/training";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies as nextCookies } from "next/headers";
 import type {
   AcademyTrainingSession,
   AcademyTrainingSessionParticipant,
 } from "@workspace/store/types/academy";
-import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 
 function mapRowToSession(
   row: any,
@@ -33,66 +33,50 @@ function mapRowToSession(
   } as AcademyTrainingSession;
 }
 
-export default async function AdminTrainingDataLayer() {
-  try {
-    const env = ensureSupabaseEnv("server");
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store
-            .getAll()
-            .map(({ name, value }: { name: string; value: string }) => ({
-              name,
-              value,
-            }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {
-            /* ignore cookie set errors */ void 0;
-          }
-        },
-      },
-    });
+export default function AdminTrainingDataLayer() {
+  const [sessions, setSessions] = React.useState<AcademyTrainingSession[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-    const [
-      { data: sessions, error: sErr },
-      { data: participants, error: pErr },
-    ] = await Promise.all([
-      client
-        .from("academy_sessions")
-        .select("*")
-        .order("start", { ascending: true }),
-      client.from("academy_participants").select("*"),
-    ]);
-    if (sErr) throw sErr;
-    if (pErr) throw pErr;
+  React.useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/admin/academy/sessions");
+        if (!res.ok) throw new Error("Failed to load sessions");
+        const { sessions: sessionsData, participants: participantsData } = await res.json();
 
-    const bySession: Record<string, AcademyTrainingSessionParticipant[]> = {};
-    for (const p of participants ?? []) {
-      const sid = String(p.session_id);
-      if (!bySession[sid]) bySession[sid] = [];
-      bySession[sid].push({
-        id: String(p.id),
-        name: String(p.name ?? ""),
-        signalHandle: p.signal_handle ?? undefined,
-        understanding: p.understanding ?? "building",
-        status: p.status ?? "confirmed",
-      });
+        if (cancelled) return;
+
+        const bySession: Record<string, AcademyTrainingSessionParticipant[]> = {};
+        for (const p of participantsData ?? []) {
+          const sid = String(p.session_id);
+          if (!bySession[sid]) bySession[sid] = [];
+          bySession[sid].push({
+            id: String(p.id),
+            name: String(p.name ?? ""),
+            signalHandle: p.signal_handle ?? undefined,
+            understanding: p.understanding ?? "building",
+            status: p.status ?? "confirmed",
+          });
+        }
+
+        const mapped = (sessionsData ?? []).map((row: any) =>
+          mapRowToSession(row, bySession),
+        );
+        setSessions(mapped);
+      } catch (e) {
+        console.warn("Failed to load admin training sessions", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    const mapped = (sessions ?? []).map((row: any) =>
-      mapRowToSession(row, bySession),
-    );
-    return <TrainingClient initialSessions={mapped} />;
-  } catch (e) {
-    // Fallback: no data if Supabase not configured
-    return <TrainingClient initialSessions={[]} />;
-  }
+  if (loading) return null; // Or a loading spinner
+
+  return <TrainingClient initialSessions={sessions} />;
 }

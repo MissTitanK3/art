@@ -36,7 +36,8 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { cn } from "@workspace/ui/lib/utils";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 
 import type {
   AcademyClass,
@@ -137,10 +138,8 @@ export function ClassAssignmentContent({
     () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
     [profileFromStore?.access_role],
   );
-  const effectiveCanManage = React.useMemo(
-    () => canManageInstructorsFromRoles(profileRoles),
-    [profileRoles],
-  );
+  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
+  const { access: effectiveCanManage } = useUnifiedAccess('manage_instructors', ctx);
   const [instructorName, setInstructorName] = React.useState<string>("");
   const [selectedInstructorId, setSelectedInstructorId] =
     React.useState<string>("manual");

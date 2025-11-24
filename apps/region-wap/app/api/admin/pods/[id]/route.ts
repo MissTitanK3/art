@@ -111,7 +111,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     if (!(await authz(id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const client = await createSupabaseServerClient();
-    const { error } = await client.from('pods').delete().eq('id', id);
+    const { error } = await client.rpc('safe_delete_pod', { p_id: id });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     // Fire-and-forget: notify admins about deletion
     (async () => {

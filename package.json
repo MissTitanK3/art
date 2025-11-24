@@ -25,6 +25,7 @@
     "check:regions:demo:diff": "node scripts/check-align-regions.mjs --demo --format diff",
     "check:regions:ci": "node scripts/check-align-regions.mjs --format diff --git",
     "check:regions:full": "echo \"Running region alignment (scan + manifest/sw checks + secret-scan)...\" && node scripts/check-align-regions.mjs --format diff --run-lint --run-typecheck --whitelist-file scripts/check-align-whitelist.txt --output .check-unaligned-region/report.json --out-dir .check-unaligned-region --verbose || true && echo \"Artifacts written to .check-unaligned-region/ (report.json, report.md, pr_suggestion.md, per-region .diff files)\" && echo \"Prioritizing diffs...\" && node scripts/prioritize-diffs.mjs && echo \"Posting check report...\" && node scripts/post-check-report.mjs",
+    "sync:regions:full": "node scripts/sync-align-regions.mjs",
     "sanity-check": "bash ./scripts/sanity-check.sh"
   },
   "devDependencies": {

@@ -3,32 +3,18 @@
 import * as React from "react";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
-function mapRowToPod(row: any): Pod {
-  const channels = Array.isArray(row?.channels) ? row.channels : [];
-  return {
-    id: String(row.id ?? row.slug ?? crypto.randomUUID()),
-    slug: String(row.slug ?? ""),
-    name: String(row.name ?? ""),
-    area: String(row.area ?? ""),
-    channels,
-    team: [],
-  } as Pod;
-}
 
 async function fetchPods(): Promise<Pod[]> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("pods")
-      .select("id, slug, name, area, channels")
-      .order("name", { ascending: true });
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    return rows.map(mapRowToPod);
+    const response = await fetch("/api/pods");
+    if (!response.ok) {
+      throw new Error("Failed to fetch pods");
+    }
+    const { pods } = await response.json();
+    return Array.isArray(pods) ? pods : [];
   } catch (e) {
-    console.warn("[PodDataHydrator] supabase fetch error", e);
+    console.warn("[PodDataHydrator] fetch error", e);
     return [];
   }
 }

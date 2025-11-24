@@ -8,7 +8,7 @@ import {
 } from "@/providers/DispatchStoreProvider";
 
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 
 function mapRow(row: any): DispatchSubmission {
   return {
@@ -42,7 +42,7 @@ function mapRow(row: any): DispatchSubmission {
       : undefined,
     required_roles_by_type:
       typeof row?.required_roles_by_type === "object" &&
-      row?.required_roles_by_type
+        row?.required_roles_by_type
         ? row.required_roles_by_type
         : undefined,
     location_label:
@@ -88,37 +88,21 @@ function AdminDispatchBridge() {
     let cancelled = false;
     async function load() {
       try {
-        // Prefer privileged admin API to avoid RLS filtering for authorized admins
-        let mapped: DispatchSubmission[] | null = null;
-        try {
-          const res = await fetch("/api/admin/dispatches", {
-            cache: "no-store",
-          });
-          if (res.ok) {
-            const json = await res.json();
-            const rows = Array.isArray(json?.submissions)
-              ? json.submissions
-              : [];
-            mapped = rows.map(mapRow);
-          }
-        } catch {
-          // Fall back to direct client query below
-        }
+        const res = await fetch("/api/admin/dispatches", {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const rows = Array.isArray(json?.submissions)
+            ? json.submissions
+            : [];
+          const mapped = rows.map(mapRow);
 
-        if (!mapped) {
-          const client = getSupabaseBrowserClient();
-          const { data, error } = await client
-            .from("dispatch_submissions")
-            .select("*")
-            .order("timestamp", { ascending: false });
-          if (error) throw error;
-          const rows = Array.isArray(data) ? data : [];
-          mapped = rows.map(mapRow);
-        }
-        if (!cancelled) {
-          setInitial(mapped);
-          // Replace store for consistency across app
-          replaceSubmissions(mapped);
+          if (!cancelled) {
+            setInitial(mapped);
+            // Replace store for consistency across app
+            replaceSubmissions(mapped);
+          }
         }
       } catch (e) {
         console.warn("[AdminDispatchDataLayer] failed to load dispatches", e);

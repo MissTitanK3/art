@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchListLayout } from "@workspace/ui/layout/dispatch/DispatchListLayout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
 
 function mapRowToSubmission(row: any): DispatchSubmission {
@@ -94,32 +94,23 @@ async function fetchDispatchesFromDatabase(
   filters?: ListFilters,
 ): Promise<DispatchSubmission[] | null> {
   try {
-    const client = getSupabaseBrowserClient();
-    let query = client
-      .from("dispatch_submissions")
-      .select("*")
-      .order("date_of_event", { ascending: true, nullsFirst: false });
-
+    const params = new URLSearchParams();
     if (filters) {
       const { status, type, from, to, q } = filters;
-      if (status && status !== "all") query = query.eq("status", status);
-      if (type && type !== "all") query = query.eq("type", type);
-      if (from) query = query.gte("date_of_event", `${from}T00:00:00.000Z`);
-      if (to) query = query.lte("date_of_event", `${to}T23:59:59.999Z`);
-      if (q && q.trim().length > 0) {
-        const like = `%${q}%`;
-        query = query.or(
-          `location_label.ilike.${like},state.ilike.${like},intended_action_preset.ilike.${like},intended_action_notes.ilike.${like}`,
-        );
-      }
+      if (status) params.set("status", status);
+      if (type) params.set("type", type);
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      if (q) params.set("q", q);
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
+    const response = await fetch(`/api/dispatches?${params.toString()}`);
+    if (!response.ok) throw new Error("Failed to fetch dispatches");
+    const data = await response.json();
     const rows = Array.isArray(data) ? data : [];
     return rows.map(mapRowToSubmission);
   } catch (e) {
-    console.warn("[DispatchListDataLayer] supabase fetch error", e);
+    console.warn("[DispatchListDataLayer] fetch error", e);
     return null;
   }
 }

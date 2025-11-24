@@ -160,7 +160,7 @@ export function SavedWarehousesList({ warehouses, onWarehouseUpdate }: SavedWare
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2">
                     {warehouses.map((warehouse) => (
                         <Card key={warehouse.id} className="flex flex-col">
                             <CardHeader className="space-y-1">

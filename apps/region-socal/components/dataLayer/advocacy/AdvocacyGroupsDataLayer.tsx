@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import AdvocacyGroupsAdmin, {
@@ -76,25 +76,10 @@ export default function AdvocacyGroupsDataLayer() {
   }, []);
 
   const loadRecords = React.useCallback(async (): Promise<DetaineeIntake[]> => {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("missing_person_records")
-      .select(
-        [
-          "case_id",
-          "full_name",
-          "detention_datetime",
-          "detention_location",
-          "arresting_agency",
-          "last_known_facility",
-          "last_known_city",
-          "urgent_needs",
-          "last_updated",
-        ].join(", "),
-      )
-      .order("last_updated", { ascending: false, nullsFirst: false });
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
+    const res = await fetch("/api/admin/missing-persons");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { records } = await res.json();
+    const rows = Array.isArray(records) ? records : [];
     const mapped: DetaineeIntake[] = rows
       .map(
         (row: any) =>

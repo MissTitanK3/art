@@ -44,7 +44,8 @@ import type { DetaineeIntake } from "../../../types/missing-person-intake";
 import type { Profile } from "@workspace/store/types/global.ts";
 import { roleLabel } from "@workspace/store/types/roles.ts";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 
 export type AdvocacyGroup = {
   id: string;
@@ -106,9 +107,12 @@ export function AdvocacyGroupsAdmin({
     [profileFromStore?.access_role],
   );
 
+  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
+  const { access: canManageAdvocacy } = useUnifiedAccess('manage_advocacy', ctx);
+
   const effectiveCanManage = React.useMemo(
-    () => (canManage ?? canManageInstructorsFromRoles(profileRoles)),
-    [canManage, profileRoles],
+    () => (canManage ?? canManageAdvocacy ?? false),
+    [canManage, canManageAdvocacy],
   );
   const [query, setQuery] = React.useState("");
   const [openAdd, setOpenAdd] = React.useState(false);

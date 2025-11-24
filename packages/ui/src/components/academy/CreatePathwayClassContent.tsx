@@ -25,7 +25,8 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import type { AcademyClass } from "@workspace/store/usePodStore";
 import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 
 type CreatePathwayClassContentProps = {
   pathway: CourseBlueprint;
@@ -52,10 +53,8 @@ export function CreatePathwayClassContent({
     () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
     [profileFromStore?.access_role],
   );
-  const effectiveCanManage = React.useMemo(
-    () => canManageInstructorsFromRoles(profileRoles),
-    [profileRoles],
-  );
+  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
+  const { access: effectiveCanManage } = useUnifiedAccess('manage_instructors', ctx);
   const defaultCourse = pathway.courses[0];
   const [submitting, setSubmitting] = React.useState(false);
 

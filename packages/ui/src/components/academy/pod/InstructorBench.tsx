@@ -4,7 +4,8 @@
 
 import * as React from "react";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -76,13 +77,20 @@ export function InstructorBench({
   const totalInstructors = instructors.length;
   const profileRoles = useProfileStore((s) => (s.profile?.access_role ? [String(s.profile.access_role)] : []));
 
+  const effectiveRoles = React.useMemo(() => {
+    if (profileRoles && profileRoles.length > 0) return profileRoles;
+    if (currentUserRoles && currentUserRoles.length > 0) return currentUserRoles;
+    if (currentUserRole) return [currentUserRole];
+    return [];
+  }, [profileRoles, currentUserRoles, currentUserRole]);
+
+  const ctx = React.useMemo(() => ({ navRole: effectiveRoles[0] as NavRole }), [effectiveRoles]);
+  const { access: canManageInstructorsFromRole } = useUnifiedAccess('manage_instructors', ctx);
+
   const effectiveCanManageInstructors = React.useMemo(() => {
     if (canManageInstructors) return true;
-    const roles = profileRoles && profileRoles.length > 0
-      ? profileRoles
-      : currentUserRoles ?? (currentUserRole ? [currentUserRole] : []);
-    return canManageInstructorsFromRoles(roles);
-  }, [canManageInstructors, currentUserRole, currentUserRoles, profileRoles]);
+    return canManageInstructorsFromRole ?? false;
+  }, [canManageInstructors, canManageInstructorsFromRole]);
 
   const {
     registeredInstructorCount,

@@ -8,14 +8,16 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
-    "@types/react": "^19.1.9"
+    "@types/node": "^20.19.9",
+    "@types/react": "^19.1.9",
+    "typescript": "^5.9.2"
   },
   "exports": {
     "./profileStore": "./src/profileStore.ts",
     "./podStore": "./src/podStore.ts",
     "./trustStore": "./src/trustStore.ts",
     "./*": "./src/*.ts",
-    "./types/*": "./src/types/*"
+    "./types/*": "./src/types/*",
+    "./utils/permissions/*": "./src/utils/permissions/*.ts"
   }
 }

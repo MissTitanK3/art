@@ -68,7 +68,6 @@ export const navConfig: GlobalNavConfigInput = {
       roles: completeOnboarding,
       children: [
         { label: 'Directory', href: '/pods', roles: completeOnboarding, match: 'exact' },
-        { label: 'Create Pod', href: '/pods/new', roles: elevatedRoles },
         { label: 'Collective Calendar', href: '/pods/calendar', roles: completeOnboarding },
       ],
     },
@@ -111,11 +110,11 @@ export const navConfig: GlobalNavConfigInput = {
         },
         ...(SIGNAL_GROUP_URL
           ? [
-              {
-                label: 'Region Onboarding Signal',
-                href: SIGNAL_GROUP_URL,
-              } as const,
-            ]
+            {
+              label: 'Region Onboarding Signal',
+              href: SIGNAL_GROUP_URL,
+            } as const,
+          ]
           : []),
         {
           label: 'New Region Setup Signal',

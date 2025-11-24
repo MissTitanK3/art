@@ -274,7 +274,7 @@ function NeedsListWrapper() {
   const onDeleteNeed = React.useCallback(
     async (id: string) => {
       const client = getSupabaseBrowserClient();
-      await client.from("meet_a_need").delete().eq("id", id);
+      await client.rpc("safe_delete_meet_a_need", { p_id: id });
       remove(id);
     },
     [remove],

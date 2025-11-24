@@ -733,6 +733,9 @@ importers:
         specifier: ^4.5.2
         version: 4.5.7(@types/react@19.1.9)(react@19.1.1)
     devDependencies:
+      '@types/node':
+        specifier: ^20.19.9
+        version: 20.19.9
       '@types/react':
         specifier: ^19.1.9
         version: 19.1.9
@@ -886,6 +889,9 @@ importers:
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      next:
+        specifier: ^15.4.5
+        version: 15.4.5(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.1.1
         version: 19.1.1

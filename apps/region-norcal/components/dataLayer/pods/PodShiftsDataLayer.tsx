@@ -11,7 +11,7 @@ import {
   PodShiftsLayout,
   PodShiftsLayoutProps,
 } from "@workspace/ui/layout/pods/PodShiftsLayout";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
 
 type ShiftFormState = BaseShiftIntentionFields & {
   id?: string;
@@ -38,58 +38,58 @@ async function fetchPodShiftsFromDatabase(
   slug: string,
 ): Promise<Shift[] | null> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data: pod, error: podErr } = await client
-      .from("pods")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (podErr) throw podErr;
-    if (!pod?.id) return null;
+    const response = await fetch(`/api/pods/${encodeURIComponent(slug)}/shifts`);
 
-    const { data, error } = await client
-      .from("pod_shifts")
-      .select("*")
-      .eq("pod_id", pod.id)
-      .order("start", { ascending: true });
-    if (error) throw error;
-    return (Array.isArray(data) ? data : []).map(mapRowToShift);
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error("Failed to fetch shifts");
+    }
+
+    const { shifts } = await response.json();
+    return (Array.isArray(shifts) ? shifts : []).map(mapRowToShift);
   } catch (e) {
-    console.warn("[PodShiftsDataLayer] supabase fetch error", e);
+    console.warn("[PodShiftsDataLayer] fetch error", e);
     return null;
   }
 }
 
-async function persistShiftToDatabase(shift: Shift): Promise<void> {
+async function persistShiftToDatabase(
+  podSlug: string,
+  shift: Shift
+): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const payload = {
-      id: shift.id,
-      pod_id: shift.podId,
-      start: shift.start,
-      end: shift.end,
-      tz: shift.tz,
-      headcount: shift.headcount,
-      location: shift.location,
-      label: shift.label,
-      dispatch_link: shift.dispatchLink,
-      notes: shift.notes,
-    };
-    const { error } = await client.from("pod_shifts").upsert(payload);
-    if (error) throw error;
+    const response = await fetch(
+      `/api/pods/${encodeURIComponent(podSlug)}/shifts`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shift }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to save shift");
+    }
   } catch (e: any) {
     throw new Error(e?.message ?? "Failed to save shift");
   }
 }
 
-async function deleteShiftFromDatabase(shiftId: string): Promise<void> {
+async function deleteShiftFromDatabase(
+  podSlug: string,
+  shiftId: string
+): Promise<void> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { error } = await client
-      .from("pod_shifts")
-      .delete()
-      .eq("id", shiftId);
-    if (error) throw error;
+    const response = await fetch(
+      `/api/pods/${encodeURIComponent(podSlug)}/shifts/${encodeURIComponent(shiftId)}`,
+      { method: "DELETE" }
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Failed to delete shift");
+    }
   } catch (e: any) {
     throw new Error(e?.message ?? "Failed to delete shift");
   }
@@ -163,9 +163,9 @@ export default function PodShiftsDataLayer() {
         podId={undefined}
         form={form}
         setForm={setForm}
-        onAddShift={() => {}}
+        onAddShift={() => { }}
         shifts={[]}
-        onRemoveShift={() => {}}
+        onRemoveShift={() => { }}
         notFoundMessage={
           <p className="text-sm text-muted-foreground">Pod not found</p>
         }
@@ -211,7 +211,7 @@ export default function PodShiftsDataLayer() {
     };
 
     try {
-      await persistShiftToDatabase(newShift);
+      await persistShiftToDatabase(podSlug, newShift);
     } catch (error) {
       console.warn("PodShiftsDataLayer: failed to persist shift", error);
     }
@@ -238,7 +238,7 @@ export default function PodShiftsDataLayer() {
       return;
     }
     try {
-      await deleteShiftFromDatabase(shiftId);
+      await deleteShiftFromDatabase(podSlug, shiftId);
     } catch (error) {
       console.warn("PodShiftsDataLayer: failed to delete shift", error);
     }

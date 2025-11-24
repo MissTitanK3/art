@@ -94,7 +94,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ orgId
         .limit(1);
       if (remainingError) throw new RouteError(remainingError.message, 500);
       if (!remaining || remaining.length === 0) {
-        const { error: deleteError } = await ctx.adminClient.from('pods').delete().eq('id', decodedPodId);
+        const { error: deleteError } = await ctx.adminClient.rpc('safe_delete_pod', { p_id: decodedPodId });
         if (deleteError) throw new RouteError(deleteError.message, 500);
         podDeleted = true;
       }

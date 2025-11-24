@@ -6,15 +6,44 @@ import { getProfileByUserId } from '@/lib/dal/admin';
 import {
   type NavRole,
   completeOnboarding,
-  elevatedRoles,
-  localAdmins,
-  verifiedAdmins,
 } from '@workspace/store/utils/nav';
 
-import { isSuspended, isVerified, hasRole } from '@workspace/store/utils/access';
+import { isSuspended, isVerified } from '@workspace/store/utils/access';
+import { evaluateAccess } from '@workspace/store/utils/permissions/unifiedEngine';
+import { VisibilityScope } from '@workspace/store/utils/permissions/types';
 
 // Access control is driven by public.profiles.access_role
 // AccessRole is unified with NavRole across the app
+
+async function verifyAccessOrRedirect(scope: VisibilityScope, failureReason: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) redirect('/sign-in');
+  const user = userData!.user as any;
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile) {
+    redirect('/my-profile?reason=profile-required');
+  }
+
+  if (isSuspended(profile.state)) {
+    redirect('/my-profile?reason=suspended');
+  }
+
+  const role = profile.access_role as NavRole | undefined;
+
+  const result = evaluateAccess(scope, {
+    userId: user.id,
+    navRole: role,
+  });
+
+  if (!result.access) {
+    redirect(`/my-profile?reason=${failureReason}`);
+  }
+
+  const session = { user: { id: user.id } } as any;
+  return { session, profile };
+}
 
 export async function requireVerifiedProfileActive() {
   const supabase = await createSupabaseServerClient();
@@ -41,129 +70,28 @@ export async function requireVerifiedProfileActive() {
 }
 
 export async function requireDispatchAccess() {
-  const supabase = await createSupabaseServerClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) redirect('/sign-in');
-  const user = userData!.user as any;
-  const profile = await getProfileByUserId(user.id);
-
-  if (!profile) {
-    redirect('/my-profile?reason=profile-required');
-  }
-
-  if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
-  }
-
-  // Align with nav: Dispatch protected routes require elevated roles
-  const role = profile.access_role as NavRole | undefined;
-  if (!hasRole(role, elevatedRoles)) {
-    redirect('/my-profile?reason=forbidden-dispatch');
-  }
-
-  const session = { user: { id: user.id } } as any;
-  return { session, profile };
+  return verifyAccessOrRedirect('dispatch_dashboard', 'forbidden-dispatch');
 }
 
 // Entry points like /team-req follow elevatedRoles in nav config
 export async function requireDispatchBasicAccess() {
-  const supabase = await createSupabaseServerClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) redirect('/sign-in');
-  const user = userData!.user as any;
-  const profile = await getProfileByUserId(user.id);
-
-  if (!profile) {
-    redirect('/my-profile?reason=profile-required');
-  }
-
-  if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
-  }
-
-  const role = profile.access_role as NavRole | undefined;
-  if (!hasRole(role, elevatedRoles)) {
-    redirect('/my-profile?reason=forbidden-dispatch-basic');
-  }
-
-  const session = { user: { id: user.id } } as any;
-  return { session, profile };
+  return verifyAccessOrRedirect('dispatch_dashboard', 'forbidden-dispatch-basic');
 }
 
 export async function requireLocalAdminAccess() {
-  const supabase = await createSupabaseServerClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) redirect('/sign-in');
-  const user = userData!.user as any;
-  const profile = await getProfileByUserId(user.id);
-
-  if (!profile) {
-    redirect('/my-profile?reason=profile-required');
-  }
-
-  if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
-  }
-
-  // Align with nav: local admin features (e.g., schedules) follow localAdmins
-  const role = profile.access_role as NavRole | undefined;
-  if (!hasRole(role, localAdmins)) {
-    redirect('/my-profile?reason=forbidden-schedules');
-  }
-
-  const session = { user: { id: user.id } } as any;
-  return { session, profile };
+  return verifyAccessOrRedirect('schedules_manage', 'forbidden-schedules');
 }
 
 export async function requireVerifiedAdminAccess() {
-  const supabase = await createSupabaseServerClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) redirect('/sign-in');
-  const user = userData!.user as any;
-  const profile = await getProfileByUserId(user.id);
-
-  if (!profile) {
-    redirect('/my-profile?reason=profile-required');
-  }
-
-  if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
-  }
-
-  const role = profile.access_role as NavRole | undefined;
-  if (!hasRole(role, verifiedAdmins)) {
-    redirect('/my-profile?reason=forbidden-elevated');
-  }
-
-  const session = { user: { id: user.id } } as any;
-  return { session, profile };
+  return verifyAccessOrRedirect('verified_ops', 'forbidden-elevated');
 }
 
 export async function requireElevatedAccess() {
-  const supabase = await createSupabaseServerClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) redirect('/sign-in');
-  const user = userData!.user as any;
-  const profile = await getProfileByUserId(user.id);
-
-  if (!profile) {
-    redirect('/my-profile?reason=profile-required');
-  }
-
-  if (isSuspended(profile.state)) {
-    redirect('/my-profile?reason=suspended');
-  }
-
-  const role = profile.access_role as NavRole | undefined;
-  if (!hasRole(role, elevatedRoles)) {
-    redirect('/my-profile?reason=forbidden-elevated');
-  }
-
-  const session = { user: { id: user.id } } as any;
-  return { session, profile };
+  return verifyAccessOrRedirect('elevated_ops', 'forbidden-elevated');
 }
 
 export async function requireOnboardedAccess() {
+  // Special case: redirect to onboarding if failed, not just forbidden
   const supabase = await createSupabaseServerClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData?.user) redirect('/sign-in');
@@ -178,9 +106,15 @@ export async function requireOnboardedAccess() {
     redirect('/my-profile?reason=suspended');
   }
 
-  // Align with nav: completeOnboarding set gates access to core features
   const role = profile.access_role as NavRole | undefined;
-  if (!hasRole(role, completeOnboarding)) redirect('/my-profile?reason=onboarding');
+  const result = evaluateAccess('core_features', {
+    userId: user.id,
+    navRole: role,
+  });
+
+  if (!result.access) {
+    redirect('/my-profile?reason=onboarding');
+  }
 
   const session = { user: { id: user.id } } as any;
   return { session, profile };

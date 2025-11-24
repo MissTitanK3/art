@@ -14,6 +14,31 @@ ALTER TABLE dispatch_shifts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pod_shifts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE region_settings ENABLE ROW LEVEL SECURITY;
 
+-- Profiles policies
+DROP POLICY IF EXISTS dispatchers_view_profiles ON public.profiles;
+CREATE POLICY dispatchers_view_profiles
+ON public.profiles
+FOR SELECT
+USING (
+  COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role'
+  ) = ANY (
+    ARRAY[
+      'dispatcher_basic','dispatcher_verified','dispatcher_admin',
+      'admin','regional_admin','national_admin'
+    ]
+  )
+);
+
+CREATE POLICY view_own_profile
+ON public.profiles
+FOR SELECT
+USING (
+  user_id = auth.uid()
+);
+
 -- Region settings policies
 CREATE POLICY region_settings_read_authenticated
 ON region_settings
@@ -27,7 +52,7 @@ FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -38,14 +63,14 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -56,7 +81,7 @@ FOR DELETE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -72,47 +97,79 @@ ALTER TABLE com_teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE com_operators ENABLE ROW LEVEL SECURITY;
 -- Dispatchers and Trainer+ roles can manage classes and sessions
 -- NOTE: academy_sessions.class_id no longer enforces FK to academy_classes
-CREATE POLICY "dispatchers_manage_academy"
+DROP POLICY IF EXISTS "dispatchers_manage_academy" ON academy_classes;
+CREATE POLICY "dispatchers_manage_academy_insert"
 ON academy_classes
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_academy_update"
+ON academy_classes
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
-CREATE POLICY "dispatchers_manage_academy_sessions"
+CREATE POLICY academy_classes_delete_block_authenticated
+ON academy_classes
+FOR DELETE
+TO authenticated
+USING (FALSE);
+DROP POLICY IF EXISTS "dispatchers_manage_academy_sessions" ON academy_sessions;
+CREATE POLICY "dispatchers_manage_academy_sessions_insert"
 ON academy_sessions
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_academy_sessions_update"
+ON academy_sessions
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY academy_sessions_delete_block_authenticated
+ON academy_sessions
+FOR DELETE
+TO authenticated
+USING (FALSE);
 CREATE POLICY "dispatchers_insert_academy_sessions"
 ON academy_sessions
 FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -122,58 +179,85 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
-CREATE POLICY "dispatchers_manage_academy_instructors"
+DROP POLICY IF EXISTS "dispatchers_manage_academy_instructors" ON academy_instructors;
+CREATE POLICY "dispatchers_manage_academy_instructors_insert"
 ON academy_instructors
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_academy_instructors_update"
+ON academy_instructors
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
-CREATE POLICY "dispatchers_manage_academy_participants"
+DROP POLICY IF EXISTS "dispatchers_manage_academy_participants" ON academy_participants;
+CREATE POLICY "dispatchers_manage_academy_participants_insert"
 ON academy_participants
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_academy_participants_update"
+ON academy_participants
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY academy_participants_delete_block_authenticated
+ON academy_participants
+FOR DELETE
+TO authenticated
+USING (FALSE);
 CREATE POLICY "dispatchers_insert_academy_participants"
 ON academy_participants
 FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -183,14 +267,14 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -211,7 +295,7 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
       AND (
         EXISTS (
@@ -225,25 +309,52 @@ USING (
   )
 );
 
-CREATE POLICY leaders_delete_own_pods
+-- Dispatchers manage pods (no delete)
+DROP POLICY IF EXISTS dispatchers_manage_pods ON public.pods;
+CREATE POLICY dispatchers_select_pods
 ON public.pods
-FOR DELETE
+FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
-      AND (
-        EXISTS (
-          SELECT 1 FROM public.roster_entries r
-          WHERE r.pod_id = public.pods.id
-            AND r.profile_id = p.id
-            AND r.role = 'lead'
-        )
-        OR public.pods.created_by = p.id
-      )
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['pod_leader','trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY dispatchers_insert_pods
+ON public.pods
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY dispatchers_update_pods
+ON public.pods
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+
+DROP POLICY IF EXISTS leaders_delete_own_pods ON public.pods;
+CREATE POLICY pods_delete_block_authenticated
+ON public.pods
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Organizations + collective calendar helpers
 CREATE POLICY orgs_select_members
@@ -255,7 +366,7 @@ USING (
     SELECT 1 FROM public.organization_roles r
     WHERE r.org_id = public.organizations.id
       AND r.user_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
@@ -263,12 +374,12 @@ USING (
     JOIN public.roster_entries re ON re.pod_id = op.pod_id
     WHERE op.org_id = public.organizations.id
       AND re.profile_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -280,7 +391,7 @@ TO authenticated
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (
         ARRAY[
           'pod_leader','trainer',
@@ -300,13 +411,13 @@ USING (
     SELECT 1 FROM public.organization_roles r
     WHERE r.org_id = public.organizations.id
       AND r.user_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
       AND r.role = ANY (ARRAY['owner','admin'])
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (
         ARRAY[
           'pod_leader','trainer',
@@ -321,13 +432,13 @@ WITH CHECK (
     SELECT 1 FROM public.organization_roles r
     WHERE r.org_id = public.organizations.id
       AND r.user_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
       AND r.role = ANY (ARRAY['owner','admin'])
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (
         ARRAY[
           'pod_leader','trainer',
@@ -338,31 +449,12 @@ WITH CHECK (
   )
 );
 
-CREATE POLICY orgs_delete_manage
+DROP POLICY IF EXISTS orgs_delete_manage ON public.organizations;
+CREATE POLICY organizations_delete_block_authenticated
 ON public.organizations
 FOR DELETE
 TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.organization_roles r
-    WHERE r.org_id = public.organizations.id
-      AND r.user_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
-      )
-      AND r.role = ANY (ARRAY['owner','admin'])
-  )
-  OR EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
-      AND p.access_role = ANY (
-        ARRAY[
-          'pod_leader','trainer',
-          'dispatcher_basic','dispatcher_verified','dispatcher_admin',
-          'admin','regional_admin','national_admin'
-        ]
-      )
-  )
-);
+USING (FALSE);
 
 CREATE POLICY org_roles_select_self
 ON public.organization_roles
@@ -370,11 +462,11 @@ FOR SELECT
 TO authenticated
 USING (
   public.organization_roles.user_id IN (
-    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -385,7 +477,7 @@ FOR INSERT
 TO authenticated
 WITH CHECK (
   public.organization_roles.user_id IN (
-    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()
   )
   AND public.organization_roles.role = 'owner'
 );
@@ -399,19 +491,19 @@ USING (
     SELECT 1 FROM public.roster_entries r
     WHERE r.pod_id = public.organization_pods.pod_id
       AND r.profile_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.organization_roles r
     WHERE r.org_id = public.organization_pods.org_id
       AND r.user_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -422,19 +514,19 @@ FOR SELECT
 TO authenticated
 USING (
   public.pod_shift_signups.user_id IN (
-    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()
   )
   OR EXISTS (
     SELECT 1 FROM public.pod_shifts ps
     JOIN public.roster_entries r ON r.pod_id = ps.pod_id
     WHERE ps.id = public.pod_shift_signups.shift_id
       AND r.profile_id IN (
-        SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM public.profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -445,7 +537,7 @@ FOR INSERT
 TO authenticated
 WITH CHECK (
   public.pod_shift_signups.user_id IN (
-    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()
   )
   AND EXISTS (
     SELECT 1 FROM public.pod_shifts ps
@@ -461,11 +553,11 @@ FOR DELETE
 TO authenticated
 USING (
   public.pod_shift_signups.user_id IN (
-    SELECT id FROM public.profiles WHERE user_id = auth.uid()::text
+    SELECT id FROM public.profiles WHERE user_id = auth.uid()
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = auth.uid()::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -475,34 +567,60 @@ CREATE POLICY "read_own_roster_entry"
 ON roster_entries
 FOR SELECT
 USING (
-  profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()::text)
+  profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
 );
 
 CREATE POLICY "update_own_roster_entry"
 ON roster_entries
 FOR UPDATE
 USING (
-  profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()::text)
+  profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
 );
 
--- Dispatchers manage all roster entries
-CREATE POLICY "dispatchers_manage_roster"
+-- Dispatchers manage roster entries (no delete)
+DROP POLICY IF EXISTS "dispatchers_manage_roster" ON roster_entries;
+CREATE POLICY "dispatchers_manage_roster_rw"
 ON roster_entries
-FOR ALL
+FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' ,'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_roster_insert"
+ON roster_entries
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' ,'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_roster_update"
+ON roster_entries
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' ,'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader', 'trainer' ,'dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY roster_entries_delete_block_authenticated
+ON roster_entries
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Pod shifts: team members of a pod can view/manage that pod's shifts; dispatchers can manage all
 CREATE POLICY "team_view_pod_shifts"
@@ -513,12 +631,12 @@ USING (
     SELECT 1 FROM roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -532,12 +650,12 @@ WITH CHECK (
     SELECT 1 FROM roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -550,12 +668,12 @@ USING (
     SELECT 1 FROM roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
@@ -564,33 +682,21 @@ WITH CHECK (
     SELECT 1 FROM roster_entries r
     WHERE r.pod_id = pod_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
 
-CREATE POLICY "team_delete_pod_shifts"
+CREATE POLICY pod_shifts_delete_block_authenticated
 ON pod_shifts
 FOR DELETE
-USING (
-  EXISTS (
-    SELECT 1 FROM roster_entries r
-    WHERE r.pod_id = pod_shifts.pod_id
-      AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
-      )
-  )
-  OR EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
-  )
-);
+TO authenticated
+USING (FALSE);
 
 -- Team members can see confirmed dispatches
 CREATE POLICY "team_view_dispatches"
@@ -608,7 +714,7 @@ USING (
   status IN ('mobilizing','debriefing')
   AND EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
@@ -623,14 +729,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -652,10 +758,12 @@ FOR UPDATE
 USING (TRUE)
 WITH CHECK (TRUE);
 
-CREATE POLICY com_alerts_delete_all
+DROP POLICY IF EXISTS com_alerts_delete_all ON com_alerts;
+CREATE POLICY com_alerts_delete_block_authenticated
 ON com_alerts
 FOR DELETE
-USING (TRUE);
+TO authenticated
+USING (FALSE);
 
 -- Bug reports: any authenticated user can submit; creators read their own; admins manage all
 CREATE POLICY insert_bug_report_authenticated
@@ -675,14 +783,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -699,7 +807,7 @@ USING (
     visibility = 'region' AND EXISTS (
       SELECT 1 FROM public.profiles viewer
       JOIN public.profiles owner ON owner.id = meet_a_need.created_by
-      WHERE viewer.user_id = (auth.uid())::text
+      WHERE viewer.user_id = auth.uid()
         AND viewer.coordination_zone IS NOT NULL
         AND viewer.coordination_zone = owner.coordination_zone
     )
@@ -707,39 +815,57 @@ USING (
   OR (
     visibility = 'pod' AND EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = (auth.uid())::text
+      WHERE p.user_id = auth.uid()
         AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
     )
   )
 );
 
--- Creator can read/write their own needs
-CREATE POLICY man_owner_rw
+-- Creator can read/write their own needs (no delete)
+CREATE POLICY man_owner_rw_select
 ON public.meet_a_need
-FOR ALL
+FOR SELECT
 TO authenticated
 USING (
-  created_by IN (SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text)
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY man_owner_rw_update
+ON public.meet_a_need
+FOR UPDATE
+TO authenticated
+USING (
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
 )
 WITH CHECK (
-  created_by IN (SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text)
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
 );
 
--- Dispatchers/admins manage all
-CREATE POLICY man_dispatchers_manage
+-- Dispatchers/admins manage all (no delete)
+DROP POLICY IF EXISTS man_dispatchers_manage ON public.meet_a_need;
+CREATE POLICY man_dispatchers_manage_select
 ON public.meet_a_need
-FOR ALL
+FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY man_dispatchers_manage_update
+ON public.meet_a_need
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -750,7 +876,7 @@ ON public.meet_a_need
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  created_by IN (SELECT id FROM public.profiles WHERE user_id = (auth.uid())::text)
+  created_by IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
 );
 
 -- TEMPORARY: permissive update for responders list (replace with RPC/trigger later)
@@ -761,6 +887,12 @@ TO authenticated
 USING (TRUE)
 WITH CHECK (TRUE);
 
+CREATE POLICY meet_a_need_delete_block_authenticated
+ON public.meet_a_need
+FOR DELETE
+TO authenticated
+USING (FALSE);
+
 -- Operators: dispatchers manage all
 CREATE POLICY "dispatchers_manage_com_operators"
 ON com_operators
@@ -768,14 +900,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -787,14 +919,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -821,7 +953,7 @@ USING (
   )
   AND EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
@@ -832,14 +964,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -866,7 +998,7 @@ USING (
   )
   AND EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
@@ -877,35 +1009,61 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
--- Dispatchers can create and manage all dispatches
-CREATE POLICY "dispatchers_manage_dispatches"
+-- Dispatchers can create and manage dispatches (no delete)
+DROP POLICY IF EXISTS "dispatchers_manage_dispatches" ON dispatch_submissions;
+CREATE POLICY "dispatchers_manage_dispatches_select"
 ON dispatch_submissions
-FOR ALL
+FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_dispatches_insert"
+ON dispatch_submissions
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_dispatches_update"
+ON dispatch_submissions
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY dispatch_submissions_delete_block_authenticated
+ON dispatch_submissions
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 CREATE POLICY "visible_to_related_dispatch"
 ON dispatch_updates
@@ -928,7 +1086,7 @@ USING (
   )
   AND EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
@@ -939,14 +1097,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -973,7 +1131,7 @@ USING (
   )
   AND EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['pod_leader','trainer'])
   )
 );
@@ -984,14 +1142,14 @@ FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -1005,33 +1163,59 @@ USING (
     SELECT 1 FROM roster_entries r
     WHERE r.pod_id = dispatch_shifts.pod_id
       AND r.profile_id IN (
-        SELECT id FROM profiles WHERE user_id = auth.uid()::text
+        SELECT id FROM profiles WHERE user_id = auth.uid()
       )
   )
   OR EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
 
-CREATE POLICY "dispatchers_manage_dispatch_shifts"
+DROP POLICY IF EXISTS "dispatchers_manage_dispatch_shifts" ON dispatch_shifts;
+CREATE POLICY "dispatchers_manage_dispatch_shifts_select"
 ON dispatch_shifts
-FOR ALL
+FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_dispatch_shifts_insert"
+ON dispatch_shifts
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_dispatch_shifts_update"
+ON dispatch_shifts
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY dispatch_shifts_delete_block_authenticated
+ON dispatch_shifts
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Anyone can view public classes/sessions
 CREATE POLICY "public_view_academy_classes"
@@ -1040,50 +1224,12 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
--- Dispatchers can manage classes and sessions
-CREATE POLICY "dispatchers_manage_academy"
-ON academy_classes
-FOR ALL
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer'])
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer'])
-  )
-);
-
 -- Anyone can view sessions
 CREATE POLICY "public_view_academy_sessions"
 ON academy_sessions
 FOR SELECT
 TO authenticated
 USING (TRUE);
-
--- Dispatchers can manage sessions
-CREATE POLICY "dispatchers_manage_academy_sessions"
-ON academy_sessions
-FOR ALL
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer'])
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer'])
-  )
-);
 
 -- Anyone can view instructors
 CREATE POLICY "public_view_academy_instructors"
@@ -1092,25 +1238,6 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
--- Dispatchers can manage instructors
-CREATE POLICY "dispatchers_manage_academy_instructors"
-ON academy_instructors
-FOR ALL
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
-  )
-);
-
 -- Dispatchers can create sessions
 CREATE POLICY "dispatchers_insert_academy_sessions"
 ON academy_sessions
@@ -1118,7 +1245,7 @@ FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
@@ -1130,14 +1257,14 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer'])
   )
 );
@@ -1149,25 +1276,6 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
--- Dispatchers can manage participants
-CREATE POLICY "dispatchers_manage_academy_participants"
-ON academy_participants
-FOR ALL
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
-      AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
-  )
-);
-
 -- Dispatchers can create participants
 CREATE POLICY "dispatchers_insert_academy_participants"
 ON academy_participants
@@ -1175,7 +1283,7 @@ FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
@@ -1187,36 +1295,52 @@ FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['trainer','dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
 
--- Dispatchers can read and write
-CREATE POLICY "dispatchers_manage_missing_persons"
+-- Dispatchers can read and write (no delete)
+DROP POLICY IF EXISTS "dispatchers_manage_missing_persons" ON missing_person_records;
+CREATE POLICY "dispatchers_manage_missing_persons_select"
 ON missing_person_records
-FOR ALL
+FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatchers_manage_missing_persons_update"
+ON missing_person_records
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY missing_person_records_delete_block_authenticated
+ON missing_person_records
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Other roles: read-only if marked by same creator
 CREATE POLICY "creator_view_own_case"
@@ -1230,24 +1354,40 @@ ON trust_signatures
 FOR SELECT
 USING (TRUE);
 
--- Only dispatch admins can add or revoke trust
-CREATE POLICY "dispatch_admins_manage_trust"
+-- Only dispatch admins can add or revoke trust (no delete)
+DROP POLICY IF EXISTS "dispatch_admins_manage_trust" ON trust_signatures;
+CREATE POLICY "dispatch_admins_manage_trust_rw"
 ON trust_signatures
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "dispatch_admins_manage_trust_update"
+ON trust_signatures
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY trust_signatures_delete_block_authenticated
+ON trust_signatures
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Enable RLS globally
 DO $$
@@ -1294,23 +1434,39 @@ TO authenticated
 USING (TRUE);
 
 -- Warehouses: Write restricted to admins and dispatchers
-CREATE POLICY "warehouses_write_privileged"
+DROP POLICY IF EXISTS "warehouses_write_privileged" ON warehouses;
+CREATE POLICY "warehouses_insert_privileged"
 ON warehouses
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouses_update_privileged"
+ON warehouses
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouses_delete_block_authenticated
+ON warehouses
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Zones: Same as warehouses
 CREATE POLICY "warehouse_zones_read_authenticated"
@@ -1319,23 +1475,39 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
-CREATE POLICY "warehouse_zones_write_privileged"
+DROP POLICY IF EXISTS "warehouse_zones_write_privileged" ON warehouse_zones;
+CREATE POLICY "warehouse_zones_insert_privileged"
 ON warehouse_zones
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouse_zones_update_privileged"
+ON warehouse_zones
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouse_zones_delete_block_authenticated
+ON warehouse_zones
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Bins: Same as warehouses
 CREATE POLICY "warehouse_bins_read_authenticated"
@@ -1344,23 +1516,39 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
-CREATE POLICY "warehouse_bins_write_privileged"
+DROP POLICY IF EXISTS "warehouse_bins_write_privileged" ON warehouse_bins;
+CREATE POLICY "warehouse_bins_insert_privileged"
 ON warehouse_bins
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouse_bins_update_privileged"
+ON warehouse_bins
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouse_bins_delete_block_authenticated
+ON warehouse_bins
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Inventory: Same as warehouses
 CREATE POLICY "warehouse_inventory_read_authenticated"
@@ -1369,23 +1557,39 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
-CREATE POLICY "warehouse_inventory_write_privileged"
+DROP POLICY IF EXISTS "warehouse_inventory_write_privileged" ON warehouse_inventory;
+CREATE POLICY "warehouse_inventory_insert_privileged"
 ON warehouse_inventory
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouse_inventory_update_privileged"
+ON warehouse_inventory
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouse_inventory_delete_block_authenticated
+ON warehouse_inventory
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Movement Logs: Read accessible to all, Write restricted to privileged
 CREATE POLICY "warehouse_movement_logs_read_authenticated"
@@ -1394,23 +1598,39 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
-CREATE POLICY "warehouse_movement_logs_write_privileged"
+DROP POLICY IF EXISTS "warehouse_movement_logs_write_privileged" ON warehouse_movement_logs;
+CREATE POLICY "warehouse_movement_logs_insert_privileged"
 ON warehouse_movement_logs
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouse_movement_logs_update_privileged"
+ON warehouse_movement_logs
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouse_movement_logs_delete_block_authenticated
+ON warehouse_movement_logs
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Pick Lists: Read accessible to all, Write restricted to privileged
 CREATE POLICY "warehouse_pick_lists_read_authenticated"
@@ -1419,23 +1639,39 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
-CREATE POLICY "warehouse_pick_lists_write_privileged"
+DROP POLICY IF EXISTS "warehouse_pick_lists_write_privileged" ON warehouse_pick_lists;
+CREATE POLICY "warehouse_pick_lists_insert_privileged"
 ON warehouse_pick_lists
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouse_pick_lists_update_privileged"
+ON warehouse_pick_lists
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouse_pick_lists_delete_block_authenticated
+ON warehouse_pick_lists
+FOR DELETE
+TO authenticated
+USING (FALSE);
 
 -- Warehouse Item Catalog RLS Policies
 
@@ -1449,21 +1685,37 @@ FOR SELECT
 TO authenticated
 USING (TRUE);
 
--- Write restricted to admins and dispatchers
-CREATE POLICY "warehouse_item_catalog_write_privileged"
+-- Write restricted to admins and dispatchers (no delete)
+DROP POLICY IF EXISTS "warehouse_item_catalog_write_privileged" ON warehouse_item_catalog;
+CREATE POLICY "warehouse_item_catalog_insert_privileged"
 ON warehouse_item_catalog
-FOR ALL
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+);
+CREATE POLICY "warehouse_item_catalog_update_privileged"
+ON warehouse_item_catalog
+FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    WHERE p.user_id = (auth.uid())::text
+    WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+CREATE POLICY warehouse_item_catalog_delete_block_authenticated
+ON warehouse_item_catalog
+FOR DELETE
+TO authenticated
+USING (FALSE);

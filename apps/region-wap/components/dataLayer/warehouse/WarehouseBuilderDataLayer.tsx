@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
 
 import { WarehouseBuilderLayout } from "@workspace/ui/components/warehouse/WarehouseBuilderLayout";
@@ -55,53 +54,18 @@ function createDefaultFormValues(): WarehouseFormValues {
 }
 
 async function persistWarehouseRecord(record: WarehouseRecord) {
-    const client = getSupabaseBrowserClient();
-    const capabilityPayload: Record<string, unknown> = {
-        flags: record.capabilities,
-        site_type: record.siteType,
-    };
-    if (record.quickNotes) {
-        capabilityPayload.quick_note = record.quickNotes;
-    }
-
-    const { error } = await client.from("warehouses").upsert({
-        id: record.id,
-        region_id: record.regionId,
-        display_name: record.stewardDisplayName ?? record.displayName,
-        region_zone: record.regionZone,
-        urban_type: record.urbanType,
-        capabilities: capabilityPayload,
-        max_capacity_rating: record.maxCapacityRating,
+    const response = await fetch("/api/warehouse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ warehouseData: record }),
     });
-    if (error) throw error;
 
-    if (record.zones.length > 0) {
-        const zonesPayload = record.zones.map((zone) => ({
-            id: zone.id,
-            warehouse_id: record.id,
-            name: zone.name,
-            sort_order: zone.sortOrder ?? null,
-        }));
-        const { error: zonesError } = await client
-            .from("warehouse_zones")
-            .upsert(zonesPayload);
-        if (zonesError) throw zonesError;
-
-        const binsPayload = record.zones.flatMap((zone) =>
-            zone.bins.map((bin) => ({
-                id: bin.id,
-                zone_id: zone.id,
-                label: bin.label,
-                sort_order: bin.sortOrder ?? null,
-            })),
-        );
-        if (binsPayload.length > 0) {
-            const { error: binsError } = await client
-                .from("warehouse_bins")
-                .upsert(binsPayload);
-            if (binsError) throw binsError;
-        }
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to persist warehouse");
     }
+
+    return response.json();
 }
 
 function zoneHasDependencies(
@@ -168,47 +132,18 @@ export default function WarehouseBuilderDataLayer() {
 
     useEffect(() => {
         const fetchWarehouses = async () => {
-            const client = getSupabaseBrowserClient();
-            const { data: warehouses, error } = await client
-                .from("warehouses")
-                .select(`
-                    *,
-                    zones:warehouse_zones(
-                        *,
-                        bins:warehouse_bins(*)
-                    )
-                `);
-
-            if (error) {
+            try {
+                const response = await fetch("/api/warehouse/data");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch warehouses");
+                }
+                const data = await response.json();
+                setSavedWarehouses(data.warehouses || []);
+                setInventory(data.inventory || []);
+                setMovementLogs(data.movementLogs || []);
+                setPickList(data.pickList || []);
+            } catch (error) {
                 console.error("Error fetching warehouses:", error);
-                return;
-            }
-
-            if (warehouses) {
-                const normalized: WarehouseRecord[] = warehouses.map((w: any) => ({
-                    id: w.id,
-                    regionId: w.region_id,
-                    displayName: w.display_name,
-                    stewardDisplayName: w.display_name, // Map display_name to stewardDisplayName for UI consistency
-                    regionZone: w.region_zone,
-                    urbanType: w.urban_type,
-                    siteType: "home", // Default or fetch if added to DB
-                    maxCapacityRating: w.max_capacity_rating,
-                    capabilities: w.capabilities?.flags || [],
-                    quickNotes: w.capabilities?.quick_note || "",
-                    createdAt: w.created_at,
-                    zones: w.zones.map((z: any) => ({
-                        id: z.id,
-                        name: z.name,
-                        sortOrder: z.sort_order,
-                        bins: z.bins.map((b: any) => ({
-                            id: b.id,
-                            label: b.label,
-                            sortOrder: b.sort_order,
-                        })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
-                    })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
-                }));
-                setSavedWarehouses(normalized);
             }
         };
 

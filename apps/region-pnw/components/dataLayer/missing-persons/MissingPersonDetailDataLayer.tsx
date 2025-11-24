@@ -222,10 +222,10 @@ export function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   const handleDeleteRemote = React.useCallback(async (caseId: string) => {
     try {
       const client = getSupabaseBrowserClient();
-      const { error } = await client
-        .from("missing_person_records")
-        .delete()
-        .eq("case_id", caseId);
+      const { error } = await client.rpc(
+        "safe_delete_missing_person_record",
+        { p_case_id: caseId },
+      );
       if (error) throw error;
     } catch (err) {
       console.warn(

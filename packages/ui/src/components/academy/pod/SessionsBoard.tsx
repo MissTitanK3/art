@@ -38,7 +38,8 @@ import type {
   AcademyTrainingSessionParticipant,
 } from "@workspace/store/types/academy.ts";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 import { humanize } from "@workspace/ui/lib/utils";
 
 type SessionFilterValue = "all" | AcademyTrainingSession["status"];
@@ -140,10 +141,8 @@ export function SessionsBoard({
     () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
     [profileFromStore?.access_role],
   );
-  const effectiveCanManage = React.useMemo(
-    () => canManageInstructorsFromRoles(profileRoles),
-    [profileRoles],
-  );
+  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
+  const { access: effectiveCanManage } = useUnifiedAccess('manage_instructors', ctx);
 
   // Developer helper: warn when callers forget to pass real handlers.
   // SessionsBoard purposely falls back to no-op handlers to remain store-agnostic,

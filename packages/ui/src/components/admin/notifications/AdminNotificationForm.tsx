@@ -28,7 +28,8 @@ import { ChevronDown, X } from "lucide-react";
 import type { Profile } from "@workspace/store/types/global";
 import { humanize } from "@workspace/ui/lib/utils";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { canManageInstructorsFromRoles } from "@workspace/ui/lib/permissions";
+import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
+import { NavRole } from "@workspace/store/utils/permissions/types";
 import {
   NOTIFICATION_CHANNELS,
   type NotificationChannel,
@@ -73,10 +74,8 @@ export function AdminNotificationForm({
     () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
     [profileFromStore?.access_role],
   );
-  const effectiveCanManage = React.useMemo(
-    () => canManageInstructorsFromRoles(profileRoles),
-    [profileRoles],
-  );
+  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
+  const { access: effectiveCanManage } = useUnifiedAccess('manage_notifications', ctx);
   const [profilesError, setProfilesError] = React.useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = React.useState<
     Pick<Profile, "user_id" | "display_name">[]

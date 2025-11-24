@@ -8,12 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Channel, Pod } from "@workspace/store/types/pod.ts";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import { toast } from "sonner";
 import {
   PodManagementLayout,
   PodManagementLayoutErrors,
 } from "@workspace/ui/layout/pods/PodManagementLayout";
+
 
 // Schema uses new channels model
 const schema = z.object({
@@ -47,17 +47,19 @@ function mapRowToPod(row: any): Pod {
 
 async function fetchPodFromDatabase(slug: string): Promise<Pod | null> {
   try {
-    const client = getSupabaseBrowserClient();
-    const { data, error } = await client
-      .from("pods")
-      .select("id, slug, name, area, channels")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) return null;
-    return mapRowToPod(data);
+    const response = await fetch(`/api/pods/${encodeURIComponent(slug)}`);
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error("Failed to fetch pod");
+    }
+
+    const { pod } = await response.json();
+    if (!pod) return null;
+
+    return mapRowToPod(pod);
   } catch (e) {
-    console.warn("[PodManagementDataLayer] supabase fetch error", e);
+    console.warn("[PodManagementDataLayer] fetch error", e);
     return null;
   }
 }

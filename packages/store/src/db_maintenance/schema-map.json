@@ -1,0 +1,50 @@
+{
+  "pods": {
+    "children": ["roster_entries", "pod_shifts", "organization_pods", "dispatch_shifts"],
+    "delete": "archive"
+  },
+  "roster_entries": {
+    "children": [],
+    "delete": "archive"
+  },
+  "pod_shifts": {
+    "children": ["pod_shift_signups"],
+    "delete": "archive"
+  },
+  "dispatch_submissions": {
+    "children": ["dispatch_updates", "dispatch_logistics", "com_logs", "com_briefings"],
+    "delete": "cascade"
+  },
+  "academy_classes": {
+    "children": ["academy_sessions"],
+    "delete": "archive"
+  },
+  "academy_sessions": {
+    "children": ["academy_participants"],
+    "delete": "cascade"
+  },
+  "organizations": {
+    "children": ["organization_roles", "organization_pods"],
+    "delete": "archive"
+  },
+  "warehouses": {
+    "children": ["warehouse_zones", "warehouse_inventory", "warehouse_movement_logs", "warehouse_pick_lists"],
+    "delete": "archive"
+  },
+  "warehouse_inventory": {
+    "children": ["warehouse_movement_logs", "warehouse_pick_lists"],
+    "delete": "archive"
+  },
+  "meet_a_need": {
+    "children": [],
+    "delete": "archive"
+  },
+  "missing_person_records": {
+    "children": ["advocacy_delivery_logs"],
+    "delete": "archive"
+  },
+  "trust_signatures": {
+    "children": [],
+    "delete": "restricted"
+  }
+}

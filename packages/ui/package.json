@@ -60,6 +60,7 @@
     "@types/react-dom": "^19.1.7",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "next": "^15.4.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.11",

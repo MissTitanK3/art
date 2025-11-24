@@ -1,9 +1,10 @@
 import { UseFormReturn } from "react-hook-form";
-import { Boxes, Sparkles, Warehouse, Plus } from "lucide-react";
+import { Boxes, Sparkles, Warehouse, Plus, PackagePlus } from "lucide-react";
 import { PageHeader } from "@workspace/ui/components/page-header";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet";
 import { StatCard } from "./StatCard";
 import { CycleCountCard } from "./CycleCountCard";
 import { SafetyCard } from "./SafetyCard";
@@ -37,6 +38,7 @@ export interface WarehouseDashboardLayoutProps {
     availableZones: { id: string; name: string }[];
     availableBins: { id: string; label: string }[];
     catalogItems: CatalogItem[];
+    isIntakeSheetOpen: boolean;
     // Handlers
     handleIntakeSubmit: (values: InventoryIntakeValues) => void;
     handleTabsValueChange: (value: string) => void;
@@ -53,6 +55,7 @@ export interface WarehouseDashboardLayoutProps {
     handleDeleteConfirmedPickList: (warehouseId: string, confirmedAt: string) => void;
     handleDeleteInventory?: (inventoryId: string) => void;
     handleUpdateInventory?: (inventoryId: string, quantity: number) => void;
+    onIntakeSheetOpenChange: (open: boolean) => void;
 }
 
 export function WarehouseDashboardLayout({
@@ -70,6 +73,7 @@ export function WarehouseDashboardLayout({
     availableZones,
     availableBins,
     catalogItems,
+    isIntakeSheetOpen,
     handleIntakeSubmit,
     handleTabsValueChange,
     handleLoadStandardItem,
@@ -85,6 +89,7 @@ export function WarehouseDashboardLayout({
     handleDeleteConfirmedPickList,
     handleDeleteInventory,
     handleUpdateInventory,
+    onIntakeSheetOpenChange,
 }: WarehouseDashboardLayoutProps) {
     return (
         <div className="space-y-8 py-8">
@@ -92,12 +97,18 @@ export function WarehouseDashboardLayout({
                 title="Always Ready Warehouses"
                 description="Model pods, home hubs, and storage units — no PII, no guesswork."
                 actions={
-                    <Button asChild size="sm">
-                        <a href="/warehouse/new">
-                            <Plus className="mr-2 size-4" />
-                            Create Warehouse
-                        </a>
-                    </Button>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <Button size="sm" variant="outline" onClick={() => onIntakeSheetOpenChange(true)}>
+                            <PackagePlus className="mr-2 size-4" />
+                            Add Inventory
+                        </Button>
+                        <Button asChild size="sm">
+                            <a href="/warehouse/new">
+                                <Plus className="mr-2 size-4" />
+                                Create Warehouse
+                            </a>
+                        </Button>
+                    </div>
                 }
             />
 
@@ -131,38 +142,34 @@ export function WarehouseDashboardLayout({
                 />
             </section>
 
-            <div className="flex flex-col lg:flex-row gap-6 m-auto max-w-5xl mb-6">
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Inventory intake</CardTitle>
-                            <CardDescription>
-                                Search or create an item, place it in a zone/bin, and write the movement
-                                log.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <InventoryIntakeForm
-                                savedWarehouses={savedWarehouses}
-                                inventory={inventory}
-                                catalogItems={catalogItems}
-                                intakeTab={intakeTab}
-                                intakeForm={intakeForm}
-                                watchWarehouseId={watchWarehouseId}
-                                watchZoneId={watchZoneId}
-                                watchBinId={watchBinId}
-                                availableZones={availableZones}
-                                availableBins={availableBins}
-                                handleIntakeSubmit={handleIntakeSubmit}
-                                handleTabsValueChange={handleTabsValueChange}
-                                handleLoadStandardItem={handleLoadStandardItem}
-                                handleGenerateSku={handleGenerateSku}
-                            />
-                        </CardContent>
-                    </Card>
-
-                </div>
-            </div>
+            <Sheet open={isIntakeSheetOpen} onOpenChange={onIntakeSheetOpenChange}>
+                <SheetContent side="right" className="overflow-y-auto bg-card text-card-foreground p-4">
+                    <SheetHeader>
+                        <SheetTitle>Inventory Intake</SheetTitle>
+                        <SheetDescription>
+                            Search or create an item, place it in a zone/bin, and write the movement log.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        <InventoryIntakeForm
+                            savedWarehouses={savedWarehouses}
+                            inventory={inventory}
+                            catalogItems={catalogItems}
+                            intakeTab={intakeTab}
+                            intakeForm={intakeForm}
+                            watchWarehouseId={watchWarehouseId}
+                            watchZoneId={watchZoneId}
+                            watchBinId={watchBinId}
+                            availableZones={availableZones}
+                            availableBins={availableBins}
+                            handleIntakeSubmit={handleIntakeSubmit}
+                            handleTabsValueChange={handleTabsValueChange}
+                            handleLoadStandardItem={handleLoadStandardItem}
+                            handleGenerateSku={handleGenerateSku}
+                        />
+                    </div>
+                </SheetContent>
+            </Sheet>
 
             <ConfirmedPickListsCard
                 confirmedPickLists={confirmedPickLists}

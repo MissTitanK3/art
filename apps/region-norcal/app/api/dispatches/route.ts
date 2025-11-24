@@ -83,3 +83,39 @@ export async function POST(req: Request) {
     return jsonError(e);
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const q = searchParams.get("q");
+    const status = searchParams.get("status");
+    const type = searchParams.get("type");
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+
+    const supabase = await createSupabaseServerClient();
+    let query = supabase
+      .from("dispatch_submissions")
+      .select("*")
+      .is("deleted_at", null)
+      .order("date_of_event", { ascending: true, nullsFirst: false });
+
+    if (status && status !== "all") query = query.eq("status", status);
+    if (type && type !== "all") query = query.eq("type", type);
+    if (from) query = query.gte("date_of_event", `${from}T00:00:00.000Z`);
+    if (to) query = query.lte("date_of_event", `${to}T23:59:59.999Z`);
+    if (q && q.trim().length > 0) {
+      const like = `%${q}%`;
+      query = query.or(
+        `location_label.ilike.${like},state.ilike.${like},intended_action_preset.ilike.${like},intended_action_notes.ilike.${like}`,
+      );
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return NextResponse.json(data || []);
+  } catch (e: any) {
+    return jsonError(e);
+  }
+}

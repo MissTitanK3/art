@@ -185,7 +185,8 @@ export async function getPods(): Promise<Pod[]> {
             .from("pods")
             .select(
               "id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))",
-            );
+            )
+            .is("deleted_at", null);
           if (error) throw error;
           const rows = Array.isArray(data) ? data : [];
           return rows.map((row: any) => ({
@@ -215,7 +216,8 @@ export async function getPods(): Promise<Pod[]> {
         .from("pods")
         .select(
           "id, slug, name, area, channels, team:roster_entries(id, role, status, langs, skills, certs, notes, handle, joined_at, last_shift_at, signal_handle, profile:profiles(*))",
-        );
+        )
+        .is("deleted_at", null);
       if (error) throw error;
       const rows = Array.isArray(data) ? data : [];
       return rows.map((row: any) => ({
@@ -230,7 +232,8 @@ export async function getPods(): Promise<Pod[]> {
       // If RLS prevents joining roster entries, fall back to pods-only
       const { data, error } = await client
         .from("pods")
-        .select("id, slug, name, area, channels");
+        .select("id, slug, name, area, channels")
+        .is("deleted_at", null);
       if (error) throw error;
       const rows = Array.isArray(data) ? data : [];
       return rows.map((row: any) => ({
@@ -268,6 +271,7 @@ export async function getDispatchSummary(
       const { data, error } = await adminClient
         .from("dispatch_submissions")
         .select("id, status, type, timestamp")
+        .is("deleted_at", null)
         .order("timestamp", { ascending: false });
       if (error) throw error;
       const rows = (Array.isArray(data) ? data : []) as DispatchSubmission[];
@@ -292,6 +296,7 @@ export async function getDispatchSummary(
     const { data, error } = await client
       .from("dispatch_submissions")
       .select("id, status, type, timestamp")
+      .is("deleted_at", null)
       .order("timestamp", { ascending: false });
     if (error) throw error;
     const rows = (Array.isArray(data) ? data : []) as DispatchSubmission[];
@@ -377,7 +382,10 @@ export async function runDbCheck(): Promise<DbHealth> {
 export async function getTrustEntries(): Promise<TrustEntry[]> {
   try {
     const client = await createSupabaseServerClient();
-    const { data, error } = await client.from("trust_signatures").select("*");
+    const { data, error } = await client
+      .from("trust_signatures")
+      .select("*")
+      .is("deleted_at", null);
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     return rows.map((r: any) => ({

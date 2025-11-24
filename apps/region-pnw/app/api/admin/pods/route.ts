@@ -43,23 +43,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "name is required" }, { status: 400 });
     }
     const payload: any = {
+      id: crypto.randomUUID(),
       name,
       slug: slugify(name),
       area: body.area ?? "Unassigned",
       channels: Array.isArray(body.channels) ? body.channels : [],
-      created_by: callerProfile?.id ?? null,
     };
+    if (callerProfile?.id) {
+      payload.created_by = callerProfile.id;
+    }
 
     const client = await createSupabaseServerClient();
-    const { data, error } = await client
+    let { data, error } = await client
       .from("pods")
       .insert(payload)
       .select("id, slug, name, area, channels")
-      .limit(1);
+      .maybeSingle();
 
-    if (error)
+    // Handle slug collision
+    if (error && error.code === "23505") {
+      console.warn("[admin/pods] Slug collision, retrying with suffix");
+      payload.slug = `${slugify(name)}-${Math.floor(Math.random() * 1000)}`;
+      const retry = await client
+        .from("pods")
+        .insert(payload)
+        .select("id, slug, name, area, channels")
+        .maybeSingle();
+      data = retry.data;
+      error = retry.error;
+    }
+
+    if (error) {
+      console.error("[admin/pods] Create failed:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
-    const row = Array.isArray(data) ? data[0] : (data as any);
+    }
+    const row = data;
+    if (!row) {
+      throw new Error("Failed to retrieve created pod");
+    }
 
     // If a Pod Leader or Trainer created the pod, register them as a lead on this pod
     try {
