@@ -426,3 +426,27 @@ export async function updateRegionSettings(
 ): Promise<void> {
   DEMO_SETTINGS = next;
 }
+
+export async function getUserPermissionsContext(profileId: string) {
+  const client = await createSupabaseServerClient();
+
+  // Fetch user's pods (active or lead)
+  const { data: rosterData } = await client
+    .from("roster_entries")
+    .select("pod_id")
+    .eq("profile_id", profileId)
+    .is("deleted_at", null)
+    .in("status", ["active", "lead"]);
+
+  const userPods = rosterData?.map((r: any) => r.pod_id) || [];
+
+  // Fetch user's orgs
+  const { data: orgData } = await client
+    .from("organization_roles")
+    .select("org_id")
+    .eq("user_id", profileId);
+
+  const userOrgs = orgData?.map((r: any) => r.org_id) || [];
+
+  return { userPods, userOrgs };
+}

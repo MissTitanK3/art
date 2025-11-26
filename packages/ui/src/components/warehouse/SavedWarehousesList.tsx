@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
+import { VisibilityScope } from "@workspace/store/utils/permissions/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -22,6 +23,7 @@ import {
 } from "@workspace/ui/components/drawer";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { WarehouseRecord, capacityOptions, capabilityOptions, zoneSchema, binSchema } from "./types";
+import { VisibilityChip, VisibilitySelector } from "@workspace/ui/components/permissions/VisibilitySelector";
 
 type Zone = z.infer<typeof zoneSchema>;
 type Bin = z.infer<typeof binSchema>;
@@ -33,6 +35,7 @@ interface SavedWarehousesListProps {
 
 export function SavedWarehousesList({ warehouses, onWarehouseUpdate }: SavedWarehousesListProps) {
     const [editingWarehouse, setEditingWarehouse] = useState<WarehouseRecord | null>(null);
+    const [, setShowInviteModal] = useState(false);
 
     const handleEdit = (warehouse: WarehouseRecord) => {
         setEditingWarehouse({ ...warehouse });
@@ -253,6 +256,19 @@ export function SavedWarehousesList({ warehouses, onWarehouseUpdate }: SavedWare
                                                                     </SelectContent>
                                                                 </Select>
                                                             </div>
+                                                            <div className="space-y-2 md:col-span-2">
+                                                                <Label>Visibility</Label>
+                                                                <VisibilitySelector
+                                                                    value={(editingWarehouse.visibilityScope ?? "regional") as VisibilityScope}
+                                                                    onChange={(scope) =>
+                                                                        setEditingWarehouse({
+                                                                            ...editingWarehouse,
+                                                                            visibilityScope: scope,
+                                                                        })
+                                                                    }
+                                                                    onInviteUsers={() => setShowInviteModal(true)}
+                                                                />
+                                                            </div>
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label>Quick Notes</Label>
@@ -406,9 +422,9 @@ export function SavedWarehousesList({ warehouses, onWarehouseUpdate }: SavedWare
                                         </DrawerContent>
                                     </Drawer>
                                 </div>
-                                <CardDescription>
-                                    {new Date(warehouse.createdAt).toLocaleString()} •{" "}
-                                    {capacityOptions.find((opt) => opt.value === warehouse.maxCapacityRating)?.label}
+                                <CardDescription className="flex items-center gap-2">
+                                    <VisibilityChip scope={(warehouse.visibilityScope || "regional") as VisibilityScope} />
+                                    {capacityOptions.find((opt) => opt.value === warehouse.maxCapacityRating)?.label} Warehouse
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">

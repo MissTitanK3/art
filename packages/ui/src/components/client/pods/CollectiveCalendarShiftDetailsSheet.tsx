@@ -44,7 +44,7 @@ export function CollectiveCalendarShiftDetailsSheet({
 }: CollectiveCalendarShiftDetailsSheetProps) {
   if (!shift) return null;
 
-  const detailVis = visibilityBadge(shift.visibility);
+  const detailVis = visibilityBadge(shift.visibility, shift.visibilityScope);
   const signedUp = viewerId ? shift.signups.includes(viewerId) : false;
   const remaining = needsRemaining(shift);
   const DetailIcon = detailVis.icon;

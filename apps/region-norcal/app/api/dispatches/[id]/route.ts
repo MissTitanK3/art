@@ -32,6 +32,7 @@ export async function GET(
             .from('dispatch_submissions')
             .select('*')
             .eq('id', id)
+            .is('deleted_at', null)
             .maybeSingle();
         if (subError) throw subError;
         if (!submission) return NextResponse.json({ error: 'Not found' }, { status: 404 });

@@ -22,11 +22,6 @@ export const navConfig: GlobalNavConfigInput = {
       icon: 'new',
       href: '/team-req',
       roles: elevatedRoles,
-      // children: [
-      //   { label: 'Rapid Response Request', href: '/team-req', roles: elevatedRoles },
-      //   { label: 'Community Aid Request', href: '/team-req', roles: elevatedRoles },
-      //   { label: 'Technical Aid Request', href: '/team-req', roles: elevatedRoles },
-      // ],
     },
     {
       label: 'Meet-A-Need',
@@ -58,16 +53,17 @@ export const navConfig: GlobalNavConfigInput = {
           href: '/confirmed-watch',
           roles: verifiedAdmins,
         },
-        { label: 'Coverage Schedules', href: '/schedules', roles: localAdmins },
+        { label: 'Dispatcher Schedules', href: '/schedules', roles: localAdmins },
         { label: 'Warehouse', href: '/warehouse', roles: elevatedRoles },
       ],
     },
     {
-      label: 'Pods',
+      label: 'Community',
       icon: 'map-pin',
       roles: completeOnboarding,
       children: [
-        { label: 'Directory', href: '/pods', roles: completeOnboarding, match: 'exact' },
+        { label: 'Organizations', href: '/organizations', roles: completeOnboarding },
+        { label: 'Pods', href: '/pods', roles: completeOnboarding, match: 'exact' },
         { label: 'Collective Calendar', href: '/pods/calendar', roles: completeOnboarding },
       ],
     },
@@ -83,12 +79,6 @@ export const navConfig: GlobalNavConfigInput = {
         { label: 'Present', href: '/present', roles: elevatedRoles },
       ],
     },
-    // {
-    //   label: 'Warehousing',
-    //   icon: 'wharehouse',
-    //   href: '/warehousing',
-    //   roles: verifiedRoles,
-    // },
   ],
   secondary: [
     {
@@ -126,7 +116,6 @@ export const navConfig: GlobalNavConfigInput = {
           icon: 'log-out',
           roles: completeOnboarding,
         },
-        // { label: 'Credential Card', href: '/credentials' },
       ],
     },
   ],

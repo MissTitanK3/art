@@ -27,7 +27,9 @@ export type VisibilityScope =
     | 'create_pathway_class'
     | 'manage_advocacy'
     | 'manage_notifications'
-    | 'manage_users';
+    | 'manage_users'
+    | 'only_myself'
+    | 'manually_selected';
 
 export type TemporaryScope =
     | 'dispatch_event_scoped'
@@ -47,6 +49,12 @@ export interface PermissionsContext {
     targetPodId?: string;
     targetOrgId?: string;
     targetRegionId?: string;
+
+    // Extended context for multi-org and polymorphic ownership
+    invitedUserIds?: string[];
+    ownerProfileId?: string;
+    ownerPodIds?: string[];
+    ownerOrgIds?: string[];
 
     temporaryScopes?: TemporaryScope[];
 }

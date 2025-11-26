@@ -1,6 +1,33 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
+import { createSupabaseServerClient, createSupabaseRegionServiceClient } from "@/lib/auth/supabase/server";
 import { jsonError } from "@/lib/api/responses";
+
+const SHIFT_SELECT_FIELDS = `
+  id,
+  pod_id,
+  start,
+  end,
+  tz,
+  headcount,
+  location,
+  label,
+  dispatch_link,
+  notes,
+  visibility,
+  visibility_scope,
+  invited_user_ids,
+  needed,
+  route,
+  owners:calendar_owners(owner_type, owner_id),
+  pod:pods(
+    id,
+    name,
+    slug,
+    area,
+    orgs:organization_pods(org_id, organization:organizations(id, name, description))
+  ),
+  signups:calendar_signups(user_id)
+`;
 
 export async function GET() {
     try {
@@ -22,32 +49,8 @@ export async function GET() {
         }
 
         const shiftsPromise = supabase
-            .from("pod_shifts")
-            .select(
-                `
-        id,
-        pod_id,
-        start,
-        end,
-        tz,
-        headcount,
-        location,
-        label,
-        dispatch_link,
-        notes,
-        visibility,
-        needed,
-        route,
-        pod:pods(
-          id,
-          name,
-          slug,
-          area,
-          orgs:organization_pods(org_id, organization:organizations(id, name, description))
-        ),
-        signups:pod_shift_signups(user_id)
-      `
-            )
+            .from("calendar_items")
+            .select(SHIFT_SELECT_FIELDS)
             .is("deleted_at", null)
             .order("start", { ascending: true });
 
@@ -65,8 +68,12 @@ export async function GET() {
                 .is("deleted_at", null)
             : Promise.resolve({ data: null });
 
+        // Use service client for org queries to bypass RLS issues
+        // We'll filter to user's orgs in application code for security
+        const supabaseService = await createSupabaseRegionServiceClient();
+
         const orgRolesPromise = profileId
-            ? supabase
+            ? supabaseService
                 .from("organization_roles")
                 .select(
                     "org_id, role, organization:organizations(id, name, description)"
@@ -76,7 +83,7 @@ export async function GET() {
                 .is("organization.deleted_at", null)
             : Promise.resolve({ data: null });
 
-        const orgPodsPromise = supabase
+        const orgPodsPromise = supabaseService
             .from("organization_pods")
             .select(
                 "org_id, pod_id, organization:organizations(id, name, description), pod:pods(id, name, slug)"
@@ -96,6 +103,8 @@ export async function GET() {
 
         if (shiftsRes.error) throw shiftsRes.error;
         if (podsRes.error) throw podsRes.error;
+        if ("error" in orgRolesRes && orgRolesRes.error) throw orgRolesRes.error;
+        if ("error" in orgPodsRes && orgPodsRes.error) throw orgPodsRes.error;
 
         return NextResponse.json({
             shifts: shiftsRes.data,

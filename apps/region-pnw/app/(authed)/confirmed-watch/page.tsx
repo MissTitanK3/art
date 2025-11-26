@@ -1,5 +1,5 @@
 import { requireVerifiedAdminAccess } from "@/lib/guards";
-import ConfirmedWatchForm from "@/components/client/ConfirmedWatchForm";
+import ConfirmedWatchForm from "./form.client";
 
 export default async function ConfirmedWatchPage() {
   await requireVerifiedAdminAccess();

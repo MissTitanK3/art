@@ -21,7 +21,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         capabilities: {
           flags: updates.capabilities || [],
           quick_note: updates.quickNotes || '',
+          site_type: updates.siteType || 'home',
         },
+        visibility_scope: updates.visibilityScope || 'regional',
+        invited_user_ids: updates.invitedUserIds || [],
       })
       .eq('id', warehouseId);
 

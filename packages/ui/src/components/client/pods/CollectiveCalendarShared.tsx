@@ -1,4 +1,4 @@
-import { Shield, ShieldCheck } from "lucide-react";
+import { Shield, ShieldCheck, User } from "lucide-react";
 import React from "react";
 import {
   endOfDay,
@@ -8,6 +8,8 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+
+import { VisibilityScope } from "@workspace/store/utils/permissions/types";
 
 export type CalendarVisibility = "public" | "org" | "private";
 
@@ -31,6 +33,12 @@ export type CalendarRouteMeta = {
   data?: unknown;
 } | null;
 
+export type CalendarOwnerLink = {
+  ownerType: "user" | "pod" | "org";
+  ownerId: string;
+  ownerProfileId?: string;
+};
+
 export type CollectiveCalendarShift = {
   id: string;
   start: string;
@@ -47,6 +55,9 @@ export type CollectiveCalendarShift = {
   dispatchLink?: string | null;
   notes?: string | null;
   signups: string[];
+  visibilityScope?: VisibilityScope | null;
+  invitedUserIds?: string[];
+  owners?: CalendarOwnerLink[];
 };
 
 export type CollectiveCalendarMembership = {
@@ -56,7 +67,7 @@ export type CollectiveCalendarMembership = {
   userId?: string | null;
 };
 
-export type CollectiveCalendarShiftScope = "independent" | "org";
+export type CollectiveCalendarShiftScope = "independent" | "pod" | "org";
 
 export type CollectiveCalendarShiftInput = {
   id?: string;
@@ -73,6 +84,11 @@ export type CollectiveCalendarShiftInput = {
   notes?: string | null;
   scope?: CollectiveCalendarShiftScope;
   organizationId?: string | null;
+  visibilityScope?: VisibilityScope | null;
+  invitedUserIds?: string[];
+  ownerProfileId?: string | null;
+  ownerPodIds?: string[];
+  ownerOrgIds?: string[];
 };
 
 export function EyeOpen(props: React.ComponentProps<"svg">) {
@@ -92,13 +108,23 @@ export function EyeOpen(props: React.ComponentProps<"svg">) {
   );
 }
 
-export function visibilityBadge(visibility: CalendarVisibility) {
+export function visibilityBadge(
+  visibility: CalendarVisibility,
+  scope?: VisibilityScope | null,
+) {
   switch (visibility) {
     case "public":
       return { label: "Public", variant: "outline" as const, icon: EyeOpen };
     case "org":
       return { label: "Org only", variant: "secondary" as const, icon: Shield };
     case "private":
+      if (scope === "only_myself") {
+        return {
+          label: "Only Me",
+          variant: "destructive" as const,
+          icon: User,
+        };
+      }
       return {
         label: "Pod only",
         variant: "destructive" as const,

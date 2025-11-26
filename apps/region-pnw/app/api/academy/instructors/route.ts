@@ -12,7 +12,8 @@ export async function GET() {
 
         const { data, error } = await supabase
             .from('academy_instructors')
-            .select('*');
+            .select('*')
+            .is('deleted_at', null);
 
         if (error) throw error;
 

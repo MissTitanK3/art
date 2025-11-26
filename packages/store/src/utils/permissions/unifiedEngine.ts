@@ -11,6 +11,24 @@ export function evaluateAccess(
 ): VisibilityResult {
     const debug: any[] = [];
 
+    // Diagnostic snapshot for debugging and auditing
+    if (DEBUG) {
+        debug.push({
+            step: 'context_snapshot',
+            userId: ctx.userId,
+            navRole: ctx.navRole,
+            userPods: ctx.userPods ?? [],
+            userOrgs: ctx.userOrgs ?? [],
+            ownerProfileId: ctx.ownerProfileId,
+            ownerPodIds: ctx.ownerPodIds ?? [],
+            ownerOrgIds: ctx.ownerOrgIds ?? [],
+            invitedUserIds: ctx.invitedUserIds ?? [],
+            targetPodId: ctx.targetPodId,
+            targetOrgId: ctx.targetOrgId,
+            scope,
+        });
+    }
+
     // 1. Temporary overrides
     for (const key of Object.keys(tempResolvers)) {
         const allowed = tempResolvers[key as keyof typeof tempResolvers](ctx);

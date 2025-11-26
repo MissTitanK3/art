@@ -26,7 +26,8 @@ import {
 type UrgencyFilter = "all" | "urgent" | "none";
 
 export interface MissingPersonsDirectoryProps {
-  records: DetaineeIntake[];
+  records?: DetaineeIntake[];
+  fetchUrl?: string;
   /**
    * Optionally override how the view-details link is generated for each record.
    */
@@ -87,16 +88,85 @@ const defaultRenderRecordLink = (
   label: string,
 ) => <a href={href}>{label}</a>;
 
+function mergeRecords(
+  remote: DetaineeIntake[],
+  local: DetaineeIntake[],
+): DetaineeIntake[] {
+  const merged = new Map<string, DetaineeIntake>();
+
+  const addRecord = (
+    record: DetaineeIntake,
+    index: number,
+    origin: string,
+  ) => {
+    const key =
+      record.caseId ??
+      record.fullName ??
+      record.aNumber ??
+      record.createdAt ??
+      `${origin}-${index}`;
+    if (!merged.has(key)) {
+      merged.set(key, record);
+    }
+  };
+
+  local.forEach((record, index) => addRecord(record, index, "local"));
+  remote.forEach((record, index) => addRecord(record, index, "remote"));
+
+  return Array.from(merged.values());
+}
+
 export function MissingPersonsDirectory({
-  records,
+  records = [],
+  fetchUrl,
   getRecordHref = defaultRecordHref,
   renderRecordLink = defaultRenderRecordLink,
 }: MissingPersonsDirectoryProps) {
   const [query, setQuery] = React.useState("");
   const [urgencyFilter, setUrgencyFilter] =
     React.useState<UrgencyFilter>("all");
+  const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const searchableRecords = React.useMemo(() => records ?? [], [records]);
+  React.useEffect(() => {
+    if (!fetchUrl) return;
+    let active = true;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(fetchUrl!);
+        if (!res.ok) throw new Error("Failed to fetch records");
+        const json = await res.json();
+        if (active) {
+          setRemoteRecords(Array.isArray(json.records) ? json.records : []);
+        }
+      } catch (err) {
+        if (active) {
+          console.warn("MissingPersonsDirectory: failed to fetch", err);
+          setError("Unable to load live missing person records.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [fetchUrl]);
+
+  const allRecords = React.useMemo(() => {
+    if (!fetchUrl && records.length === 0) return [];
+    return mergeRecords(remoteRecords, records);
+  }, [records, remoteRecords, fetchUrl]);
+
+  const searchableRecords = React.useMemo(() => allRecords ?? [], [allRecords]);
 
   const filteredRecords = React.useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -141,6 +211,12 @@ export function MissingPersonsDirectory({
 
   return (
     <div className="space-y-4">
+      {loading ? (
+        <p className="text-sm text-muted-foreground">
+          Loading missing person directory…
+        </p>
+      ) : null}
+      {error ? <p className="text-sm text-amber-600">{error}</p> : null}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <div className="relative flex-1">

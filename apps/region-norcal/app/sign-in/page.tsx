@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
-import { SignInCard } from "@/components/client/auth/SignInCard";
+import { SignInCard } from "@/components/auth/SignInCard";
 
 export const metadata: Metadata = {
   title: "Sign in",

@@ -158,6 +158,7 @@ export async function GET() {
     const { data, error } = await client
       .from("pods")
       .select("id, slug, name, area, channels")
+      .is("deleted_at", null)
       .order("name", { ascending: true });
     if (error)
       return NextResponse.json({ error: error.message }, { status: 500 });

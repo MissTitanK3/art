@@ -103,6 +103,16 @@ export const roleAllowedForScope = (role: NavRole | undefined, scope: Visibility
             'regional_admin',
             'national_admin',
         ],
+        only_myself: [
+            'team_member', 'pod_leader', 'trainer', 'dispatcher_basic',
+            'dispatcher_verified', 'dispatcher_admin', 'admin',
+            'regional_admin', 'national_admin'
+        ],
+        manually_selected: [
+            'team_member', 'pod_leader', 'trainer', 'dispatcher_basic',
+            'dispatcher_verified', 'dispatcher_admin', 'admin',
+            'regional_admin', 'national_admin'
+        ],
     };
 
     return rules[scope].includes(role);

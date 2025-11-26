@@ -6,6 +6,8 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { Input } from "@workspace/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { VisibilitySelector } from "@workspace/ui/components/permissions/VisibilitySelector";
+import { VisibilityScope } from "@workspace/store/utils/permissions/types";
 import { ZoneCard } from "./ZoneCard";
 import { PlanPreviewCard } from "./PlanPreviewCard";
 import {
@@ -32,6 +34,7 @@ export interface WarehouseBuilderLayoutProps {
     appendZone: UseFieldArrayAppend<WarehouseFormValues, "zones">;
     removeZone: UseFieldArrayRemove;
     watchedPlan: WarehouseFormValues;
+    visibility: VisibilityScope;
 
     // Handlers
     onSubmit: (values: WarehouseFormValues) => Promise<void>;
@@ -40,6 +43,8 @@ export interface WarehouseBuilderLayoutProps {
     useMyNameForSteward: () => void;
     ensureZoneRemovalSafe: (id: string) => boolean;
     ensureBinRemovalSafe: (id: string) => boolean;
+    setVisibility: (scope: VisibilityScope) => void;
+    setShowInviteModal: (show: boolean) => void;
 }
 
 export function WarehouseBuilderLayout({
@@ -53,12 +58,15 @@ export function WarehouseBuilderLayout({
     appendZone,
     removeZone,
     watchedPlan,
+    visibility,
     onSubmit,
     handleSelectWarehouse,
     startNewWarehouse,
     useMyNameForSteward,
     ensureZoneRemovalSafe,
     ensureBinRemovalSafe,
+    setVisibility,
+    setShowInviteModal,
 }: WarehouseBuilderLayoutProps) {
     return (
         <div className="space-y-8 px-4 py-8">
@@ -87,7 +95,7 @@ export function WarehouseBuilderLayout({
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="flex flex-col gap-3 rounded-lg border bg-muted/40 p-3 md:flex-row md:items-center md:justify-between">
+                        <div className="flex flex-col gap-3 rounded-lg border bg-muted/40 p-3 lg:flex-row md:items-center md:justify-between">
                             <div>
                                 <p className="text-sm font-semibold">Active steward</p>
                                 <p className="text-sm text-muted-foreground">
@@ -254,6 +262,17 @@ export function WarehouseBuilderLayout({
                                             </FormItem>
                                         )}
                                     />
+                                    <FormItem className="md:col-span-2 space-y-2">
+                                        <FormLabel>Visibility</FormLabel>
+                                        <VisibilitySelector
+                                            value={visibility}
+                                            onChange={setVisibility}
+                                            onInviteUsers={() => setShowInviteModal(true)}
+                                        />
+                                        <FormDescription>
+                                            Choose who can view or manage this warehouse. Inviting users opens the share modal.
+                                        </FormDescription>
+                                    </FormItem>
                                 </section>
 
                                 <FormField

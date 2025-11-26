@@ -24,10 +24,10 @@ export async function POST(
         const signupId = profileRow?.id ?? profileRow?.user_id ?? userId;
 
         const { error } = await supabase
-            .from("pod_shift_signups")
+            .from("calendar_signups")
             .upsert({
                 id: crypto.randomUUID(),
-                shift_id: id,
+                item_id: id,
                 user_id: signupId,
             });
 

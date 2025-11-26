@@ -33,6 +33,8 @@ export async function POST(req: Request) {
             urban_type: warehouseData.urbanType,
             capabilities: capabilityPayload,
             max_capacity_rating: warehouseData.maxCapacityRating,
+            visibility_scope: warehouseData.visibilityScope || "regional",
+            invited_user_ids: warehouseData.invitedUserIds || [],
         });
 
         if (warehouseError) throw warehouseError;

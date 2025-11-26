@@ -86,7 +86,6 @@ function summarizeDayShifts(shifts: CollectiveCalendarShift[]): DaySummary {
   const earliest = sorted[0]!;
   const latest = sorted[sorted.length - 1]!;
   const tz = earliest.tz;
-  const shiftCountLabel = shifts.length === 1 ? "1 shift" : `${shifts.length} shifts`;
   const firstStartFormatter = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     minute: "numeric",
@@ -149,6 +148,19 @@ export function CollectiveCalendarView({
   onSelectShift,
   onAddShiftAt,
 }: CollectiveCalendarViewProps) {
+  const [currentHour, setCurrentHour] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Update current hour every minute to keep highlight accurate
+    const updateCurrentHour = () => {
+      const now = new Date();
+      setCurrentHour(now.getHours());
+    };
+    updateCurrentHour();
+    const interval = setInterval(updateCurrentHour, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
 
   const weekdayLabels = useMemo(() => {
@@ -254,98 +266,142 @@ export function CollectiveCalendarView({
     );
   };
 
-  const renderDayTimeline = () => {
+  // Auto-scroll for Day View
+  useEffect(() => {
+    if (viewMode === "day" && isToday(selectedDay)) {
+      // Small timeout to ensure render is complete
+      const timer = setTimeout(() => {
+        const el = document.getElementById("day-view-current-hour");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [viewMode, selectedDay]);
+
+  // Auto-scroll for Month Sheet
+  useEffect(() => {
+    if (viewMode === "month" && monthSheetOpen && isToday(selectedDay)) {
+      // Slightly longer timeout for sheet animation
+      const timer = setTimeout(() => {
+        const el = document.getElementById("month-sheet-current-hour");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [viewMode, monthSheetOpen, selectedDay]);
+
+  const renderDayTimeline = (context: "day-view" | "month-sheet") => {
+    const isTodaySelected = isToday(selectedDay);
+
     return (
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold">{formatDay(selectedDay)}</p>
-            <p className="text-xs text-muted-foreground">
-              + Add shift will fill in that hour automatically.
-            </p>
+        {context === "day-view" && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold">{formatDay(selectedDay)}</p>
+              <p className="text-xs text-muted-foreground">
+                + Add shift will fill in that hour automatically.
+              </p>
+            </div>
+            <div className="flex w-full flex-wrap items-center justify-between gap-2 text-xs sm:w-auto sm:justify-end">
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => setSelectedDay(addDays(selectedDay, -1))}
+              >
+                ◀
+              </Button>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => setSelectedDay(addDays(selectedDay, 1))}
+              >
+                ▶
+              </Button>
+            </div>
           </div>
-          <div className="flex w-full flex-wrap items-center justify-between gap-2 text-xs sm:w-auto sm:justify-end">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setSelectedDay(addDays(selectedDay, -1))}
-            >
-              ◀
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setSelectedDay(addDays(selectedDay, 1))}
-            >
-              ▶
-            </Button>
-          </div>
-        </div>
-        {selectedDayShifts.length === 0 ? (
+        )}
+        {selectedDayShifts.length === 0 && context === "day-view" ? (
           <p className="text-sm text-muted-foreground">
             No shifts on this day yet — add one below.
           </p>
         ) : null}
         <div className="rounded-md border">
-          {dayTimeline.map(({ hourStart, entries }) => (
-            <div
-              key={hourStart.toISOString()}
-              className="flex flex-col gap-3 border-b px-3 py-3 last:border-b-0 md:flex-row"
-            >
-              <div className="flex items-center justify-between gap-2 md:w-32 md:flex-col md:items-start">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {format(hourStart, "h a")}
-                </p>
-                {onAddShiftAt && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 px-2 text-xs"
-                    onClick={() => onAddShiftAt(hourStart)}
-                  >
-                    + Add shift
-                  </Button>
+          {dayTimeline.map(({ hourStart, entries }) => {
+            const isCurrentHour =
+              isTodaySelected && hourStart.getHours() === currentHour;
+
+            return (
+              <div
+                key={hourStart.toISOString()}
+                id={isCurrentHour ? `${context}-current-hour` : undefined}
+                className={cn(
+                  "flex flex-col gap-3 border-b px-3 py-3 last:border-b-0 md:flex-row transition-colors duration-500",
+                  isCurrentHour && "bg-primary/5 ring-1 ring-inset ring-primary/30"
                 )}
-              </div>
-              <div className="flex-1 space-y-2">
-                {entries.length === 0 ? (
-                  <div className="flex h-10 items-center justify-between rounded border border-dashed border-muted/50 px-3 text-xs text-muted-foreground">
-                    <span>No coverage registered</span>
-                    {!onAddShiftAt && <span>—</span>}
-                  </div>
-                ) : (
-                  entries.map(({ shift, isStart }) =>
-                    isStart ? (
-                      <CollectiveCalendarShiftCard
-                        key={`${shift.id}-${hourStart.toISOString()}`}
-                        shift={shift}
-                        onClick={onSelectShift}
-                      />
-                    ) : (
-                      <div
-                        key={`${shift.id}-${hourStart.toISOString()}-cont`}
-                        className="rounded-md border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs"
-                      >
-                        <p className="font-semibold leading-tight">
-                          {shift.label ?? shift.pod.name}
-                        </p>
-                        <p className="text-[0.65rem] text-muted-foreground">
-                          Continues through this hour
-                        </p>
-                        <p
-                          className="text-[0.65rem] text-muted-foreground"
-                          suppressHydrationWarning
+              >
+                <div className="flex items-center justify-between gap-2 md:w-32 md:flex-col md:items-start">
+                  <p className={cn(
+                    "text-xs font-semibold uppercase tracking-wide",
+                    isCurrentHour ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {format(hourStart, "h a")}
+                  </p>
+                  {onAddShiftAt && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 px-2 text-xs"
+                      onClick={() => onAddShiftAt(hourStart)}
+                    >
+                      + Add shift
+                    </Button>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  {entries.length === 0 ? (
+                    <div className="flex h-10 items-center justify-between rounded border border-dashed border-muted/50 px-3 text-xs text-muted-foreground">
+                      <span>No coverage registered</span>
+                      {!onAddShiftAt && <span>—</span>}
+                    </div>
+                  ) : (
+                    entries.map(({ shift, isStart }) =>
+                      isStart ? (
+                        <CollectiveCalendarShiftCard
+                          key={`${shift.id}-${hourStart.toISOString()}`}
+                          shift={shift}
+                          onClick={onSelectShift}
+                        />
+                      ) : (
+                        <div
+                          key={`${shift.id}-${hourStart.toISOString()}-cont`}
+                          className="rounded-md border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs"
                         >
-                          {formatDateRange(shift.start, shift.end, shift.tz)}
-                        </p>
-                      </div>
-                    ),
-                  )
-                )}
+                          <p className="font-semibold leading-tight">
+                            {shift.label ?? shift.pod.name}
+                          </p>
+                          <p className="text-[0.65rem] text-muted-foreground">
+                            Continues through this hour
+                          </p>
+                          <p
+                            className="text-[0.65rem] text-muted-foreground"
+                            suppressHydrationWarning
+                          >
+                            {formatDateRange(shift.start, shift.end, shift.tz)}
+                          </p>
+                        </div>
+                      ),
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -494,64 +550,7 @@ export function CollectiveCalendarView({
                   Nothing scheduled — timeline shows open hours.
                 </p>
               ) : null}
-              <div className="rounded-md border">
-                {dayTimeline.map(({ hourStart, entries }) => (
-                  <div
-                    key={hourStart.toISOString()}
-                    className="flex gap-3 border-b px-3 py-2 last:border-b-0"
-                  >
-                    <div className="flex flex-col items-center justify-between gap-2 md:w-32 md:flex-row md:items-start">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {format(hourStart, "h a")}
-                      </p>
-                      {onAddShiftAt && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 px-2 text-xs"
-                          onClick={() => onAddShiftAt(hourStart)}
-                        >
-                          + Add shift
-                        </Button>
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col gap-2">
-                      {entries.length === 0 ? (
-                        <div className="h-10 rounded border border-dashed border-muted/40 bg-muted/5" />
-                      ) : (
-                        entries.map(({ shift, isStart }) =>
-                          isStart ? (
-                            <CollectiveCalendarShiftCard
-                              key={`${shift.id}-${hourStart.toISOString()}`}
-                              shift={shift}
-                              onClick={onSelectShift}
-                            />
-                          ) : (
-                            <div
-                              key={`${shift.id}-${hourStart.toISOString()}-cont`}
-                              className="rounded-md border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs"
-                            >
-                              <p className="font-semibold leading-tight">
-                                {shift.label ?? shift.pod.name}
-                              </p>
-                              <p className="text-[0.65rem] text-muted-foreground">
-                                Continues through this hour
-                              </p>
-                              <p
-                                className="text-[0.65rem] text-muted-foreground"
-                                suppressHydrationWarning
-                              >
-                                {formatDateRange(shift.start, shift.end, shift.tz)}
-                              </p>
-                            </div>
-                          ),
-                        )
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {renderDayTimeline("month-sheet")}
             </div>
           </SheetContent>
         </Sheet>
@@ -609,7 +608,7 @@ export function CollectiveCalendarView({
         ) : viewMode === "month" ? (
           renderMonthOverview()
         ) : viewMode === "day" ? (
-          renderDayTimeline()
+          renderDayTimeline("day-view")
         ) : filteredShifts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No shifts match these filters.

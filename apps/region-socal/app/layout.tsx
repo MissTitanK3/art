@@ -5,9 +5,9 @@ import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import type { AuthSession } from "@/lib/auth/types";
-import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
+import { GlobalNavBridge } from "@/components/nav/GlobalNavBridge";
 import RegisterServiceWorker from "./components/register-sw";
-import InstallPrompt from "@/components/client/InstallPrompt";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
 
 // Ensure layout and session are always computed per-request in production
 export const dynamic = "force-dynamic";
@@ -20,12 +20,12 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
   ),
   title: {
-    default: "ART Region SOCAL",
-    template: "%s · ART Region SOCAL",
+    default: "ART Region PNW",
+    template: "%s · ART Region PNW",
   },
   description:
     "Regional dispatch operations template: pods, shifts, onboarding, and trust list—siloed per-region with metadata-only uplinks.",
-  applicationName: "ART Dispatch — SOCAL",
+  applicationName: "ART Dispatch — PNW",
   keywords: [
     "dispatch",
     "regional",
@@ -43,16 +43,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "ART. Region SOCAL",
-    title: "ART. Region SOCAL",
+    siteName: "ART. Region PNW",
+    title: "ART. Region PNW",
     description: "Siloed regional operations with cross‑region metadata only.",
     images: [
-      { url: "/og.png", width: 1200, height: 630, alt: "ART. Region SOCAL" },
+      { url: "/og.png", width: 1200, height: 630, alt: "ART. Region PNW" },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ART. Region SOCAL",
+    title: "ART. Region PNW",
     description: "Siloed regional operations with cross‑region metadata only.",
     images: ["/og.png"],
     creator: "@alwaysreadytools",

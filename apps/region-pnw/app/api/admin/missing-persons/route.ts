@@ -41,6 +41,7 @@ export async function GET() {
                     'last_updated',
                 ].join(', ')
             )
+            .is('deleted_at', null)
             .order('last_updated', { ascending: false, nullsFirst: false });
 
         if (error) throw error;

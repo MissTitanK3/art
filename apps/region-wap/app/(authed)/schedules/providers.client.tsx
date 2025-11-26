@@ -3,13 +3,18 @@
 import type { PropsWithChildren } from "react";
 import { PodStoreProvider } from "@/providers/PodStoreProvider";
 import { DispatchStoreProvider } from "@/providers/DispatchStoreProvider";
-import PodDataHydrator from "@/components/dataLayer/pods/PodDataHydrator";
+import { usePodData } from "@/hooks/usePodData";
+
+function DataHydrator() {
+  usePodData();
+  return null;
+}
 
 export default function SchedulesClientLayout({ children }: PropsWithChildren) {
   return (
     <DispatchStoreProvider>
       <PodStoreProvider>
-        <PodDataHydrator />
+        <DataHydrator />
         {children}
       </PodStoreProvider>
     </DispatchStoreProvider>

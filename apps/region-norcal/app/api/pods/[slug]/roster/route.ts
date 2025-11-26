@@ -14,6 +14,7 @@ export async function GET(
             .from("pods")
             .select("id")
             .eq("slug", slug)
+            .is("deleted_at", null)
             .maybeSingle();
 
         if (podError) {
@@ -36,6 +37,7 @@ export async function GET(
             .from("roster_entries")
             .select("*, profile:profiles(*)")
             .eq("pod_id", pod.id)
+            .is("deleted_at", null)
             .order("joined_at", { ascending: true });
 
         if (error) {

@@ -149,6 +149,8 @@ CREATE TABLE IF NOT EXISTS public.organization_roles (
   flagged BOOLEAN DEFAULT FALSE,
   updated_at TIMESTAMPTZ DEFAULT now(),
   deleted_at TIMESTAMPTZ,
+  visibility_scope TEXT DEFAULT 'org_and_region_masked',
+  invited_user_ids TEXT[],
   CONSTRAINT dispatch_status_check CHECK (
     status IS NULL OR status IN (
       'preplanning','unconfirmed','confirmed','mobilizing','in_progress','debriefing','completed','cancelled','expired','archived'
@@ -183,6 +185,8 @@ CREATE TABLE IF NOT EXISTS public.organization_roles (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     attachments JSONB DEFAULT '[]',
+    visibility_scope TEXT DEFAULT 'org_and_region_masked',
+    invited_user_ids TEXT[],
     CONSTRAINT dispatch_updates_attachments_json_check CHECK (
       attachments IS NULL OR jsonb_typeof(attachments) = 'array'
     )
@@ -202,6 +206,8 @@ CREATE TABLE IF NOT EXISTS public.organization_roles (
     accountability_notes TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
+    visibility_scope TEXT DEFAULT 'org_and_region_masked',
+    invited_user_ids TEXT[],
     CONSTRAINT dispatch_logistics_category_check CHECK (
       category IS NULL OR category IN ('transport','supply','comms','rally_point','other')
     ),
@@ -702,37 +708,98 @@ CREATE TABLE IF NOT EXISTS public.meet_a_need (
   TO authenticated
   USING (bucket_id = 'media' AND owner = auth.uid());
 
-  -- Pod shifts (field operations scheduling)
-  -- Separate from dispatch_shifts which track dispatch desk coverage
-CREATE TABLE IF NOT EXISTS public.pod_shifts (
-  id TEXT PRIMARY KEY,
-  pod_id TEXT REFERENCES public.pods(id) ON DELETE RESTRICT,
-  start TIMESTAMPTZ,
-  "end" TIMESTAMPTZ,
-  tz TEXT,
-  headcount INTEGER DEFAULT 1 CHECK (headcount >= 1),
+  -- Calendar Items (formerly pod_shifts)
+  -- Field operations scheduling, shifts, and general calendar events
+  CREATE TABLE IF NOT EXISTS public.calendar_items (
+    id TEXT PRIMARY KEY,
+    pod_id TEXT REFERENCES public.pods(id) ON DELETE RESTRICT, -- Optional link to pod
+    start TIMESTAMPTZ,
+    "end" TIMESTAMPTZ,
+    tz TEXT,
+    headcount INTEGER DEFAULT 1 CHECK (headcount >= 1),
     location TEXT,
     label TEXT,
     dispatch_link TEXT,
     notes TEXT,
-  visibility TEXT DEFAULT 'public',
-  needed INTEGER DEFAULT 0,
-  route JSONB,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  deleted_at TIMESTAMPTZ,
-  CONSTRAINT pod_shifts_visibility_check CHECK (
-    visibility IN ('public','org','private')
-  )
-);
+    visibility TEXT DEFAULT 'public', -- Legacy visibility enum
+    needed INTEGER DEFAULT 0,
+    route JSONB,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ,
+    visibility_scope TEXT DEFAULT 'org_and_region_masked', -- New universal scope
+    invited_user_ids TEXT[],
+    CONSTRAINT calendar_items_visibility_check CHECK (
+      visibility IN ('public','org','private')
+    )
+  );
 
-  -- Crew signups per shift
-CREATE TABLE IF NOT EXISTS public.pod_shift_signups (
-  id TEXT PRIMARY KEY,
-  shift_id TEXT NOT NULL REFERENCES public.pod_shifts(id) ON DELETE CASCADE,
-  user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  CONSTRAINT pod_shift_signups_unique_shift_user UNIQUE (shift_id, user_id)
-);
+  -- Calendar Signups (formerly pod_shift_signups)
+  CREATE TABLE IF NOT EXISTS public.calendar_signups (
+    id TEXT PRIMARY KEY,
+    item_id TEXT NOT NULL REFERENCES public.calendar_items(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT calendar_signups_unique_item_user UNIQUE (item_id, user_id)
+  );
+
+  -- AARs (After Action Reports)
+  CREATE TABLE IF NOT EXISTS public.aars (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    date TIMESTAMPTZ,
+    summary TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ,
+    visibility_scope TEXT DEFAULT 'org_and_region_masked',
+    invited_user_ids TEXT[]
+  );
+
+  -- Owners Tables (Polymorphic)
+  CREATE TABLE IF NOT EXISTS public.dispatch_owners (
+    resource_id TEXT NOT NULL REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    PRIMARY KEY (resource_id, owner_type, owner_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS public.academy_owners (
+    resource_id TEXT NOT NULL REFERENCES public.academy_classes(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    PRIMARY KEY (resource_id, owner_type, owner_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS public.calendar_owners (
+    resource_id TEXT NOT NULL REFERENCES public.calendar_items(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    PRIMARY KEY (resource_id, owner_type, owner_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS public.aar_owners (
+    resource_id TEXT NOT NULL REFERENCES public.aars(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    PRIMARY KEY (resource_id, owner_type, owner_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS public.logistics_item_owners (
+    resource_id TEXT NOT NULL REFERENCES public.dispatch_logistics(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    PRIMARY KEY (resource_id, owner_type, owner_id)
+  );
+
+  -- Enable RLS
+  ALTER TABLE public.calendar_items ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.calendar_signups ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.aars ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.dispatch_owners ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.academy_owners ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.calendar_owners ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.aar_owners ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.logistics_item_owners ENABLE ROW LEVEL SECURITY;
 
   -- Academy
 CREATE TABLE IF NOT EXISTS public.academy_instructors (
@@ -786,6 +853,8 @@ CREATE TABLE IF NOT EXISTS public.academy_classes (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   deleted_at TIMESTAMPTZ,
+  visibility_scope TEXT DEFAULT 'org_and_region_masked',
+  invited_user_ids TEXT[],
   CONSTRAINT academy_class_modality_check CHECK (
     modality IS NULL OR modality IN ('in_person','online','hybrid')
   ),
@@ -815,6 +884,8 @@ CREATE TABLE IF NOT EXISTS public.academy_sessions (
   related_topic TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
+  visibility_scope TEXT DEFAULT 'org_and_region_masked',
+  invited_user_ids TEXT[],
     CONSTRAINT academy_session_seats_json_check CHECK (
       seats IS NULL OR jsonb_typeof(seats) = 'object'
     ),
@@ -1661,6 +1732,8 @@ CREATE TABLE IF NOT EXISTS public.warehouses (
     urban_type TEXT,
     capabilities JSONB DEFAULT '[]',
     max_capacity_rating TEXT,
+    visibility_scope TEXT DEFAULT 'regional',
+    invited_user_ids TEXT[],
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     deleted_at TIMESTAMPTZ
@@ -1734,6 +1807,101 @@ CREATE TABLE IF NOT EXISTS public.warehouse_pick_lists (
     created_at TIMESTAMPTZ DEFAULT now(),
     deleted_at TIMESTAMPTZ
 );
+
+-- Warehouse Owners (Polymorphic Ownership)
+CREATE TABLE IF NOT EXISTS public.warehouse_owners (
+    warehouse_id TEXT NOT NULL REFERENCES public.warehouses(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL,       -- 'user','pod','org'
+    owner_id TEXT NOT NULL,         -- profile.id, pods.id, organizations.id
+    PRIMARY KEY (warehouse_id, owner_type, owner_id)
+);
+
+-- Enable RLS on Warehouses and Owners
+ALTER TABLE public.warehouses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.warehouse_owners ENABLE ROW LEVEL SECURITY;
+
+-- Function to check warehouse ownership (Bypasses RLS to avoid recursion)
+CREATE OR REPLACE FUNCTION public.is_warehouse_owner(p_warehouse_id TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_profile_id TEXT;
+BEGIN
+  -- Get profile ID from auth.uid()
+  SELECT id INTO v_profile_id FROM public.profiles WHERE user_id = auth.uid();
+  
+  IF v_profile_id IS NULL THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Check admin roles
+  IF EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = v_profile_id
+    AND access_role IN ('admin', 'regional_admin', 'national_admin')
+  ) THEN
+    RETURN TRUE;
+  END IF;
+
+  -- Check ownership (User, Pod, or Org)
+  RETURN EXISTS (
+    SELECT 1 FROM public.warehouse_owners wo
+    WHERE wo.warehouse_id = p_warehouse_id
+    AND (
+      (wo.owner_type = 'user' AND wo.owner_id = v_profile_id)
+      OR
+      (wo.owner_type = 'pod' AND wo.owner_id IN (
+        SELECT pod_id FROM public.roster_entries WHERE profile_id = v_profile_id AND status IN ('active', 'lead')
+      ))
+      OR
+      (wo.owner_type = 'org' AND wo.owner_id IN (
+        SELECT org_id FROM public.organization_roles WHERE user_id = v_profile_id
+      ))
+    )
+  );
+END $$;
+
+-- Warehouse Policies
+CREATE POLICY "warehouse_select_policy" ON public.warehouses
+  FOR SELECT USING (public.is_warehouse_owner(id));
+
+CREATE POLICY "warehouse_insert_policy" ON public.warehouses
+  FOR INSERT WITH CHECK (true); -- Allow creation, ownership established via warehouse_owners
+
+CREATE POLICY "warehouse_update_policy" ON public.warehouses
+  FOR UPDATE USING (public.is_warehouse_owner(id));
+
+CREATE POLICY "warehouse_delete_policy" ON public.warehouses
+  FOR DELETE USING (public.is_warehouse_owner(id));
+
+-- Warehouse Owners Policies
+CREATE POLICY "warehouse_owners_select_policy" ON public.warehouse_owners
+  FOR SELECT USING (public.is_warehouse_owner(warehouse_id));
+
+CREATE POLICY "warehouse_owners_insert_policy" ON public.warehouse_owners
+  FOR INSERT WITH CHECK (
+    -- Allow if already an owner (adding more owners)
+    public.is_warehouse_owner(warehouse_id)
+    OR
+    -- Allow claiming a new warehouse (no owners yet)
+    (
+      owner_type = 'user' 
+      AND owner_id = (SELECT id FROM public.profiles WHERE user_id = auth.uid())
+      AND NOT EXISTS (
+        SELECT 1 FROM public.warehouse_owners existing 
+        WHERE existing.warehouse_id = warehouse_owners.warehouse_id
+      )
+    )
+  );
+
+CREATE POLICY "warehouse_owners_update_policy" ON public.warehouse_owners
+  FOR UPDATE USING (public.is_warehouse_owner(warehouse_id));
+
+CREATE POLICY "warehouse_owners_delete_policy" ON public.warehouse_owners
+  FOR DELETE USING (public.is_warehouse_owner(warehouse_id));
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_warehouses_region ON public.warehouses(region_id);

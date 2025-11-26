@@ -7,7 +7,7 @@ import { Toaster } from "@workspace/ui/components/sonner";
 import { AuthProvider } from "@/providers/AuthProvider";
 import type { AuthSession } from "@/lib/auth/types";
 import { RegionProvider } from "@/providers/RegionProvider";
-import { AutoCreateProfile } from "@/components/client/auth/AutoCreateProfile";
+import { AutoCreateProfile } from "@/components/auth/AutoCreateProfile";
 import { NotificationsRealtime } from "@/providers/NotificationsRealtime";
 import { ProfileStoreProvider } from "@/providers/ProfileStoreProvider";
 

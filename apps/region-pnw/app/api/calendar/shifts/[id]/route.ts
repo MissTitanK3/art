@@ -14,8 +14,11 @@ const SHIFT_SELECT_FIELDS = `
   dispatch_link,
   notes,
   visibility,
+  visibility_scope,
+  invited_user_ids,
   needed,
   route,
+  owners:calendar_owners(owner_type, owner_id),
   pod:pods(
     id,
     name,
@@ -23,8 +26,78 @@ const SHIFT_SELECT_FIELDS = `
     area,
     orgs:organization_pods(org_id, organization:organizations(id, name, description))
   ),
-  signups:pod_shift_signups(user_id)
+  signups:calendar_signups(user_id)
 `;
+
+const DEFAULT_VISIBILITY_SCOPE = "org_and_region_masked";
+
+async function resolveUserAndProfileId(supabase: any) {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+        throw new Error("Unauthorized");
+    }
+    const userId = userData.user.id;
+    const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("id, user_id")
+        .or(`user_id.eq.${userId},id.eq.${userId}`)
+        .maybeSingle();
+    const profileId = profileRow?.id ?? profileRow?.user_id ?? userId;
+    return { userId, profileId };
+}
+
+function buildOwnerRows(
+    resourceId: string,
+    options: {
+        profileId?: string | null;
+        podId?: string | null;
+        orgId?: string | null;
+        ownerPodIds?: string[];
+        ownerOrgIds?: string[];
+    },
+) {
+    const rows: { resource_id: string; owner_type: string; owner_id: string }[] =
+        [];
+    const podIds = Array.from(
+        new Set(
+            [
+                ...(options.ownerPodIds ?? []),
+                options.podId ? String(options.podId) : null,
+            ].filter(Boolean) as string[],
+        ),
+    );
+    const orgIds = Array.from(
+        new Set(
+            [
+                ...(options.ownerOrgIds ?? []),
+                options.orgId ? String(options.orgId) : null,
+            ].filter(Boolean) as string[],
+        ),
+    );
+
+    if (options.profileId) {
+        rows.push({
+            resource_id: resourceId,
+            owner_type: "user",
+            owner_id: String(options.profileId),
+        });
+    }
+    for (const podId of podIds) {
+        rows.push({
+            resource_id: resourceId,
+            owner_type: "pod",
+            owner_id: podId,
+        });
+    }
+    for (const orgId of orgIds) {
+        rows.push({
+            resource_id: resourceId,
+            owner_type: "org",
+            owner_id: orgId,
+        });
+    }
+    return rows;
+}
 
 export async function PATCH(
     req: Request,
@@ -32,44 +105,68 @@ export async function PATCH(
 ) {
     try {
         const supabase = await createSupabaseServerClient();
+        const { profileId, userId } = await resolveUserAndProfileId(supabase);
         const { id } = await params;
         const body = await req.json();
         const {
-            pod_id,
+            podId,
             start,
             end,
             tz,
             headcount,
             location,
             label,
-            dispatch_link,
+            dispatchLink,
             notes,
             visibility,
             needed,
+            route,
+            visibilityScope,
+            invitedUserIds,
+            ownerProfileId,
+            ownerPodIds,
+            ownerOrgIds,
+            organizationId,
         } = body;
 
         const payload = {
-            pod_id,
+            pod_id: podId,
             start,
             end,
             tz,
             headcount,
             location,
             label,
-            dispatch_link,
+            dispatch_link: dispatchLink,
             notes,
             visibility,
             needed,
+            route,
+            visibility_scope: visibilityScope ?? DEFAULT_VISIBILITY_SCOPE,
+            invited_user_ids: invitedUserIds ?? [],
         };
 
         const { data, error } = await supabase
-            .from("pod_shifts")
+            .from("calendar_items")
             .update(payload)
             .eq("id", id)
             .select(SHIFT_SELECT_FIELDS)
             .maybeSingle();
 
         if (error) throw error;
+        const owners = buildOwnerRows(id, {
+            profileId: ownerProfileId ?? profileId ?? userId,
+            podId,
+            orgId: organizationId ?? ownerOrgIds?.[0] ?? null,
+            ownerPodIds,
+            ownerOrgIds,
+        });
+        if (owners.length > 0) {
+            const { error: ownersError } = await supabase
+                .from("calendar_owners")
+                .upsert(owners, { onConflict: "resource_id,owner_type,owner_id" });
+            if (ownersError) throw ownersError;
+        }
         if (!data) throw new Error("Missing shift row");
 
         return NextResponse.json(data);
@@ -88,7 +185,13 @@ export async function DELETE(
         const { error } = await supabase.rpc("safe_delete_pod_shift", {
             p_id: id,
         });
-        if (error) throw error;
+        if (error) {
+            const { error: softDeleteError } = await supabase
+                .from("calendar_items")
+                .update({ deleted_at: new Date().toISOString() })
+                .eq("id", id);
+            if (softDeleteError) throw softDeleteError;
+        }
         return NextResponse.json({ success: true });
     } catch (e) {
         return jsonError(e);

@@ -5,9 +5,9 @@ import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import type { AuthSession } from "@/lib/auth/types";
-import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
+import { GlobalNavBridge } from "@/components/nav/GlobalNavBridge";
 import RegisterServiceWorker from "./components/register-sw";
-import InstallPrompt from "@/components/client/InstallPrompt";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
 
 // Ensure layout and session are always computed per-request in production
 export const dynamic = "force-dynamic";

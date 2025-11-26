@@ -2,14 +2,19 @@
 
 import type { PropsWithChildren } from "react";
 import { PodStoreProvider } from "@/providers/PodStoreProvider";
-import PodDataHydrator from "@/components/dataLayer/pods/PodDataHydrator";
-import ActiveRosterHydrator from "@/components/dataLayer/pods/ActiveRosterHydrator";
+import { usePodData } from "@/hooks/usePodData";
+import { useActiveRoster } from "@/hooks/useActiveRoster";
+
+function DataHydrator() {
+  usePodData();
+  useActiveRoster();
+  return null;
+}
 
 export default function AcademyLayout({ children }: PropsWithChildren) {
   return (
     <PodStoreProvider>
-      <PodDataHydrator />
-      <ActiveRosterHydrator />
+      <DataHydrator />
       {children}
     </PodStoreProvider>
   );

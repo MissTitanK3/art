@@ -11,6 +11,7 @@ import {
 import { isSuspended, isVerified } from '@workspace/store/utils/access';
 import { evaluateAccess } from '@workspace/store/utils/permissions/unifiedEngine';
 import { VisibilityScope } from '@workspace/store/utils/permissions/types';
+import { hydratePermissionsContext } from '@workspace/store/utils/permissions/hydrateContext';
 
 // Access control is driven by public.profiles.access_role
 // AccessRole is unified with NavRole across the app
@@ -32,8 +33,15 @@ async function verifyAccessOrRedirect(scope: VisibilityScope, failureReason: str
 
   const role = profile.access_role as NavRole | undefined;
 
+  // Use centralized permissions context hydration
+  const permissionsContext = await hydratePermissionsContext(
+    supabase,
+    user.id,
+    profile.id
+  );
+
   const result = evaluateAccess(scope, {
-    userId: user.id,
+    ...permissionsContext,
     navRole: role,
   });
 

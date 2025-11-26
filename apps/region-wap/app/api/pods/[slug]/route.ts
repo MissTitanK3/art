@@ -13,6 +13,7 @@ export async function GET(
             .from("pods")
             .select("id, slug, name, area, channels")
             .eq("slug", slug)
+            .is("deleted_at", null)
             .maybeSingle();
 
         if (error) {

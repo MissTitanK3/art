@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@workspace/ui/components/sonner";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Button } from "@workspace/ui/components/button";

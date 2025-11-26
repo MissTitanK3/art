@@ -15,10 +15,12 @@ export function normalizeWarehouse(w: any): WarehouseRecord {
         stewardDisplayName: w.display_name,
         regionZone: w.region_zone,
         urbanType: w.urban_type,
-        siteType: "home",
+        siteType: w.capabilities?.site_type || w.site_type || "home",
         maxCapacityRating: w.max_capacity_rating,
         capabilities: w.capabilities?.flags || [],
         quickNotes: w.capabilities?.quick_note || "",
+        visibilityScope: w.visibility_scope || "regional",
+        invitedUserIds: w.invited_user_ids || [],
         createdAt: w.created_at,
         zones: w.zones?.map((z: any) => ({
             id: z.id,

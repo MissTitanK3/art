@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VisibilityScope } from "@workspace/store/utils/permissions/types";
 
 export const capabilityOptions = [
     { value: "refrigeration", label: "Refrigeration" },
@@ -102,6 +103,8 @@ export type WarehouseRecord = WarehouseFormValues & {
     regionId: string;
     createdAt: string;
     displayName?: string;
+    visibilityScope?: VisibilityScope;
+    invitedUserIds?: string[];
 };
 
 export type InventoryEntry = {

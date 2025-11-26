@@ -22,7 +22,7 @@ export function CollectiveCalendarShiftCard({
   onClick,
 }: CollectiveCalendarShiftCardProps) {
   const need = needsRemaining(shift);
-  const vis = visibilityBadge(shift.visibility);
+  const vis = visibilityBadge(shift.visibility, shift.visibilityScope);
   const VisIcon = vis.icon;
 
   return (

@@ -19,6 +19,7 @@ export async function GET(
             .from('academy_classes')
             .select('*')
             .eq('id', classId)
+            .is('deleted_at', null)
             .maybeSingle();
 
         if (classError) throw classError;

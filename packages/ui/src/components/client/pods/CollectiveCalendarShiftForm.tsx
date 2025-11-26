@@ -9,7 +9,8 @@ import { Label } from "@workspace/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { CalendarOrgSummary, CalendarPodSummary, CalendarVisibility, CollectiveCalendarShift, CollectiveCalendarShiftInput } from "./CollectiveCalendarShared";
-import { Badge } from "@workspace/ui/components/badge";
+import { VisibilityScope } from "@workspace/store/utils/permissions/types";
+import { VisibilitySelector } from "@workspace/ui/components/permissions/VisibilitySelector";
 
 type CollectiveCalendarShiftFormProps = {
   open: boolean;
@@ -33,6 +34,7 @@ type FormState = {
   endLocal: string;
   needed: number;
   visibility: CalendarVisibility;
+  visibilityScope: VisibilityScope;
   dispatchLink: string;
   notes: string;
   tz: string;
@@ -57,14 +59,28 @@ function toIsoString(localInput: string) {
   return parsed.toISOString();
 }
 
-function visibilityBadge(visibility: CalendarVisibility) {
+function mapVisibilityToScope(visibility: CalendarVisibility): VisibilityScope {
   switch (visibility) {
     case "public":
-      return { label: "Public", variant: "outline" as const };
+      return "regional";
     case "org":
-      return { label: "Org only", variant: "secondary" as const };
+      return "org_specific";
     case "private":
-      return { label: "Pod only", variant: "destructive" as const };
+      return "pod_specific";
+  }
+}
+
+function mapScopeToVisibility(scope?: string | null): CalendarVisibility {
+  switch (scope) {
+    case "regional":
+      return "public";
+    case "org_specific":
+      return "org";
+    case "pod_specific":
+    case "only_myself":
+      return "private";
+    default:
+      return "public";
   }
 }
 
@@ -95,6 +111,7 @@ export function CollectiveCalendarShiftForm({
     endLocal: "",
     needed: 1,
     visibility: "public",
+    visibilityScope: "regional",
     dispatchLink: "",
     notes: "",
     tz: defaultTz,
@@ -209,6 +226,8 @@ export function CollectiveCalendarShiftForm({
         ? addHours(new Date(draftStart), 1).toISOString()
         : null);
 
+    const initialVisibilityScope = initialShift?.visibilityScope ?? mapVisibilityToScope(initialShift?.visibility ?? "public");
+
     setForm({
       podId: basePodId,
       label: initialShift?.label ?? "",
@@ -217,6 +236,7 @@ export function CollectiveCalendarShiftForm({
       endLocal: toLocalInput(endSource),
       needed: initialShift?.needed ?? 1,
       visibility: initialShift?.visibility ?? "public",
+      visibilityScope: initialVisibilityScope,
       dispatchLink: initialShift?.dispatchLink ?? "",
       notes: initialShift?.notes ?? "",
       tz: initialShift?.tz ?? defaultTz,
@@ -269,6 +289,8 @@ export function CollectiveCalendarShiftForm({
 
     setSubmitting(true);
     try {
+      const visibility = mapScopeToVisibility(form.visibilityScope);
+
       await onSubmit({
         id: initialShift?.id,
         podId: form.podId,
@@ -277,13 +299,16 @@ export function CollectiveCalendarShiftForm({
         tz: form.tz || defaultTz,
         label: form.label.trim(),
         location: form.location.trim(),
-        visibility: form.visibility,
+        visibility: visibility,
         needed: Math.max(0, form.needed),
         headcount: Math.max(0, form.needed),
         dispatchLink: form.dispatchLink?.trim() || null,
         notes: form.notes?.trim() || null,
         scope: form.orgMode,
         organizationId: form.orgMode === "org" ? form.orgId : null,
+        visibilityScope: form.visibilityScope,
+        ownerPodIds: [form.podId],
+        ownerOrgIds: form.orgMode === "org" && form.orgId ? [form.orgId] : [],
       });
       onOpenChange(false);
     } catch (e: any) {
@@ -306,8 +331,6 @@ export function CollectiveCalendarShiftForm({
       setSubmitting(false);
     }
   };
-
-  const visBadge = visibilityBadge(form.visibility);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -333,10 +356,10 @@ export function CollectiveCalendarShiftForm({
               onValueChange={handleOrgValueChange}
               disabled={!hasOrgOptions}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full z-[1202]">
                 <SelectValue placeholder="Independent shift" />
               </SelectTrigger>
-              <SelectContent className="z-[1202]">
+              <SelectContent className="z-[1202]" position="popper" sideOffset={5}>
                 <SelectItem value={INDEPENDENT_VALUE}>
                   Independent shift
                 </SelectItem>
@@ -366,7 +389,7 @@ export function CollectiveCalendarShiftForm({
               <SelectTrigger>
                 <SelectValue placeholder="Choose a pod" />
               </SelectTrigger>
-              <SelectContent className="z-[1202]">
+              <SelectContent className="z-[1202]" position="popper" sideOffset={5}>
                 {visiblePods.map((pod) => (
                   <SelectItem key={pod.id} value={pod.id}>
                     {pod.name}
@@ -450,32 +473,14 @@ export function CollectiveCalendarShiftForm({
             </div>
             <div className="grid gap-1">
               <Label>Visibility</Label>
-              <Select
-                value={form.visibility}
-                onValueChange={(value) =>
-                  setForm((prev) => ({ ...prev, visibility: value as CalendarVisibility }))
-                }
+              <VisibilitySelector
+                value={form.visibilityScope}
+                onChange={(scope) => setForm((prev) => ({ ...prev, visibilityScope: scope }))}
                 disabled={submitting}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-[1202]">
-                  <SelectItem value="public">Public (region-wide)</SelectItem>
-                  <SelectItem value="org">Org only</SelectItem>
-                  <SelectItem value="private">Pod only</SelectItem>
-                </SelectContent>
-              </Select>
+              />
               <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:gap-2">
-                <Badge variant={visBadge.variant} className="w-fit">
-                  {visBadge.label}
-                </Badge>
                 <span className="text-left sm:text-sm">
-                  {form.visibility === "public"
-                    ? "Visible to all authenticated users."
-                    : form.visibility === "org"
-                      ? "Visible to pods in the organization."
-                      : "Visible to pod members only."}
+                  Controls who can see this shift on the calendar.
                 </span>
               </div>
             </div>

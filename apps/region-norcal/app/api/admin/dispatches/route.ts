@@ -31,6 +31,7 @@ export async function GET() {
         const { data, error } = await adminClient
           .from("dispatch_submissions")
           .select("*")
+          .is("deleted_at", null)
           .order("timestamp", { ascending: false });
         if (error)
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -45,6 +46,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("dispatch_submissions")
       .select("*")
+      .is("deleted_at", null)
       .order("timestamp", { ascending: false });
     if (error)
       return NextResponse.json({ error: error.message }, { status: 500 });

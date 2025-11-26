@@ -1,20 +1,20 @@
 "use client";
 
-import ScriptBuilderDataLayer from "@/components/dataLayer/present/ScriptBuilderDataLayer";
+import React from "react";
+import TeleprompterScriptBuilder from "@workspace/ui/components/teleprompter-script-builder";
+import {
+  TELEPROMPTER_SCRIPTS,
+  TELEPROMPTER_SCRIPT_META,
+} from "@workspace/ui/data/teleprompter-scripts";
 
-export default function Page() {
+export default function ScriptBuilderPage() {
   return (
-    <div className="mx-auto max-w-5xl p-1 md:p-8">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Teleprompter Script Builder
-      </h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Build teleprompter scripts line by line with cues, reordering, and
-        guidance. Export, save, and share.
-      </p>
-      <div className="mt-6">
-        <ScriptBuilderDataLayer />
-      </div>
-    </div>
+    <>
+      <TeleprompterScriptBuilder
+        builtinScripts={TELEPROMPTER_SCRIPTS}
+        builtinMeta={TELEPROMPTER_SCRIPT_META}
+        storageNamespace="teleprompter.builder"
+      />
+    </>
   );
 }

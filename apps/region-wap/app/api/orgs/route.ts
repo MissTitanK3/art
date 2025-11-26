@@ -3,6 +3,50 @@ import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { jsonError } from "@/lib/api/responses";
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
 
+export async function GET() {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData.user?.id;
+
+        const [podsRes, orgRolesRes, orgPodsRes, orgsRes] = await Promise.all([
+            supabase
+                .from("pods")
+                .select("id, name, slug, area")
+                .eq("region_id", REGION_IDENTIFIER)
+                .is("deleted_at", null),
+            userId
+                ? supabase
+                    .from("organization_roles")
+                    .select("role, org_id, organization:organizations(id, name, description)")
+                    .eq("user_id", userId)
+                    .is("deleted_at", null)
+                : { data: [] },
+            supabase
+                .from("organization_pods")
+                .select("org_id, pod_id, organization:organizations(id, name, description), pod:pods(id, name, slug, area)")
+                .eq("organization.region_id", REGION_IDENTIFIER)
+                .is("deleted_at", null)
+                .is("organization.deleted_at", null)
+                .is("pod.deleted_at", null),
+            supabase
+                .from("organizations")
+                .select("id, name, description, visibility_scope")
+                .eq("region_id", REGION_IDENTIFIER)
+                .is("deleted_at", null),
+        ]);
+
+        return NextResponse.json({
+            pods: podsRes.data ?? [],
+            orgRoles: orgRolesRes.data ?? [],
+            orgPods: orgPodsRes.data ?? [],
+            organizations: orgsRes.data ?? [],
+        });
+    } catch (e) {
+        return jsonError(e);
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const supabase = await createSupabaseServerClient();

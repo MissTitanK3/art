@@ -89,6 +89,7 @@ export async function resolveContext(orgId: string) {
     .select('role')
     .eq('org_id', orgId)
     .eq('user_id', profile.id)
+    .is('deleted_at', null)
     .maybeSingle();
   if (roleError) throw new RouteError(roleError.message, 500);
 
@@ -133,6 +134,8 @@ export async function fetchOrgPods(admin: SupabaseClient, orgId: string) {
     .from('organization_pods')
     .select('pod_id, pod:pods(id, name, slug, area)')
     .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .is('pod.deleted_at', null)
     .order('created_at', { ascending: true });
   if (error) throw new RouteError(error.message, 500);
   const rows = Array.isArray(data) ? data : [];

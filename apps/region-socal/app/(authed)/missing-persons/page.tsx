@@ -1,8 +1,14 @@
-import Link from "next/link";
-import { Button } from "@workspace/ui/components/button";
-import MissingPersonsServerDataLayer from "@/components/dataLayer/missing-persons/MissingPersonsServerDataLayer";
+"use client";
 
-export default async function MissingPersonsPage() {
+import * as React from "react";
+import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
+import { MissingPersonsDirectory } from "@workspace/ui/components/missing-persons/MissingPersonsDirectory";
+import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
+
+export default function MissingPersonsPage() {
+  const localRecords = useMissingPersonStore((state) => state.records);
+  const localIntakes = localRecords as unknown as DetaineeIntake[];
+
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-16">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -17,12 +23,12 @@ export default async function MissingPersonsPage() {
             report.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/missing-persons/intake">Add new intake</Link>
-        </Button>
       </div>
 
-      <MissingPersonsServerDataLayer />
+      <MissingPersonsDirectory
+        records={localIntakes}
+        fetchUrl="/api/missing-persons"
+      />
     </div>
   );
 }

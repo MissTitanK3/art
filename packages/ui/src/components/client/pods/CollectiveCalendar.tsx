@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -20,11 +20,6 @@ import {
   Layers,
 } from "lucide-react";
 import { toast } from "sonner";
-import { CollectiveCalendarOrgDialog } from "./CollectiveCalendarOrgDialog";
-import {
-  CollectiveCalendarOrgConsole,
-  type OrgPodFormInput,
-} from "./CollectiveCalendarOrgConsole";
 import {
   CalendarOrgSummary,
   CalendarPodSummary,
@@ -33,16 +28,13 @@ import {
   CollectiveCalendarShift,
   CollectiveCalendarShiftInput,
   computeRange,
-  formatDay,
   isShiftVisibleToUser,
   needsRemaining,
 } from "./CollectiveCalendarShared";
 import { CollectiveCalendarShiftDetailsSheet } from "./CollectiveCalendarShiftDetailsSheet";
-import { CollectiveCalendarAdminPanel } from "./CollectiveCalendarAdminPanel";
 import { CollectiveCalendarFilters } from "./CollectiveCalendarFilters";
 import { CollectiveCalendarView } from "./CollectiveCalendarView";
 import { CollectiveCalendarShiftForm } from "./CollectiveCalendarShiftForm";
-import ConfirmDeleteModal from "../shifts/ConfirmDeleteModal";
 
 export {
   type CalendarOrgSummary,
@@ -67,21 +59,6 @@ export type CollectiveCalendarProps = {
     input: CollectiveCalendarShiftInput,
   ) => Promise<void>;
   onDeleteShift?: (shiftId: string) => Promise<void>;
-  onCreateOrg?: (name: string, description: string) => Promise<void>;
-  onUpdateOrg?: (orgId: string, name: string, description: string) => Promise<void>;
-  onDeleteOrg?: (orgId: string) => Promise<void>;
-  onCreateOrgPod?: (orgId: string, input: OrgPodFormInput) => Promise<void>;
-  onLinkOrgPod?: (orgId: string, podId: string) => Promise<void>;
-  onUpdateOrgPod?: (
-    orgId: string,
-    podId: string,
-    input: OrgPodFormInput,
-  ) => Promise<void>;
-  onRemoveOrgPod?: (
-    orgId: string,
-    podId: string,
-    options?: { hardDelete?: boolean },
-  ) => Promise<void>;
 };
 
 export function CollectiveCalendar({
@@ -95,13 +72,6 @@ export function CollectiveCalendar({
   onCreateShift,
   onUpdateShift,
   onDeleteShift,
-  onCreateOrg,
-  onUpdateOrg,
-  onDeleteOrg,
-  onCreateOrgPod,
-  onLinkOrgPod,
-  onUpdateOrgPod,
-  onRemoveOrgPod,
 }: CollectiveCalendarProps) {
 
   const membershipPods = useMemo(
@@ -123,10 +93,10 @@ export function CollectiveCalendar({
   const viewerId = membership.profileId ?? membership.userId ?? null;
 
   const [viewMode, setViewMode] = useState<"week" | "day" | "month" | "mine">(
-    "week",
+    "month",
   );
   const [timeRange, setTimeRange] = useState<"today" | "week" | "month">(
-    "week",
+    "month",
   );
   const [selectedOrg, setSelectedOrg] = useState<string>("all");
   const [selectedPod, setSelectedPod] = useState<string>("all");
@@ -147,84 +117,9 @@ export function CollectiveCalendar({
     { start: string; end: string } | null
   >(null);
 
-  const [orgDialogOpen, setOrgDialogOpen] = useState(false);
-  const [editingOrg, setEditingOrg] = useState<CalendarOrgSummary | null>(null);
-  const [orgConsoleOpen, setOrgConsoleOpen] = useState(false);
-  const [orgConsoleOrg, setOrgConsoleOrg] = useState<CalendarOrgSummary | null>(
-    null,
-  );
-  const [deleteOrgDialogOpen, setDeleteOrgDialogOpen] = useState(false);
-  const [orgPendingDeletion, setOrgPendingDeletion] =
-    useState<CalendarOrgSummary | null>(null);
-
-  const hasOrgPodManagement = Boolean(
-    onCreateOrgPod || onLinkOrgPod || onUpdateOrgPod || onRemoveOrgPod,
-  );
   const canManageShifts = Boolean(
     onCreateShift && (membershipPods.size > 0 || membershipOrgs.size > 0),
   );
-
-  const handleOpenOrgDialog = (org?: CalendarOrgSummary) => {
-    if (org) {
-      setEditingOrg(org);
-    } else {
-      setEditingOrg(null);
-    }
-    setOrgDialogOpen(true);
-  };
-
-  const handleDeleteOrg = async (orgId: string) => {
-    if (!onDeleteOrg) return;
-    try {
-      await onDeleteOrg(orgId);
-      toast.success("Organization deleted");
-    } catch (e) {
-      toast.error("Failed to delete organization");
-    } finally {
-      setOrgPendingDeletion(null);
-      setDeleteOrgDialogOpen(false);
-    }
-  };
-
-  const handleDeleteOrgClick = (orgId: string) => {
-    if (!onDeleteOrg) return;
-    const target = organizations.find((org) => org.id === orgId) ?? null;
-    if (!target) return;
-    setOrgPendingDeletion(target);
-    setDeleteOrgDialogOpen(true);
-  };
-
-  const handleManageOrgPods = useCallback(
-    (org?: CalendarOrgSummary) => {
-      const target = org ?? organizations[0];
-      if (!target) {
-        toast.info("No organizations", {
-          description: "Create an organization to start managing pods.",
-        });
-        return;
-      }
-      setOrgConsoleOrg(target);
-      setOrgConsoleOpen(true);
-    },
-    [organizations],
-  );
-
-  useEffect(() => {
-    if (!orgConsoleOrg) return;
-    const next = organizations.find((o) => o.id === orgConsoleOrg.id) ?? null;
-    if (!next) {
-      if (organizations.length === 0) {
-        setOrgConsoleOpen(false);
-        setOrgConsoleOrg(null);
-      } else {
-        setOrgConsoleOrg(organizations[0] ?? null);
-      }
-      return;
-    }
-    if (next !== orgConsoleOrg) {
-      setOrgConsoleOrg(next);
-    }
-  }, [orgConsoleOrg, organizations]);
 
   const visibleShifts = useMemo(() => {
     return shifts.filter((shift) =>
@@ -491,16 +386,6 @@ export function CollectiveCalendar({
         onAddShiftAt={canManageShifts ? handleAddShiftAt : undefined}
       />
 
-      <CollectiveCalendarAdminPanel
-        organizations={organizations}
-        hasCreateOrg={!!onCreateOrg}
-        hasUpdateOrg={!!onUpdateOrg}
-        hasDeleteOrg={!!onDeleteOrg}
-        onOpenOrgDialog={handleOpenOrgDialog}
-        onDeleteOrgClick={handleDeleteOrgClick}
-        onManageOrgPods={hasOrgPodManagement ? handleManageOrgPods : undefined}
-      />
-
       <CollectiveCalendarShiftDetailsSheet
         shift={selectedShift}
         open={!!selectedShift}
@@ -514,37 +399,6 @@ export function CollectiveCalendar({
         onEditShift={(shift) => handleOpenShiftForm(shift)}
         onDeleteShift={(shiftId) => handleDeleteShift(shiftId)}
       />
-
-      <CollectiveCalendarOrgDialog
-        open={orgDialogOpen}
-        onOpenChange={setOrgDialogOpen}
-        editingOrg={editingOrg}
-        onCreateOrg={onCreateOrg}
-        onUpdateOrg={onUpdateOrg}
-      />
-
-      {hasOrgPodManagement && (
-        <CollectiveCalendarOrgConsole
-          open={orgConsoleOpen}
-          onOpenChange={(open) => {
-            setOrgConsoleOpen(open);
-            if (!open) setOrgConsoleOrg(null);
-          }}
-          org={orgConsoleOrg}
-          pods={orgConsoleOrg?.pods ?? []}
-          allPods={pods}
-          onLinkPod={
-            onLinkOrgPod
-              ? (orgId, podId) => onLinkOrgPod(orgId, podId)
-              : undefined
-          }
-          onRemovePod={
-            onRemoveOrgPod
-              ? (orgId, podId, options) => onRemoveOrgPod(orgId, podId, options)
-              : undefined
-          }
-        />
-      )}
 
       {canManageShifts && (
         <CollectiveCalendarShiftForm
@@ -570,23 +424,6 @@ export function CollectiveCalendar({
           draftEnd={draftShiftRange?.end}
           onSubmit={handleSaveShift}
           onDelete={onDeleteShift ? handleDeleteShift : undefined}
-        />
-      )}
-
-      {onDeleteOrg && orgPendingDeletion && (
-        <ConfirmDeleteModal
-          open={deleteOrgDialogOpen}
-          onOpenChange={(open) => {
-            setDeleteOrgDialogOpen(open);
-            if (!open) setOrgPendingDeletion(null);
-          }}
-          title={`Delete ${orgPendingDeletion.name}?`}
-          description="This will remove the organization and detach its pods. This action cannot be undone."
-          onConfirm={() => {
-            if (orgPendingDeletion) {
-              void handleDeleteOrg(orgPendingDeletion.id);
-            }
-          }}
         />
       )}
     </div>
