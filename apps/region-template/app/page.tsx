@@ -1,28 +1,31 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert";
-import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import { Terminal, Info, DatabaseZap, LogIn } from "lucide-react";
-import { toast } from "sonner";
+  LogIn,
+  GraduationCap,
+  Shield,
+  BookOpen,
+  Eye,
+  CheckCircle2,
+  ClipboardList,
+} from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
-import { STATUS_META } from "@workspace/ui/lib/constants/dispatch";
 import {
-  DISPATCH_TYPE_LABELS,
-  DispatchStatus,
-} from "@workspace/store/types/dispatch.ts";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+} from "@workspace/ui/components/drawer";
 
 import { navConfig } from "@/nav.config";
 import {
@@ -30,33 +33,162 @@ import {
   useDispatchStore,
 } from "@/providers/DispatchStoreProvider";
 import { PodStoreProvider, usePodStore } from "@/providers/PodStoreProvider";
+import { usePodData } from "@/hooks/usePodData";
 import { useAuth } from "@/hooks/useAuth";
+import { REGION_IDENTIFIER } from "@/app/brand_settings";
+import type { DispatchSubmission } from "@workspace/store/types/global";
+import type { DispatchShift } from "@workspace/store/useDispatchStore";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+
+// UI Components
+import { DashboardOverviewCards } from "@workspace/ui/components/dispatch/DashboardOverviewCards";
+import { ResourceCoverageCard } from "@workspace/ui/components/dispatch/ResourceCoverageCard";
+import { ActiveDispatchesPreview } from "@workspace/ui/components/dispatch/ActiveDispatchesPreview";
+import { PodsPreview } from "@workspace/ui/components/dispatch/PodsPreview";
+import { RegionTemplateInfo } from "@workspace/ui/components/how-to/RegionTemplateInfo";
+import { useActiveRoster } from "@/hooks/useActiveRoster";
 
 type ViewMode = "info" | "dashboard";
 
-const REGION_IDENTIFIER = String("region-template");
-const TEMPLATE_REGION_IDENTIFIER = `region-${"template"}`;
+function mapRowToSubmission(row: any): DispatchSubmission {
+  const updates = Array.isArray(row?.updates) ? row.updates : [];
+  const logistics = Array.isArray(row?.logistics) ? row.logistics : [];
+  const location =
+    row?.location && typeof row.location === "object"
+      ? row.location
+      : undefined;
+  return {
+    id: String(row.id ?? crypto.randomUUID()),
+    type: row?.type ?? undefined,
+    location,
+    timestamp: String(row?.timestamp ?? new Date().toISOString()),
+    flagged: Boolean(row?.flagged ?? false),
+    required_roles: Array.isArray(row?.required_roles)
+      ? row.required_roles
+      : undefined,
+    encrypted_payload:
+      typeof row?.encrypted_payload === "string"
+        ? row.encrypted_payload
+        : undefined,
+    auto_delete_after: row?.auto_delete_after ?? null,
+    integrity_hash:
+      typeof row?.integrity_hash === "string" ? row.integrity_hash : undefined,
+    submitted_by: row?.submitted_by ?? null,
+    source: row?.source ?? undefined,
+    visibility_radius_km:
+      typeof row?.visibility_radius_km === "number"
+        ? row.visibility_radius_km
+        : undefined,
+    status: (row?.status as any) ?? "unconfirmed",
+    assigned_volunteers: Array.isArray(row?.assigned_volunteers)
+      ? row.assigned_volunteers
+      : undefined,
+    required_roles_by_type:
+      typeof row?.required_roles_by_type === "object" &&
+        row?.required_roles_by_type
+        ? row.required_roles_by_type
+        : undefined,
+    location_label:
+      typeof row?.location_label === "string" ? row.location_label : undefined,
+    point_of_contact: row?.point_of_contact ?? null,
+    state: typeof row?.state === "string" ? row.state : undefined,
+    intended_action_preset:
+      typeof row?.intended_action_preset === "string"
+        ? row.intended_action_preset
+        : undefined,
+    intended_action_notes:
+      typeof row?.intended_action_notes === "string"
+        ? row.intended_action_notes
+        : undefined,
+    intended_actions: Array.isArray(row?.intended_actions)
+      ? row.intended_actions
+      : undefined,
+    intended_actions_custom:
+      typeof row?.intended_actions_custom === "string"
+        ? row.intended_actions_custom
+        : undefined,
+    signal_link:
+      typeof row?.signal_link === "string" ? row.signal_link : undefined,
+    public_signal_link:
+      typeof row?.public_signal_link === "string"
+        ? row.public_signal_link
+        : undefined,
+    training: Boolean(row?.training ?? false),
+    updates,
+    logistics,
+  } as DispatchSubmission;
+}
+
+function mapRowToShift(row: any): DispatchShift {
+  return {
+    id: String(row.id ?? crypto.randomUUID()),
+    podId: typeof row?.pod_id === "string" ? row.pod_id : row?.podId,
+    volunteerId:
+      typeof row?.volunteer_id === "string"
+        ? row.volunteer_id
+        : row?.volunteerId,
+    volunteerName:
+      typeof row?.volunteer_name === "string"
+        ? row.volunteer_name
+        : row?.volunteerName,
+    startsAt: String(
+      row?.starts_at ?? row?.startsAt ?? new Date().toISOString(),
+    ),
+    endsAt: String(
+      row?.ends_at ??
+      row?.endsAt ??
+      new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    ),
+    notes: typeof row?.notes === "string" ? row.notes : undefined,
+  } as DispatchShift;
+}
 
 export default function Page() {
-  const isTemplateRegion = REGION_IDENTIFIER === TEMPLATE_REGION_IDENTIFIER;
   const [view, setView] = useState<ViewMode>(
-    isTemplateRegion ? "info" : "dashboard",
+    REGION_IDENTIFIER === `region-${"template"}` ? "info" : "dashboard",
   );
-  const showToggle = isTemplateRegion;
+  const showToggle = REGION_IDENTIFIER === `region-${"template"}`;
   const brandName = navConfig.brand?.name ?? "ART Region Template";
   const brandHeadline = brandName.replace(/^ART\s+/i, "");
+
+  const [initialSubmissions, setInitialSubmissions] = useState<DispatchSubmission[]>([]);
+  const [initialShifts, setInitialShifts] = useState<DispatchShift[]>([]);
+
+  useEffect(() => {
+    const client = getSupabaseBrowserClient();
+    async function load() {
+      const [s, sh] = await Promise.all([
+        client.from("dispatch_submissions").select("*").order("timestamp", { ascending: false }),
+        client.from("dispatch_shifts").select("*").order("starts_at", { ascending: true })
+      ]);
+      if (s.data) setInitialSubmissions(s.data.map(mapRowToSubmission));
+      if (sh.data) setInitialShifts(sh.data.map(mapRowToShift));
+    }
+    load();
+  }, []);
 
   return (
     <div className="flex min-h-svh w-full flex-col items-center gap-6 px-4 py-12">
       <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">
-          🌎 {brandHeadline}
-        </h1>
+        <h1 className="text-4xl font-bold tracking-tight">{brandHeadline}</h1>
         <p className="mt-2 max-w-2xl text-balance text-muted-foreground">
-          This is a demonstration region for the ART platform—showing how
-          navigation, data layers, and coverage dashboards stitch together once
-          you connect a real data source.
+          Welcome to your region’s centralized platform for collaboration and
+          response coordination.
         </p>
+        <p className="mt-2 max-w-2xl text-balance text-muted-foreground">
+          Use the tools below to manage your region’s operations and support
+          your community effectively.
+        </p>
+        <div className="mt-4 flex justify-center">
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant="outline">Quick Start Understanding</Button>
+            </DrawerTrigger>
+            <DrawerContent className="bg-card text-card-foreground max-w-xl m-auto">
+              <QuickStartDrawerContent />
+            </DrawerContent>
+          </Drawer>
+        </div>
       </header>
 
       {showToggle ? (
@@ -66,7 +198,14 @@ export default function Page() {
       ) : null}
 
       <main className="w-full">
-        {view === "info" ? <TemplateInfoContent /> : <DemoDashboard />}
+        {view === "info" ? (
+          <RegionTemplateInfo />
+        ) : (
+          <DemoDashboard
+            initialSubmissions={initialSubmissions}
+            initialShifts={initialShifts}
+          />
+        )}
       </main>
     </div>
   );
@@ -117,109 +256,13 @@ function ToggleButton({
   );
 }
 
-function TemplateInfoContent() {
-  return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6">
-      <Alert variant="destructive" className="w-full">
-        <DatabaseZap className="h-4 w-4" />
-        <AlertTitle>Demo Mode Active</AlertTitle>
-        <AlertDescription className="w-full text-center">
-          <div className="m-auto flex flex-col items-center gap-2">
-            <span>This instance is running in</span>
-            <div className="flex w-full items-center justify-evenly text-sm">
-              <Info className="h-4 w-4" />
-              <span>
-                <strong>demo-only</strong> mode and is
-              </span>
-              <Info className="h-4 w-4" />
-            </div>
-            <div className="flex w-full items-center justify-evenly text-sm">
-              <Info className="h-4 w-4" />
-              <span>
-                <strong>not connected to a live database</strong>.
-              </span>
-              <Info className="h-4 w-4" />
-            </div>
-            <span>Any actions, changes, or submissions will not be saved.</span>
-          </div>
-        </AlertDescription>
-      </Alert>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>🧱 What Is This Platform?</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm leading-relaxed">
-          <p>
-            This Region Template is part of a decentralized platform designed to
-            support regional collaboration, rapid deployment, and secure
-            autonomy. It includes:
-          </p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>
-              <strong>Region-specific routing</strong> and branding via
-              subdomains
-            </li>
-            <li>
-              <strong>Authentication-aware dashboards</strong> for different
-              roles
-            </li>
-            <li>
-              <strong>Supabase (or PocketServer)</strong> integration for
-              storage and permissions
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>🛠️ Region Setup Instructions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <ul className="list-inside list-disc space-y-1">
-            <li>
-              Create a new directory: <code>region-[your-name]</code>
-            </li>
-            <li>
-              Update <code>package.json</code> with the new name
-            </li>
-            <li>Register your region’s routing path in the global nav</li>
-            <li>Confirm DB connection and .env setup before launch</li>
-          </ul>
-
-          <Alert variant="default">
-            <Terminal className="h-4 w-4" />
-            <AlertTitle>Heads up!</AlertTitle>
-            <AlertDescription>
-              Region names must be <strong>globally unique</strong>. Make sure
-              you coordinate with other region admins to avoid duplication.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-
-      <div className="mt-2 flex flex-wrap justify-center gap-4">
-        <Button
-          type="button"
-          onClick={() =>
-            toast("You pressed the button!", {
-              description: "Welcome to the tools.",
-              action: {
-                label: "Dismiss",
-                onClick: () => {},
-              },
-            })
-          }
-        >
-          Trigger Toast
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function DemoDashboard() {
+function DemoDashboard({
+  initialSubmissions,
+  initialShifts,
+}: {
+  initialSubmissions: DispatchSubmission[];
+  initialShifts: DispatchShift[];
+}) {
   const { session, status } = useAuth();
   const isAuthenticated = status === "authenticated" && !!session?.user?.id;
 
@@ -228,10 +271,9 @@ function DemoDashboard() {
       <div className="mx-auto mt-8 max-w-md">
         <Alert variant="default">
           <LogIn className="h-5 w-5" />
-          <AlertTitle>Demo Sign-in required</AlertTitle>
+          <AlertTitle>Sign-in required</AlertTitle>
           <AlertDescription>
-            You need to fake a sign in to access your region dashboard demo.
-            (dont use real creds!)
+            You need to sign in to access your region dashboard.
           </AlertDescription>
           <div className="mt-4">
             <Button asChild>
@@ -245,431 +287,130 @@ function DemoDashboard() {
 
   // normal dashboard when authenticated
   return (
-    <DispatchStoreProvider persist={false}>
+    <DispatchStoreProvider
+      persist={false}
+      initialSubmissions={initialSubmissions}
+      initialShifts={initialShifts}
+    >
       <PodStoreProvider persist={false}>
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-          <DashboardOverviewCards />
-          <ResourceCoverageCard />
-          <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-            <ActiveDispatchesPreview />
-            <PodsPreview />
-          </div>
-        </div>
+        <DashboardContent />
       </PodStoreProvider>
     </DispatchStoreProvider>
   );
 }
 
-function DashboardOverviewCards() {
+function DashboardContent() {
   const submissions = useDispatchStore((state) => state.submissions);
   const pods = usePodStore((state) => state.pods);
   const roster = usePodStore((state) => state.activeRoster);
-
-  const metrics = useMemo(() => {
-    const totalDispatches = submissions.length;
-    const activeDispatches = submissions.filter((entry) =>
-      isActiveStatus(entry.status),
-    ).length;
-    const mobilizing = submissions.filter(
-      (entry) => entry.status === "mobilizing",
-    ).length;
-    const podsOnline = pods.length;
-    const rosterReady = roster.filter(
-      (entry) => entry.status === "active",
-    ).length;
-    const rosterTotal = roster.length;
-    const totalPodMembers = pods.reduce(
-      (sum, pod) => sum + (pod.team?.length ?? 0),
-      0,
-    );
-    const languages = new Set<string>();
-    roster.forEach((entry) => {
-      entry.langs?.forEach((lang) => languages.add(lang.display_name));
-    });
-
-    return [
-      {
-        key: "dispatches",
-        label: "Active dispatches",
-        value: activeDispatches,
-        subtext:
-          totalDispatches === 0
-            ? "No dispatches in the queue."
-            : mobilizing > 0
-              ? `${mobilizing} mobilizing right now.`
-              : `${totalDispatches} logged in the queue.`,
-      },
-      {
-        key: "pods",
-        label: "Pods online",
-        value: podsOnline,
-        subtext:
-          podsOnline === 0
-            ? "Create pods to coordinate your teams."
-            : `${totalPodMembers} volunteers assigned.`,
-      },
-      {
-        key: "roster",
-        label: "Ready volunteers",
-        value: rosterReady,
-        subtext:
-          rosterTotal === 0
-            ? "Invite your first volunteers."
-            : `${languages.size} languages covered across ${rosterTotal} people.`,
-      },
-    ];
-  }, [pods, roster, submissions]);
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {metrics.map((metric) => (
-        <Card key={metric.key}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {metric.label}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-semibold">{metric.value}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {metric.subtext}
-            </p>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function ResourceCoverageCard() {
-  const pods = usePodStore((state) => state.pods);
-  const podsById = useMemo(
-    () => new Map(pods.map((pod) => [pod.id, pod])),
-    [pods],
-  );
   const shifts = useDispatchStore((state) => state.shifts);
 
-  const { activeShifts, upcomingShifts } = useMemo(() => {
-    const now = new Date();
-    const cutoff = new Date(now.getTime() + 12 * 60 * 60 * 1000);
-
-    const active = [];
-    const upcoming = [];
-
-    for (const shift of shifts) {
-      const start = new Date(shift.startsAt);
-      const end = new Date(shift.endsAt);
-      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
-        continue;
-
-      if (start <= now && end >= now) {
-        active.push(shift);
-        continue;
-      }
-
-      if (start > now && start <= cutoff) {
-        upcoming.push(shift);
-      }
-    }
-
-    upcoming.sort(
-      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-    );
-
-    return { activeShifts: active, upcomingShifts: upcoming };
-  }, [shifts]);
+  // Hydrate data
+  usePodData();
+  useActiveRoster();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Coverage window</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-6 md:grid-cols-2">
-        <ShiftColumn
-          title="Live shifts"
-          shifts={activeShifts}
-          podsById={podsById}
-          emptyCopy="No teams on shift right now."
-        />
-        <ShiftColumn
-          title="Next 12 hours"
-          shifts={upcomingShifts}
-          podsById={podsById}
-          emptyCopy="No coverage scheduled yet."
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-type ShiftPreview = {
-  id: string;
-  podId?: string;
-  startsAt: string;
-  endsAt: string;
-  notes?: string;
-  volunteerName?: string;
-};
-
-function ShiftColumn({
-  title,
-  shifts,
-  podsById,
-  emptyCopy,
-}: {
-  title: string;
-  shifts: ShiftPreview[];
-  podsById: Map<string, { name: string; area?: string }>;
-  emptyCopy: string;
-}) {
-  return (
-    <div className="space-y-3">
-      <div>
-        <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-        <p className="text-xs text-muted-foreground">
-          Pulled from the dispatch roster demo data layer.
-        </p>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+      <DashboardOverviewCards
+        submissions={submissions}
+        pods={pods}
+        roster={roster}
+      />
+      <ResourceCoverageCard pods={pods} shifts={shifts} />
+      <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+        <ActiveDispatchesPreview submissions={submissions} />
+        <PodsPreview pods={pods} />
       </div>
-      {shifts.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{emptyCopy}</p>
-      ) : (
-        shifts.slice(0, 3).map((shift) => {
-          const pod = shift.podId ? podsById.get(shift.podId) : undefined;
-          return (
-            <div
-              key={shift.id}
-              className="rounded-md border border-border/60 bg-muted/40 p-3 shadow-xs"
-            >
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{pod?.name ?? "Unassigned pod"}</span>
-                <span>{formatRelativeTime(shift.startsAt)}</span>
-              </div>
-              <p className="mt-2 text-sm font-medium">
-                {formatTimeRange(shift.startsAt, shift.endsAt)}
-              </p>
-              {pod?.area ? (
-                <p className="text-xs text-muted-foreground">{pod.area}</p>
-              ) : null}
-              {shift.notes ? (
-                <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
-                  {shift.notes}
-                </p>
-              ) : null}
-            </div>
-          );
-        })
-      )}
     </div>
   );
 }
 
-function ActiveDispatchesPreview() {
-  const submissions = useDispatchStore((state) => state.submissions);
-
-  const items = useMemo(
-    () =>
-      [...submissions]
-        .sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-        )
-        .slice(0, 4),
-    [submissions],
+function QuickStartDrawerContent() {
+  const Item = ({
+    icon,
+    title,
+    children,
+  }: {
+    icon: React.ReactNode;
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <div className="flex gap-3">
+      <div className="mt-0.5 text-muted-foreground">{icon}</div>
+      <div>
+        <h3 className="font-semibold leading-6">{title}</h3>
+        <div className="text-sm text-muted-foreground mt-1">{children}</div>
+      </div>
+    </div>
   );
 
   return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-start justify-between gap-2">
-        <div>
-          <CardTitle>Dispatch queue</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Latest entries flowing through the queue.
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dispatches">Open dispatch</Link>
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No dispatches yet. Connect a data source or submit a demo intake to
-            populate this view.
-          </p>
-        ) : (
-          items.map((submission) => {
-            const statusMeta = STATUS_META[submission.status];
-            const typeLabel = DISPATCH_TYPE_LABELS[submission.type ?? "other"];
-            const requiredRoles = submission.required_roles ?? [];
-            const rolePreview = requiredRoles.slice(0, 3).join(", ");
-            const hasMoreRoles = requiredRoles.length > 3;
+    <div className="flex h-full flex-col">
+      <DrawerHeader>
+        <DrawerTitle>Quick Start Understanding</DrawerTitle>
+        <DrawerDescription>
+          Short explainers for the main sections of your region.
+        </DrawerDescription>
+      </DrawerHeader>
+      <div className="max-h-[50dvh] overflow-y-auto px-4 pb-4 space-y-5">
+        <Item icon={<GraduationCap className="h-5 w-5" />} title="Academy">
+          The Academy is your training hub for learning how this platform and
+          your region operate. Courses are self‑paced and cover both
+          fundamentals and role‑specific practices so you can onboard quickly.
+          As you complete modules, you earn credentials that unlock permissions
+          and responsibilities in other areas of the app. Returning users can
+          use the Academy for refreshers or to track progress toward advanced
+          qualifications.
+        </Item>
 
-            return (
-              <div
-                key={submission.id}
-                className="rounded-md border border-border/60 bg-muted/40 p-4 shadow-xs"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge
-                      variant="outline"
-                      className="border-none bg-background/60 px-2 py-1 text-xs"
-                    >
-                      {typeLabel}
-                    </Badge>
-                    <span>{formatRelativeTime(submission.timestamp)}</span>
-                  </div>
-                  <Badge
-                    className={cn(
-                      "border-none px-2 py-1 text-xs font-semibold capitalize text-white",
-                      statusMeta?.color ?? "bg-slate-600",
-                    )}
-                  >
-                    {statusMeta?.label ?? submission.status.replace(/_/g, " ")}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm font-medium">
-                  {submission.location_label ?? "Unlabeled dispatch"}
-                </p>
-                {submission.intended_action_notes ? (
-                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                    {submission.intended_action_notes}
-                  </p>
-                ) : null}
-                {rolePreview ? (
-                  <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">
-                    Needs: {rolePreview}
-                    {hasMoreRoles ? "…" : ""}
-                  </p>
-                ) : null}
-              </div>
-            );
-          })
-        )}
-      </CardContent>
-    </Card>
+        <Item icon={<Shield className="h-5 w-5" />} title="Admin">
+          The Admin area provides region‑level oversight and configuration tools
+          for authorized administrators. Use it to review activity, access audit
+          trails, manage reports, and keep operations compliant with local
+          policies. From here you can tune integrations, branding, and feature
+          availability so the platform matches your needs. Access is restricted
+          to protect sensitive settings while preserving transparency for
+          coordinators.
+        </Item>
+
+        <Item icon={<Eye className="h-5 w-5" />} title="Watch">
+          Watch is a live map for situational awareness across your region.
+          Layers and filters help you focus on relevant reports, signals, and
+          activity as conditions change. It’s useful for real‑time monitoring,
+          early triage, and spotting patterns before they turn into dispatches.
+          Teams can use Watch during operations briefings to align on what’s
+          happening right now.
+        </Item>
+
+        <Item
+          icon={<CheckCircle2 className="h-5 w-5" />}
+          title="Confirmed Watch"
+        >
+          Confirmed Watch highlights reports that coordinators have reviewed and
+          verified for accuracy. This view reduces noise and uncertainty so
+          on‑the‑ground teams can act with confidence. It lives inside Watch as
+          a filter or dedicated layer rather than a separate tool. Use it when
+          you need a trusted baseline for decisions or public communication.
+        </Item>
+
+        <Item icon={<ClipboardList className="h-5 w-5" />} title="Dispatches">
+          Dispatches is the intake‑to‑action pipeline that moves a report from
+          first contact to resolution. Coordinators triage submissions, set
+          status, and record intended actions so everyone sees the current plan.
+          Roles and staffing needs are tracked here, and updates form the
+          running incident log for handoffs. Use Dispatches to keep decisions
+          visible, responsibilities clear, and progress easy to audit.
+        </Item>
+
+        <Item icon={<BookOpen className="h-5 w-5" />} title="How to Use">
+          The How‑to guide is a built‑in reference for new and experienced
+          volunteers. It contains standard operating procedures, role
+          definitions, and best practices for using the platform safely. Unlike
+          the Academy, which is for training, the How‑to guide is designed for
+          quick lookups during active operations. Keep it handy when you need to
+          verify a protocol or find a resource.
+        </Item>
+      </div>
+    </div>
   );
-}
-
-function PodsPreview() {
-  const pods = usePodStore((state) => state.pods);
-  const snippets = useMemo(() => pods.slice(0, 4), [pods]);
-  const totalRoster = pods.reduce(
-    (sum, pod) => sum + (pod.team?.length ?? 0),
-    0,
-  );
-
-  return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-start justify-between gap-2">
-        <div>
-          <CardTitle>Pods at a glance</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {pods.length === 0
-              ? "Pods sync once you connect to your real data layer."
-              : `${totalRoster} volunteers across ${pods.length} pods.`}
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/pods">Pods directory</Link>
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {snippets.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No pods yet. Use the pods tools to add your first coverage team.
-          </p>
-        ) : (
-          snippets.map((pod) => (
-            <div
-              key={pod.id}
-              className="rounded-md border border-border/60 bg-muted/40 p-4 shadow-xs"
-            >
-              <div className="flex items-center justify-between text-sm font-medium">
-                <span>{pod.name}</span>
-                <Badge
-                  variant="secondary"
-                  className="px-2 py-1 text-xs font-medium"
-                >
-                  {(pod.team?.length ?? 0).toString()} members
-                </Badge>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">{pod.area}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {(pod.channels ?? []).slice(0, 3).map((channel) => (
-                  <Badge
-                    key={`${pod.id}-${channel.type}`}
-                    variant="outline"
-                    className="text-xs"
-                  >
-                    {channel.type}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          ))
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function isActiveStatus(status: DispatchStatus) {
-  return !["completed", "cancelled", "expired", "archived"].includes(status);
-}
-
-function formatRelativeTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown time";
-
-  const diffMs = date.getTime() - Date.now();
-  const isFuture = diffMs > 0;
-  const absoluteMinutes = Math.round(Math.abs(diffMs) / 60000);
-
-  if (absoluteMinutes < 1) {
-    return isFuture ? "starting now" : "just now";
-  }
-
-  if (absoluteMinutes < 60) {
-    return isFuture
-      ? `in ${absoluteMinutes} min${absoluteMinutes === 1 ? "" : "s"}`
-      : `${absoluteMinutes} min${absoluteMinutes === 1 ? "" : "s"} ago`;
-  }
-
-  const absoluteHours = Math.round(absoluteMinutes / 60);
-  if (absoluteHours < 24) {
-    return isFuture
-      ? `in ${absoluteHours} hr${absoluteHours === 1 ? "" : "s"}`
-      : `${absoluteHours} hr${absoluteHours === 1 ? "" : "s"} ago`;
-  }
-
-  const absoluteDays = Math.round(absoluteHours / 24);
-  return isFuture
-    ? `in ${absoluteDays} day${absoluteDays === 1 ? "" : "s"}`
-    : `${absoluteDays} day${absoluteDays === 1 ? "" : "s"} ago`;
-}
-
-function formatTimeRange(start: string, end: string) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return "Unscheduled";
-  }
-
-  const sameDay = startDate.toDateString() === endDate.toDateString();
-  const dateFormatter = new Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const timeFormatter = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  if (sameDay) {
-    return `${dateFormatter.format(startDate)} • ${timeFormatter.format(startDate)} – ${timeFormatter.format(endDate)}`;
-  }
-
-  return `${dateFormatter.format(startDate)} ${timeFormatter.format(startDate)} – ${dateFormatter.format(endDate)} ${timeFormatter.format(endDate)}`;
 }

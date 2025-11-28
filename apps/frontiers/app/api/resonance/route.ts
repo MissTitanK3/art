@@ -9,6 +9,12 @@ function isAuthorized(req: NextRequest) {
   return token && token === process.env.INTERNAL_KEY;
 }
 
+function isUUID(v: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    v,
+  );
+}
+
 type Payload = {
   source_id: string;
   hop?: number;
@@ -24,6 +30,8 @@ export async function POST(req: NextRequest) {
   const sourceId = body.source_id;
   if (!sourceId)
     return NextResponse.json({ error: "Missing source_id" }, { status: 400 });
+  if (!isUUID(sourceId))
+    return NextResponse.json({ error: "source_id must be a UUID" }, { status: 400 });
 
   const startHop = Number.isFinite(body.hop) ? (body.hop as number) : 0;
   const baseStrength =
@@ -42,21 +50,21 @@ export async function POST(req: NextRequest) {
     // Find neighbors for all current ids (treat connections as undirected)
     const { data: rows1, error: e1 } = await supabase
       .from("connections")
-      .select("source_id,recipient_id")
+      .select("source_id,target_id")
       .in("source_id", currentIds);
     if (e1) return NextResponse.json({ error: e1.message }, { status: 500 });
     const { data: rows2, error: e2 } = await supabase
       .from("connections")
-      .select("source_id,recipient_id")
-      .in("recipient_id", currentIds);
+      .select("source_id,target_id")
+      .in("target_id", currentIds);
     if (e2) return NextResponse.json({ error: e2.message }, { status: 500 });
 
     const neighborSet = new Set<string>();
     const currentSet = new Set(currentIds);
 
     for (const r of [...(rows1 || []), ...(rows2 || [])]) {
-      if (currentSet.has(r.source_id)) neighborSet.add(r.recipient_id);
-      if (currentSet.has(r.recipient_id)) neighborSet.add(r.source_id);
+      if (currentSet.has(r.source_id)) neighborSet.add(r.target_id);
+      if (currentSet.has(r.target_id)) neighborSet.add(r.source_id);
     }
 
     // Next hop recipients excluding visited

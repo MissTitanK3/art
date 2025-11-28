@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireServerSession } from "@/lib/auth/server";
+import { jsonError } from "@/lib/api/responses";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { getProfileByUserId } from "@/lib/dal/admin";
 import { regionAdmins } from "@workspace/store/utils/nav";
 import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies as nextCookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
+import { notifyUsers } from "@/lib/server/notify";
 
 type PatchBody = Partial<{
   access_role: string;
@@ -13,29 +14,23 @@ type PatchBody = Partial<{
   coordination_zone: string;
 }>;
 
-function isDemoProvider() {
-  const p =
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
-    process.env.AUTH_PROVIDER ??
-    "demo";
-  return p === "demo";
-}
-
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await requireServerSession();
-    const callerRole = session.user.role;
-
-    // Allow region admins directly; otherwise require dispatcher_admin via profile
-    let authorized = regionAdmins.includes(callerRole);
-    if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
-      authorized =
-        !!callerProfile && callerProfile.access_role === "dispatcher_admin";
-    }
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user)
+      return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
+    // Determine authorization based on the caller's application role from their profile
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    // Allow region admins directly; also allow dispatcher_admin
+    const authorized =
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        callerAccessRole === "dispatcher_admin");
     if (!authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -57,37 +52,30 @@ export async function PATCH(
       );
     }
 
-    // Demo fallback: no-op success
-    if (isDemoProvider()) {
-      return NextResponse.json({ profile: null, ok: true, demo: true });
+    // Prefer service-role client for admin updates if available to bypass RLS
+    // Prefer service-role client for admin updates if available to bypass RLS
+    let client: any;
+    try {
+      const env = ensureSupabaseEnv("server");
+      if (env.serviceRoleKey) {
+        client = createClient(env.url, env.serviceRoleKey);
+      } else {
+        client = await createSupabaseServerClient();
+      }
+    } catch {
+      client = await createSupabaseServerClient();
     }
+    // Load current profile before update
+    const { data: beforeRows } = await client
+      .from("profiles")
+      .select("*")
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .limit(1);
+    const before = Array.isArray(beforeRows)
+      ? beforeRows[0]
+      : (beforeRows as any);
 
-    const env = ensureSupabaseEnv("server");
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store
-            .getAll()
-            .map(({ name, value }: { name: string; value: string }) => ({
-              name,
-              value,
-            }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {
-            /* no-op */
-          }
-        },
-      },
-    });
-
+    // Perform update (support both schema shapes: id or user_id key)
     const { data, error } = await client
       .from("profiles")
       .update(allowed)
@@ -100,11 +88,48 @@ export async function PATCH(
     }
 
     const row = Array.isArray(data) ? data[0] : (data as any);
+
+    // Fire-and-forget notifications to the affected user on key changes
+    (async () => {
+      try {
+        if (!row) return;
+        const targetUserId: string | undefined = row.user_id || row.id;
+        if (!targetUserId) return;
+        if (
+          before &&
+          allowed.access_role &&
+          before.access_role !== row.access_role
+        ) {
+          await notifyUsers({
+            title: "Your Access Role Changed",
+            body: `New role: ${row.access_role}`,
+            level: "info",
+            channel: "system",
+            link: "/profile",
+            recipients: [targetUserId],
+          });
+        }
+        if (
+          before &&
+          allowed.verified_by &&
+          before.verified_by !== row.verified_by
+        ) {
+          await notifyUsers({
+            title: "Verification Status Updated",
+            body: `Verified by: ${row.verified_by}`,
+            level: "success",
+            channel: "system",
+            link: "/profile",
+            recipients: [targetUserId],
+          });
+        }
+      } catch (e) {
+        console.warn("[admin/profiles] PATCH notify exception:", e);
+      }
+    })();
+
     return NextResponse.json({ profile: row ?? null });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: String(e?.message ?? e) },
-      { status: 500 },
-    );
+    return jsonError(e);
   }
 }

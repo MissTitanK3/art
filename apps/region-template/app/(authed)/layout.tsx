@@ -1,6 +1,7 @@
-import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { requireServerSession } from "@/lib/auth/server";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 
 type AuthedLayoutProps = {
   children: ReactNode;
@@ -10,14 +11,12 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 export default async function AuthedLayout({ children }: AuthedLayoutProps) {
-  try {
-    await requireServerSession();
-  } catch (error) {
-    if (error instanceof Error && error.message === "AUTH_REQUIRED") {
-      redirect("/sign-in");
-    }
-    throw error;
+  const supabase = await createSupabaseServerClient();
+  const { data: userRes } = await supabase.auth.getUser();
+  if (!userRes?.user) {
+    const h = await headers();
+    const nextUrl = h.get("next-url") ?? "/";
+    redirect(`/sign-in?redirectTo=${encodeURIComponent(nextUrl)}`);
   }
-
   return <>{children}</>;
 }

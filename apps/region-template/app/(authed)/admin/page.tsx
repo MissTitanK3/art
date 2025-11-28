@@ -13,7 +13,6 @@ import { Button } from "@workspace/ui/components/button";
 import DonutChart from "@workspace/ui/components/charts/DonutChart";
 import StatCard from "@workspace/ui/components/stat-card";
 import NavTile from "@workspace/ui/components/nav-tile";
-import { percent } from "@workspace/ui/lib/utils";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
 import {
   FileChartLine,
@@ -25,16 +24,25 @@ import {
   Package,
   GraduationCap,
   Handshake,
+  Database,
+  Bug,
+  CalendarDays,
 } from "lucide-react";
+import { toast } from "@workspace/ui/components/sonner";
+import AdminNotificationForm, {
+  type SendArgs,
+} from "@workspace/ui/components/admin/notifications/AdminNotificationForm";
+import {
+  AdminNotificationTemplatePanel,
+} from "@workspace/ui/components/admin/notifications/AdminNotificationTemplatePanel";
+import { ADMIN_NOTIFICATION_TEMPLATES } from "@workspace/store/admin/notifications/templates";
 
-import { TraingingSessionsDemoData } from "@/data/demoAcademy";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
 import { useRouter } from "next/navigation";
-import { useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { usePodStore } from "@/providers/PodStoreProvider";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
-import { useMemo } from "react";
+import { DispatchSubmission } from "@workspace/store/types/global";
+import { Pod } from "@workspace/store/types/pod";
+import type { Profile } from "@workspace/store/types/global.ts";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 
 // Map component (client-only)
 const WatchMap = dynamic(
@@ -44,45 +52,178 @@ const WatchMap = dynamic(
 
 export default function AdminPage() {
   const router = useRouter();
-  const { providerId } = useAuth();
-  const submissions = useDispatchStore((s) => s.submissions);
-  const pods = usePodStore((s) => s.pods);
-  const activeRoster = usePodStore((s) => s.activeRoster);
+  const profile = useProfileStore((s) => s.profile);
+  const isNationalAdmin = profile?.access_role === "national_admin";
+  // Aggregated metrics from demo data
+  const [uniqueProfiles, setUniqueProfiles] = React.useState<number>(0);
+  const [uniquePods, setUniquePods] = React.useState<number>(0);
+  const [dispatches, setDispatches] = React.useState<DispatchSubmission[]>([]);
 
-  const uniqueProfiles = React.useMemo(() => {
-    const ids = new Set<string>();
-    (activeRoster ?? []).forEach((r) => ids.add(r.profile.id));
-    return ids.size;
-  }, [activeRoster]);
+  const [loadingProfiles, setLoadingProfiles] = React.useState(true);
+  const [loadingPods, setLoadingPods] = React.useState(true);
+  const [loadingDispatches, setLoadingDispatches] = React.useState(true);
 
-  const activeDispatches = React.useMemo(() => {
-    const list = submissions ?? [];
-    return list.filter(
-      (d) =>
-        !["archived", "completed", "cancelled", "expired"].includes(
-          d.status as string,
-        ),
-    ).length;
-  }, [submissions]);
+  React.useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const res = await fetch("/api/admin/profiles", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { profiles } = (await res.json()) as { profiles?: Profile[] };
+        const size = Array.isArray(profiles)
+          ? new Set(profiles.map((p) => p.id)).size
+          : 0;
+        setUniqueProfiles(size);
+      } catch {
+        setUniqueProfiles(0);
+      } finally {
+        setLoadingProfiles(false);
+      }
 
-  const podsCount = pods?.length ?? 0;
+      try {
+        const podsRes = await fetch("/api/admin/pods", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        if (!podsRes.ok) throw new Error(`HTTP ${podsRes.status}`);
+        const { pods } = (await podsRes.json()) as { pods?: Pod[] };
+        const podSize = Array.isArray(pods)
+          ? new Set(pods.map((p) => p.id)).size
+          : 0;
+        setUniquePods(podSize);
+      } catch {
+        setUniquePods(0);
+      } finally {
+        setLoadingPods(false);
+      }
 
-  const trainingCounts = React.useMemo(() => {
-    const all = TraingingSessionsDemoData.filter(
-      (s) => s.status !== "archived",
-    );
-    const completed = all.filter((s) => s.status === "completed").length;
-    const scheduled = all.filter((s) => s.status === "scheduled").length;
-    const inProgress = all.filter((s) => s.status === "in_progress").length;
-    return { all: all.length, completed, scheduled, inProgress };
+      try {
+        const dispatchesRes = await fetch("/api/admin/dispatches", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        if (!dispatchesRes.ok) throw new Error(`HTTP ${dispatchesRes.status}`);
+        const { submissions } = (await dispatchesRes.json()) as {
+          submissions?: DispatchSubmission[];
+        };
+        setDispatches(Array.isArray(submissions) ? submissions : []);
+      } catch {
+        setDispatches([]);
+      } finally {
+        setLoadingDispatches(false);
+      }
+    };
+    load();
+    return () => {
+      controller.abort();
+    };
   }, []);
 
-  const trainingPct = percent(trainingCounts.completed, trainingCounts.all);
+  const activeDispatches = React.useMemo(
+    () =>
+      dispatches.filter(
+        (d) =>
+          !["archived", "completed", "cancelled", "expired"].includes(d.status),
+      ).length,
+    [dispatches],
+  );
+
+  const [trainingStats, setTrainingStats] = React.useState<{
+    totalActive: number;
+    completed: number;
+    inProgress: number;
+    scheduled: number;
+    completionPct: number;
+  }>({
+    totalActive: 0,
+    completed: 0,
+    inProgress: 0,
+    scheduled: 0,
+    completionPct: 0,
+  });
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/academy/stats", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { stats } = await res.json();
+        if (stats) setTrainingStats(stats);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => controller.abort();
+  }, []);
+
+  const trainingPct = trainingStats.completionPct;
+
+  const [iceoutSyncing, setIceoutSyncing] = React.useState(false);
+  const [iceoutLastSyncedAt, setIceoutLastSyncedAt] =
+    React.useState<string | null>(null);
+  const [iceoutStatusMessage, setIceoutStatusMessage] =
+    React.useState<string | null>(null);
+
+  const fetchIceoutStatus = React.useCallback(async () => {
+    if (!isNationalAdmin) return;
+    try {
+      const res = await fetch("/api/admin/iceout", {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setIceoutLastSyncedAt(data?.lastSyncedAt ?? null);
+      setIceoutStatusMessage(data?.message ?? null);
+    } catch (error) {
+      console.warn("[AdminPage] failed to load Iceout status", error);
+    }
+  }, [isNationalAdmin]);
+
+  React.useEffect(() => {
+    if (!isNationalAdmin) return;
+    fetchIceoutStatus();
+  }, [fetchIceoutStatus, isNationalAdmin]);
+
+  const syncIceoutReports = React.useCallback(async () => {
+    if (!isNationalAdmin) return;
+    setIceoutSyncing(true);
+    try {
+      const res = await fetch("/api/admin/iceout", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast.error(data?.error ?? "Failed to sync Iceout reports");
+      } else {
+        setIceoutLastSyncedAt(data?.lastSyncedAt ?? new Date().toISOString());
+        setIceoutStatusMessage(
+          data?.message ??
+          `Imported ${data?.inserted ?? 0} new reports (checked ${data?.checked ?? 0})`,
+        );
+        toast.success(
+          data?.message ?? `Imported ${data?.inserted ?? 0} Iceout reports`,
+        );
+      }
+    } catch (error) {
+      console.error("[AdminPage] Iceout sync failed", error);
+      toast.error("Failed to sync Iceout reports");
+    } finally {
+      setIceoutSyncing(false);
+    }
+  }, [isNationalAdmin]);
 
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
   const { reports, idMap } = React.useMemo(
-    () => toWatchReports(submissions ?? []),
-    [submissions],
+    () => toWatchReports(dispatches),
+    [dispatches],
   );
 
   const handleView = (r: WizardReport) => {
@@ -90,95 +231,14 @@ export default function AdminPage() {
     if (id) router.push(`/dispatches/submission/${id}`);
   };
 
+  const remaining = Math.max(
+    0,
+    trainingStats.totalActive - trainingStats.completed,
+  );
   const chartData = [
-    { name: "Completed", value: trainingCounts.completed },
-    { name: "In Progress", value: trainingCounts.inProgress },
-    { name: "Scheduled", value: trainingCounts.scheduled },
+    { name: "Completed", value: trainingStats.completed },
+    { name: "Remaining", value: remaining },
   ];
-
-  // Simple admin actions (Supabase only) to validate new API routes
-  const canMutate = providerId === "supabase";
-  const firstSubmission = (submissions ?? [])[0];
-  const firstPod = (pods ?? [])[0];
-  const trustPair = useMemo(() => {
-    const r = activeRoster ?? [];
-    if (r.length < 2) return null;
-    const subjectId = r[0]?.profile?.id;
-    const signerId = r[1]?.profile?.id;
-    if (!subjectId || !signerId) return null;
-    return { subjectId, signerId };
-  }, [activeRoster]);
-
-
-  const toggleFlagged = async () => {
-    if (!firstSubmission) return;
-    const next = !firstSubmission.flagged;
-    const res = await fetch(`/api/admin/dispatches/${firstSubmission.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flagged: next }),
-    });
-    if (!res.ok) {
-      toast.error("Failed to toggle flagged");
-      return;
-    }
-    toast.success(`Flagged set to ${next}`);
-  };
-
-  const renameFirstPod = async () => {
-    if (!firstPod) return;
-    const res = await fetch(`/api/admin/pods/${firstPod.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        area: firstPod.area || "Unassigned",
-        name: firstPod.name + " •",
-      }),
-    });
-    if (!res.ok) {
-      toast.error("Failed to update pod");
-      return;
-    }
-    toast.success("Pod updated");
-  };
-
-  // Trust signature demo actions (require at least 2 profiles in roster)
-  const addTrust = async () => {
-    if (!trustPair) return;
-    const res = await fetch(`/api/admin/trust`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        subjectId: trustPair.subjectId,
-        signerId: trustPair.signerId,
-        status: "active",
-      }),
-    });
-    if (!res.ok) return toast.error("Failed to add trust signature");
-    toast.success("Trust signature added");
-  };
-  const deactivateTrust = async () => {
-    if (!trustPair) return;
-    const res = await fetch(
-      `/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "inactive" }),
-      },
-    );
-    if (!res.ok) return toast.error("Failed to update trust signature");
-    toast.success("Trust signature set inactive");
-  };
-  const deleteTrust = async () => {
-    if (!trustPair) return;
-    const res = await fetch(
-      `/api/admin/trust/${trustPair.subjectId}/${trustPair.signerId}`,
-      { method: "DELETE" },
-    );
-    if (!res.ok) return toast.error("Failed to delete trust signature");
-    toast.success("Trust signature deleted");
-  };
 
   return (
     <section className="space-y-6">
@@ -201,16 +261,19 @@ export default function AdminPage() {
         <StatCard
           label="Total Profiles"
           value={uniqueProfiles}
+          loading={loadingProfiles}
           icon={<Users2 className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           label="Active Dispatches"
           value={activeDispatches}
+          loading={loadingDispatches}
           icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           label="Pods"
-          value={podsCount}
+          value={uniquePods}
+          loading={loadingPods}
           icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
@@ -219,6 +282,50 @@ export default function AdminPage() {
           icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
+
+      {isNationalAdmin && (
+        <Card>
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                Iceout Reports
+              </CardTitle>
+              <CardDescription>
+                Import approved third-party reports into the regional database.
+              </CardDescription>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Last synced:{" "}
+                {iceoutLastSyncedAt
+                  ? new Date(iceoutLastSyncedAt).toLocaleString()
+                  : "Never"}
+              </p>
+              {iceoutStatusMessage && (
+                <p className="text-xs text-muted-foreground">
+                  {iceoutStatusMessage}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchIceoutStatus}
+                disabled={iceoutSyncing}
+              >
+                Refresh status
+              </Button>
+              <Button
+                size="sm"
+                onClick={syncIceoutReports}
+                disabled={iceoutSyncing}
+              >
+                {iceoutSyncing ? "Syncing..." : "Sync now"}
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Quick navigation */}
       <Card>
@@ -260,9 +367,30 @@ export default function AdminPage() {
               label="Trust"
               description="Manage trust signatures"
             />
+            <NavTile
+              href="/admin/advocacy-groups"
+              icon={<Database className="h-5 w-5" />}
+              label="Advocacy Network"
+              description="Trusted orgs for report delivery"
+            />
+            <NavTile
+              href="/admin/campaigns"
+              icon={<CalendarDays className="h-5 w-5" />}
+              label="Campaigns"
+              description="Create Seasons for Frontiers"
+            />
+            <NavTile
+              href="/admin/bug-reports"
+              icon={<Bug className="h-5 w-5" />}
+              label="Bug Reports"
+              description="User-submitted platform issues"
+            />
           </div>
         </CardContent>
       </Card>
+
+      {/* Notifications */}
+      <AdminNotifications />
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -281,6 +409,8 @@ export default function AdminPage() {
                 className="h-full lg:h-full"
                 actionMode="view"
                 onViewDispatch={handleView}
+                zoom={4}
+                center={[39.8283, -99.5795]}
               />
             </div>
           </CardContent>
@@ -291,20 +421,19 @@ export default function AdminPage() {
           <CardHeader>
             <CardTitle>Training Progress</CardTitle>
             <CardDescription>
-              {trainingCounts.completed} completed of {trainingCounts.all}{" "}
+              {trainingStats.completed} completed of {trainingStats.totalActive}{" "}
               active sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
             <DonutChart
               id="training-progress"
-              className="w-full h-[220px]"
+              className="w-full h-[280px] aspect-auto"
               data={chartData}
               config={{
                 // Use standard colors (hex/HSL/RGB)
                 Completed: { label: "Completed", color: "#10b981" }, // emerald-500
-                "In Progress": { label: "In Progress", color: "#f59e0b" }, // amber-500
-                Scheduled: { label: "Scheduled", color: "#3b82f6" }, // blue-500
+                Remaining: { label: "Remaining", color: "#3b82f6" }, // blue-500
               }}
               innerRadius={50}
               outerRadius={80}
@@ -319,77 +448,57 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Admin Actions (demo UI) */}
-      {canMutate && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin Actions</CardTitle>
-            <CardDescription>
-              Minimal end-to-end checks for Supabase routes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={toggleFlagged}
-                disabled={!firstSubmission}
-                variant="outline"
-                size="sm"
-              >
-                Toggle flagged on most recent submission
-              </Button>
-              <Button
-                onClick={renameFirstPod}
-                disabled={!firstPod}
-                variant="outline"
-                size="sm"
-              >
-                Update first pod name/area
-              </Button>
-              <Button
-                onClick={addTrust}
-                disabled={!trustPair}
-                variant="outline"
-                size="sm"
-              >
-                Add trust (first 2 roster profiles)
-              </Button>
-              <Button
-                onClick={deactivateTrust}
-                disabled={!trustPair}
-                variant="outline"
-                size="sm"
-              >
-                Set trust inactive
-              </Button>
-              <Button
-                onClick={deleteTrust}
-                disabled={!trustPair}
-                variant="destructive"
-                size="sm"
-              >
-                Delete trust
-              </Button>
-            </div>
-            {!firstSubmission && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                No submissions found to toggle flagged.
-              </p>
-            )}
-            {!firstPod && (
-              <p className="text-sm text-muted-foreground">
-                No pods found to update.
-              </p>
-            )}
-            {!trustPair && (
-              <p className="text-sm text-muted-foreground">
-                Need at least 2 roster profiles to demo trust actions.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </section>
+  );
+}
+
+async function sendNotification(args: SendArgs) {
+  const res = await fetch("/api/admin/notifications/send", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(args),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<{ id?: string; recipientsCount?: number }>;
+}
+
+function AdminNotifications() {
+  const handleCustom = React.useCallback(async (args: SendArgs) => {
+    try {
+      const { id, recipientsCount } = await sendNotification(args);
+      const suffix =
+        typeof recipientsCount === "number"
+          ? ` • ${recipientsCount} recipient${recipientsCount === 1 ? "" : "s"}`
+          : "";
+      toast.success("Notification sent", {
+        description: `${id ? `id: ${id}` : ""}${suffix}`.trim(),
+      });
+      return true;
+    } catch (e: any) {
+      toast.error("Failed to send notification", {
+        description: e?.message ?? String(e),
+      });
+      return false;
+    }
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Notifications</CardTitle>
+        <CardDescription>
+          Send standard or custom notifications to your region
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <AdminNotificationTemplatePanel
+          templateOptions={ADMIN_NOTIFICATION_TEMPLATES}
+          onSend={handleCustom}
+        />
+        <hr className="my-2" />
+        <AdminNotificationForm onSend={handleCustom} />
+      </CardContent>
+    </Card>
   );
 }

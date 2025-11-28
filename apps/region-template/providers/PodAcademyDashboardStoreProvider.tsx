@@ -20,7 +20,7 @@ export const PodAcademyDashboardStoreContext =
 export function PodAcademyDashboardStoreProvider({
   children,
   persist = false,
-  storageKey = "pod-academy-dashboard-store",
+  storageKey = `pod-academy-dashboard-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`,
   initialStats,
   initialCourseGroups,
   initialMembers,

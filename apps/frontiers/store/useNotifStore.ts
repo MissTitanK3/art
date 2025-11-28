@@ -3,6 +3,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createIndexedDBStorage } from "./idbStorage";
+import { migrateWithDefaults } from "./migrate";
+
+const defaults = {
+  seenPulseIds: {} as Record<string, true>,
+  lastCheckAt: null as string | null,
+};
 
 type NotifState = {
   seenPulseIds: Record<string, true>;
@@ -15,8 +21,7 @@ type NotifState = {
 export const useNotifStore = create<NotifState>()(
   persist(
     (set, get) => ({
-      seenPulseIds: {},
-      lastCheckAt: null,
+      ...defaults,
       markSeen: (id) => {
         const map = { ...get().seenPulseIds, [id]: true as const };
         set({ seenPulseIds: map });
@@ -28,6 +33,7 @@ export const useNotifStore = create<NotifState>()(
       name: "notif-store",
       storage: createIndexedDBStorage(),
       version: 1,
+      migrate: migrateWithDefaults(defaults),
       partialize: (s) => ({
         seenPulseIds: s.seenPulseIds,
         lastCheckAt: s.lastCheckAt,

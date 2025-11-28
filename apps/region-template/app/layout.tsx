@@ -3,27 +3,32 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
-import { Toaster } from "@workspace/ui/components/sonner";
-import { navConfig } from "@/nav.config";
-import { GlobalNav } from "@/components/client/global-nav";
-import { NavRole } from "@workspace/store/utils/nav";
-import { getServerSession } from "@/lib/auth/server";
-import { GlobalNavBridge } from "@/components/client/GlobalNavBridge";
-import ServiceWorkerRegister from "@/components/client/ServiceWorkerRegister";
-import InstallPrompt from "@/components/client/InstallPrompt";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
+import type { AuthSession } from "@/lib/auth/types";
+import { GlobalNavBridge } from "@/components/nav/GlobalNavBridge";
+import RegisterServiceWorker from "./components/register-sw";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
+
+// Ensure layout and session are always computed per-request in production
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 // ---------- Metadata ----------
+const brandName = process.env.NEXT_PUBLIC_BRAND_NAME ?? "Template";
+const regionTitle = `ART Region ${brandName}`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
   ),
   title: {
-    default: "ART Region Template",
-    template: "%s · ART Region Template",
+    default: regionTitle,
+    template: `%s · ${regionTitle}`,
   },
   description:
     "Regional dispatch operations template: pods, shifts, onboarding, and trust list—siloed per-region with metadata-only uplinks.",
-  applicationName: "ART Dispatch — Region",
+  applicationName: `ART Dispatch — ${brandName}`,
   keywords: [
     "dispatch",
     "regional",
@@ -41,16 +46,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "ART. Region Template",
-    title: "ART. Region Template",
+    siteName: regionTitle,
+    title: regionTitle,
     description: "Siloed regional operations with cross‑region metadata only.",
     images: [
-      { url: "/og.png", width: 1200, height: 630, alt: "ART. Region Template" },
+      { url: "/og.png", width: 1200, height: 630, alt: regionTitle },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ART. Region Template",
+    title: regionTitle,
     description: "Siloed regional operations with cross‑region metadata only.",
     images: ["/og.png"],
     creator: "@alwaysreadytools",
@@ -88,7 +93,36 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
+  // Build our AuthSession from Supabase server auth
+  const supabase = await createSupabaseServerClient();
+  const [{ data: supaUser }, { data: supaSession }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.auth.getSession(),
+  ]);
+
+  const session: AuthSession | null =
+    supaUser?.user && supaSession?.session
+      ? {
+        user: {
+          id: supaUser.user.id,
+          email: supaUser.user.email ?? "",
+          // Prefer explicit metadata role, fallback to any server-provided role, else guest
+          role: ((supaUser.user as any)?.user_metadata?.role ??
+            (supaUser.user as any)?.role ??
+            "guest") as any,
+          fullName:
+            (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
+          avatarUrl:
+            (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
+          metadata: (supaUser.user as any)?.user_metadata ?? undefined,
+        },
+        accessToken: (supaSession.session as any)?.access_token ?? "",
+        refreshToken:
+          (supaSession.session as any)?.refresh_token ?? undefined,
+        expiresAt: (supaSession.session as any)?.expires_at ?? null,
+        provider: "supabase",
+      }
+      : null;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -96,8 +130,7 @@ export default async function RootLayout({
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
       >
         <AppProviders initialSession={session}>
-          {/* Register service worker for PWA installability */}
-          <ServiceWorkerRegister />
+          <RegisterServiceWorker />
           <InstallPrompt />
           <GlobalNavBridge />
           <div className="px-3 pt-3 space-y-4 mx-auto">{children}</div>

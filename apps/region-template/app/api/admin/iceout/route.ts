@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { fetchIceoutReports, DEFAULT_ICEOUT_TOKEN } from '@workspace/store/integrations/iceout';
+import { fetchIceoutReports } from '@workspace/store/integrations/iceout';
 import { ensureSupabaseEnv } from '@/lib/auth/supabase/utils';
-import { requireServerSession } from '@/lib/auth/server';
+import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import { regionAdmins } from '@workspace/store/utils/nav';
 
@@ -10,22 +10,21 @@ const SYNC_LOOKBACK_DAYS = Number(process.env.ICEOUT_SYNC_LOOKBACK_DAYS ?? '7');
 const ICEOUT_ENDPOINT = process.env.ICEOUT_REPORTS_URL ?? 'https://iceout.org/api/reports/';
 
 function getIceoutToken() {
-  return process.env.ICEOUT_REPORTS_TOKEN ?? process.env.NEXT_PUBLIC_ICEOUT_REPORTS_TOKEN ?? DEFAULT_ICEOUT_TOKEN;
+  return process.env.ICEOUT_REPORTS_TOKEN ?? process.env.NEXT_PUBLIC_ICEOUT_REPORTS_TOKEN;
 }
 
 async function assertAdminAccess() {
-  const session = await requireServerSession();
-  let authorized = regionAdmins.includes(session.user.role);
-  if (!authorized) {
-    const callerProfile = await getProfileByUserId(session.user.id);
-    authorized =
-      !!callerProfile &&
-      (callerProfile.access_role === 'dispatcher_admin' || callerProfile.access_role === 'dispatcher_verified');
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error } = await supabase.auth.getUser();
+  if (error || !userData?.user) {
+    throw new Error('AUTH_REQUIRED');
   }
-  if (!authorized) {
-    throw new Error('Forbidden');
-  }
-  return session;
+  const callerProfile = await getProfileByUserId(userData.user.id);
+  const role = callerProfile?.access_role ?? null;
+  const authorized =
+    !!role && (regionAdmins.includes(role) || role === 'dispatcher_admin' || role === 'dispatcher_verified');
+  if (!authorized) throw new Error('Forbidden');
+  return userData.user;
 }
 
 function getAdminClient() {
@@ -53,8 +52,9 @@ export async function GET() {
       lastSyncedAt: data?.synced_at ?? null,
     });
   } catch (err: any) {
-    const status = err?.message === 'Forbidden' ? 403 : 500;
-    return NextResponse.json({ error: err?.message ?? 'Server error' }, { status });
+    const message = err?.message ?? 'Server error';
+    const status = message === 'AUTH_REQUIRED' ? 401 : message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -141,7 +141,8 @@ export async function POST(req: NextRequest) {
       lastSyncedAt: syncedAt,
     });
   } catch (err: any) {
-    const status = err?.message === 'Forbidden' ? 403 : 500;
-    return NextResponse.json({ error: err?.message ?? 'Server error' }, { status });
+    const message = err?.message ?? 'Server error';
+    const status = message === 'AUTH_REQUIRED' ? 401 : message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

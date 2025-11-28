@@ -1,9 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createIndexedDBStorage } from "./idbStorage";
+import { migrateWithDefaults } from "./migrate";
 import type { ArtSignal } from "@/schemas/art_signals";
 
 type Location = { lat: number; lng: number } | null;
+
+const defaults = {
+  signals: [] as ArtSignal[],
+  location: null as Location,
+  loading: false,
+  error: undefined as string | undefined,
+  completedIds: [] as string[],
+};
 
 type SignalsState = {
   signals: ArtSignal[];
@@ -21,11 +30,7 @@ type SignalsState = {
 export const useSignalsStore = create<SignalsState>()(
   persist(
     (set, get) => ({
-      signals: [],
-      location: null,
-      loading: false,
-      error: undefined,
-      completedIds: [],
+      ...defaults,
       setSignals: (s) => set({ signals: s }),
       setLocation: (l) => set({ location: l }),
       setLoading: (v) => set({ loading: v }),
@@ -44,6 +49,7 @@ export const useSignalsStore = create<SignalsState>()(
       name: "signals-store",
       storage: createIndexedDBStorage(),
       version: 1,
+      migrate: migrateWithDefaults(defaults),
       partialize: (state) => ({
         signals: state.signals,
         completedIds: state.completedIds,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useProfileStore } from "@/store/useProfileStore";
+import { useShipStore } from "@/store/useShipStore";
 
 function Meter({ label, value }: { label: string; value: number }) {
   const color = useMemo(
@@ -30,14 +30,11 @@ function Meter({ label, value }: { label: string; value: number }) {
 }
 
 export function FatigueMeters() {
-  const eng = useProfileStore((s) => s.fatigue_engineering);
-  const nav = useProfileStore((s) => s.fatigue_navigation);
-  const ops = useProfileStore((s) => s.fatigue_operations);
+  const fatigue = useShipStore((s) => s.fatigue);
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-      <Meter label="Engineering" value={eng} />
-      <Meter label="Navigation" value={nav} />
-      <Meter label="Operations" value={ops} />
+      <Meter label="Crew Fatigue" value={fatigue} />
     </div>
   );
 }

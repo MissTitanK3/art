@@ -38,7 +38,8 @@ export async function POST(req: Request) {
           try {
             cookieStore.set(name, value, options as CookieOptions | undefined);
           } catch {
-            // In some server contexts cookie store may be read-only; best-effort only.
+            // In some server contexts cookie store may be read-only;
+            // best-effort update only.
           }
         });
       },
@@ -68,14 +69,27 @@ export async function POST(req: Request) {
           refresh_token: refreshToken,
         });
       } else {
+        // fall back to querying current session to ensure cookies are set
         await supabase.auth.getSession();
       }
     } else if (event === "SIGNED_OUT") {
       await supabase.auth.signOut();
     }
   } catch {
-    // Ignore; client can refresh cookies later
+    // Ignore; client remains logged in and cookies can refresh later
   }
 
   return NextResponse.json({ ok: true });
 }
+
+// Optional: return 204 for direct GET visits to avoid 405 noise
+export async function GET() {
+  return new Response(null, {
+    status: 204,
+    headers: { "cache-control": "no-store" },
+  });
+}
+
+// Ensure this handler never gets statically optimized and always runs per-request
+export const dynamic = "force-dynamic";
+export const revalidate = 0;

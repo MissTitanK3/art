@@ -1,13 +1,20 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Map as LeafletMap } from "leaflet";
-import { MapContainer, CircleMarker, TileLayer, Circle } from "react-leaflet";
+import {
+  MapContainer,
+  CircleMarker,
+  TileLayer,
+  Circle,
+  Tooltip,
+} from "react-leaflet";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
@@ -42,13 +49,28 @@ import { MenuPopover } from "@/components/map/MenuPopover";
 import { computeSignalPoints } from "@/lib/map/signalLayout";
 import { HelpSheet } from "@/components/map/HelpSheet";
 import { StatusPanel } from "@/components/map/StatusPanel";
+import { FogDiscoveryWatcher, FogOfWarOverlay } from "@/components/map/FogOfWarOverlay";
+import { RealtimeLayer } from "@/components/map/RealtimeLayer";
+import { MapControls } from "@/components/map/MapControls";
+import { useFogOfWarStore } from "@/store/useFogOfWarStore";
+import { useRealtimeMapStore } from "@/store/useRealtimeMapStore";
+import { useJournalStore } from "@/store/useJournalStore";
 
 // --- Helpers ---
+const POI_FOG_RADIUS_KM = 8;
+
+type SelectedPoi = {
+  signal: ArtSignal;
+  lat: number;
+  lng: number;
+  color: string;
+};
 
 export function FullScreenMap() {
   const { setLocation, setError, signals, loading, location, error } =
     useSignalsStore();
-  const [active, setActive] = useState<ArtSignal | null>(null);
+  const markSignalDiscovered = useSignalsStore((s) => s.markDiscovered);
+  const [active, setActive] = useState<SelectedPoi | null>(null);
   const [filters, setFilters] = useState<Record<FilterKey, boolean>>({
     Beacon: true,
     Cache: true,
@@ -64,7 +86,15 @@ export function FullScreenMap() {
     providers: tileProviders,
   } = useTileProvider();
   const [zoom, setZoom] = useState<number>(location ? 13 : 5);
+  const maxZoom = 18;
+  const minZoom = 11;
   const seasonReward = useSeasonStore((s) => s.reward_schema);
+  const addJournalEntry = useJournalStore((s) => s.add);
+  const markFog = useFogOfWarStore((s) => s.markDiscovered);
+  const setFogAnchor = useFogOfWarStore((s) => s.setAnchor);
+  const clearFog = useFogOfWarStore((s) => s.clear);
+  const setRealtimeAnchor = useRealtimeMapStore((s) => s.setAnchor);
+  const pushRealtimeEvent = useRealtimeMapStore((s) => s.addEvent);
 
   const ship_condition = useShipStore((s) => s.ship_condition);
   const crew_morale = useShipStore((s) => s.crew_morale);
@@ -83,10 +113,22 @@ export function FullScreenMap() {
     remainingMs,
   } = useDock(activeProvider.maxNativeZoom);
 
-  const center: [number, number] = [
-    location?.lat ?? 37.8,
-    location?.lng ?? -96,
-  ];
+  const center = useMemo<[number, number]>(
+    () => [location?.lat ?? 37.8, location?.lng ?? -96],
+    [location?.lat, location?.lng],
+  );
+
+  useEffect(() => {
+    setFogAnchor(center);
+    setRealtimeAnchor(center);
+  }, [center, setFogAnchor, setRealtimeAnchor]);
+
+  // Reveal fog only when the tracked location (not the view) actually moves
+  useEffect(() => {
+    if (location) {
+      markFog(location.lat, location.lng, 0.8, "movement");
+    }
+  }, [location?.lat, location?.lng, markFog]);
 
   const level = Math.floor((engineeringXp ?? 0) / 100) + 1;
   const xpIntoLevel = (engineeringXp ?? 0) % 100;
@@ -156,6 +198,63 @@ export function FullScreenMap() {
     [signals, filters, center, seasonReward],
   );
 
+  const zoomIn = useCallback(() => {
+    if (!map) return;
+    const nextZoom = Math.min(maxZoom, map.getZoom() + 1);
+    map.flyTo(map.getCenter(), nextZoom, { animate: true });
+  }, [map, maxZoom]);
+
+  const zoomOut = useCallback(() => {
+    if (!map) return;
+    const nextZoom = Math.max(3, map.getZoom() - 1);
+    map.flyTo(map.getCenter(), nextZoom, { animate: true });
+  }, [map]);
+
+  const panByDirection = useCallback(
+    (dx: number, dy: number) => {
+      if (!map) return;
+      const c = map.getCenter();
+      const meters = 850;
+      const latDelta = (dy * meters) / 111320;
+      const lngDelta =
+        (dx * meters) /
+        (111320 * Math.max(Math.cos((c.lat * Math.PI) / 180), 0.2));
+      const next = { lat: c.lat + latDelta, lng: c.lng + lngDelta };
+      map.flyTo([next.lat, next.lng], map.getZoom(), {
+        animate: true,
+        duration: 0.35,
+      });
+      // Do not reveal fog on camera pan; only reveal on actual location updates/POIs
+    },
+    [map],
+  );
+
+  const handlePoiSelect = useCallback(
+    (poi: SelectedPoi) => {
+      setActive(poi);
+      markSignalDiscovered(poi.signal.id);
+      // Clear fog around the POI when selected
+      markFog(poi.lat, poi.lng, POI_FOG_RADIUS_KM, "poi");
+      addJournalEntry("repair", `Scanned ${poi.signal.title}`);
+      pushRealtimeEvent({
+        id: `poi-${poi.signal.id}-${Date.now()}`,
+        label: `${poi.signal.title} ping`,
+        lat: poi.lat,
+        lng: poi.lng,
+        ts: new Date().toISOString(),
+        kind: "poi",
+      });
+    },
+    [addJournalEntry, markFog, markSignalDiscovered, pushRealtimeEvent],
+  );
+
+  const focusOnActive = useCallback(() => {
+    if (!map || !active) return;
+    const targetZoom = Math.min(maxZoom, Math.max(map.getZoom(), 14));
+    map.flyTo([active.lat, active.lng], targetZoom, { animate: true });
+    // Do not reveal fog on camera move alone; handled when location updates or explicit events
+  }, [map, active, maxZoom]);
+
   return (
     <div className="fixed inset-0 h-[100dvh] w-[100dvw]">
       <StatusPanel
@@ -168,7 +267,7 @@ export function FullScreenMap() {
         zoom={zoom}
         error={error}
       />
-      <div className="absolute top-1/2 left-2 -translate-y-1/2 z-40">
+      <div className="absolute top-1/3 left-2 -translate-y-1/2 z-40">
         <div className="mt-4 flex flex-col gap-3 items-center">
           <MapOptionsPopover
             providerId={tileProviderId}
@@ -217,8 +316,8 @@ export function FullScreenMap() {
         <MapContainer
           center={center}
           zoom={location ? 13 : 5}
-          minZoom={3}
-          maxZoom={(activeProvider.maxNativeZoom ?? 19) + 4}
+          minZoom={minZoom}
+          maxZoom={maxZoom}
           scrollWheelZoom
           preferCanvas
           worldCopyJump
@@ -234,10 +333,13 @@ export function FullScreenMap() {
             crossOrigin="anonymous"
             maxNativeZoom={activeProvider.maxNativeZoom}
           />
-          <ZoomGuard maxZoom={(activeProvider.maxNativeZoom ?? 19) - 2} />
+          <ZoomGuard maxZoom={maxZoom} />
           <ZoomWatcher onZoomChange={setZoom} />
+          <FogDiscoveryWatcher location={location} />
           <GridOverlay />
+          <FogOfWarOverlay />
           <HomePulse center={center} />
+          <RealtimeLayer />
           {Number.isFinite(dockInfo.lat) && Number.isFinite(dockInfo.lng) && (
             <Circle
               center={[dockInfo.lat as number, dockInfo.lng as number]}
@@ -263,14 +365,42 @@ export function FullScreenMap() {
                 fillColor: p.color,
                 fillOpacity: 0.5,
               }}
-              eventHandlers={{ click: () => setActive(p.signal) }}
+              eventHandlers={{
+                click: () =>
+                  handlePoiSelect({
+                    signal: p.signal,
+                    lat: p.lat,
+                    lng: p.lng,
+                    color: p.color,
+                  }),
+              }}
               className="[filter:drop-shadow(0_0_6px_rgba(0,0,0,0.25))]"
-            />
+            >
+              <Tooltip direction="top" offset={[0, -6]} opacity={0.92}>
+                <div className="text-xs">
+                  <div className="font-semibold">{p.signal.title}</div>
+                  <div className="text-muted-foreground">
+                    {p.signal.source_type}
+                  </div>
+                </div>
+              </Tooltip>
+            </CircleMarker>
           ))}
         </MapContainer>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40">
+      <div className="absolute bottom-16 left-2 z-40">
+        <MapControls
+          zoom={zoom}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onPan={panByDirection}
+          onCenter={handleCenterOnMe}
+          onResetFog={() => clearFog()}
+        />
+      </div>
+
+      <div className="absolute bottom-18 left-1/2 -translate-x-1/2 z-40">
         <Button
           onClick={() => onPing(getPosition)}
           disabled={loading}
@@ -289,9 +419,39 @@ export function FullScreenMap() {
         </DialogTrigger>
         <DialogContent className="sm:max-w-md bg-card/90 backdrop-blur">
           <DialogHeader>
-            <DialogTitle>Repair Signal</DialogTitle>
+            <DialogTitle>{active?.signal.title ?? "Repair Signal"}</DialogTitle>
+            {active ? (
+              <DialogDescription>
+                {active.signal.summary || "Unstable POI detected on the grid."}
+              </DialogDescription>
+            ) : null}
           </DialogHeader>
-          {active ? <RepairPuzzle signal={active} /> : null}
+          {active ? (
+            <div className="space-y-4">
+              <div className="text-xs text-muted-foreground">
+                {active.signal.source_type} · {active.lat.toFixed(3)},{" "}
+                {active.lng.toFixed(3)}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={focusOnActive}>
+                  Focus on map
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => markSignalDiscovered(active.signal.id)}
+                >
+                  Mark discovered
+                </Button>
+              </div>
+              <div className="rounded-md border p-3 bg-muted/40">
+                <div className="text-sm font-semibold mb-1">
+                  Repair Puzzle
+                </div>
+                <RepairPuzzle signal={active.signal} />
+              </div>
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

@@ -9,8 +9,6 @@ import {
   DispatchStoreState,
 } from "@workspace/store/useDispatchStore";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
-import { demoDispatches } from "@/data/demoDispatches";
-import { demoDispatchShifts } from "@/data/demoDispatchShifts";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 type DispatchStoreProviderProps = PropsWithChildren<{
@@ -25,10 +23,10 @@ export const DispatchStoreContext =
 
 export function DispatchStoreProvider({
   children,
-  initialSubmissions = demoDispatches,
-  initialShifts = demoDispatchShifts,
+  initialSubmissions = [],
+  initialShifts = [],
   persist = true,
-  storageKey = "dispatch-store",
+  storageKey = `dispatch-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`,
 }: DispatchStoreProviderProps) {
   const storeRef = useRef<StoreApi<DispatchStoreState> | null>(null);
 

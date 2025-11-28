@@ -6,6 +6,8 @@ import { useProfileStore } from "@/store/useProfileStore";
 import { useNotifStore } from "@/store/useNotifStore";
 import { toast } from "sonner";
 import { useShipStore } from "@/store/useShipStore";
+import { useRealtimeMapStore } from "@/store/useRealtimeMapStore";
+import { useJournalStore } from "@/store/useJournalStore";
 
 export function ResonanceRealtime() {
   const profileId = useProfileStore((s) => s.profile?.id ?? null);
@@ -37,6 +39,14 @@ export function ResonanceRealtime() {
             useShipStore
               .getState()
               .applyPulse(Math.max(0, Math.min(1, Number(row.strength) || 0)));
+          } catch {}
+          try {
+            useRealtimeMapStore.getState().ingestResonance(row);
+          } catch {}
+          try {
+            useJournalStore
+              .getState()
+              .add("other", `Resonance from ${who} detected on sensors.`);
           } catch {}
           useNotifStore.getState().markSeen(row.id);
         },
@@ -80,6 +90,14 @@ export function ResonanceRealtime() {
             .applyPulse(
               Math.max(0, Math.min(1, Number((row as any).strength) || 0)),
             );
+        } catch {}
+        try {
+          useRealtimeMapStore.getState().ingestResonance(row);
+        } catch {}
+        try {
+          useJournalStore
+            .getState()
+            .add("other", `Resonance from ${who} detected on sensors.`);
         } catch {}
         useNotifStore.getState().markSeen(id);
       }

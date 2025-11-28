@@ -161,6 +161,7 @@ export function deriveStats(
 export function convertPodsToMemberProgress(pods: Pod[]): AcademyMemberProgress[] {
   const results: AcademyMemberProgress[] = [];
   for (const pod of pods) {
+    if (!pod.team || !Array.isArray(pod.team)) continue;
     for (const member of pod.team) {
       const completedLessons = member.certs.filter(
         (cert) => cert.level === 'completed' || cert.level === 'mentor',
@@ -170,7 +171,7 @@ export function convertPodsToMemberProgress(pods: Pod[]): AcademyMemberProgress[
       const interestedCourses = extractCourseInterests(profile, member);
       results.push({
         id: member.id,
-        name: profile.display_name,
+        name: (profile?.display_name ?? member.handle ?? '').toString(),
         podName: pod.name,
         role: member.role,
         status: member.status,
@@ -189,6 +190,7 @@ export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[]
   const instructors: AcademyInstructorProfile[] = [];
 
   for (const pod of pods) {
+    if (!pod.team || !Array.isArray(pod.team)) continue;
     for (const member of pod.team) {
       if (seen.has(member.id)) continue;
 
@@ -213,16 +215,16 @@ export function buildInstructorProfiles(pods: Pod[]): AcademyInstructorProfile[]
           ? 'cleared'
           : 'awaiting_verification';
 
-      const profile = member.profile;
+      const profile = member.profile as any;
       instructors.push({
         id: member.id,
-        name: profile.display_name,
+        name: (profile?.display_name ?? member.handle ?? 'Unknown').toString(),
         type,
         availability,
         focus,
-        timezone: profile.coordination_zone ?? undefined,
+        timezone: profile?.coordination_zone ?? undefined,
         certifications: member.certs ?? [],
-        registrationStatus: profile.user_id ? 'registered' : 'unregistered',
+        registrationStatus: profile?.user_id ? 'registered' : 'unregistered',
         vettingStatus,
       });
 
@@ -375,7 +377,7 @@ export function buildTrainingSessions(
 
     const {
       slug = `session-${i + 1}`,
-      classId = 'unassigned-class',
+      classId = '',
       title = 'Untitled Session',
       modality = 'online',
       location,

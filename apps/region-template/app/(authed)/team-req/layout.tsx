@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { requireElevatedAccess } from "@/lib/guards";
+import { requireDispatchBasicAccess } from "@/lib/guards";
 import TeamReqClientLayout from "./providers.client";
 
 export default async function TeamRequestLayout({
@@ -7,6 +7,7 @@ export default async function TeamRequestLayout({
 }: {
   children: ReactNode;
 }) {
-  await requireElevatedAccess();
+  // Allow dispatcher_basic and above to access team requests
+  await requireDispatchBasicAccess();
   return <TeamReqClientLayout>{children}</TeamReqClientLayout>;
 }

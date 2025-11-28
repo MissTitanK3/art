@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createIndexedDBStorage } from "./idbStorage";
+import { migrateWithDefaults } from "./migrate";
 import type { Profile } from "@/schemas/profiles";
 
 type ProfileState = {
@@ -86,6 +87,7 @@ export const useProfileStore = create<ProfileState>()(
       name: "profile-store",
       storage: createIndexedDBStorage(),
       version: 1,
+      migrate: migrateWithDefaults(defaults),
       partialize: (s) => ({
         profile: s.profile,
         region_id: s.region_id,

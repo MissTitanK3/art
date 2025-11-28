@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createIndexedDBStorage } from "./idbStorage";
+import { migrateWithDefaults } from "./migrate";
 import type { Faction } from "@/schemas/factions";
 
 export type Rank = "Outsider" | "Associate" | "Agent" | "Ally";
@@ -22,11 +23,15 @@ type FactionState = {
   getReputation: (factionId: string) => number;
 };
 
+const defaults = {
+  factions: {} as Record<string, Faction>,
+  reputations: {} as Record<string, number>,
+};
+
 export const useFactionStore = create<FactionState>()(
   persist(
     (set, get) => ({
-      factions: {},
-      reputations: {},
+      ...defaults,
       upsertFaction: (f) =>
         set((s) => ({ factions: { ...s.factions, [f.id]: f } })),
       incrementReputation: (factionId, amount) =>
@@ -41,6 +46,7 @@ export const useFactionStore = create<FactionState>()(
       name: "faction-store",
       storage: createIndexedDBStorage(),
       version: 1,
+      migrate: migrateWithDefaults(defaults),
       partialize: (s) => ({ factions: s.factions, reputations: s.reputations }),
     },
   ),

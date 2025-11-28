@@ -1,5 +1,3 @@
-// apps/region-template/lib/adapters/demoProfileAdapter.ts
-
 import { ProfileAdapter } from "@workspace/store/types/profile.ts";
 
 let DEMO_PROFILE: any | null = {
@@ -14,10 +12,10 @@ let DEMO_PROFILE: any | null = {
   self_risk_acknowledged: false,
   affiliation: "Always Ready Tools",
   contact_signal: "@demo_user",
-  coordination_zone: "PNW-Region-1",
-  city: "Seattle",
+  coordination_zone: "TEMPLATE-Region-1",
+  city: "Example City",
   weekly_availability: { blocks: {} },
-  coverage_zones: ["Seattle", "Tacoma"],
+  coverage_zones: ["Example City"],
   operating_counties: [],
   inserted_at: "",
 };

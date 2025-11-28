@@ -12,4 +12,3 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (_event) => {
   // No-op: allow default network handling
 });
-

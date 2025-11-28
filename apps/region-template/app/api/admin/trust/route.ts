@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireServerSession } from "@/lib/auth/server";
+import { jsonError } from "@/lib/api/responses";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { getProfileByUserId } from "@/lib/dal/admin";
 import { regionAdmins } from "@workspace/store/utils/nav";
-import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies as nextCookies } from "next/headers";
+import {
+  notifyUsers,
+  resolveUserIdsFromProfileOrUserIds,
+} from "@/lib/server/notify";
 import crypto from "node:crypto";
 
 type PostBody = Partial<{
@@ -17,23 +19,18 @@ type PostBody = Partial<{
   signed_entry_hash?: string;
 }>;
 
-function isDemoProvider() {
-  const p =
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
-    process.env.AUTH_PROVIDER ??
-    "demo";
-  return p === "demo";
-}
-
 export async function POST(req: Request) {
   try {
-    const session = await requireServerSession();
-    let authorized = regionAdmins.includes(session.user.role);
-    if (!authorized) {
-      const callerProfile = await getProfileByUserId(session.user.id);
-      authorized =
-        !!callerProfile && callerProfile.access_role === "dispatcher_admin";
-    }
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user)
+      return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    const authorized =
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        callerAccessRole === "dispatcher_admin");
     if (!authorized)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
@@ -49,46 +46,7 @@ export async function POST(req: Request) {
         { status: 400 },
       );
 
-    if (isDemoProvider()) {
-      return NextResponse.json({
-        entry: {
-          subjectId,
-          signerId,
-          signer_role,
-          signer_rot,
-          signed_at: body.signed_at ?? new Date().toISOString(),
-          signed_entry_hash: body.signed_entry_hash ?? crypto.randomUUID(),
-          status,
-        },
-        demo: true,
-      });
-    }
-
-    const env = ensureSupabaseEnv("server");
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store
-            .getAll()
-            .map(({ name, value }: { name: string; value: string }) => ({
-              name,
-              value,
-            }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {
-            /* no-op */
-          }
-        },
-      },
-    });
+    const client = await createSupabaseServerClient();
 
     const row = {
       subject_id: subjectId,
@@ -108,6 +66,34 @@ export async function POST(req: Request) {
     if (error)
       return NextResponse.json({ error: error.message }, { status: 500 });
     const out = Array.isArray(data) ? data[0] : (data as any);
+
+    // Fire-and-forget: notify subject and signer (use validated IDs)
+    (async () => {
+      try {
+        const subject: string = subjectId as string;
+        const signer: string = signerId as string;
+        const recipients = await resolveUserIdsFromProfileOrUserIds([
+          subject,
+          signer,
+        ]);
+        if (recipients.length) {
+          await notifyUsers({
+            title:
+              status === "active"
+                ? "Trust Signature Added"
+                : "Trust Signature Updated",
+            body: `Signer role: ${signer_role}`,
+            level: "success",
+            channel: "system",
+            link: "/admin/trust",
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn("[admin/trust] POST notify exception:", e);
+      }
+    })();
+
     return NextResponse.json({
       entry: {
         subjectId: out.subject_id,
@@ -120,9 +106,6 @@ export async function POST(req: Request) {
       },
     });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: String(e?.message ?? e) },
-      { status: 500 },
-    );
+    return jsonError(e);
   }
 }

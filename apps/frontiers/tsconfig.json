@@ -1,7 +1,6 @@
 {
   "extends": "@workspace/typescript-config/nextjs.json",
   "compilerOptions": {
-    "emitDeclarationOnly": true,
     "paths": {
       "@/*": ["./*"],
       "@workspace/ui/globals.css": ["../../packages/ui/src/styles/globals.css"],

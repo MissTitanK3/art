@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { getAuthClient } from "@/lib/auth/client";
-import { getAuthProviderId } from "@/lib/auth/adapter";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
+import type { Session as SupabaseSession } from "@supabase/supabase-js";
 import type {
   AuthProviderId,
   AuthSession,
@@ -11,7 +11,6 @@ import type {
   PasswordSignInPayload,
   PasswordSignUpPayload,
 } from "@/lib/auth/types";
-import type { AuthClientAdapter } from "@/lib/auth/types";
 
 type AuthContextValue = {
   providerId: AuthProviderId;
@@ -23,9 +22,13 @@ type AuthContextValue = {
   signInWithPassword: (payload: PasswordSignInPayload) => Promise<AuthSession>;
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
-  signUpWithPassword?: (
+  signUpWithPassword: (
     payload: PasswordSignUpPayload,
   ) => Promise<AuthSession | null>;
+  /** Send a password reset email. */
+  requestPasswordReset: (email: string, redirectTo?: string) => Promise<void>;
+  /** Complete a password reset for the current recovery session. */
+  updatePassword: (newPassword: string) => Promise<void>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
@@ -45,8 +48,10 @@ export function AuthProvider({
   children,
   initialSession = null,
 }: AuthProviderProps) {
-  const providerId = React.useMemo(() => getAuthProviderId(), []);
-  const clientRef = React.useRef<AuthClientAdapter | null>(null);
+  const providerId = React.useMemo<AuthProviderId>(() => "supabase", []);
+  const supabaseRef = React.useRef<ReturnType<
+    typeof getSupabaseBrowserClient
+  > | null>(null);
 
   const [session, setSession] = React.useState<AuthSession | null>(
     initialSession,
@@ -55,12 +60,54 @@ export function AuthProvider({
     toStatus(initialSession),
   );
 
-  const ensureClient = React.useCallback(async () => {
-    if (!clientRef.current) {
-      clientRef.current = await getAuthClient();
+  const ensureClient = React.useCallback(() => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = getSupabaseBrowserClient();
     }
-    return clientRef.current;
+    return supabaseRef.current;
   }, []);
+
+  function mapSupabaseSession(s: SupabaseSession | null): AuthSession | null {
+    if (!s) return null;
+    const u = s.user;
+    return {
+      user: {
+        id: u.id,
+        email: u.email ?? "",
+        role: ((u as any)?.user_metadata?.role ??
+          (u as any)?.role ??
+          "guest") as any,
+        fullName: (u as any)?.user_metadata?.full_name ?? undefined,
+        avatarUrl: (u as any)?.user_metadata?.avatar_url ?? undefined,
+        metadata: (u as any)?.user_metadata ?? undefined,
+      },
+      accessToken: (s as any)?.access_token ?? "",
+      refreshToken: (s as any)?.refresh_token ?? undefined,
+      expiresAt: (s as any)?.expires_at ?? null,
+      provider: "supabase",
+    };
+  }
+
+  async function postAuthCallback(event: string, s: SupabaseSession | null) {
+    try {
+      await fetch("/auth/callback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          event,
+          session: s
+            ? {
+                access_token: (s as any)?.access_token ?? null,
+                refresh_token: (s as any)?.refresh_token ?? null,
+              }
+            : null,
+        }),
+        cache: "no-store",
+      });
+    } catch {
+      // Ignore network errors; SSR cookies can refresh later
+    }
+  }
 
   React.useEffect(() => {
     setSession(initialSession);
@@ -69,113 +116,161 @@ export function AuthProvider({
 
   React.useEffect(() => {
     let active = true;
-    let unsubscribe: (() => void) | undefined;
+    const supabase = ensureClient();
 
-    ensureClient().then(async (client) => {
+    async function hydrate() {
+      if (initialSession) return; // already hydrated from server
+      setStatus("loading");
+      const { data, error } = await supabase.auth.getSession();
       if (!active) return;
-
-      if (!initialSession) {
-        setStatus("loading");
-        try {
-          const next = await client.getSession();
-          if (!active) return;
-          setSession(next);
-          setStatus(toStatus(next));
-        } catch (error) {
-          console.warn("[AuthProvider] Failed to hydrate session", error);
-          if (!active) return;
-          setSession(null);
-          setStatus("unauthenticated");
-        }
+      if (error) {
+        console.warn("[AuthProvider] Failed to hydrate session", error);
+        setSession(null);
+        setStatus("unauthenticated");
+        return;
       }
+      const next = mapSupabaseSession(data.session);
+      setSession(next);
+      setStatus(toStatus(next));
+    }
 
-      if (client.onSessionChanged) {
-        unsubscribe = client.onSessionChanged((next) => {
-          if (!active) return;
-          setSession(next);
-          setStatus(toStatus(next));
-        });
-      }
+    hydrate();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!active) return;
+      const next = mapSupabaseSession(s);
+      setSession(next);
+      setStatus(toStatus(next));
+      // Keep server cookies in sync for SSR
+      postAuthCallback(event, s);
     });
 
     return () => {
       active = false;
-      if (unsubscribe) {
-        unsubscribe();
+      try {
+        sub.subscription.unsubscribe();
+      } catch {
+        // ignore
       }
     };
   }, [ensureClient, initialSession]);
 
   const refresh = React.useCallback(async () => {
     setStatus("loading");
-    const client = await ensureClient();
-    try {
-      const next =
-        (await client.refreshSession?.()) ?? (await client.getSession());
-      setSession(next);
-      setStatus(toStatus(next));
-      return next;
-    } catch (error) {
+    const supabase = ensureClient();
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
       setSession(null);
       setStatus("unauthenticated");
       throw error;
     }
+    const next = mapSupabaseSession(data.session);
+    setSession(next);
+    setStatus(toStatus(next));
+    return next;
   }, [ensureClient]);
 
   const signInWithPassword = React.useCallback(
     async (payload: PasswordSignInPayload) => {
       setStatus("loading");
-      const client = await ensureClient();
-      if (!client.signInWithPassword) {
-        throw new Error(
-          `${providerId} adapter does not support password sign-in`,
-        );
-      }
-      const next = await client.signInWithPassword(payload);
+      const supabase = ensureClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: payload.email,
+        password: payload.password,
+      });
+      if (error) throw error;
+      const next = mapSupabaseSession(data.session);
       setSession(next);
       setStatus(toStatus(next));
-      return next;
+      // onAuthStateChange will also fire, but we return immediately
+      return next as AuthSession;
     },
-    [ensureClient, providerId],
+    [ensureClient],
   );
 
   const signInWithOtp = React.useCallback(
     async (payload: OtpSignInPayload) => {
-      const client = await ensureClient();
-      if (!client.signInWithOtp) {
-        throw new Error(
-          `${providerId} adapter does not support magic-link sign-in`,
-        );
-      }
-      await client.signInWithOtp(payload);
+      const supabase = ensureClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: payload.email,
+      });
+      if (error) throw error;
     },
-    [ensureClient, providerId],
+    [ensureClient],
   );
-
-  const signOut = React.useCallback(async () => {
-    const client = await ensureClient();
-    await client.signOut();
-    setSession(null);
-    setStatus("unauthenticated");
-  }, [ensureClient]);
 
   const signUpWithPassword = React.useCallback(
     async (payload: PasswordSignUpPayload) => {
-      const client = await ensureClient();
-      if (!client.signUpWithPassword) {
-        throw new Error(
-          `${providerId} adapter does not support password sign-up`,
-        );
-      }
-      const next = await client.signUpWithPassword(payload);
+      const supabase = ensureClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: payload.email,
+        password: payload.password,
+        options: {
+          data: {
+            full_name: payload.fullName,
+            role: payload.role,
+          },
+        },
+      });
+      if (error) throw error;
+      const next = mapSupabaseSession(data.session);
       if (next) {
         setSession(next);
         setStatus(toStatus(next));
       }
       return next;
     },
-    [ensureClient, providerId],
+    [ensureClient],
   );
+
+  const requestPasswordReset = React.useCallback(
+    async (email: string, redirectTo?: string) => {
+      const supabase = ensureClient();
+      const url = (() => {
+        if (redirectTo) return redirectTo;
+        const base = process.env.NEXT_PUBLIC_SITE_URL;
+        if (base) return `${base.replace(/\/$/, "")}/auth/reset-password`;
+        if (typeof window !== "undefined")
+          return `${window.location.origin}/auth/reset-password`;
+        return undefined;
+      })();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: url,
+      });
+      if (error) throw error;
+    },
+    [ensureClient],
+  );
+
+  const updatePassword = React.useCallback(
+    async (newPassword: string) => {
+      const supabase = ensureClient();
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+      try {
+        // Keep local state and SSR cookies in sync after password change
+        const refreshed = await supabase.auth.getSession();
+        await postAuthCallback(
+          "USER_UPDATED",
+          refreshed.data.session as unknown as SupabaseSession,
+        );
+        const next = mapSupabaseSession(refreshed.data.session);
+        setSession(next);
+        setStatus(toStatus(next));
+      } catch {
+        // ignore
+      }
+    },
+    [ensureClient],
+  );
+
+  const signOut = React.useCallback(async () => {
+    const supabase = ensureClient();
+    await supabase.auth.signOut();
+    // onAuthStateChange will update state and trigger callback to sync cookies
+  }, [ensureClient]);
 
   const value = React.useMemo<AuthContextValue>(
     () => ({
@@ -189,6 +284,8 @@ export function AuthProvider({
       signInWithOtp,
       signOut,
       signUpWithPassword,
+      requestPasswordReset,
+      updatePassword,
     }),
     [
       providerId,
@@ -199,6 +296,8 @@ export function AuthProvider({
       signInWithOtp,
       signOut,
       signUpWithPassword,
+      requestPasswordReset,
+      updatePassword,
     ],
   );
 

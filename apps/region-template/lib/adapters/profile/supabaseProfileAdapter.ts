@@ -1,12 +1,12 @@
-// apps/region-template/lib/adapters/profile/supabaseProfileAdapter.ts
 "use client";
 
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { Profile } from "@workspace/store/types/global.ts";
 import type { ProfileAdapter } from "@workspace/store/types/profile.ts";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 function isUuid(value: string): boolean {
-  return /^(\{)?[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[1-5][0-9a-fA-F]{3}\-[89abAB][0-9a-fA-F]{3}\-[0-9a-fA-F]{12}(\})?$/.test(
+  // Allow optional surrounding braces and standard UUID hyphenation
+  return /^(\{)?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(\})?$/.test(
     value,
   );
 }
@@ -14,6 +14,9 @@ function isUuid(value: string): boolean {
 export const supabaseProfileAdapter: ProfileAdapter = {
   async loadProfile(userId: string): Promise<Profile | null> {
     const client = getSupabaseBrowserClient();
+    // Prefer lookup by user_id to match auth linkage, but be resilient:
+    // - handle rows returned as arrays
+    // - allow lookup by id or user_id
     const { data, error } = await client
       .from("profiles")
       .select("*")
@@ -25,13 +28,18 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     }
     const row = Array.isArray(data) ? (data[0] as any) : (data as any);
     if (!row) return null;
-    return {
-      ...row,
+    // Normalize nullable fields to avoid runtime null reads
+    const normalized: Profile = {
+      ...(row as any),
+      display_name: String((row as any)?.display_name ?? ""),
     } as Profile;
+    return normalized;
   },
   async saveProfile(profile: Profile): Promise<void> {
     const client = getSupabaseBrowserClient();
+    // Map store -> DB type (inserted_at -> joined_at)
     const { inserted_at, ...rest } = profile as any;
+    // Write both joined_at and inserted_at for schema compatibility
     const payload = { ...rest, inserted_at };
     const { error } = await client.from("profiles").upsert(payload);
     if (error) {
@@ -40,7 +48,8 @@ export const supabaseProfileAdapter: ProfileAdapter = {
   },
   async deleteProfile(userOrProfileId: string): Promise<void> {
     const client = getSupabaseBrowserClient();
-    const target = isUuid(userOrProfileId) ? userOrProfileId : userOrProfileId;
+    // Be flexible: try delete by id OR user_id
+    const target = userOrProfileId;
     const { error: byIdErr } = await client
       .from("profiles")
       .delete()

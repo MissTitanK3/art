@@ -15,7 +15,6 @@ import type { Pod, RosterEntry, Shift } from "@workspace/store/types/pod.ts";
 import type { Profile } from "@workspace/store/types/global.ts";
 import { makeRosterEntry } from "@workspace/store/utils/generator.ts";
 import { useProfileStore as useGlobalProfileStore } from "@workspace/store/useProfileStore";
-import { demoPods, demoRoster } from "@/data/demoPods";
 
 type PodStoreProviderProps = PropsWithChildren<{
   initialPods?: Pod[];
@@ -31,11 +30,11 @@ export const PodStoreContext = createContext<StoreApi<PodStoreState> | null>(
 
 export function PodStoreProvider({
   children,
-  initialPods = demoPods,
+  initialPods,
   initialShifts = [],
-  initialRoster = demoRoster,
+  initialRoster,
   persist = false,
-  storageKey = "pod-store",
+  storageKey = `pod-store:${process.env.NEXT_PUBLIC_BRAND_NAME}`,
 }: PodStoreProviderProps) {
   const storeRef = useRef<StoreApi<PodStoreState> | null>(null);
 

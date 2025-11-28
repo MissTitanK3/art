@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { error } = await supabase.from("connections_v2").upsert(
+  const { error } = await supabase.from("connections").upsert(
     [
       { source_id, target_id, relation: "crew", trust },
       { source_id: target_id, target_id: source_id, relation: "crew", trust },

@@ -18,27 +18,17 @@ export async function POST(req: Request) {
     typeof body.trust === "number" ? Math.max(0, Math.min(1, body.trust)) : 0.7;
   if (!source_id || !target_id)
     return NextResponse.json({ error: "Missing ids" }, { status: 400 });
+  if (!(isUUID(source_id) && isUUID(target_id)))
+    return NextResponse.json({ error: "IDs must be UUIDs" }, { status: 400 });
 
-  // Mutual connection in legacy text graph
-  const { error: e1 } = await supabase.from("connections").upsert(
+  const { error } = await supabase.from("connections").upsert(
     [
-      { source_id, recipient_id: target_id },
-      { source_id: target_id, recipient_id: source_id },
+      { source_id, target_id, relation: "crew", trust },
+      { source_id: target_id, target_id: source_id, relation: "crew", trust },
     ],
-    { onConflict: "source_id,recipient_id" },
+    { onConflict: "source_id,target_id" },
   );
-  if (e1) return NextResponse.json({ error: e1.message }, { status: 500 });
-
-  // Insert into v2 trust graph when both are UUIDs
-  if (isUUID(source_id) && isUUID(target_id)) {
-    await supabase.from("connections_v2").upsert(
-      [
-        { source_id, target_id, relation: "crew", trust },
-        { source_id: target_id, target_id: source_id, relation: "crew", trust },
-      ],
-      { onConflict: "source_id,target_id" },
-    );
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

@@ -40,7 +40,12 @@ export const roleAllowedForScope = (role: NavRole | undefined, scope: Visibility
             'regional_admin', 'national_admin',
         ],
         schedules_manage: [
-            'admin', 'regional_admin', 'national_admin' // localAdmins
+            'dispatcher_admin',
+            'dispatcher_verified',
+            'dispatcher_basic',
+            'admin',
+            'regional_admin',
+            'national_admin'
         ],
         verified_ops: [
             'dispatcher_admin', 'dispatcher_verified',

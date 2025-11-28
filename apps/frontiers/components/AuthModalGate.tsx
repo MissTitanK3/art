@@ -24,12 +24,13 @@ export function AuthModalGate() {
 
   // Only show once auth status is known and user is unauthenticated
   const onAuthRoute = pathname?.startsWith("/auth");
-  const open = status === "unauthenticated" && !onAuthRoute;
+  const onPublicRoute = pathname?.startsWith("/ship-demo");
+  const open = status === "unauthenticated" && !onAuthRoute && !onPublicRoute;
 
   // Redirect to home when authenticated
   React.useEffect(() => {
     if (status === "authenticated") {
-      if (pathname !== "/") router.push("/");
+      if (pathname !== "/" && !pathname?.startsWith("/ship-demo")) router.push("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);

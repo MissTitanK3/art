@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireServerSession } from "@/lib/auth/server";
-import { getProfileByUserId } from "@/lib/dal/admin";
+import { jsonError } from "@/lib/api/responses";
+import { getProfileByUserId, getPods } from "@/lib/dal/admin";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { regionAdmins } from "@workspace/store/utils/nav";
-import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies as nextCookies } from "next/headers";
 import { slugify } from "@workspace/store/types/pod.ts";
+import {
+  ADMIN_GROUP_ROLES,
+  notifyUsers,
+  resolveRecipientsByRoles,
+} from "@/lib/server/notify";
 
 type PostBody = Partial<{
   name: string;
@@ -13,31 +16,23 @@ type PostBody = Partial<{
   channels?: any[];
 }>;
 
-function isDemoProvider() {
-  const p =
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
-    process.env.AUTH_PROVIDER ??
-    "demo";
-  return p === "demo";
-}
-
 export async function POST(req: Request) {
   try {
-    const session = await requireServerSession();
-    const callerRole = session.user.role;
-    const callerProfile = await getProfileByUserId(session.user.id);
-
-    let authorized = regionAdmins.includes(callerRole);
-    if (!authorized) {
-      const access = callerProfile?.access_role;
-      authorized =
-        !!access &&
-        (access === "dispatcher_admin" ||
-          access === "dispatcher_verified" ||
-          access === "dispatcher_basic" ||
-          access === "pod_leader" ||
-          access === "trainer");
-    }
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user)
+      return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
+    // Authorize based on application access_role (profile)
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    const authorized =
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        callerAccessRole === "dispatcher_admin" ||
+        callerAccessRole === "dispatcher_verified" ||
+        callerAccessRole === "dispatcher_basic" ||
+        callerAccessRole === "pod_leader" ||
+        callerAccessRole === "trainer");
     if (!authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -48,125 +43,109 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "name is required" }, { status: 400 });
     }
     const payload: any = {
+      id: crypto.randomUUID(),
       name,
       slug: slugify(name),
       area: body.area ?? "Unassigned",
       channels: Array.isArray(body.channels) ? body.channels : [],
-      created_by: callerProfile?.id ?? null,
     };
-
-    if (isDemoProvider()) {
-      return NextResponse.json({ pod: { id: "demo", ...payload }, demo: true });
+    if (callerProfile?.id) {
+      payload.created_by = callerProfile.id;
     }
 
-    const env = ensureSupabaseEnv("server");
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store
-            .getAll()
-            .map(({ name, value }: { name: string; value: string }) => ({
-              name,
-              value,
-            }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {
-            /* no-op */
-          }
-        },
-      },
-    });
-
-    const { data, error } = await client
+    const client = await createSupabaseServerClient();
+    let { data, error } = await client
       .from("pods")
       .insert(payload)
       .select("id, slug, name, area, channels")
-      .limit(1);
+      .maybeSingle();
 
-    if (error)
+    // Handle slug collision
+    if (error && error.code === "23505") {
+      console.warn("[admin/pods] Slug collision, retrying with suffix");
+      payload.slug = `${slugify(name)}-${Math.floor(Math.random() * 1000)}`;
+      const retry = await client
+        .from("pods")
+        .insert(payload)
+        .select("id, slug, name, area, channels")
+        .maybeSingle();
+      data = retry.data;
+      error = retry.error;
+    }
+
+    if (error) {
+      console.error("[admin/pods] Create failed:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
-    const row = Array.isArray(data) ? data[0] : (data as any);
+    }
+    const row = data;
+    if (!row) {
+      throw new Error("Failed to retrieve created pod");
+    }
+
+    // If a Pod Leader or Trainer created the pod, register them as a lead on this pod
     try {
-      if (
-        callerProfile?.access_role === "pod_leader" ||
-        callerProfile?.access_role === "trainer"
-      ) {
+      if (callerAccessRole === "pod_leader" || callerAccessRole === "trainer") {
         const rosterId = `r-${crypto.randomUUID()}`;
         await client.from("roster_entries").upsert({
           id: rosterId,
           pod_id: row.id,
-          profile_id: callerProfile.id,
+          profile_id: callerProfile?.id,
           role: "lead",
           status: "active",
           joined_at: new Date().toISOString(),
         });
       }
     } catch (e) {
-      console.warn(
-        "[region-template admin/pods] POST add-creator-as-lead exception:",
-        e,
-      );
+      console.warn("[admin/pods] POST add-creator-as-lead exception:", e);
     }
+
+    // Fire-and-forget: let admins know a pod was created
+    (async () => {
+      try {
+        const recipients = await resolveRecipientsByRoles({
+          roles: ADMIN_GROUP_ROLES,
+          channel: "system",
+        });
+        if (recipients.length) {
+          await notifyUsers({
+            title: "New Pod Created",
+            body: `${row?.name ?? "Unnamed"} · Area: ${row?.area ?? "Unassigned"}`,
+            level: "success",
+            channel: "system",
+            link: null,
+            recipients,
+          });
+        }
+      } catch (e) {
+        console.warn("[admin/pods] POST notify exception:", e);
+      }
+    })();
     return NextResponse.json({ pod: row });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: String(e?.message ?? e) },
-      { status: 500 },
-    );
+    return jsonError(e);
   }
 }
 
-export async function GET() {
+export const GET = async (_req: Request) => {
   try {
-    await requireServerSession();
-    if (isDemoProvider()) {
-      return NextResponse.json({ pods: [], demo: true });
-    }
-    const env = ensureSupabaseEnv("server");
-    const store = await nextCookies().catch(() => null as any);
-    const client = createServerClient(env.url, env.anonKey, {
-      cookies: {
-        getAll() {
-          if (!store) return [] as { name: string; value: string }[];
-          return store
-            .getAll()
-            .map(({ name, value }: { name: string; value: string }) => ({
-              name,
-              value,
-            }));
-        },
-        setAll(cookies) {
-          if (!store) return;
-          try {
-            cookies.forEach(({ name, value, options }) => {
-              store.set(name, value, options as CookieOptions | undefined);
-            });
-          } catch {
-            /* no-op */
-          }
-        },
-      },
-    });
-    const { data, error } = await client
-      .from("pods")
-      .select("id, slug, name, area, channels")
-      .is("deleted_at", null)
-      .order("name", { ascending: true });
-    if (error)
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ pods: Array.isArray(data) ? data : [] });
+    const supabase = await createSupabaseServerClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user)
+      return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
+    const callerProfile = await getProfileByUserId(userData.user.id);
+    const callerAccessRole = callerProfile?.access_role as any | undefined;
+    const authorized =
+      !!callerAccessRole &&
+      (regionAdmins.includes(callerAccessRole) ||
+        callerAccessRole === "dispatcher_admin" ||
+        callerAccessRole === "dispatcher_verified" ||
+        callerAccessRole === "dispatcher_basic");
+    if (!authorized)
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const pods = await getPods();
+    return NextResponse.json({ pods });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: String(e?.message ?? e) },
-      { status: 500 },
-    );
+    return jsonError(e);
   }
-}
+};

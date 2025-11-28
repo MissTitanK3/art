@@ -3,6 +3,12 @@ import { supabaseAdmin as supabase } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 
+function isUUID(v: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    v,
+  );
+}
+
 type Body = { profile_id: string };
 
 export async function POST(req: Request) {
@@ -51,34 +57,35 @@ export async function POST(req: Request) {
     }
 
     // Trust: +1 point (cap 1.0) along UUID edges where this profile participates
-    const { data: peers1 } = await supabase
-      .from("connections_v2")
-      .select("source_id,target_id,trust")
-      .eq("source_id", profile_id);
-    const { data: peers2 } = await supabase
-      .from("connections_v2")
-      .select("source_id,target_id,trust")
-      .eq("target_id", profile_id);
-    const updates: any[] = [];
-    for (const r of [...(peers1 || []), ...(peers2 || [])]) {
-      const a = (r as any).source_id;
-      const b = (r as any).target_id;
-      const pair = [a, b];
-      const cur = Math.max(0, Math.min(1, Number((r as any).trust || 0)));
-      const next = Math.max(cur, Math.min(1, cur + 0.01));
-      if (next !== cur) {
-        updates.push({
-          source_id: a,
-          target_id: b,
-          relation: "crew",
-          trust: next,
-        });
+    if (isUUID(profile_id)) {
+      const { data: peers1 } = await supabase
+        .from("connections")
+        .select("source_id,target_id,trust")
+        .eq("source_id", profile_id);
+      const { data: peers2 } = await supabase
+        .from("connections")
+        .select("source_id,target_id,trust")
+        .eq("target_id", profile_id);
+      const updates: any[] = [];
+      for (const r of [...(peers1 || []), ...(peers2 || [])]) {
+        const a = (r as any).source_id;
+        const b = (r as any).target_id;
+        const cur = Math.max(0, Math.min(1, Number((r as any).trust || 0)));
+        const next = Math.max(cur, Math.min(1, cur + 0.01));
+        if (next !== cur) {
+          updates.push({
+            source_id: a,
+            target_id: b,
+            relation: "crew",
+            trust: next,
+          });
+        }
       }
-    }
-    if (updates.length) {
-      await supabase
-        .from("connections_v2")
-        .upsert(updates, { onConflict: "source_id,target_id" });
+      if (updates.length) {
+        await supabase
+          .from("connections")
+          .upsert(updates, { onConflict: "source_id,target_id" });
+      }
     }
   } catch {}
 

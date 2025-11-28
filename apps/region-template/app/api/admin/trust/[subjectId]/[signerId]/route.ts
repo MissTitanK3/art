@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
-import { requireServerSession } from "@/lib/auth/server";
+import { jsonError } from "@/lib/api/responses";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { getProfileByUserId } from "@/lib/dal/admin";
 import { regionAdmins } from "@workspace/store/utils/nav";
 import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies as nextCookies } from "next/headers";
+import {
+  notifyUsers,
+  resolveUserIdsFromProfileOrUserIds,
+} from "@/lib/server/notify";
 
 type PatchBody = Partial<{
   status: string; // 'active' | 'inactive'
@@ -14,14 +19,16 @@ type PatchBody = Partial<{
 }>;
 
 async function authz() {
-  const session = await requireServerSession();
-  let authorized = regionAdmins.includes(session.user.role);
-  if (!authorized) {
-    const callerProfile = await getProfileByUserId(session.user.id);
-    authorized =
-      !!callerProfile && callerProfile.access_role === "dispatcher_admin";
-  }
-  return authorized;
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) return false;
+  const callerProfile = await getProfileByUserId(userData.user.id);
+  const callerAccessRole = callerProfile?.access_role as any | undefined;
+  return (
+    !!callerAccessRole &&
+    (regionAdmins.includes(callerAccessRole) ||
+      callerAccessRole === "dispatcher_admin")
+  );
 }
 
 function clientFromCookies() {
@@ -45,7 +52,7 @@ function clientFromCookies() {
               store.set(name, value, options as CookieOptions | undefined);
             });
           } catch {
-            /* no-op */
+            /* ignore cookie set errors */
           }
         },
       },
@@ -71,22 +78,18 @@ export async function PATCH(
     if (Object.keys(patch).length === 0)
       return NextResponse.json({ error: "No valid fields" }, { status: 400 });
 
-    if (
-      (process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
-        process.env.AUTH_PROVIDER ??
-        "demo") === "demo"
-    ) {
-      return NextResponse.json({
-        entry: {
-          subjectId,
-          signerId,
-          ...patch,
-        },
-        demo: true,
-      });
-    }
-
     const client = await clientFromCookies();
+    // Load current before update
+    const { data: beforeRows } = await client
+      .from("trust_signatures")
+      .select("*")
+      .eq("subject_id", subjectId)
+      .eq("signer_id", signerId)
+      .limit(1);
+    const before = Array.isArray(beforeRows)
+      ? beforeRows[0]
+      : (beforeRows as any);
+
     const { data, error } = await client
       .from("trust_signatures")
       .update(patch)
@@ -97,6 +100,35 @@ export async function PATCH(
     if (error)
       return NextResponse.json({ error: error.message }, { status: 500 });
     const out = Array.isArray(data) ? data[0] : (data as any);
+
+    // Fire-and-forget notifications on status changes
+    (async () => {
+      try {
+        if (!out) return;
+        if (
+          before &&
+          typeof patch.status === "string" &&
+          before.status !== out.status
+        ) {
+          const recipients = await resolveUserIdsFromProfileOrUserIds([
+            subjectId,
+          ]);
+          if (recipients.length) {
+            await notifyUsers({
+              title: "Trust Signature Status Updated",
+              body: `${before.status} → ${out.status}`,
+              level: out.status === "inactive" ? "warning" : "info",
+              channel: "system",
+              link: "/admin/trust",
+              recipients,
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("[admin/trust] PATCH notify exception:", e);
+      }
+    })();
+
     return NextResponse.json({
       entry: out
         ? {
@@ -111,41 +143,6 @@ export async function PATCH(
         : null,
     });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: String(e?.message ?? e) },
-      { status: 500 },
-    );
-  }
-}
-
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ subjectId: string; signerId: string }> },
-) {
-  try {
-    if (!(await authz()))
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    const { subjectId, signerId } = await params;
-    if (
-      (process.env.NEXT_PUBLIC_AUTH_PROVIDER ??
-        process.env.AUTH_PROVIDER ??
-        "demo") === "demo"
-    ) {
-      return NextResponse.json({ ok: true, demo: true });
-    }
-    const client = await clientFromCookies();
-    const { error } = await client
-      .from("trust_signatures")
-      .delete()
-      .eq("subject_id", subjectId)
-      .eq("signer_id", signerId);
-    if (error)
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ ok: true });
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: String(e?.message ?? e) },
-      { status: 500 },
-    );
+    return jsonError(e);
   }
 }

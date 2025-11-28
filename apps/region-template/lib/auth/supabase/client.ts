@@ -1,7 +1,20 @@
-// apps/region-template/lib/auth/supabase/client.ts
 "use client";
 
-// Compatibility shim: several components import from "@/lib/auth/supabase/client"
-// but the actual implementation lives at "@/lib/supabase/client".
-// Re-export to keep both paths working.
-export { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { ensureSupabaseEnv } from "./utils";
+import {
+  createDemoSupabaseClient,
+  isDemoMode,
+} from "@/lib/demo/supabaseStub";
+
+let browserClient: SupabaseClient | null = null;
+
+export function getSupabaseBrowserClient(): SupabaseClient {
+  if (browserClient) return browserClient;
+  if (isDemoMode()) return createDemoSupabaseClient() as any;
+  const env = ensureSupabaseEnv("client");
+  // Recommended browser-side client from @supabase/ssr to ensure consistent cookie handling
+  browserClient = createBrowserClient(env.url, env.anonKey);
+  return browserClient;
+}

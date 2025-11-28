@@ -20,12 +20,12 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
   ),
   title: {
-    default: "ART Region PNW",
-    template: "%s · ART Region PNW",
+    default: `ART Region PNW ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
+    template: "%s · ART Region ${process.env.NEXT_PUBLIC_BRAND_NAME}",
   },
   description:
     "Regional dispatch operations template: pods, shifts, onboarding, and trust list—siloed per-region with metadata-only uplinks.",
-  applicationName: "ART Dispatch — PNW",
+  applicationName: `ART Dispatch — ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
   keywords: [
     "dispatch",
     "regional",
@@ -43,16 +43,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "ART. Region PNW",
-    title: "ART. Region PNW",
+    siteName: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
+    title: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
     description: "Siloed regional operations with cross‑region metadata only.",
     images: [
-      { url: "/og.png", width: 1200, height: 630, alt: "ART. Region PNW" },
+      { url: "/og.png", width: 1200, height: 630, alt: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}` },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ART. Region PNW",
+    title: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
     description: "Siloed regional operations with cross‑region metadata only.",
     images: ["/og.png"],
     creator: "@alwaysreadytools",

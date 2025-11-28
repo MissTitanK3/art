@@ -103,13 +103,3 @@ export type Block = {
 
 export type UiCoverage = { id: string; label: string; area?: any };
 
-// const ProfileSchema = DispatchProfileSchema.extend({
-//   id: z.string().uuid().optional(),
-//   display_name: z.string().min(1, "Display name is required"),
-//   affiliation: z.string().nullable().optional(),
-//   contact_signal: z.string().nullable().optional(),
-//   contact_sms: z.string().nullable().optional(),
-//   coordination_zone: z.string().nullable().optional(),
-//   city: z.string().nullable().optional(),
-//   self_status_flags: z.array(z.string().min(1)).optional().default([]),
-// });

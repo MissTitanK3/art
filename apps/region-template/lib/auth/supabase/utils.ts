@@ -1,4 +1,53 @@
-// apps/region-template/lib/auth/supabase/utils.ts
-// Compatibility shim for API routes expecting this path.
-export { ensureSupabaseEnv } from "@/lib/auth/providers/supabase/common";
-export type { SupabaseEnv } from "@/lib/auth/providers/supabase/common";
+export interface SupabaseEnv {
+  url: string;
+  anonKey: string;
+  serviceRoleKey?: string;
+}
+
+import { isDemoMode } from "@/lib/demo/supabaseStub";
+
+export function ensureSupabaseEnv(
+  target: "server" | "client" | "admin" | "wizard" = "server",
+): SupabaseEnv {
+  let url: string | undefined;
+  let anonKey: string | undefined;
+  let serviceRoleKey: string | undefined;
+
+  switch (target) {
+    case 'admin':
+      url = process.env.NEXT_PUBLIC_SUPABASE_URL_ADMIN;
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_ADMIN;
+      serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY_ADMIN;
+      break;
+
+    case 'client':
+      url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      break;
+
+    case 'wizard':
+      url = process.env.NEXT_PUBLIC_SUPABASE_URL_WIZZARD ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_WIZZARD ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY_WIZZARD ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+      break;
+
+    default:
+      url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      // Allow privileged server routes to use regional service role when configured
+      serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      break;
+  }
+
+  if (!url || !anonKey) {
+    if (isDemoMode()) {
+      // Demo fallback to keep API routes and stores working without Supabase
+      return { url: "https://demo.supabase.local", anonKey: "demo-key" };
+    }
+    throw new Error(
+      `Missing Supabase environment variables for ${target} environment.`,
+    );
+  }
+
+  return { url, anonKey, serviceRoleKey };
+}

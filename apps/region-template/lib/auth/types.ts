@@ -1,6 +1,6 @@
 import type { NavRole } from "@workspace/store/utils/nav";
 
-export type AuthProviderId = "demo" | "supabase";
+export type AuthProviderId = "supabase";
 
 export type AuthUser = {
   id: string;
@@ -33,6 +33,8 @@ export type OtpSignInPayload = {
 export type PasswordSignUpPayload = {
   email: string;
   password: string;
+  fullName?: string;
+  role?: NavRole;
 };
 
 export type AuthClientAdapter = {
@@ -42,12 +44,12 @@ export type AuthClientAdapter = {
   refreshSession?: () => Promise<AuthSession | null>;
   /** Username/password sign-in flow. */
   signInWithPassword?: (payload: PasswordSignInPayload) => Promise<AuthSession>;
-  /** Passwordless magic-link or OTP flow. */
-  signInWithOtp?: (payload: OtpSignInPayload) => Promise<void>;
-  /** Optional password sign-up flow. Returns session if auto-confirmed. */
+  /** Username/password sign-up flow. Returns a session if auto-confirm is enabled, otherwise null. */
   signUpWithPassword?: (
     payload: PasswordSignUpPayload,
   ) => Promise<AuthSession | null>;
+  /** Passwordless magic-link or OTP flow. */
+  signInWithOtp?: (payload: OtpSignInPayload) => Promise<void>;
   /** Sign the current user out. */
   signOut: () => Promise<void>;
   /** Subscribe to session changes emitted by the provider SDK. */

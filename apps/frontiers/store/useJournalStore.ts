@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createIndexedDBStorage } from "./idbStorage";
+import { migrateWithDefaults } from "./migrate";
 
 export type JournalKind = "repair" | "dock" | "ping" | "other";
 
@@ -19,10 +20,14 @@ type JournalState = {
   clear: () => void;
 };
 
+const defaults = {
+  entries: [] as JournalEntry[],
+};
+
 export const useJournalStore = create<JournalState>()(
   persist(
     (set) => ({
-      entries: [],
+      ...defaults,
       add: (kind, message, ts) =>
         set((s) => ({
           entries: [
@@ -41,6 +46,7 @@ export const useJournalStore = create<JournalState>()(
       name: "journal-store",
       storage: createIndexedDBStorage(),
       version: 1,
+      migrate: migrateWithDefaults(defaults),
       partialize: (s) => ({ entries: s.entries }),
     },
   ),

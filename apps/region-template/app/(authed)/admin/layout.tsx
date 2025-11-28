@@ -1,38 +1,57 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
-import { requireServerSession } from "@/lib/auth/server";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 import { regionAdmins } from "@workspace/store/utils/nav";
 import { getProfileByUserId } from "@/lib/dal/admin";
 import AdminBackButton from "./_components/AdminBackButton";
-import AdminClientLayout from "./providers.client";
 
 type AdminLayoutProps = {
   children: ReactNode;
 };
 
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-
 export default async function AdminLayout({ children }: AdminLayoutProps) {
-  // Require authentication first
-  const session = await requireServerSession();
+  // Require authentication first; use server redirect capturing current path
+  const supabase = await createSupabaseServerClient();
+  const { data: userRes } = await supabase.auth.getUser();
+  const user = userRes?.user;
+  if (!user) {
+    const h = await headers();
+    const nextUrl = h.get("next-url") ?? "/admin";
+    redirect(`/sign-in?redirectTo=${encodeURIComponent(nextUrl)}`);
+  }
 
   // Primary gate: session role includes region-level admins
-  const role = session.user.role as any;
+  const meta = (user as unknown as { user_metadata?: Record<string, unknown> })
+    .user_metadata;
+  const metaRole = meta?.role;
+  const fallbackRole = (user as unknown as { role?: unknown }).role;
+  const role =
+    typeof metaRole === "string"
+      ? metaRole
+      : typeof fallbackRole === "string"
+        ? fallbackRole
+        : "guest";
   const allowed: string[] = ["dispatcher_admin", ...regionAdmins];
   if (!allowed.includes(role)) {
-    // Fallback check via DAL: trust profile.access_role when session role is not in allowlist
-    const profile = await getProfileByUserId(session.user.id);
-    const profileRole = profile?.access_role as any;
-    if (!profileRole || !allowed.includes(profileRole)) {
+    // Fallback check via DAL in case session role is stale or missing
+    const profile = await getProfileByUserId(user!.id);
+    const profileRole = profile?.access_role ?? null;
+    if (
+      !profileRole ||
+      (typeof profileRole === "string" && !allowed.includes(profileRole))
+    ) {
       redirect("/my-profile?reason=forbidden-admin");
     }
   }
 
   return (
-    <AdminClientLayout>
+    <>
       <AdminBackButton />
       {children}
-    </AdminClientLayout>
+    </>
   );
 }
+
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";

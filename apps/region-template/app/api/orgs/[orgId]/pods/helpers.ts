@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { getProfileByUserId } from '@/lib/dal/admin';
+import { createSupabaseServerClient, createSupabaseRegionServiceClient } from '@/lib/auth/supabase/server';
+import { regionAdmins } from '@workspace/store/utils/nav';
 import { slugify } from '@workspace/store/types/pod.ts';
 
 export const CHANNEL_TYPES = ['Signal', 'Matrix', 'LoRa'] as const;
@@ -68,69 +72,44 @@ export function handleRouteError(error: unknown) {
   return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
 }
 
-type StoredPod = OrgPodSummary & {
-  slug: string | null;
-  channels: ChannelInput[];
-  createdBy: string;
-  createdAt: number;
-};
-
-const TEMPLATE_PROFILE_ID = 'template-profile';
-const DEFAULT_ROLE: OrgRole = 'owner';
-const TEMPLATE_ORG_ID = 'demo-org';
-
-const podTable = new Map<string, StoredPod>();
-const orgPodIndex = new Map<string, string[]>();
-
-seedDemoData();
-
-function seedDemoData() {
-  if (podTable.size > 0) return;
-
-  const demoPods: StoredPod[] = [
-    {
-      id: 'pod-demo-harbor',
-      name: 'Harbor Ops',
-      slug: 'harbor-ops',
-      area: 'Astoria',
-      channels: [
-        { type: 'Signal', link: 'https://signal.group/#harbor' },
-        { type: 'Matrix', link: 'https://matrix.to/#/#harbor:demo' },
-      ],
-      createdBy: TEMPLATE_PROFILE_ID,
-      createdAt: Date.now(),
-    },
-    {
-      id: 'pod-demo-ham',
-      name: 'Ham Mesh',
-      slug: 'ham-mesh',
-      area: 'Tillamook County',
-      channels: [{ type: 'LoRa', link: null }],
-      createdBy: TEMPLATE_PROFILE_ID,
-      createdAt: Date.now() + 1,
-    },
-  ];
-
-  demoPods.forEach((pod) => podTable.set(pod.id, pod));
-  orgPodIndex.set(
-    TEMPLATE_ORG_ID,
-    demoPods.map((pod) => pod.id),
-  );
-}
-
-function ensureOrgIndex(orgId: string) {
-  if (!orgPodIndex.has(orgId)) {
-    const templateLinks = orgPodIndex.get(TEMPLATE_ORG_ID) ?? [];
-    orgPodIndex.set(orgId, Array.from(templateLinks));
-  }
-  return orgPodIndex.get(orgId)!;
-}
-
 export async function resolveContext(orgId: string) {
-  ensureOrgIndex(orgId);
+  const supabase = await createSupabaseServerClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) {
+    throw new RouteError('AUTH_REQUIRED', 401);
+  }
+
+  const profile = await getProfileByUserId(userData.user.id);
+  if (!profile?.id) {
+    throw new RouteError('PROFILE_REQUIRED', 403);
+  }
+
+  const { data: roleRow, error: roleError } = await supabase
+    .from('organization_roles')
+    .select('role')
+    .eq('org_id', orgId)
+    .eq('user_id', profile.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (roleError) throw new RouteError(roleError.message, 500);
+
+  let orgRole = (roleRow?.role ?? null) as OrgRole | null;
+  if (!orgRole) {
+    const elevated = new Set<string>(['dispatcher_admin', ...regionAdmins]);
+    if (profile.access_role && elevated.has(profile.access_role)) {
+      orgRole = 'owner';
+    }
+  }
+  if (!orgRole) {
+    throw new RouteError('Forbidden', 403);
+  }
+
+  const adminClient = createSupabaseRegionServiceClient();
   return {
-    profileId: TEMPLATE_PROFILE_ID,
-    orgRole: DEFAULT_ROLE,
+    supabase,
+    adminClient,
+    profileId: profile.id,
+    orgRole,
   };
 }
 
@@ -150,100 +129,24 @@ export function mapPodSummary(row: any): OrgPodSummary {
   };
 }
 
-export async function fetchOrgPods(orgId: string) {
-  const links = ensureOrgIndex(orgId);
-  return links
-    .map((podId) => podTable.get(podId))
-    .filter((pod): pod is StoredPod => Boolean(pod))
-    .map(mapPodSummary);
+export async function fetchOrgPods(admin: SupabaseClient, orgId: string) {
+  const { data, error } = await admin
+    .from('organization_pods')
+    .select('pod_id, pod:pods(id, name, slug, area)')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .is('pod.deleted_at', null)
+    .order('created_at', { ascending: true });
+  if (error) throw new RouteError(error.message, 500);
+  const rows = Array.isArray(data) ? data : [];
+  return rows.map(mapPodSummary);
 }
 
-export async function linkExistingPod(orgId: string, podId: string) {
-  const pod = podTable.get(podId);
-  if (!pod) {
-    throw new RouteError('POD_NOT_FOUND', 404);
-  }
-  const links = ensureOrgIndex(orgId);
-  if (!links.includes(podId)) {
-    links.push(podId);
-  }
-  return mapPodSummary(pod);
-}
-
-export async function createPodForOrg({
-  orgId,
-  name,
-  area,
-  channels,
-  createdBy,
-}: {
-  orgId: string;
-  name: string;
-  area: string | null;
-  channels: ChannelInput[];
-  createdBy: string;
-}) {
-  const podId = randomUUID();
-  const slug = await ensureUniqueSlug(slugify(name));
-  const record: StoredPod = {
-    id: podId,
-    name,
-    slug,
-    area,
-    channels,
-    createdBy,
-    createdAt: Date.now(),
-  };
-  podTable.set(podId, record);
-  const links = ensureOrgIndex(orgId);
-  links.push(podId);
-  return mapPodSummary(record);
-}
-
-export async function ensureOrgOwnsPod(orgId: string, podId: string) {
-  const links = ensureOrgIndex(orgId);
-  if (!links.includes(podId)) {
-    throw new RouteError('NOT_FOUND', 404);
-  }
-}
-
-export async function updatePodRecord(
-  podId: string,
-  patch: Partial<Pick<StoredPod, 'name' | 'slug' | 'area' | 'channels'>>,
-) {
-  const existing = podTable.get(podId);
-  if (!existing) {
-    throw new RouteError('POD_NOT_FOUND', 404);
-  }
-  const updated = { ...existing, ...patch } satisfies StoredPod;
-  podTable.set(podId, updated);
-  return mapPodSummary(updated);
-}
-
-export async function unlinkPodFromOrg(orgId: string, podId: string) {
-  const links = ensureOrgIndex(orgId);
-  const idx = links.indexOf(podId);
-  if (idx === -1) {
-    return false;
-  }
-  links.splice(idx, 1);
-  return true;
-}
-
-export async function deletePodIfOrphan(podId: string) {
-  const stillLinked = Array.from(orgPodIndex.values()).some((links) => links.includes(podId));
-  if (stillLinked) {
-    return false;
-  }
-  podTable.delete(podId);
-  return true;
-}
-
-export async function ensureUniqueSlug(base: string) {
+export async function ensureUniqueSlug(admin: SupabaseClient, base: string) {
   let attempt = base;
   for (let i = 0; i < 5; i++) {
-    const collision = Array.from(podTable.values()).some((pod) => pod.slug === attempt);
-    if (!collision) return attempt;
+    const { data } = await admin.from('pods').select('id').eq('slug', attempt).maybeSingle();
+    if (!data) return attempt;
     attempt = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   }
   return `${base}-${randomUUID().slice(0, 4)}`;
