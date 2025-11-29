@@ -244,6 +244,26 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     ]
   },
   {
+    "label": "K-12:Overview",
+    "courses": [
+      {
+        "slug": "1-day-educator-safety-resilience"
+      },
+      {
+        "slug": "2-day-educator-safety-resilience-intensive"
+      },
+      {
+        "slug": "3-day-educator-resilience-community-safety"
+      },
+      {
+        "slug": "4-day-educator-safety-trauma-rights-leadership"
+      },
+      {
+        "slug": "ice-resilience-in-schools"
+      }
+    ]
+  },
+  {
     "label": "Logistics & Mutual Aid Operations",
     "courses": [
       {

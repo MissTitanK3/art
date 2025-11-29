@@ -1,6 +1,7 @@
 import { humanize } from "../../lib/utils";
 import type { TrackVariant } from "../../components/academy/TrackBadge";
 import { GENERATED_ACADEMY_COURSE_GROUPS as ACADEMY_COURSE_GROUPS } from "./course-groups.generated";
+import { CUSTOM_ACADEMY_COURSE_GROUPS } from "./custom-groups";
 import { GENERATED_COURSE_DETAILS as ACADEMY_COURSE_DETAILS } from "./course-details.generated";
 
 export type CourseBlueprintCourse = {
@@ -39,7 +40,10 @@ export function slugifyLabel(label: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
-export const COURSE_GROUPS = ACADEMY_COURSE_GROUPS;
+export const COURSE_GROUPS = [
+  ...ACADEMY_COURSE_GROUPS,
+  ...CUSTOM_ACADEMY_COURSE_GROUPS,
+];
 
 export const COURSE_BLUEPRINT: CourseBlueprint[] = COURSE_GROUPS.map(
   (group) => {
@@ -69,13 +73,13 @@ export const COURSE_BLUEPRINT: CourseBlueprint[] = COURSE_GROUPS.map(
             typeof meta?.title === "string"
               ? meta.title
               : Array.isArray(meta?.title)
-                ? meta.title.join(" ")
+                ? meta?.title.join(" ") ?? humanize(course.slug)
                 : humanize(course.slug),
           description:
             typeof meta?.description === "string"
               ? meta.description
               : Array.isArray(meta?.description)
-                ? meta.description.join(" ")
+                ? meta?.description.join(" ") ?? "Details available in Academy."
                 : "Details available in Academy.",
           icon:
             typeof (meta && "icon" in meta ? meta.icon : course.icon) ===

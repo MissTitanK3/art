@@ -44,6 +44,11 @@ const mod_how_to_report = () => import('@workspace/ui/data/academy/courses/Getti
 const mod_signal_basics_accessible = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/signal-basics-accessible.mdx');
 const mod_support_art = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/support-art.mdx');
 const mod_why_we_do_this = () => import('@workspace/ui/data/academy/courses/Getting_Started___lp__Everyone__rp__/why-we-do-this.mdx');
+const mod_1_day_educator_safety_resilience = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/1-day-educator-safety-resilience.mdx');
+const mod_2_day_educator_safety_resilience_intensive = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/2-day-educator-safety-resilience-intensive.mdx');
+const mod_3_day_educator_resilience_community_safety = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/3-day-educator-resilience-community-safety.mdx');
+const mod_4_day_educator_safety_trauma_rights_leadership = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/4-day-educator-safety-trauma-rights-leadership.mdx');
+const mod_ice_resilience_in_schools = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/ice-resilience-in-schools.mdx');
 const mod_burner_phones_security_culture = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/burner-phones-security-culture.mdx');
 const mod_digital_security_basics = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/digital-security-basics.mdx');
 const mod_intro_to_art = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/intro-to-art.mdx');
@@ -199,6 +204,11 @@ export const MDX_COURSE_MODULES = {
   'signal-basics-accessible': mod_signal_basics_accessible,
   'support-art': mod_support_art,
   'why-we-do-this': mod_why_we_do_this,
+  '1-day-educator-safety-resilience': mod_1_day_educator_safety_resilience,
+  '2-day-educator-safety-resilience-intensive': mod_2_day_educator_safety_resilience_intensive,
+  '3-day-educator-resilience-community-safety': mod_3_day_educator_resilience_community_safety,
+  '4-day-educator-safety-trauma-rights-leadership': mod_4_day_educator_safety_trauma_rights_leadership,
+  'ice-resilience-in-schools': mod_ice_resilience_in_schools,
   'burner-phones-security-culture': mod_burner_phones_security_culture,
   'digital-security-basics': mod_digital_security_basics,
   'intro-to-art': mod_intro_to_art,
@@ -353,6 +363,11 @@ export const MDX_COURSE_FRONTMATTER = {
   'signal-basics-accessible': {"title":"Signal Messenger Basics & Accessibility","slug":"signal-basics-accessible","description":"A clear, step-by-step guide to using Signal Messenger — from setup and navigation to calls, muting, and privacy — written for all experience levels, including older or less tech-comfortable users.","type":"qualified","version":1.1,"readingTime":40},
   'support-art': {"title":"Support ART","slug":"support-art","description":"How to sustain ART through community funding and help grow its network of pods, volunteers, and Dispatch Admins.","type":"qualified","readingTime":30,"version":2},
   'why-we-do-this': {"title":"Why We Do This","slug":"why-we-do-this","description":"Understand the moral foundation and historical roots of ART Academy.","type":"qualified","readingTime":6,"version":2},
+  '1-day-educator-safety-resilience': {"title":"1-Day Educator Safety & Resilience Workshop","slug":"1-day-educator-safety-resilience","description":"A full-day, school-safe training that builds core skills in de-escalation, trauma-informed support, student rights, and coordinated communication during crises.","type":"qualified","readingTime":10,"version":1},
+  '2-day-educator-safety-resilience-intensive': {"title":"2-Day Educator Safety & Resilience Intensive","slug":"2-day-educator-safety-resilience-intensive","description":"A two-day training that builds confident, school-safe intervention skills, trauma-informed support, and coordinated response during family or student crises.","type":"qualified","readingTime":10,"version":1},
+  '3-day-educator-resilience-community-safety': {"title":"3-Day Educator Resilience & Community Safety Training","slug":"3-day-educator-resilience-community-safety","description":"A structured 3-day pathway that deepens de-escalation, trauma-informed care, student rights literacy, and coordinated community communication.","type":"qualified","readingTime":10,"version":1},
+  '4-day-educator-safety-trauma-rights-leadership': {"title":"4-Day Educator Safety, Trauma & Rights Leadership Pathway","slug":"4-day-educator-safety-trauma-rights-leadership","description":"A comprehensive 4-day professional development pathway that builds advanced de-escalation, trauma-aware stabilization, rights-aligned decision making, and coordinated crisis communication in school environments.","type":"qualified","readingTime":12,"version":1},
+  'ice-resilience-in-schools': {"title":"ICE Resilience in Schools: What Educators Can (and Cannot) Do","slug":"ice-resilience-in-schools","description":"A practical guide for protecting and supporting students and families impacted by immigration enforcement, tailored for real school constraints.","type":"qualified","readingTime":10,"version":1},
   'burner-phones-security-culture': {"title":"Burner Phones & Security Culture (2025 Edition)","slug":"burner-phones-security-culture","description":"Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.","type":"qualified","readingTime":15,"version":1.3},
   'digital-security-basics': {"title":"Digital Security Basics","slug":"digital-security-basics","description":"Learn the foundations of secure communication and digital safety in the ART Network.","type":"qualified","readingTime":7,"version":1.3},
   'intro-to-art': {"title":"Introduction to ART Network","slug":"intro-to-art","description":"Learn what ART is, how it works, and the values we operate by.","type":"qualified","readingTime":5,"version":1.3},

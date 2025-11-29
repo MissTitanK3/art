@@ -234,6 +234,36 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 2,
     "type": "qualified"
   },
+  "1-day-educator-safety-resilience": {
+    "title": "1-Day Educator Safety & Resilience Workshop",
+    "description": "A full-day, school-safe training that builds core skills in de-escalation, trauma-informed support, student rights, and coordinated communication during crises.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "2-day-educator-safety-resilience-intensive": {
+    "title": "2-Day Educator Safety & Resilience Intensive",
+    "description": "A two-day training that builds confident, school-safe intervention skills, trauma-informed support, and coordinated response during family or student crises.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "3-day-educator-resilience-community-safety": {
+    "title": "3-Day Educator Resilience & Community Safety Training",
+    "description": "A structured 3-day pathway that deepens de-escalation, trauma-informed care, student rights literacy, and coordinated community communication.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "4-day-educator-safety-trauma-rights-leadership": {
+    "title": "4-Day Educator Safety, Trauma & Rights Leadership Pathway",
+    "description": "A comprehensive 4-day professional development pathway that builds advanced de-escalation, trauma-aware stabilization, rights-aligned decision making, and coordinated crisis communication in school environments.",
+    "version": 1,
+    "type": "qualified"
+  },
+  "ice-resilience-in-schools": {
+    "title": "ICE Resilience in Schools: What Educators Can (and Cannot) Do",
+    "description": "A practical guide for protecting and supporting students and families impacted by immigration enforcement, tailored for real school constraints.",
+    "version": 1,
+    "type": "qualified"
+  },
   "burner-phones-security-culture": {
     "title": "Burner Phones & Security Culture (2025 Edition)",
     "description": "Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.",

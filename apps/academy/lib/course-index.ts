@@ -1,4 +1,4 @@
-import { GENERATED_ACADEMY_COURSE_GROUPS as ACADEMY_COURSE_GROUPS } from "@workspace/ui/data/academy";
+import { COURSE_GROUPS as ACADEMY_COURSE_GROUPS } from "@workspace/ui/data/academy";
 import { getAllCourses as loadAllCourses } from "./mdx-loader";
 
 export const COURSE_GROUPS = ACADEMY_COURSE_GROUPS;
