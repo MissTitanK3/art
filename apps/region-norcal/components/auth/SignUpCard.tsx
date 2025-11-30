@@ -64,10 +64,7 @@ export function SignUpCard({ redirectTo }: Props) {
           /* no-op */
         }
         const profile: Profile = {
-          id:
-            typeof crypto !== "undefined" && crypto.randomUUID
-              ? crypto.randomUUID()
-              : `${session.user.id}-${Date.now()}`,
+          id: session.user.id,
           user_id: session.user.id,
           coverage_zones: [],
           operating_counties: [],

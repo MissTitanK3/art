@@ -157,11 +157,11 @@ export default function MissingPersonsIntakePage() {
         </p>
       </div>
       <Alert>
-        <AlertTitle>Collect only what's needed</AlertTitle>
+        <AlertTitle>Collect only what&apos;s needed</AlertTitle>
         <AlertDescription>
           Prioritize identifiers (name, DOB, pronouns, A‑Number), where/when it
           happened, agency/facility, transfers, interpreter needs, and a
-          contact. Avoid sensitive extras you don't need.
+          contact. Avoid sensitive extras you don&apos;t need.
         </AlertDescription>
       </Alert>
       <MissingPersonIntakeDataLayer />

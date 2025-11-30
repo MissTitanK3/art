@@ -78,4 +78,5 @@ export type RegionSettings = {
   federationEndpoint?: string;
   roleEscalationRules?: string; // JSON or text rules
   operationalMinimumsOverrides?: RegionOperationalMinimumOverride[];
+  notificationsDisabled: boolean;
 };

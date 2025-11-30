@@ -21,6 +21,23 @@ export async function notifyUsers(args: {
   if (!Array.isArray(args.recipients) || args.recipients.length === 0)
     return { ok: false, reason: "NO_RECIPIENTS" } as const;
   const admin = createClient(env.url, env.serviceRoleKey);
+
+  // Check global kill switch
+  try {
+    const { data: settings } = await admin
+      .from("region_settings")
+      .select("notifications_disabled")
+      .eq("region_slug", "default")
+      .maybeSingle();
+
+    if (settings?.notifications_disabled) {
+      console.log("[notify] Global notifications disabled, skipping send");
+      return { ok: true } as const;
+    }
+  } catch (e) {
+    console.warn("[notify] Failed to check global settings", e);
+  }
+
   const { error } = await admin.rpc("create_notification_for_users", {
     p_title: args.title,
     p_user_ids: args.recipients as any,

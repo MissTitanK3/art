@@ -415,16 +415,50 @@ let DEMO_SETTINGS: RegionSettings = {
   federationEndpoint: "https://federation.example.org/api",
   roleEscalationRules:
     '{\n  "promote": ["dispatcher_basic", "dispatcher_verified"],\n  "require": { "dispatcher_admin": ["verified_by:admin"] }\n}',
+  notificationsDisabled: false,
 };
 
 export async function getRegionSettings(): Promise<RegionSettings> {
-  return DEMO_SETTINGS;
+  try {
+    const client = await createSupabaseServerClient();
+    // Query by region_slug 'default' as established in init_region.sql
+    const { data } = await client
+      .from("region_settings")
+      .select("notifications_disabled")
+      .eq("region_slug", "default")
+      .maybeSingle();
+
+    return {
+      ...DEMO_SETTINGS,
+      notificationsDisabled: !!data?.notifications_disabled,
+    };
+  } catch (e) {
+    console.warn("[dal/admin] getRegionSettings failed", e);
+    return { ...DEMO_SETTINGS, notificationsDisabled: false };
+  }
 }
 
 export async function updateRegionSettings(
   next: RegionSettings,
 ): Promise<void> {
   DEMO_SETTINGS = next;
+  try {
+    const env = ensureSupabaseEnv("server");
+    const serviceKey = env.serviceRoleKey;
+    if (!serviceKey) throw new Error("Missing service role key");
+
+    const adminClient = createClient(env.url, serviceKey);
+    // Update the row for region_slug 'default'
+    const { error } = await adminClient
+      .from("region_settings")
+      .update({ notifications_disabled: next.notificationsDisabled })
+      .eq("region_slug", "default");
+
+    if (error) throw error;
+  } catch (e) {
+    console.warn("[dal/admin] updateRegionSettings failed", e);
+    throw e;
+  }
 }
 
 export async function getUserPermissionsContext(profileId: string) {

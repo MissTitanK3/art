@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import { Switch } from "@workspace/ui/components/switch";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
@@ -19,9 +20,10 @@ import { kmToMi, miToKm } from "@workspace/ui/lib/distance";
 
 type Props = {
   initialSettings: RegionSettings;
+  onSave: (settings: RegionSettings) => Promise<{ ok: boolean; error?: string }>;
 };
 
-export default function SettingsClient({ initialSettings }: Props) {
+export default function SettingsClient({ initialSettings, onSave }: Props) {
   const [values, setValues] = React.useState<RegionSettings>(initialSettings);
   const unit = usePreferencesStore((s) => s.distanceUnit);
 
@@ -32,9 +34,13 @@ export default function SettingsClient({ initialSettings }: Props) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
-  function save() {
-    // Demo-only: local state; wire to server action later
-    toast.success("Settings saved — demo-only");
+  async function save() {
+    const res = await onSave(values);
+    if (res.ok) {
+      toast.success("Settings saved");
+    } else {
+      toast.error("Failed to save settings", { description: res.error });
+    }
   }
 
   function reset() {
@@ -101,6 +107,32 @@ export default function SettingsClient({ initialSettings }: Props) {
                 }
               />
             </Field>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Maintenance Mode</CardTitle>
+          <CardDescription>
+            Control global system behavior.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between space-x-2">
+            <div className="space-y-0.5">
+              <Label htmlFor="notifications-mode">Disable All Notifications</Label>
+              <p className="text-sm text-muted-foreground">
+                Prevent any notifications from being sent (useful for testing).
+              </p>
+            </div>
+            <Switch
+              id="notifications-mode"
+              checked={values.notificationsDisabled}
+              onCheckedChange={(checked) =>
+                onChange("notificationsDisabled", checked)
+              }
+            />
           </div>
         </CardContent>
       </Card>

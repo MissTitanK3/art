@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
   ),
   title: {
-    default: `ART Region PNW ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
+    default: `ART Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
     template: "%s · ART Region ${process.env.NEXT_PUBLIC_BRAND_NAME}",
   },
   description:

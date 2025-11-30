@@ -866,12 +866,22 @@ export default function WarehouseDashboardDataLayer() {
     const watchZoneId = intakeForm.watch("zoneId");
     const watchBinId = intakeForm.watch("binId");
 
-    const selectedWarehouse = savedWarehouses.find(
-        (warehouse) => warehouse.id === watchWarehouseId,
+    const selectedWarehouse = useMemo(
+        () => savedWarehouses.find((warehouse) => warehouse.id === watchWarehouseId),
+        [savedWarehouses, watchWarehouseId],
     );
-    const availableZones = selectedWarehouse?.zones ?? [];
-    const selectedZone = availableZones.find((zone) => zone.id === watchZoneId);
-    const availableBins = selectedZone?.bins ?? [];
+    const availableZones = useMemo(
+        () => selectedWarehouse?.zones ?? [],
+        [selectedWarehouse],
+    );
+    const selectedZone = useMemo(
+        () => availableZones.find((zone) => zone.id === watchZoneId),
+        [availableZones, watchZoneId],
+    );
+    const availableBins = useMemo(
+        () => selectedZone?.bins ?? [],
+        [selectedZone],
+    );
     const existingInventoryOptions = useMemo(() => {
         return inventory.map((entry) => {
             const location = resolveInventoryLocation(entry, savedWarehouses);
@@ -985,7 +995,7 @@ export default function WarehouseDashboardDataLayer() {
                 });
             }
         }
-    }, [selectedWarehouse?.id, availableZones, watchZoneId, watchBinId, intakeForm]);
+    }, [selectedWarehouse, selectedWarehouse?.id, availableZones, watchZoneId, watchBinId, intakeForm]);
 
     useEffect(() => {
         if (!selectedZone) {
@@ -1003,7 +1013,7 @@ export default function WarehouseDashboardDataLayer() {
                 });
             }
         }
-    }, [selectedZone?.id, availableBins, watchBinId, intakeForm]);
+    }, [selectedZone, selectedZone?.id, availableBins, watchBinId, intakeForm]);
 
     const derivedStats = useMemo(() => {
         const totalZones = savedWarehouses.reduce(

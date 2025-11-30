@@ -23,7 +23,11 @@ type DispatchCardProps = {
   href: string;
 };
 
-export function DispatchCard({ submission, LinkComponent, href }: DispatchCardProps) {
+export function DispatchCard({
+  submission,
+  LinkComponent,
+  href,
+}: DispatchCardProps) {
   return (
     <LinkComponent href={href}>
       <Card
@@ -31,37 +35,46 @@ export function DispatchCard({ submission, LinkComponent, href }: DispatchCardPr
         suppressHydrationWarning
       >
         <CardHeader>
-          <CardTitle className="flex items-center justify-between gap-2">
-            <span className="truncate min-w-0">
-              {submission.location_label ?? "Unknown Location"}
-            </span>
-            <Badge>{humanize(submission.status)}</Badge>
+          <div className="flex items-start justify-between gap-2 w-full">
+            <Badge className="shrink-0 whitespace-nowrap">
+              {humanize(submission.status)}
+            </Badge>
+            {submission.state ? (
+              <CardDescription className="text-xs line-clamp-1 text-right">
+                {submission.type ? (
+                  <DispatchTypeBadge type={submission.type} />
+                ) : null}
+                {submission.type ? " • " : null}
+                {submission.state}
+              </CardDescription>
+            ) : null}
+          </div>
+          <CardTitle className="w-full break-words">
+            {submission.location_label ?? "Unknown Location"}
           </CardTitle>
-          {submission.state ? (
-            <CardDescription className="text-xs line-clamp-1">
-              {submission.type ? <DispatchTypeBadge type={submission.type} /> : null}
-              {submission.type ? " • " : null}
-              {submission.state}
-            </CardDescription>
-          ) : null}
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {submission.required_roles_by_type &&
-            Object.keys(submission.required_roles_by_type).length > 0 ? (
+          Object.keys(submission.required_roles_by_type).length > 0 ? (
             <div>
               <p className="mb-1 text-xs font-medium uppercase">Roles Needed</p>
               <div className="flex flex-wrap gap-1">
-                {Object.entries(submission.required_roles_by_type).map(([role, count]) => (
-                  <Badge key={role} variant="outline" className="text-xs">
-                    {role} ({count})
-                  </Badge>
-                ))}
+                {Object.entries(submission.required_roles_by_type).map(
+                  ([role, count]) => (
+                    <Badge key={role} variant="outline" className="text-xs">
+                      {role} ({count})
+                    </Badge>
+                  )
+                )}
               </div>
             </div>
           ) : null}
-          {submission.intended_actions && submission.intended_actions.length > 0 ? (
+          {submission.intended_actions &&
+          submission.intended_actions.length > 0 ? (
             <div>
-              <p className="mb-1 text-xs font-medium uppercase">Intended Actions</p>
+              <p className="mb-1 text-xs font-medium uppercase">
+                Intended Actions
+              </p>
               <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                 {submission.intended_actions.slice(0, 3).map((action) => (
                   <li key={action}>{action}</li>
@@ -75,7 +88,10 @@ export function DispatchCard({ submission, LinkComponent, href }: DispatchCardPr
             </div>
           ) : null}
         </CardContent>
-        <CardFooter className="text-xs text-muted-foreground" suppressHydrationWarning>
+        <CardFooter
+          className="text-xs text-muted-foreground"
+          suppressHydrationWarning
+        >
           <div className="flex flex-col gap-0.5">
             {submission.date_of_event ? (
               <span>

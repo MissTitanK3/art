@@ -41,12 +41,12 @@ import {
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
   defaultTab?:
-  | "overview"
-  | "roles"
-  | "updates"
-  | "logistics"
-  | "public_engagement"
-  | "comms";
+    | "overview"
+    | "roles"
+    | "updates"
+    | "logistics"
+    | "public_engagement"
+    | "comms";
   loadingMessage?: React.ReactNode;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
@@ -240,7 +240,7 @@ export function DispatchSubmissionLayout({
           notes.includes("detention") ||
           notes.includes("arrest");
         return looksLikeDetention ? (
-          <div className="px-4">
+          <div className="px-4 pb-4">
             <Alert>
               <AlertTitle>Confirm and document detention details</AlertTitle>
               <AlertDescription>
@@ -333,7 +333,9 @@ export function DispatchSubmissionLayout({
                 onAddUpdate={onAddUpdate}
                 onEditUpdate={onEditUpdate}
                 onRemoveUpdate={onRemoveUpdate}
-                afterComposer={<AfterActionReportGuide onAddUpdate={onAddUpdate} />}
+                afterComposer={
+                  <AfterActionReportGuide onAddUpdate={onAddUpdate} />
+                }
               />
             </CardContent>
           </Card>

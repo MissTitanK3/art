@@ -14,8 +14,9 @@ import { CreatePathwayClassContent } from "@workspace/ui/components/academy/Crea
 import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
 import { toast } from "@workspace/ui/components/sonner";
 
+type Params = { id: string };
 type PageProps = {
-  params: Promise<{ id: string }>;
+  params?: Promise<Params>;
 };
 
 // ClassAssignmentDataLayer logic
@@ -24,8 +25,8 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
   const academyClass = usePodStore(
     React.useCallback(
       (state) => state.academyClasses.find((entry) => entry.id === classId),
-      [classId],
-    ),
+      [classId]
+    )
   );
   const [hydrating, setHydrating] = React.useState(() => !academyClass);
   const pods = usePodStore((state) => state.pods);
@@ -42,7 +43,11 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
         setHydrating(true);
         const res = await fetch(`/api/academy/class/${classId}`);
         if (!res.ok) return;
-        const { class: data, sessions: sessionsData, participants: participantsData } = await res.json();
+        const {
+          class: data,
+          sessions: sessionsData,
+          participants: participantsData,
+        } = await res.json();
 
         if (!data) return;
         if (cancelled) return;
@@ -84,60 +89,69 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
         } as Partial<AcademyClass>;
 
         // Process sessions and participants
-        const mappedSessions = (sessionsData ?? []).map((row: any, idx: number) => {
-          const startIso = row.start
-            ? new Date(row.start).toISOString()
-            : undefined;
-          const endIso = row.end ? new Date(row.end).toISOString() : undefined;
-          let durationHours: number | undefined = undefined;
-          if (startIso && endIso) {
-            const startMs = new Date(startIso).getTime();
-            const endMs = new Date(endIso).getTime();
-            if (
-              !Number.isNaN(startMs) &&
-              !Number.isNaN(endMs) &&
-              endMs > startMs
-            ) {
-              durationHours = (endMs - startMs) / (1000 * 60 * 60);
-            }
-          }
-
-          const sessionParticipants = (participantsData ?? [])
-            .filter((p: any) => p.session_id === row.id)
-            .map((row: any) => {
-              const m = row.id.match(/^par_(.+)__mem_(.+)$/);
-              let memberId = m && m[2] ? m[2] : null;
-
-              if (!memberId && row.name && academyClass?.members) {
-                const found = academyClass.members.find(mem => mem.name === row.name);
-                if (found) memberId = found.id;
+        const mappedSessions = (sessionsData ?? []).map(
+          (row: any, idx: number) => {
+            const startIso = row.start
+              ? new Date(row.start).toISOString()
+              : undefined;
+            const endIso = row.end
+              ? new Date(row.end).toISOString()
+              : undefined;
+            let durationHours: number | undefined = undefined;
+            if (startIso && endIso) {
+              const startMs = new Date(startIso).getTime();
+              const endMs = new Date(endIso).getTime();
+              if (
+                !Number.isNaN(startMs) &&
+                !Number.isNaN(endMs) &&
+                endMs > startMs
+              ) {
+                durationHours = (endMs - startMs) / (1000 * 60 * 60);
               }
+            }
 
-              return {
-                memberId: memberId,
-                present: row.status === "confirmed",
-                engagement: "medium" as const,
-                understanding: (row.understanding ?? "building") as "needs_support" | "building" | "confident",
-                notes: undefined,
-                name: row.name
-              };
-            })
-            .filter((p: any) => p.memberId);
+            const sessionParticipants = (participantsData ?? [])
+              .filter((p: any) => p.session_id === row.id)
+              .map((row: any) => {
+                const m = row.id.match(/^par_(.+)__mem_(.+)$/);
+                let memberId = m && m[2] ? m[2] : null;
 
-          return {
-            id: String(row.id),
-            label: (row.title ?? `Session ${idx + 1}`) as string,
-            date: startIso,
-            durationHours,
-            notes: (row.related_topic ?? undefined) as string | undefined,
-            participants: sessionParticipants.map((p: any) => ({
-              memberId: p.memberId,
-              present: p.present,
-              engagement: p.engagement,
-              understanding: p.understanding,
-            })),
-          };
-        });
+                if (!memberId && row.name && academyClass?.members) {
+                  const found = academyClass.members.find(
+                    (mem) => mem.name === row.name
+                  );
+                  if (found) memberId = found.id;
+                }
+
+                return {
+                  memberId: memberId,
+                  present: row.status === "confirmed",
+                  engagement: "medium" as const,
+                  understanding: (row.understanding ?? "building") as
+                    | "needs_support"
+                    | "building"
+                    | "confident",
+                  notes: undefined,
+                  name: row.name,
+                };
+              })
+              .filter((p: any) => p.memberId);
+
+            return {
+              id: String(row.id),
+              label: (row.title ?? `Session ${idx + 1}`) as string,
+              date: startIso,
+              durationHours,
+              notes: (row.related_topic ?? undefined) as string | undefined,
+              participants: sessionParticipants.map((p: any) => ({
+                memberId: p.memberId,
+                present: p.present,
+                engagement: p.engagement,
+                understanding: p.understanding,
+              })),
+            };
+          }
+        );
 
         if (!academyClass) {
           const toAdd: AcademyClass = {
@@ -214,7 +228,7 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
                     }))
                     .sort((a, b) => a.memberId.localeCompare(b.memberId)),
                 }))
-                .sort((a, b) => a.id.localeCompare(b.id)),
+                .sort((a, b) => a.id.localeCompare(b.id))
             );
           const current = academyClass.sessions ?? [];
           const currentSig = sessionSig(current);
@@ -289,7 +303,7 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
 
         if (fromDb.length > 0) {
           setInstructorOptions(
-            fromDb.sort((a, b) => a.name.localeCompare(b.name)),
+            fromDb.sort((a, b) => a.name.localeCompare(b.name))
           );
           return;
         }
@@ -305,11 +319,11 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
           seen.add(member.id);
 
           const hasMentorLevel = member.certs?.some(
-            (cert) => cert.level === "mentor",
+            (cert) => cert.level === "mentor"
           );
           const dispatchCertified = member.certs?.some(
             (cert) =>
-              cert.id.startsWith("dispatch-") && cert.level !== "expired",
+              cert.id.startsWith("dispatch-") && cert.level !== "expired"
           );
 
           options.push({
@@ -331,7 +345,7 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
       }
       if (!cancelled) {
         setInstructorOptions(
-          options.sort((a, b) => a.name.localeCompare(b.name)),
+          options.sort((a, b) => a.name.localeCompare(b.name))
         );
       }
     })();
@@ -343,7 +357,7 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
   const modules = React.useMemo(() => {
     if (!academyClass) return [];
     const blueprint = COURSE_BLUEPRINT.find(
-      (pathway) => pathway.id === academyClass.pathwayId,
+      (pathway) => pathway.id === academyClass.pathwayId
     );
     return (blueprint?.courses ?? []).map((course) => ({
       slug: course.slug,
@@ -384,7 +398,7 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
         console.warn("Error saving academy class", e);
       }
     },
-    [academyClass, updateAcademyClass],
+    [academyClass, updateAcademyClass]
   );
 
   const handleDelete = React.useCallback(
@@ -402,7 +416,7 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
       }
       router.push("/academy");
     },
-    [removeAcademyClass, router],
+    [removeAcademyClass, router]
   );
 
   if (!academyClass && hydrating) {
@@ -425,7 +439,11 @@ function ClassAssignmentDataLayer({ classId }: { classId: string }) {
 }
 
 // CreatePathwayClassDataLayer logic
-function CreatePathwayClassDataLayer({ pathway }: { pathway: CourseBlueprint }) {
+function CreatePathwayClassDataLayer({
+  pathway,
+}: {
+  pathway: CourseBlueprint;
+}) {
   const router = useRouter();
   const addAcademyClass = usePodStore((state) => state.addAcademyClass);
 
@@ -472,7 +490,7 @@ function CreatePathwayClassDataLayer({ pathway }: { pathway: CourseBlueprint }) 
 
       router.push(`/academy/class/${academyClass.id}`);
     },
-    [addAcademyClass, router],
+    [addAcademyClass, router]
   );
 
   return (
@@ -485,8 +503,30 @@ function CreatePathwayClassDataLayer({ pathway }: { pathway: CourseBlueprint }) 
   );
 }
 
-export default async function CreatePathwayClassPage({ params }: PageProps) {
-  const { id } = await params;
+export default function CreatePathwayClassPage({ params }: PageProps) {
+  const [resolvedParams, setResolvedParams] = React.useState<Params | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    if (params) {
+      Promise.resolve(params as Promise<Params>)
+        .then((value) => {
+          if (active) setResolvedParams(value);
+        })
+        .catch((err) => {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("Failed to resolve params", err);
+          }
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [params]);
+
+  if (!resolvedParams) return null;
+
+  const { id } = resolvedParams;
   const pathway = COURSE_BLUEPRINT.find((group) => group.id === id);
 
   if (pathway) {

@@ -324,12 +324,36 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   );
 }
 
-export default async function MissingPersonDetailPage({
+type Params = { id: string };
+
+export default function MissingPersonDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params?: Promise<Params>;
 }) {
-  const { id } = await params;
+  const [resolvedParams, setResolvedParams] = React.useState<Params | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    if (params) {
+      Promise.resolve(params as Promise<Params>)
+        .then((value) => {
+          if (active) setResolvedParams(value);
+        })
+        .catch((err) => {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("Failed to resolve params", err);
+          }
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [params]);
+
+  if (!resolvedParams) return null;
+
+  const { id } = resolvedParams;
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 pb-16">

@@ -39,6 +39,23 @@ USING (
   user_id = auth.uid()
 );
 
+CREATE POLICY insert_own_profile
+ON public.profiles
+FOR INSERT
+WITH CHECK (
+  user_id = auth.uid()
+);
+
+CREATE POLICY update_own_profile
+ON public.profiles
+FOR UPDATE
+USING (
+  user_id = auth.uid()
+)
+WITH CHECK (
+  user_id = auth.uid()
+);
+
 -- Region settings policies
 CREATE POLICY region_settings_read_authenticated
 ON region_settings
@@ -1031,6 +1048,11 @@ USING (
     WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
 );
 CREATE POLICY "dispatchers_manage_dispatches_insert"
 ON dispatch_submissions
@@ -1041,6 +1063,11 @@ WITH CHECK (
     WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
 );
 CREATE POLICY "dispatchers_manage_dispatches_update"
 ON dispatch_submissions
@@ -1051,6 +1078,11 @@ USING (
     WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
 )
 WITH CHECK (
   EXISTS (
@@ -1058,6 +1090,11 @@ WITH CHECK (
     WHERE p.user_id = auth.uid()
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
 );
 CREATE POLICY dispatch_submissions_delete_block_authenticated
 ON dispatch_submissions

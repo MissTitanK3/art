@@ -413,6 +413,7 @@ let DEMO_SETTINGS: RegionSettings = {
   cleanupIntervalsDays: 14,
   integrationSignalGroup: "https://signal.group/#example-demo",
   federationEndpoint: "https://federation.example.org/api",
+  notificationsDisabled: false,
   roleEscalationRules:
     '{\n  "promote": ["dispatcher_basic", "dispatcher_verified"],\n  "require": { "dispatcher_admin": ["verified_by:admin"] }\n}',
 };

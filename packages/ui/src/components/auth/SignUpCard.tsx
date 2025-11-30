@@ -275,7 +275,10 @@ export function SignUpCard({
             <Input
               id="contactSignal"
               value={contactSignal}
-              onChange={(e) => setContactSignal(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setContactSignal(v && !v.startsWith("@") ? "@" + v : v);
+              }}
               placeholder="@nickname.12"
               required
             />

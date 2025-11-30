@@ -50,7 +50,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
       title="Sign in to your region"
       description="Use your regional credentials to access dispatch tools."
       footer={
-        <div className="flex w-full items-center justify-between gap-2 text-sm text-muted-foreground">
+        <div className="flex w-full flex-col items-center justify-between gap-2 text-foreground">
           <span>
             Don’t have an account?{" "}
             <a className="underline" href="/sign-up">

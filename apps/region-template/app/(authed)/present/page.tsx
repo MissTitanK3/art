@@ -111,22 +111,22 @@ export default function TeleprompterDataLayer() {
   // Defer store syncing until after we rehydrate from persisted values
   const canSyncRef = React.useRef(false);
   // Sync local state to persisted store (only after rehydration completes)
-  React.useEffect(() => { if (canSyncRef.current) s_setText(text); }, [text]);
-  React.useEffect(() => { if (canSyncRef.current) s_setScriptId(scriptId); }, [scriptId]);
-  React.useEffect(() => { if (canSyncRef.current) s_setFontSize(fontSize); }, [fontSize]);
-  React.useEffect(() => { if (canSyncRef.current) s_setLineHeight(lineHeight); }, [lineHeight]);
-  React.useEffect(() => { if (canSyncRef.current) s_setMirrorH(mirrorH); }, [mirrorH]);
-  React.useEffect(() => { if (canSyncRef.current) s_setMirrorV(mirrorV); }, [mirrorV]);
-  React.useEffect(() => { if (canSyncRef.current) s_setPreset(preset); }, [preset]);
-  React.useEffect(() => { if (canSyncRef.current) s_setSpeed(speed); }, [speed]);
-  React.useEffect(() => { if (canSyncRef.current) s_setDefaultSpeed(defaultSpeed); }, [defaultSpeed]);
-  React.useEffect(() => { if (canSyncRef.current) s_setFontFace(fontFace); }, [fontFace]);
-  React.useEffect(() => { if (canSyncRef.current) s_setCustomTextColor(customTextColor); }, [customTextColor]);
-  React.useEffect(() => { if (canSyncRef.current) s_setCustomBgColor(customBgColor); }, [customBgColor]);
-  React.useEffect(() => { if (canSyncRef.current) s_setCustomHighlightColor(customHighlightColor); }, [customHighlightColor]);
-  React.useEffect(() => { if (canSyncRef.current) s_setOverlayColor(overlayColor); }, [overlayColor]);
-  React.useEffect(() => { if (canSyncRef.current) s_setOverlayOpacity(overlayOpacity); }, [overlayOpacity]);
-  React.useEffect(() => { if (canSyncRef.current) s_setCacheEnabled(cacheEnabled); }, [cacheEnabled]);
+  React.useEffect(() => { if (canSyncRef.current) s_setText(text); }, [text, s_setText]);
+  React.useEffect(() => { if (canSyncRef.current) s_setScriptId(scriptId); }, [scriptId, s_setScriptId]);
+  React.useEffect(() => { if (canSyncRef.current) s_setFontSize(fontSize); }, [fontSize, s_setFontSize]);
+  React.useEffect(() => { if (canSyncRef.current) s_setLineHeight(lineHeight); }, [lineHeight, s_setLineHeight]);
+  React.useEffect(() => { if (canSyncRef.current) s_setMirrorH(mirrorH); }, [mirrorH, s_setMirrorH]);
+  React.useEffect(() => { if (canSyncRef.current) s_setMirrorV(mirrorV); }, [mirrorV, s_setMirrorV]);
+  React.useEffect(() => { if (canSyncRef.current) s_setPreset(preset); }, [preset, s_setPreset]);
+  React.useEffect(() => { if (canSyncRef.current) s_setSpeed(speed); }, [speed, s_setSpeed]);
+  React.useEffect(() => { if (canSyncRef.current) s_setDefaultSpeed(defaultSpeed); }, [defaultSpeed, s_setDefaultSpeed]);
+  React.useEffect(() => { if (canSyncRef.current) s_setFontFace(fontFace); }, [fontFace, s_setFontFace]);
+  React.useEffect(() => { if (canSyncRef.current) s_setCustomTextColor(customTextColor); }, [customTextColor, s_setCustomTextColor]);
+  React.useEffect(() => { if (canSyncRef.current) s_setCustomBgColor(customBgColor); }, [customBgColor, s_setCustomBgColor]);
+  React.useEffect(() => { if (canSyncRef.current) s_setCustomHighlightColor(customHighlightColor); }, [customHighlightColor, s_setCustomHighlightColor]);
+  React.useEffect(() => { if (canSyncRef.current) s_setOverlayColor(overlayColor); }, [overlayColor, s_setOverlayColor]);
+  React.useEffect(() => { if (canSyncRef.current) s_setOverlayOpacity(overlayOpacity); }, [overlayOpacity, s_setOverlayOpacity]);
+  React.useEffect(() => { if (canSyncRef.current) s_setCacheEnabled(cacheEnabled); }, [cacheEnabled, s_setCacheEnabled]);
   // Built-in import content is now handled by shared UI component; no local sync needed
 
   const computeLineMsFn = React.useCallback((ln: string, spd: number) =>
@@ -174,7 +174,13 @@ export default function TeleprompterDataLayer() {
 
   const { ref: fsRef, isFullscreen, toggle: toggleFs } = useFullscreenElement<HTMLDivElement>();
   React.useEffect(() => { setFullscreen(isFullscreen); }, [isFullscreen]);
-  const toggleFullscreen = React.useCallback(async () => { try { await toggleFs(); } catch { } }, [toggleFs]);
+  const toggleFullscreen = React.useCallback(async () => {
+    try {
+      await toggleFs();
+    } catch (err) {
+      console.warn("Toggle fullscreen failed", err);
+    }
+  }, [toggleFs]);
 
   const { isMobile, isPortrait } = useViewportInfo(768);
 
@@ -194,7 +200,9 @@ export default function TeleprompterDataLayer() {
           if (isEditable) return;
         }
         el.focus({ preventScroll: true } as FocusOptions);
-      } catch { }
+      } catch (err) {
+        console.warn("Viewport focus failed", err);
+      }
     }, 100);
     return () => window.clearTimeout(t);
   }, [fullscreen]);
@@ -217,7 +225,9 @@ export default function TeleprompterDataLayer() {
     try {
       const v = localStorage.getItem('teleprompter.viewportHintDismissed');
       if (v === '1') setViewportHintDismissed(true);
-    } catch { }
+    } catch (err) {
+      console.warn("Failed to read viewport hint dismissal", err);
+    }
   }, []);
 
   const focusViewport = React.useCallback(() => {
@@ -236,13 +246,15 @@ export default function TeleprompterDataLayer() {
         if (isEditable) return; // don't steal focus while typing
       }
       el.focus({ preventScroll: true } as FocusOptions);
-    } catch { }
+    } catch (err) {
+      console.warn("Failed to focus viewport", err);
+    }
   }, []);
 
   React.useEffect(() => {
     if (!mounted) return;
     if (!importOpen && !settingsOpen) focusViewport();
-  }, [mounted]);
+  }, [mounted, focusViewport, importOpen, settingsOpen]);
 
   React.useEffect(() => {
     if (!mounted) return;
@@ -274,7 +286,25 @@ export default function TeleprompterDataLayer() {
     } finally {
       canSyncRef.current = true;
     }
-  }, [mounted]);
+  }, [
+    mounted,
+    storeScriptId,
+    storeText,
+    storeFontSize,
+    storeLineHeight,
+    storeMirrorH,
+    storeMirrorV,
+    storePreset,
+    storeSpeed,
+    storeDefaultSpeed,
+    storeFontFace,
+    storeCustomTextColor,
+    storeCustomBgColor,
+    storeCustomHighlightColor,
+    storeOverlayColor,
+    storeOverlayOpacity,
+    storeCacheEnabled,
+  ]);
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4 px-2 md:px-0">
@@ -384,7 +414,11 @@ export default function TeleprompterDataLayer() {
                     show
                     onDismiss={() => {
                       setViewportHintDismissed(true);
-                      try { localStorage.setItem('teleprompter.viewportHintDismissed', '1'); } catch { }
+                      try {
+                        localStorage.setItem('teleprompter.viewportHintDismissed', '1');
+                      } catch (err) {
+                        console.warn("Failed to persist viewport hint dismissal", err);
+                      }
                     }}
                   >
                     Press Space to play (focus viewport first)
@@ -512,7 +546,14 @@ export default function TeleprompterDataLayer() {
               overlayOpacity={overlayOpacity}
               onOverlayColorChange={setOverlayColor}
               onOverlayOpacityChange={setOverlayOpacity}
-              onResetKeyboardHint={() => { try { localStorage.removeItem('teleprompter.viewportHintDismissed'); } catch { } setViewportHintDismissed(false); }}
+              onResetKeyboardHint={() => {
+                try {
+                  localStorage.removeItem('teleprompter.viewportHintDismissed');
+                } catch (err) {
+                  console.warn("Failed to reset viewport hint flag", err);
+                }
+                setViewportHintDismissed(false);
+              }}
               defaultSpeed={defaultSpeed}
               onDefaultSpeedChange={setDefaultSpeed}
               onApplyDefaultSpeed={() => { setSpeed(defaultSpeed); bumpRev(); }}

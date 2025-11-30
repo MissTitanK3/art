@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "@workspace/ui/components/sonner";
 import { VisibilityScope } from "@workspace/store/utils/permissions/types";
 
@@ -66,10 +66,6 @@ export default function OrganizationsPage() {
   });
   const [createOpen, setCreateOpen] = useState(false);
 
-  useEffect(() => {
-    void loadOrganizations();
-  }, []);
-
   const loadRegisteredUsers = async () => {
     try {
       const res = await fetch("/api/dispatch/profiles", {
@@ -92,13 +88,7 @@ export default function OrganizationsPage() {
     }
   };
 
-  useEffect(() => {
-    if (permissions?.canManageMembers) {
-      void loadRegisteredUsers();
-    }
-  }, [permissions?.canManageMembers]);
-
-  const loadOrganizations = async () => {
+  const loadOrganizations = useCallback(async () => {
     const formatError = (err: any) =>
       err?.message ||
       err?.error_description ||
@@ -200,7 +190,7 @@ export default function OrganizationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
 
   const refreshOrg = async (orgId: string) => {
     const [nextOrg, nextPods, nextMembers, nextPolls] = await Promise.all([
@@ -218,6 +208,16 @@ export default function OrganizationsPage() {
     setMembersByOrg((prev) => ({ ...prev, [orgId]: nextMembers }));
     setPollsByOrg((prev) => ({ ...prev, [orgId]: nextPolls }));
   };
+
+  useEffect(() => {
+    void loadOrganizations();
+  }, [loadOrganizations]);
+
+  useEffect(() => {
+    if (permissions?.canManageMembers) {
+      void loadRegisteredUsers();
+    }
+  }, [permissions?.canManageMembers]);
 
   const handleUpdateOrg = async (
     orgId: string,
