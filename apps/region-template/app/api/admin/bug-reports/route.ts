@@ -1,8 +1,53 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api/responses";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
+import { ensureSupabaseEnv } from "@/lib/auth/supabase/utils";
 import { getProfileByUserId } from "@/lib/dal/admin";
+import { createClient } from "@supabase/supabase-js";
 import { regionAdmins } from "@workspace/store/utils/nav";
+
+async function fetchReporterUsernames(
+  fallbackClient: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  createdByList: (string | null | undefined)[],
+) {
+  const userIds = Array.from(
+    new Set(
+      createdByList.filter(
+        (v): v is string => typeof v === "string" && v.trim().length > 0,
+      ),
+    ),
+  );
+  if (userIds.length === 0) return new Map<string, string>();
+
+  let client: any = fallbackClient;
+  try {
+    const env = ensureSupabaseEnv("server");
+    if (env.serviceRoleKey) {
+      client = createClient(env.url, env.serviceRoleKey);
+    }
+  } catch (e) {
+    console.warn("[admin/bug-reports] service role unavailable", e);
+  }
+
+  try {
+    const { data, error } = await client
+      .from("profiles")
+      .select("user_id, display_name, contact_signal")
+      .in("user_id", userIds as any);
+    if (error) throw error;
+    const map = new Map<string, string>();
+    for (const row of data ?? []) {
+      const userId = row?.user_id;
+      if (!userId) continue;
+      const username = row?.contact_signal || row?.display_name || null;
+      if (username) map.set(userId, username);
+    }
+    return map;
+  } catch (e) {
+    console.warn("[admin/bug-reports] reporter lookup failed", e);
+    return new Map<string, string>();
+  }
+}
 
 export async function GET(req: Request) {
   try {
@@ -31,7 +76,18 @@ export async function GET(req: Request) {
       ascending: false,
     });
     if (error) throw error;
-    return NextResponse.json({ reports: Array.isArray(data) ? data : [] });
+    const reports = Array.isArray(data) ? data : [];
+    const reporterMap = await fetchReporterUsernames(
+      supabase,
+      reports.map((r) => r?.created_by),
+    );
+    const enriched = reports.map((row) => ({
+      ...row,
+      reporter_username: row?.created_by
+        ? reporterMap.get(row.created_by) ?? null
+        : null,
+    }));
+    return NextResponse.json({ reports: enriched });
   } catch (e: any) {
     return jsonError(e);
   }

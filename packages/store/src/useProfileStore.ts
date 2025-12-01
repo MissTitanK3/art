@@ -6,7 +6,7 @@ import { Profile } from "./types/global.ts";
 export interface ProfileStoreState {
   profile: Profile | null;
   profileSyncedAt: string | null;
-  setProfile: (p: Profile | null, syncedAt?: string | number | Date) => void;
+  setProfile: (p: Profile | null, syncedAt?: string | number | Date | null) => void;
   setProfileSyncedAt: (syncedAt?: string | number | Date | null) => void;
   clearProfile: () => void;
   restoreDemo: () => void;
@@ -44,12 +44,19 @@ const createProfileStoreInitializer =
   (set) => ({
     profile: initialProfile,
     profileSyncedAt: initialProfile ? new Date().toISOString() : null,
-    setProfile: (p, syncedAt) =>
+    setProfile: (p, syncedAt) => {
+      const syncTimestamp = syncedAt === null ? null : toIsoString(syncedAt);
+      console.log("[ProfileStore] setProfile called:", {
+        profileId: p?.id,
+        last_profile_check_in: p?.last_profile_check_in,
+        syncedAt: syncedAt,
+        syncTimestamp: syncTimestamp,
+      });
       set({
         profile: p,
-        profileSyncedAt:
-          syncedAt === null ? null : toIsoString(syncedAt),
-      }),
+        profileSyncedAt: syncTimestamp,
+      });
+    },
     setProfileSyncedAt: (syncedAt) =>
       set({
         profileSyncedAt: syncedAt == null ? null : toIsoString(syncedAt),

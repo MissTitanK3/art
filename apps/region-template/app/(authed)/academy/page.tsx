@@ -43,7 +43,9 @@ import {
 } from "@/lib/academy/region-minimums";
 
 const REGION_SETTINGS_SLUG =
-  process.env.NEXT_PUBLIC_REGION_ID || process.env.NEXT_PUBLIC_BRAND_SLUG || "default";
+  process.env.NEXT_PUBLIC_REGION_ID ||
+  process.env.NEXT_PUBLIC_BRAND_SLUG ||
+  "default";
 
 type RegionSettingsRow = {
   id?: string;
@@ -63,7 +65,7 @@ export default function AcademyDashboardPage() {
 
   const courseGroups: AcademyCourseGroup[] = useMemo(
     () => attachCourseStatusToGroups(COURSE_BLUEPRINT, members),
-    [members],
+    [members]
   );
 
   const headingCta = (
@@ -133,37 +135,38 @@ function AcademyDashboardContent({
 }: AcademyDashboardContentProps) {
   const setStats = usePodAcademyDashboardStore((state) => state.setStats);
   const setCourseGroups = usePodAcademyDashboardStore(
-    (state) => state.setCourseGroups,
+    (state) => state.setCourseGroups
   );
   const setMembers = usePodAcademyDashboardStore((state) => state.setMembers);
   const addInstructor = usePodAcademyDashboardStore(
-    (state) => state.addInstructor,
+    (state) => state.addInstructor
   );
   const updateInstructor = usePodAcademyDashboardStore(
-    (state) => state.updateInstructor,
+    (state) => state.updateInstructor
   );
   const removeInstructor = usePodAcademyDashboardStore(
-    (state) => state.removeInstructor,
+    (state) => state.removeInstructor
   );
   const addTrainingSession = usePodAcademyDashboardStore(
-    (state) => state.addTrainingSession,
+    (state) => state.addTrainingSession
   );
   const updateTrainingSessionStatus = usePodAcademyDashboardStore(
-    (state) => state.updateTrainingSessionStatus,
+    (state) => state.updateTrainingSessionStatus
   );
   const patchTrainingSession = usePodAcademyDashboardStore(
-    (state) => state.updateTrainingSession,
+    (state) => state.updateTrainingSession
   );
   const removeTrainingSession = usePodAcademyDashboardStore(
-    (state) => state.removeTrainingSession,
+    (state) => state.removeTrainingSession
   );
   const [operationalMinimumDefinitions, setOperationalMinimumDefinitions] =
     React.useState(() =>
       DEFAULT_REGION_OPERATIONAL_MINIMUMS.map((definition) => ({
         ...definition,
-      })),
+      }))
     );
-  const [regionSettingsRecord, setRegionSettingsRecord] = React.useState<RegionSettingsRow | null>(null);
+  const [regionSettingsRecord, setRegionSettingsRecord] =
+    React.useState<RegionSettingsRow | null>(null);
   const [isSavingMinimums, setIsSavingMinimums] = React.useState(false);
 
   useEffect(() => {
@@ -193,11 +196,11 @@ function AcademyDashboardContent({
           row?.settings?.academy?.operational_minimums;
 
         const overrides = parseRegionOperationalMinimumOverrides(
-          overridesPayload as RegionOperationalMinimumsOverridesPayload,
+          overridesPayload as RegionOperationalMinimumsOverridesPayload
         );
         if (!cancelled && overrides.length > 0) {
           setOperationalMinimumDefinitions(
-            buildRegionOperationalMinimums(overrides),
+            buildRegionOperationalMinimums(overrides)
           );
         }
         if (!cancelled) {
@@ -206,7 +209,7 @@ function AcademyDashboardContent({
       } catch (overrideError) {
         console.warn(
           "[AcademyDashboard] region operational minimum overrides unavailable",
-          overrideError,
+          overrideError
         );
       }
     }
@@ -220,26 +223,26 @@ function AcademyDashboardContent({
 
   // Supabase: hydrate sessions + participants and persist changes
   const supabaseSetSessions = usePodAcademyDashboardStore(
-    (state) => state.setSessions,
+    (state) => state.setSessions
   );
   const supabaseSetInstructors = usePodAcademyDashboardStore(
-    (state) => state.setInstructors,
+    (state) => state.setInstructors
   );
   const supabaseSetClasses = usePodAcademyDashboardStore(
-    (state) => state.setTrainingClasses,
+    (state) => state.setTrainingClasses
   );
 
   function mapRowToSession(
     row: Record<string, unknown>,
-    participantsBySession: Record<string, AcademyTrainingSessionParticipant[]>,
+    participantsBySession: Record<string, AcademyTrainingSessionParticipant[]>
   ): AcademyTrainingSession {
     const r = row as Record<string, any>;
     const participants = participantsBySession[String(r.id)] ?? [];
     const derivedConfirmed = participants.filter(
-      (p) => p.status === "confirmed",
+      (p) => p.status === "confirmed"
     ).length;
     const derivedWaitlist = participants.filter(
-      (p) => p.status === "waitlist",
+      (p) => p.status === "waitlist"
     ).length;
     const seatsFromDb: Partial<{
       capacity: number;
@@ -303,7 +306,7 @@ function AcademyDashboardContent({
         for (const p of participants ?? []) {
           const sid = String(p.session_id);
           if (!partsBySession[sid]) partsBySession[sid] = [];
-          partsBySession[sid].push({
+          partsBySession[sid]!.push({
             id: String(p.id),
             name: String(p.name ?? ""),
             signalHandle: p.signal_handle ?? undefined,
@@ -313,7 +316,7 @@ function AcademyDashboardContent({
         }
 
         const mapped = (sessions ?? []).map((row) =>
-          mapRowToSession(row as Record<string, unknown>, partsBySession),
+          mapRowToSession(row as Record<string, unknown>, partsBySession)
         );
         supabaseSetSessions(mapped);
       } catch (e) {
@@ -352,13 +355,13 @@ function AcademyDashboardContent({
         console.warn("[AcademyDashboard] supabase upsert session failed", e);
       }
     },
-    [],
+    []
   );
 
   const persistParticipantsForSession = React.useCallback(
     async (
       sessionId: string,
-      participantsList: AcademyTrainingSessionParticipant[],
+      participantsList: AcademyTrainingSessionParticipant[]
     ): Promise<void> => {
       try {
         const client = getSupabaseBrowserClient();
@@ -382,11 +385,11 @@ function AcademyDashboardContent({
       } catch (e) {
         console.warn(
           "[AcademyDashboard] supabase replace participants failed",
-          e,
+          e
         );
       }
     },
-    [],
+    []
   );
 
   // Instructors
@@ -400,7 +403,7 @@ function AcademyDashboardContent({
             return {
               id: String((c as any).id),
               display_name: String(
-                (c as any).display_name ?? (c as any).id ?? "",
+                (c as any).display_name ?? (c as any).id ?? ""
               ),
               level:
                 typeof (c as any).level === "string"
@@ -438,7 +441,7 @@ function AcademyDashboardContent({
         vettingStatus: vet as AcademyInstructorProfile["vettingStatus"],
       };
     },
-    [],
+    []
   );
 
   const fetchInstructorsFromDatabase =
@@ -476,7 +479,7 @@ function AcademyDashboardContent({
         status: (r.status as AcademyTrainingClass["status"]) ?? "draft",
       };
     },
-    [],
+    []
   );
 
   const fetchClassesFromDatabase =
@@ -508,31 +511,28 @@ function AcademyDashboardContent({
 
   const storeStats = usePodAcademyDashboardStore((state) => state.stats);
   const storeCourseGroups = usePodAcademyDashboardStore(
-    (state) => state.courseGroups,
+    (state) => state.courseGroups
   );
   const storeMembers = usePodAcademyDashboardStore((state) => state.members);
   const storeInstructors = usePodAcademyDashboardStore(
-    (state) => state.instructors,
+    (state) => state.instructors
   );
   const storeTrainingClasses = usePodAcademyDashboardStore(
-    (state) => state.trainingClasses,
+    (state) => state.trainingClasses
   );
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
   const operationalMinimumSnapshots = React.useMemo(
     () =>
-      evaluateOperationalMinimums(
-        operationalMinimumDefinitions,
-        storeMembers,
-      ),
-    [operationalMinimumDefinitions, storeMembers],
+      evaluateOperationalMinimums(operationalMinimumDefinitions, storeMembers),
+    [operationalMinimumDefinitions, storeMembers]
   );
   const readinessChecklist = React.useMemo(
     () =>
       createRegionReadinessChecklist(
         operationalMinimumSnapshots,
-        storeSessions,
+        storeSessions
       ),
-    [operationalMinimumSnapshots, storeSessions],
+    [operationalMinimumSnapshots, storeSessions]
   );
   const notifyAcademyChange = React.useCallback(
     async (payload: {
@@ -553,15 +553,32 @@ function AcademyDashboardContent({
           const text = await res.text().catch(() => "");
           console.warn(
             "[AcademyDashboard] notification request failed",
-            text || res.status,
+            text || res.status
           );
         }
       } catch (notifyErr) {
-        console.warn("[AcademyDashboard] notification request error", notifyErr);
+        console.warn(
+          "[AcademyDashboard] notification request error",
+          notifyErr
+        );
       }
     },
-    [],
+    []
   );
+  const refreshReadinessCache = React.useCallback(async () => {
+    try {
+      await fetch("/api/academy/readiness?refresh=true", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+    } catch (err) {
+      console.warn(
+        "[AcademyDashboard] readiness cache refresh failed",
+        err
+      );
+    }
+  }, []);
   const profile = useProfileStore((s) => s.profile);
   const roles = profile?.access_role ? [String(profile.access_role)] : [];
 
@@ -572,10 +589,11 @@ function AcademyDashboardContent({
         const client = getSupabaseBrowserClient();
         const overrides = deriveRegionOperationalMinimumOverrides(
           definitions,
-          DEFAULT_REGION_OPERATIONAL_MINIMUMS,
+          DEFAULT_REGION_OPERATIONAL_MINIMUMS
         );
 
-        const existingSettings = (regionSettingsRecord?.settings ?? {}) as Record<string, any>;
+        const existingSettings = (regionSettingsRecord?.settings ??
+          {}) as Record<string, any>;
         const nextSettings = {
           ...existingSettings,
           academy: {
@@ -586,7 +604,8 @@ function AcademyDashboardContent({
 
         const payload: RegionSettingsRow = {
           id: regionSettingsRecord?.id,
-          region_slug: regionSettingsRecord?.region_slug || REGION_SETTINGS_SLUG,
+          region_slug:
+            regionSettingsRecord?.region_slug || REGION_SETTINGS_SLUG,
           operational_minimums: overrides,
           settings: nextSettings,
           updated_at: new Date().toISOString(),
@@ -602,13 +621,13 @@ function AcademyDashboardContent({
         const nextRecord = (data as RegionSettingsRow) ?? payload;
         setRegionSettingsRecord(nextRecord);
         setOperationalMinimumDefinitions(
-          definitions.map((definition) => ({ ...definition })),
+          definitions.map((definition) => ({ ...definition }))
         );
         toast.success("Operational minimums updated");
       } catch (error) {
         console.error(
           "[AcademyDashboard] unable to save operational minimums",
-          error,
+          error
         );
         toast.error("Failed to save operational minimums");
         throw error;
@@ -616,7 +635,7 @@ function AcademyDashboardContent({
         setIsSavingMinimums(false);
       }
     },
-    [regionSettingsRecord],
+    [regionSettingsRecord]
   );
 
   return (
@@ -637,14 +656,19 @@ function AcademyDashboardContent({
       onScheduleClass={onScheduleClass}
       onUpdateSessionStatus={async (sessionId, status) => {
         const targetSession = storeSessions.find((s) => s.id === sessionId);
+        const previousStatus = targetSession?.status ?? "scheduled";
         updateTrainingSessionStatus(sessionId, status);
         try {
-          const client = getSupabaseBrowserClient();
-          const { error } = await client
-            .from("academy_sessions")
-            .update({ status })
-            .eq("id", sessionId);
-          if (error) throw error;
+          const res = await fetch(`/api/academy/sessions/${sessionId}/status`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ status }),
+          });
+          if (!res.ok) {
+            const details = await res.text().catch(() => "");
+            throw new Error(details || "Failed to update session status");
+          }
           await notifyAcademyChange({
             id: sessionId,
             type: "session",
@@ -655,11 +679,14 @@ function AcademyDashboardContent({
                 ? `/academy/class/${targetSession.classId}`
                 : "/academy",
           });
+          await refreshReadinessCache();
         } catch (e) {
+          updateTrainingSessionStatus(sessionId, previousStatus);
           console.info(
             "[AcademyDashboard] status update local-only (no supabase)",
-            e,
+            e
           );
+          toast.error("Unable to update session status");
         }
       }}
       onCreateInstructor={async (draft) => {
@@ -686,7 +713,7 @@ function AcademyDashboardContent({
         } catch (e) {
           console.warn(
             "[AcademyDashboard] supabase upsert instructor failed",
-            e,
+            e
           );
         }
       }}
@@ -725,7 +752,7 @@ function AcademyDashboardContent({
         } catch (e) {
           console.warn(
             "[AcademyDashboard] supabase update instructor failed",
-            e,
+            e
           );
         }
       }}
@@ -742,7 +769,7 @@ function AcademyDashboardContent({
         } catch (e) {
           console.warn(
             "[AcademyDashboard] supabase delete instructor failed",
-            e,
+            e
           );
         }
       }}
@@ -753,7 +780,7 @@ function AcademyDashboardContent({
         await persistSessionToDatabase(session);
         await persistParticipantsForSession(
           session.id,
-          session.participants ?? [],
+          session.participants ?? []
         );
         await notifyAcademyChange({
           id: session.id,
@@ -765,6 +792,7 @@ function AcademyDashboardContent({
               ? `/academy/class/${session.classId}`
               : "/academy",
         });
+        await refreshReadinessCache();
       }}
       onUpdateTrainingSession={async (sessionId, patch) => {
         patchTrainingSession(sessionId, patch);
@@ -785,7 +813,7 @@ function AcademyDashboardContent({
           if (patch.participants) {
             await persistParticipantsForSession(
               sessionId,
-              next.participants ?? [],
+              next.participants ?? []
             );
           }
           await notifyAcademyChange({
@@ -798,6 +826,7 @@ function AcademyDashboardContent({
                 ? `/academy/class/${next.classId}`
                 : "/academy",
           });
+          await refreshReadinessCache();
         }
       }}
       onDeleteTrainingSession={async (sessionId) => {
@@ -806,10 +835,11 @@ function AcademyDashboardContent({
         try {
           const client = getSupabaseBrowserClient();
           await client.from("academy_sessions").delete().eq("id", sessionId); // cascade deletes participants
+          await refreshReadinessCache();
         } catch (e) {
           console.info(
             "[AcademyDashboard] delete session local-only (no supabase)",
-            e,
+            e
           );
         }
       }}

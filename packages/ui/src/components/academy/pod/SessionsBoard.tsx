@@ -49,11 +49,11 @@ type SessionsBoardProps = {
   onCreateSession?: (session: AcademyTrainingSessionDraft) => void;
   onUpdateSessionStatus?: (
     sessionId: string,
-    status: AcademyTrainingSession["status"],
+    status: AcademyTrainingSession["status"]
   ) => void;
   onUpdateSession?: (
     sessionId: string,
-    patch: Partial<AcademyTrainingSession>,
+    patch: Partial<AcademyTrainingSession>
   ) => void;
   onDeleteSession?: (sessionId: string) => void;
 };
@@ -71,35 +71,35 @@ const sessionStatusColumns: Array<{
   label: string;
   accent: string;
 }> = [
-    { status: "scheduled", label: "Scheduled", accent: "border-sky-300/60" },
-    {
-      status: "in_progress",
-      label: "In Progress",
-      accent: "border-amber-300/70",
-    },
-    { status: "completed", label: "Completed", accent: "border-emerald-300/70" },
-  ];
+  { status: "scheduled", label: "Scheduled", accent: "border-sky-300/60" },
+  {
+    status: "in_progress",
+    label: "In Progress",
+    accent: "border-amber-300/70",
+  },
+  { status: "completed", label: "Completed", accent: "border-emerald-300/70" },
+];
 
 const sessionStatusFilterOptions: Array<{
   value: SessionFilterValue;
   label: string;
 }> = [
-    { value: "all", label: "All" },
-    { value: "scheduled", label: "Scheduled" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
-    { value: "archived", label: "Archived" },
-  ];
+  { value: "all", label: "All" },
+  { value: "scheduled", label: "Scheduled" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "archived", label: "Archived" },
+];
 
 const manageSessionStatusOptions: Array<{
   value: AcademyTrainingSession["status"];
   label: string;
 }> = [
-    { value: "scheduled", label: "Scheduled" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
-    { value: "archived", label: "Archived" },
-  ];
+  { value: "scheduled", label: "Scheduled" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "archived", label: "Archived" },
+];
 
 const understandingLevelLabels: Record<
   AcademySessionUnderstandingLevel,
@@ -118,18 +118,18 @@ export function SessionsBoard({
   onDeleteSession,
 }: SessionsBoardProps) {
   const noopCreate = React.useCallback(
-    (_: AcademyTrainingSessionDraft) => { },
-    [],
+    (_: AcademyTrainingSessionDraft) => {},
+    []
   );
   const noopUpdateStatus = React.useCallback(
-    (_: string, __: AcademyTrainingSession["status"]) => { },
-    [],
+    (_: string, __: AcademyTrainingSession["status"]) => {},
+    []
   );
   const noopUpdateSession = React.useCallback(
-    (_: string, __: Partial<AcademyTrainingSession>) => { },
-    [],
+    (_: string, __: Partial<AcademyTrainingSession>) => {},
+    []
   );
-  const noopDeleteSession = React.useCallback((_: string) => { }, []);
+  const noopDeleteSession = React.useCallback((_: string) => {}, []);
 
   const handleCreateSession = onCreateSession ?? noopCreate;
   const handleUpdateStatus = onUpdateSessionStatus ?? noopUpdateStatus;
@@ -138,11 +138,20 @@ export function SessionsBoard({
 
   const profileFromStore = useProfileStore((s) => s.profile);
   const profileRoles = React.useMemo(
-    () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
-    [profileFromStore?.access_role],
+    () =>
+      profileFromStore?.access_role
+        ? [String(profileFromStore.access_role)]
+        : [],
+    [profileFromStore?.access_role]
   );
-  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
-  const { access: effectiveCanManage } = useUnifiedAccess('manage_instructors', ctx);
+  const ctx = React.useMemo(
+    () => ({ navRole: profileRoles[0] as NavRole }),
+    [profileRoles]
+  );
+  const { access: effectiveCanManage } = useUnifiedAccess(
+    "manage_instructors",
+    ctx
+  );
 
   // Developer helper: warn when callers forget to pass real handlers.
   // SessionsBoard purposely falls back to no-op handlers to remain store-agnostic,
@@ -162,7 +171,7 @@ export function SessionsBoard({
 
       if (missing.length > 0) {
         console.warn(
-          `[SessionsBoard] Missing handler props: ${missing.join(", ")}. This component will use internal no-op fallbacks; pass real handlers to enable actions.`,
+          `[SessionsBoard] Missing handler props: ${missing.join(", ")}. This component will use internal no-op fallbacks; pass real handlers to enable actions.`
         );
       }
     } catch (err) {
@@ -191,12 +200,12 @@ export function SessionsBoard({
     React.useState<AcademyTrainingSessionDraft["status"]>("scheduled");
   const [newSessionTopic, setNewSessionTopic] = React.useState("");
   const [createFormError, setCreateFormError] = React.useState<string | null>(
-    null,
+    null
   );
 
   const [isManageDrawerOpen, setIsManageDrawerOpen] = React.useState(false);
   const [managedSessionId, setManagedSessionId] = React.useState<string | null>(
-    null,
+    null
   );
   const [manageSessionTitle, setManageSessionTitle] = React.useState("");
   const [manageSessionStart, setManageSessionStart] = React.useState("");
@@ -218,7 +227,7 @@ export function SessionsBoard({
   const [manageSessionParticipants, setManageSessionParticipants] =
     React.useState<EditableParticipant[]>([]);
   const [manageFormError, setManageFormError] = React.useState<string | null>(
-    null,
+    null
   );
 
   const createParticipantId = React.useCallback(() => {
@@ -235,12 +244,12 @@ export function SessionsBoard({
 
   const archivedSessions = React.useMemo(
     () => sessions.filter((session) => session.status === "archived"),
-    [sessions],
+    [sessions]
   );
 
   const activeSessionsCount = React.useMemo(
     () => sessions.filter((session) => session.status !== "archived").length,
-    [sessions],
+    [sessions]
   );
 
   const sessionStatusCounts = React.useMemo(() => {
@@ -249,7 +258,7 @@ export function SessionsBoard({
       scheduled: sessions.filter((session) => session.status === "scheduled")
         .length,
       in_progress: sessions.filter(
-        (session) => session.status === "in_progress",
+        (session) => session.status === "in_progress"
       ).length,
       completed: sessions.filter((session) => session.status === "completed")
         .length,
@@ -273,17 +282,17 @@ export function SessionsBoard({
   const confirmedParticipantsCount = React.useMemo(
     () =>
       manageSessionParticipants.filter(
-        (participant) => participant.status === "confirmed",
+        (participant) => participant.status === "confirmed"
       ).length,
-    [manageSessionParticipants],
+    [manageSessionParticipants]
   );
 
   const waitlistParticipantsCount = React.useMemo(
     () =>
       manageSessionParticipants.filter(
-        (participant) => participant.status === "waitlist",
+        (participant) => participant.status === "waitlist"
       ).length,
-    [manageSessionParticipants],
+    [manageSessionParticipants]
   );
 
   const resolveAbsoluteUrl = React.useCallback((path: string) => {
@@ -297,10 +306,10 @@ export function SessionsBoard({
   }, []);
 
   const [academyUrl, setAcademyUrl] = React.useState(() =>
-    resolveAbsoluteUrl("/academy"),
+    resolveAbsoluteUrl("/academy")
   );
   const [signUpUrl, setSignUpUrl] = React.useState(() =>
-    resolveAbsoluteUrl("/sign-up"),
+    resolveAbsoluteUrl("/sign-up")
   );
 
   React.useEffect(() => {
@@ -315,11 +324,11 @@ export function SessionsBoard({
       const when = formatSessionRange(
         session.start,
         session.end,
-        session.timezone,
+        session.timezone
       );
       const seatsRemaining = Math.max(
         session.seats.capacity - session.seats.confirmed,
-        0,
+        0
       );
       const trimmedInstructor = session.instructorName?.trim() ?? "";
       const instructorVisible =
@@ -335,12 +344,15 @@ export function SessionsBoard({
         `Seats: ${session.seats.confirmed}/${session.seats.capacity} filled · ${seatsRemaining} open · ${session.seats.waitlist} waitlist`,
         session.relatedTopic ? `Focus: ${session.relatedTopic}` : null,
         `Sign up: ${signUpShareUrl}`,
-      ].filter((value): value is string => typeof value === "string" && value.length > 0);
+      ].filter(
+        (value): value is string =>
+          typeof value === "string" && value.length > 0
+      );
       const shareText = parts.join("\n");
 
       if (!shareText) {
         console.warn(
-          `[SessionsBoard] Skipping share summary copy for session ${session.id}; nothing to copy`,
+          `[SessionsBoard] Skipping share summary copy for session ${session.id}; nothing to copy`
         );
         return;
       }
@@ -363,18 +375,18 @@ export function SessionsBoard({
           document.body.removeChild(textarea);
         }
         console.info(
-          `[SessionsBoard] Copied session ${session.id} share summary to clipboard`,
+          `[SessionsBoard] Copied session ${session.id} share summary to clipboard`
         );
         toast.success("Session details copied to clipboard");
       } catch (err) {
         console.warn(
           `[SessionsBoard] Failed to copy session ${session.id} share summary`,
-          err,
+          err
         );
         toast.error("Unable to copy session details");
       }
     },
-    [resolveAbsoluteUrl],
+    [resolveAbsoluteUrl]
   );
 
   const resetCreateForm = React.useCallback(() => {
@@ -420,7 +432,7 @@ export function SessionsBoard({
         resetManageForm();
       }
     },
-    [resetManageForm],
+    [resetManageForm]
   );
 
   React.useEffect(() => {
@@ -447,17 +459,16 @@ export function SessionsBoard({
         signalHandle: participant.signalHandle ?? "",
         understanding: participant.understanding,
         status: participant.status,
-      })),
+      }))
     );
     setManageFormError(null);
   }, [createParticipantId, isManageDrawerOpen, managedSession]);
 
   const handleArchiveSession = React.useCallback(
     (sessionId: string) => {
-      setShowArchivedSessions(true);
       handleUpdateStatus(sessionId, "archived");
     },
-    [handleUpdateStatus],
+    [handleUpdateStatus]
   );
 
   const updateParticipant = React.useCallback(
@@ -466,21 +477,21 @@ export function SessionsBoard({
         participants.map((participant) =>
           participant.id === participantId
             ? {
-              ...participant,
-              ...patch,
-            }
-            : participant,
-        ),
+                ...participant,
+                ...patch,
+              }
+            : participant
+        )
       );
     },
-    [],
+    []
   );
 
   const handleParticipantFieldChange = React.useCallback(
     (
       participantId: string,
       field: keyof Omit<EditableParticipant, "id">,
-      value: string,
+      value: string
     ) => {
       if (field === "understanding") {
         updateParticipant(participantId, {
@@ -500,7 +511,7 @@ export function SessionsBoard({
         [field]: value,
       } as Partial<EditableParticipant>);
     },
-    [updateParticipant],
+    [updateParticipant]
   );
 
   const handleAddParticipant = React.useCallback(() => {
@@ -518,7 +529,7 @@ export function SessionsBoard({
 
   const handleRemoveParticipant = React.useCallback((participantId: string) => {
     setManageSessionParticipants((participants) =>
-      participants.filter((participant) => participant.id !== participantId),
+      participants.filter((participant) => participant.id !== participantId)
     );
   }, []);
 
@@ -541,7 +552,7 @@ export function SessionsBoard({
 
     const capacity = Number.parseInt(
       manageSessionCapacity || String(managedSession.seats.capacity ?? 0),
-      10,
+      10
     );
     if (!Number.isFinite(capacity) || capacity <= 0) {
       setManageFormError("Capacity must be a positive number.");
@@ -679,7 +690,7 @@ export function SessionsBoard({
 
       const seatsRemaining = Math.max(
         session.seats.capacity - session.seats.confirmed,
-        0,
+        0
       );
       const trimmedInstructor = session.instructorName?.trim() ?? "";
       const instructorText =
@@ -704,12 +715,14 @@ export function SessionsBoard({
                   {formatSessionRange(
                     session.start,
                     session.end,
-                    session.timezone,
+                    session.timezone
                   )}
                 </p>
                 <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-2">
                   <span>Instructor: {instructorText}</span>
-                  <span>Location: {isSignalLocation ? "Signal" : session.location}</span>
+                  <span>
+                    Location: {isSignalLocation ? "Signal" : session.location}
+                  </span>
                   {session.location ? (
                     <Button
                       variant="outline"
@@ -729,10 +742,11 @@ export function SessionsBoard({
                   ) : (
                     <span>Location: Undetermined</span>
                   )}
-                  <span></span>
                   <span>Seats: {seatsSummary}</span>
                   {session.relatedTopic ? (
-                    session.relatedTopic.includes('academy.alwaysreadytools') ? (
+                    session.relatedTopic.includes(
+                      "academy.alwaysreadytools"
+                    ) ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -745,11 +759,21 @@ export function SessionsBoard({
                           rel="noopener noreferrer"
                           className="inline-block"
                         >
-                          {humanize(session.relatedTopic.split("/").pop() ?? session.relatedTopic)} Course
+                          {humanize(
+                            session.relatedTopic.split("/").pop() ??
+                              session.relatedTopic
+                          )}{" "}
+                          Course
                         </a>
                       </Button>
                     ) : (
-                      <span>Focus: {humanize(session.relatedTopic.split("/").pop() ?? session.relatedTopic)}</span>
+                      <span>
+                        Focus:{" "}
+                        {humanize(
+                          session.relatedTopic.split("/").pop() ??
+                            session.relatedTopic
+                        )}
+                      </span>
                     )
                   ) : null}
                 </div>
@@ -768,7 +792,9 @@ export function SessionsBoard({
                     size="sm"
                     variant="outline"
                     className="w-full"
-                    onClick={() => handleUpdateStatus(session.id, "in_progress")}
+                    onClick={() =>
+                      handleUpdateStatus(session.id, "in_progress")
+                    }
                   >
                     Mark in progress
                   </Button>
@@ -822,7 +848,7 @@ export function SessionsBoard({
       handleOpenManageSession,
       handleUpdateStatus,
       signUpUrl,
-    ],
+    ]
   );
 
   const renderArchivedSessionCard = React.useCallback(
@@ -833,7 +859,7 @@ export function SessionsBoard({
 
       const seatsRemaining = Math.max(
         session.seats.capacity - session.seats.confirmed,
-        0,
+        0
       );
 
       return (
@@ -848,7 +874,7 @@ export function SessionsBoard({
                   {formatSessionRange(
                     session.start,
                     session.end,
-                    session.timezone,
+                    session.timezone
                   )}
                 </p>
               </div>
@@ -862,7 +888,7 @@ export function SessionsBoard({
               </div>
             </div>
 
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+            <div className="flex flex-col gap-1 text-xs text-muted-foreground break-words">
               <span>
                 Instructor: {session.instructorName} ·{" "}
                 {instructorTypeLabels[session.instructorType]}
@@ -916,12 +942,12 @@ export function SessionsBoard({
         </Card>
       );
     },
-    [handleDeleteSession, handleOpenManageSession, handleUpdateStatus],
+    [handleDeleteSession, handleOpenManageSession, handleUpdateStatus]
   );
 
   return (
     <>
-      <section className="space-y-4 m-auto max-w-7xl px-4">
+      <section className="space-y-4 m-auto max-w-7xl px-4 w-full">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">Training Sessions Board</h2>
@@ -968,7 +994,7 @@ export function SessionsBoard({
           <div className="grid gap-4 lg:grid-cols-3">
             {sessionStatusColumns.map((column) => {
               const columnSessions = sessions.filter(
-                (session) => session.status === column.status,
+                (session) => session.status === column.status
               );
 
               return (
@@ -992,7 +1018,7 @@ export function SessionsBoard({
                       </p>
                     ) : (
                       columnSessions.map((session) =>
-                        renderActiveSessionCard(session),
+                        renderActiveSessionCard(session)
                       )
                     )}
                   </div>
@@ -1008,7 +1034,7 @@ export function SessionsBoard({
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {archivedSessions.map((session) =>
-                renderArchivedSessionCard(session),
+                renderArchivedSessionCard(session)
               )}
             </div>
           )
@@ -1021,7 +1047,7 @@ export function SessionsBoard({
               </p>
             ) : (
               filteredSessions.map((session) =>
-                renderActiveSessionCard(session),
+                renderActiveSessionCard(session)
               )
             )}
           </div>
@@ -1053,7 +1079,7 @@ export function SessionsBoard({
           {showArchivedSessions ? (
             <div className="grid gap-3 md:grid-cols-2">
               {archivedSessions.map((session) =>
-                renderArchivedSessionCard(session),
+                renderArchivedSessionCard(session)
               )}
             </div>
           ) : null}
@@ -1097,7 +1123,7 @@ export function SessionsBoard({
                       value={manageSessionStatus}
                       onValueChange={(value) =>
                         setManageSessionStatus(
-                          value as AcademyTrainingSession["status"],
+                          value as AcademyTrainingSession["status"]
                         )
                       }
                     >
@@ -1135,7 +1161,7 @@ export function SessionsBoard({
                       value={manageSessionModality}
                       onValueChange={(value) =>
                         setManageSessionModality(
-                          value as AcademyTrainingSession["modality"],
+                          value as AcademyTrainingSession["modality"]
                         )
                       }
                     >
@@ -1157,7 +1183,7 @@ export function SessionsBoard({
                       value={manageSessionInstructorType}
                       onValueChange={(value) =>
                         setManageSessionInstructorType(
-                          value as AcademyInstructorProfile["type"],
+                          value as AcademyInstructorProfile["type"]
                         )
                       }
                     >
@@ -1303,7 +1329,7 @@ export function SessionsBoard({
                                   handleParticipantFieldChange(
                                     participant.id,
                                     "name",
-                                    event.target.value,
+                                    event.target.value
                                   )
                                 }
                                 placeholder="Jordan Rivera"
@@ -1322,7 +1348,7 @@ export function SessionsBoard({
                                   handleParticipantFieldChange(
                                     participant.id,
                                     "signalHandle",
-                                    event.target.value,
+                                    event.target.value
                                   )
                                 }
                                 placeholder="@dispatch-ally"
@@ -1343,7 +1369,7 @@ export function SessionsBoard({
                                   handleParticipantFieldChange(
                                     participant.id,
                                     "understanding",
-                                    value as AcademySessionUnderstandingLevel,
+                                    value as AcademySessionUnderstandingLevel
                                   )
                                 }
                               >
@@ -1355,7 +1381,7 @@ export function SessionsBoard({
                                 <SelectContent>
                                   {(
                                     Object.entries(
-                                      understandingLevelLabels,
+                                      understandingLevelLabels
                                     ) as Array<
                                       [AcademySessionUnderstandingLevel, string]
                                     >
@@ -1379,7 +1405,7 @@ export function SessionsBoard({
                                   handleParticipantFieldChange(
                                     participant.id,
                                     "status",
-                                    value as EditableParticipant["status"],
+                                    value as EditableParticipant["status"]
                                   )
                                 }
                               >
@@ -1494,7 +1520,7 @@ export function SessionsBoard({
                   value={newSessionModality}
                   onValueChange={(value) =>
                     setNewSessionModality(
-                      value as AcademyTrainingSession["modality"],
+                      value as AcademyTrainingSession["modality"]
                     )
                   }
                 >
@@ -1514,7 +1540,7 @@ export function SessionsBoard({
                   value={newSessionStatus}
                   onValueChange={(value) =>
                     setNewSessionStatus(
-                      value as AcademyTrainingSessionDraft["status"],
+                      value as AcademyTrainingSessionDraft["status"]
                     )
                   }
                 >
@@ -1572,7 +1598,12 @@ export function SessionsBoard({
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
             </DrawerClose>
-            <Button onClick={handleCreateSessionSubmit} disabled={!effectiveCanManage}>Create session</Button>
+            <Button
+              onClick={handleCreateSessionSubmit}
+              disabled={!effectiveCanManage}
+            >
+              Create session
+            </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

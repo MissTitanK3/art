@@ -82,3 +82,25 @@ export async function POST(req: Request) {
     return jsonError(e);
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get("limit") ?? "5");
+
+    const { data: needs, error } = await supabase
+      .from("meet_a_need")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ needs });
+  } catch (e: any) {
+    return jsonError(e);
+  }
+}

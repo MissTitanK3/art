@@ -69,6 +69,7 @@ export const DispatchProfileSchema = z.object({
       return "@" + u;
     }),
   coordination_zone: z.string().nullable().optional(),
+  last_profile_check_in: z.string().datetime().nullable().optional(),
   inserted_at: z.string().optional(), // timestamptz as ISO
   coverage_zones: CoverageZonesSchema.nullable().optional(),
   state: z.string().optional(),
@@ -102,4 +103,3 @@ export type Block = {
 };
 
 export type UiCoverage = { id: string; label: string; area?: any };
-

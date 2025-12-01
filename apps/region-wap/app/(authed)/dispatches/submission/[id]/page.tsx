@@ -7,6 +7,7 @@ import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
 
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
+import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
 
 import type {
   DispatchUpdate,
@@ -14,79 +15,6 @@ import type {
 } from "@workspace/store/types/dispatch";
 import { useCommsData } from "@/hooks/useCommsData";
 import { CommsDashboardView } from "@workspace/ui/components/dispatch/CommsDashboardView";
-
-function mapRowToSubmission(row: any): DispatchSubmission {
-  const updates = Array.isArray(row?.updates) ? row.updates : [];
-  const logistics = Array.isArray(row?.logistics) ? row.logistics : [];
-  const location =
-    row?.location && typeof row.location === "object"
-      ? row.location
-      : undefined;
-  return {
-    id: String(row.id ?? crypto.randomUUID()),
-    type: row?.type ?? undefined,
-    location,
-    timestamp: String(row?.timestamp ?? new Date().toISOString()),
-    date_of_event:
-      typeof row?.date_of_event === "string"
-        ? row.date_of_event
-        : (row?.date_of_event ?? undefined),
-    flagged: Boolean(row?.flagged ?? false),
-    required_roles: Array.isArray(row?.required_roles)
-      ? row.required_roles
-      : undefined,
-    encrypted_payload:
-      typeof row?.encrypted_payload === "string"
-        ? row.encrypted_payload
-        : undefined,
-    auto_delete_after: row?.auto_delete_after ?? null,
-    integrity_hash:
-      typeof row?.integrity_hash === "string" ? row.integrity_hash : undefined,
-    submitted_by: row?.submitted_by ?? null,
-    source: row?.source ?? undefined,
-    visibility_radius_km:
-      typeof row?.visibility_radius_km === "number"
-        ? row.visibility_radius_km
-        : undefined,
-    status: (row?.status as any) ?? "unconfirmed",
-    assigned_volunteers: Array.isArray(row?.assigned_volunteers)
-      ? row.assigned_volunteers
-      : undefined,
-    required_roles_by_type:
-      typeof row?.required_roles_by_type === "object" &&
-        row?.required_roles_by_type
-        ? row.required_roles_by_type
-        : undefined,
-    location_label:
-      typeof row?.location_label === "string" ? row.location_label : undefined,
-    point_of_contact: row?.point_of_contact ?? null,
-    state: typeof row?.state === "string" ? row.state : undefined,
-    intended_action_preset:
-      typeof row?.intended_action_preset === "string"
-        ? row.intended_action_preset
-        : undefined,
-    intended_action_notes:
-      typeof row?.intended_action_notes === "string"
-        ? row.intended_action_notes
-        : undefined,
-    intended_actions: Array.isArray(row?.intended_actions)
-      ? row.intended_actions
-      : undefined,
-    intended_actions_custom:
-      typeof row?.intended_actions_custom === "string"
-        ? row.intended_actions_custom
-        : undefined,
-    signal_link:
-      typeof row?.signal_link === "string" ? row.signal_link : undefined,
-    public_signal_link:
-      typeof row?.public_signal_link === "string"
-        ? row.public_signal_link
-        : undefined,
-    training: Boolean(row?.training ?? false),
-    updates,
-    logistics,
-  } as DispatchSubmission;
-}
 
 async function fetchDispatchSubmissionFromDatabase(
   id: string,
@@ -98,7 +26,9 @@ async function fetchDispatchSubmissionFromDatabase(
       return null;
     }
     const json = await res.json();
-    return json.submission as DispatchSubmission;
+    return json?.submission
+      ? mapRowToSubmission(json.submission)
+      : null;
   } catch (e) {
     console.warn('[DispatchSubmissionDataLayer] fetch error', e);
     return null;

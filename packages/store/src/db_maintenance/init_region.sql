@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     verified_by TEXT DEFAULT 'self',
     affiliation TEXT,
     availability BOOLEAN DEFAULT TRUE,
+  last_check_in TIMESTAMPTZ,
     contact_signal TEXT,
     coordination_zone TEXT,
     coverage_zones JSONB DEFAULT '[]',
@@ -55,6 +56,14 @@ CREATE TABLE IF NOT EXISTS public.profiles (
       self_status_flags IS NULL OR jsonb_typeof(self_status_flags) = 'array'
     )
   );
+
+  -- Backfill: ensure last_check_in exists when re-running on older schemas
+  DO $$ BEGIN
+    PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'last_check_in';
+    IF NOT FOUND THEN
+      ALTER TABLE public.profiles ADD COLUMN last_check_in TIMESTAMPTZ;
+    END IF;
+  END $$;
 
   -- Pods
 CREATE TABLE IF NOT EXISTS public.pods (

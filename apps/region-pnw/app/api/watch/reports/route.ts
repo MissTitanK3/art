@@ -22,6 +22,9 @@ export async function GET(req: Request) {
     const sinceParam = searchParams.get('since');
     const includeTests = searchParams.get('includeTests') === 'true';
 
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? parseInt(limitParam, 10) : null;
+
     const reports: WizardReport[] = [];
     let offset = 0;
     let total: number | null = null;
@@ -40,7 +43,13 @@ export async function GET(req: Request) {
         query = query.eq('test', false);
       }
 
-      query = query.range(offset, offset + PAGE_SIZE - 1);
+      // Filter out future reports (allow a small buffer for clock skew if needed, but strict for now)
+      const now = new Date().toISOString();
+      query = query.lte('timestamp', now);
+
+      // Apply limit if present and smaller than PAGE_SIZE
+      const effectiveLimit = limit ? Math.min(limit, PAGE_SIZE) : PAGE_SIZE;
+      query = query.range(offset, offset + effectiveLimit - 1);
 
       const { data, error, count } = await query;
 
@@ -53,6 +62,10 @@ export async function GET(req: Request) {
       }
 
       reports.push(...data);
+
+      if (limit && reports.length >= limit) {
+        break;
+      }
 
       if (total === null && typeof count === 'number') {
         total = count;

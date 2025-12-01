@@ -44,3 +44,24 @@ export async function DELETE(req: Request) {
     return jsonError(error);
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { supabase } = await getAuthenticatedProfile();
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get("limit") ?? "5");
+
+    const { data: pickLists, error } = await supabase
+      .from("warehouse_pick_lists")
+      .select("*")
+      .eq("confirmed", true)
+      .order("confirmed_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    return NextResponse.json({ pickLists });
+  } catch (error) {
+    return jsonError(error);
+  }
+}

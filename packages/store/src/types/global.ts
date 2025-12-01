@@ -25,7 +25,9 @@ export type Profile = {
   availability: boolean;
   contact_signal?: string;
   coordination_zone?: string;
+  last_profile_check_in?: string | null;
   inserted_at: string;
+  updated_at?: string | null;
   coverage_zones: string[];
   state: string;
   weekly_availability?: WeeklyAvailability;

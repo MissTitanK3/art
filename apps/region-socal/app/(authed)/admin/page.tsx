@@ -32,9 +32,7 @@ import { toast } from "@workspace/ui/components/sonner";
 import AdminNotificationForm, {
   type SendArgs,
 } from "@workspace/ui/components/admin/notifications/AdminNotificationForm";
-import {
-  AdminNotificationTemplatePanel,
-} from "@workspace/ui/components/admin/notifications/AdminNotificationTemplatePanel";
+import { AdminNotificationTemplatePanel } from "@workspace/ui/components/admin/notifications/AdminNotificationTemplatePanel";
 import { ADMIN_NOTIFICATION_TEMPLATES } from "@workspace/store/admin/notifications/templates";
 
 import type { WizardReport } from "@workspace/store/types/watch.ts";
@@ -47,7 +45,7 @@ import { useProfileStore } from "@workspace/store/useProfileStore";
 // Map component (client-only)
 const WatchMap = dynamic(
   () => import("@workspace/ui/components/client/watch/WatchMap"),
-  { ssr: false },
+  { ssr: false }
 );
 
 export default function AdminPage() {
@@ -126,9 +124,9 @@ export default function AdminPage() {
     () =>
       dispatches.filter(
         (d) =>
-          !["archived", "completed", "cancelled", "expired"].includes(d.status),
+          !["archived", "completed", "cancelled", "expired"].includes(d.status)
       ).length,
-    [dispatches],
+    [dispatches]
   );
 
   const [trainingStats, setTrainingStats] = React.useState<{
@@ -166,10 +164,12 @@ export default function AdminPage() {
   const trainingPct = trainingStats.completionPct;
 
   const [iceoutSyncing, setIceoutSyncing] = React.useState(false);
-  const [iceoutLastSyncedAt, setIceoutLastSyncedAt] =
-    React.useState<string | null>(null);
-  const [iceoutStatusMessage, setIceoutStatusMessage] =
-    React.useState<string | null>(null);
+  const [iceoutLastSyncedAt, setIceoutLastSyncedAt] = React.useState<
+    string | null
+  >(null);
+  const [iceoutStatusMessage, setIceoutStatusMessage] = React.useState<
+    string | null
+  >(null);
 
   const fetchIceoutStatus = React.useCallback(async () => {
     if (!isNationalAdmin) return;
@@ -206,10 +206,10 @@ export default function AdminPage() {
         setIceoutLastSyncedAt(data?.lastSyncedAt ?? new Date().toISOString());
         setIceoutStatusMessage(
           data?.message ??
-          `Imported ${data?.inserted ?? 0} new reports (checked ${data?.checked ?? 0})`,
+            `Imported ${data?.inserted ?? 0} new reports (checked ${data?.checked ?? 0})`
         );
         toast.success(
-          data?.message ?? `Imported ${data?.inserted ?? 0} Iceout reports`,
+          data?.message ?? `Imported ${data?.inserted ?? 0} Iceout reports`
         );
       }
     } catch (error) {
@@ -223,7 +223,7 @@ export default function AdminPage() {
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
   const { reports, idMap } = React.useMemo(
     () => toWatchReports(dispatches),
-    [dispatches],
+    [dispatches]
   );
 
   const handleView = (r: WizardReport) => {
@@ -233,7 +233,7 @@ export default function AdminPage() {
 
   const remaining = Math.max(
     0,
-    trainingStats.totalActive - trainingStats.completed,
+    trainingStats.totalActive - trainingStats.completed
   );
   const chartData = [
     { name: "Completed", value: trainingStats.completed },
@@ -257,7 +257,7 @@ export default function AdminPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Total Profiles"
           value={uniqueProfiles}
@@ -275,11 +275,6 @@ export default function AdminPage() {
           value={uniquePods}
           loading={loadingPods}
           icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />}
-        />
-        <StatCard
-          label="Training Completed"
-          value={`${trainingPct}%`}
-          icon={<FileChartLine className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
 

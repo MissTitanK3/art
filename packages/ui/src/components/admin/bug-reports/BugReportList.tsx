@@ -27,6 +27,7 @@ export type BugReportRow = {
   created_at: string;
   created_by: string;
   created_by_email?: string | null;
+  reporter_username?: string | null;
   title: string;
   area: BugArea;
   status: BugStatus;
@@ -100,7 +101,7 @@ export function BugReportList({
       return 0;
     };
     return Array.from(map.entries()).map(
-      ([k, arr]) => [k, arr.slice().sort(compare)] as const,
+      ([k, arr]) => [k, arr.slice().sort(compare)] as const
     );
   }, [rows, sortBy, sortDir]);
 
@@ -181,7 +182,6 @@ export function BugReportList({
                       <th className="py-2 pr-4">Priority</th>
                       <th className="py-2 pr-4">Created</th>
                       <th className="py-2 pr-4">Reporter</th>
-                      <th className="py-2 pr-4">Reporter (email)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -212,14 +212,20 @@ export function BugReportList({
                           </span>
                         </td>
                         <td className="py-2 pr-4 align-top">
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {r.created_by.slice(0, 8)}…
-                          </span>
-                        </td>
-                        <td className="py-2 pr-4 align-top">
-                          <span className="text-xs text-muted-foreground">
-                            {r.created_by_email || "—"}
-                          </span>
+                          {r.reporter_username ? (
+                            <div className="flex flex-col text-sm">
+                              <span className="font-medium">
+                                {r.reporter_username}
+                              </span>
+                              <span className="font-mono text-[11px] text-muted-foreground">
+                                {r.created_by.slice(0, 8)}…
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {r.created_by.slice(0, 8)}…
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}

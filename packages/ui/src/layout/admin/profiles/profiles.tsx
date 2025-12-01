@@ -48,6 +48,7 @@ import {
   UserX,
   MoreVertical,
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
@@ -102,6 +103,50 @@ function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
   );
 }
 
+function lastCheckInBadge(lastCheckIn?: string | null) {
+  if (!lastCheckIn) {
+    return {
+      label: "Never",
+      className: "bg-muted text-foreground/80 border-muted-foreground/20",
+    };
+  }
+  const ts = Date.parse(lastCheckIn);
+  if (Number.isNaN(ts)) {
+    return {
+      label: "Invalid date",
+      className: "bg-muted text-foreground/80 border-muted-foreground/20",
+    };
+  }
+  const weeks = (Date.now() - ts) / (7 * 24 * 60 * 60 * 1000);
+  const label = formatDistanceToNow(ts, { addSuffix: true });
+  if (weeks <= 1) {
+    return {
+      label,
+      className:
+        "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+    };
+  }
+  if (weeks <= 4) {
+    return {
+      label,
+      className:
+        "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30",
+    };
+  }
+  if (weeks <= 8) {
+    return {
+      label,
+      className:
+        "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+    };
+  }
+  return {
+    label,
+    className:
+      "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  };
+}
+
 type Props = {
   initialProfiles: Profile[];
 };
@@ -109,11 +154,17 @@ type Props = {
 export default function ProfilesClient({ initialProfiles }: Props) {
   const profileFromStore = useProfileStore((s) => s.profile);
   const profileRoles = React.useMemo(
-    () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
-    [profileFromStore?.access_role],
+    () =>
+      profileFromStore?.access_role
+        ? [String(profileFromStore.access_role)]
+        : [],
+    [profileFromStore?.access_role]
   );
-  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
-  const { access: effectiveCanManage } = useUnifiedAccess('manage_users', ctx);
+  const ctx = React.useMemo(
+    () => ({ navRole: profileRoles[0] as NavRole }),
+    [profileRoles]
+  );
+  const { access: effectiveCanManage } = useUnifiedAccess("manage_users", ctx);
   const [query, setQuery] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("");
   const [verifierFilter, setVerifierFilter] = React.useState<string>("");
@@ -148,7 +199,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
   async function apiUpdate(
     id: string,
     patch: Partial<Profile>,
-    successLabel: string,
+    successLabel: string
   ) {
     try {
       const res = await fetch(`/api/admin/profiles/${id}`, {
@@ -164,11 +215,11 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       const updated = json.profile ?? null;
       if (updated) {
         setRows((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, ...updated } : r)),
+          prev.map((r) => (r.id === id ? { ...r, ...updated } : r))
         );
       } else {
         setRows((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+          prev.map((r) => (r.id === id ? { ...r, ...patch } : r))
         );
       }
       toast.success(successLabel);
@@ -200,7 +251,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     ] as const;
     const header = fields.join(",");
     const lines = filtered.map((p) =>
-      fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(","),
+      fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(",")
     );
     const csv = [header, ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -291,6 +342,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                   <TableHead>Role</TableHead>
                   <TableHead>Verified</TableHead>
                   <TableHead>Available</TableHead>
+                  <TableHead>Last check-in</TableHead>
                   <TableHead>Affiliation</TableHead>
                   <TableHead>Signal</TableHead>
                   <TableHead>Zone</TableHead>
@@ -299,6 +351,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
               <TableBody>
                 {filtered.map((p) => {
                   const isUnregistered = !p.user_id;
+                  const lastCheckInMeta = lastCheckInBadge(
+                    p.last_profile_check_in ?? p.updated_at ?? p.inserted_at
+                  );
                   return (
                     <TableRow key={p.id}>
                       <TableCell className="text-right">
@@ -321,18 +376,23 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                 <Select
                                   value={p.access_role}
                                   onValueChange={(val) => {
-                                    if (isUnregistered || !effectiveCanManage) return;
+                                    if (isUnregistered || !effectiveCanManage)
+                                      return;
                                     apiUpdate(
                                       p.id,
                                       { access_role: val as any },
-                                      "Role updated",
+                                      "Role updated"
                                     );
                                   }}
                                 >
                                   <SelectTrigger
                                     className="w-full"
-                                    disabled={isUnregistered || !effectiveCanManage}
-                                    aria-disabled={isUnregistered || !effectiveCanManage}
+                                    disabled={
+                                      isUnregistered || !effectiveCanManage
+                                    }
+                                    aria-disabled={
+                                      isUnregistered || !effectiveCanManage
+                                    }
                                     title={
                                       isUnregistered
                                         ? "Register this user to change role"
@@ -364,12 +424,12 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     if (isUnregistered) return;
                                     const fd = new FormData(e.currentTarget);
                                     const value = String(
-                                      fd.get("coordination_zone") ?? "",
+                                      fd.get("coordination_zone") ?? ""
                                     ).trim();
                                     apiUpdate(
                                       p.id,
                                       { coordination_zone: value } as any,
-                                      value ? "Zone updated" : "Zone cleared",
+                                      value ? "Zone updated" : "Zone cleared"
                                     );
                                   }}
                                 >
@@ -377,7 +437,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     name="coordination_zone"
                                     placeholder="e.g. sector-001"
                                     defaultValue={p.coordination_zone ?? ""}
-                                    disabled={isUnregistered || !effectiveCanManage}
+                                    disabled={
+                                      isUnregistered || !effectiveCanManage
+                                    }
                                     title={
                                       isUnregistered
                                         ? "Register this user to change zone"
@@ -390,7 +452,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     <Button
                                       type="submit"
                                       size="sm"
-                                      disabled={isUnregistered || !effectiveCanManage}
+                                      disabled={
+                                        isUnregistered || !effectiveCanManage
+                                      }
                                     >
                                       Save
                                     </Button>
@@ -398,7 +462,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                       type="button"
                                       variant="outline"
                                       size="sm"
-                                      disabled={isUnregistered || !effectiveCanManage}
+                                      disabled={
+                                        isUnregistered || !effectiveCanManage
+                                      }
                                       title={
                                         isUnregistered
                                           ? "Register this user to change zone"
@@ -411,7 +477,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                         apiUpdate(
                                           p.id,
                                           { coordination_zone: "" } as any,
-                                          "Zone cleared",
+                                          "Zone cleared"
                                         )
                                       }
                                     >
@@ -425,7 +491,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  disabled={isUnregistered || !effectiveCanManage}
+                                  disabled={
+                                    isUnregistered || !effectiveCanManage
+                                  }
                                   title={
                                     isUnregistered
                                       ? "Register this user to verify"
@@ -438,7 +506,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     apiUpdate(
                                       p.id,
                                       { verified_by: "admin" } as any,
-                                      "Verified by admin",
+                                      "Verified by admin"
                                     )
                                   }
                                 >
@@ -449,7 +517,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  disabled={isUnregistered || !effectiveCanManage}
+                                  disabled={
+                                    isUnregistered || !effectiveCanManage
+                                  }
                                   title={
                                     isUnregistered
                                       ? "Register this user to verify"
@@ -462,7 +532,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     apiUpdate(
                                       p.id,
                                       { verified_by: "partner_org" } as any,
-                                      "Verified by partner org",
+                                      "Verified by partner org"
                                     )
                                   }
                                 >
@@ -485,7 +555,8 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                         : undefined
                                   }
                                   onClick={() => {
-                                    if (isUnregistered || !effectiveCanManage) return;
+                                    if (isUnregistered || !effectiveCanManage)
+                                      return;
                                     const next =
                                       p.verified_by === "suspended"
                                         ? "self"
@@ -495,13 +566,13 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                       { verified_by: next as any },
                                       next === "suspended"
                                         ? "Suspended"
-                                        : "Reactivated",
+                                        : "Reactivated"
                                     );
                                   }}
                                 >
                                   {p.verified_by === "suspended" ? (
                                     <>
-                                      <ShieldCheck className="h-4 w-4 mr-2" />{' '}
+                                      <ShieldCheck className="h-4 w-4 mr-2" />{" "}
                                       Activate
                                     </>
                                   ) : (
@@ -518,7 +589,9 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                       : "outline"
                                   }
                                   size="sm"
-                                  disabled={isUnregistered || !effectiveCanManage}
+                                  disabled={
+                                    isUnregistered || !effectiveCanManage
+                                  }
                                   title={
                                     isUnregistered
                                       ? "Register this user to change verification"
@@ -527,7 +600,8 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                         : undefined
                                   }
                                   onClick={() => {
-                                    if (isUnregistered || !effectiveCanManage) return;
+                                    if (isUnregistered || !effectiveCanManage)
+                                      return;
                                     const next =
                                       p.verified_by === "suspended"
                                         ? "self"
@@ -537,13 +611,13 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                       { verified_by: next as any },
                                       next === "suspended"
                                         ? "Marked suspended"
-                                        : "Marked self-verified",
+                                        : "Marked self-verified"
                                     );
                                   }}
                                 >
                                   {p.verified_by === "suspended" ? (
                                     <>
-                                      <ShieldCheck className="h-4 w-4 mr-2" />{' '}
+                                      <ShieldCheck className="h-4 w-4 mr-2" />{" "}
                                       Unsuspend (verify self)
                                     </>
                                   ) : (
@@ -594,6 +668,17 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                           </Badge>
                         )}
                       </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={lastCheckInMeta.className}
+                          title={
+                            p.last_profile_check_in ?? p.updated_at ?? undefined
+                          }
+                        >
+                          {lastCheckInMeta.label}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="max-w-[220px] truncate">
                         {p.affiliation ?? ""}
                       </TableCell>
@@ -603,7 +688,6 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                       <TableCell className="max-w-[160px] truncate">
                         {p.coordination_zone ?? p.city ?? ""}
                       </TableCell>
-
                     </TableRow>
                   );
                 })}

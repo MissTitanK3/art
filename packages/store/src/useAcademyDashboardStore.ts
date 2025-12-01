@@ -69,9 +69,9 @@ const globalCrypto: { randomUUID?: () => string } | undefined =
 function generateId(): string {
   const idGenerator =
     globalCrypto && typeof globalCrypto.randomUUID === 'function' ? globalCrypto.randomUUID.bind(globalCrypto) : null;
-  const suffix = idGenerator ? idGenerator() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  return `id-${suffix}`;
+  return idGenerator ? idGenerator() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
+
 
 function generateInstructorId(): string {
   const idGenerator =

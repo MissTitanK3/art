@@ -31,7 +31,10 @@ export type BugArea =
   | "missing-persons"
   | "profile"
   | "admin"
-  | "auth";
+  | "auth"
+  | "mentoring"
+  | "workshop"
+  | "cohort";
 
 type BaseProps = {
   className?: string;
@@ -195,6 +198,9 @@ export function BugAreaSelect({
           <SelectItem value="profile">My Profile</SelectItem>
           <SelectItem value="admin">Admin</SelectItem>
           <SelectItem value="auth">Auth / Sign-in</SelectItem>
+          <SelectItem value="mentoring">Mentoring</SelectItem>
+          <SelectItem value="workshop">Workshop</SelectItem>
+          <SelectItem value="cohort">Cohort</SelectItem>
         </SelectContent>
       </Select>
     </div>

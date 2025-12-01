@@ -14,14 +14,26 @@ function isUuid(value: string): boolean {
 export const supabaseProfileAdapter: ProfileAdapter = {
   async loadProfile(userId: string): Promise<Profile | null> {
     const client = getSupabaseBrowserClient();
+    const lookupIds = new Set<string>();
+    lookupIds.add(userId);
+    // If the provided id isn't a UUID (e.g., demo provider id), fall back to the active Supabase session.
+    if (!isUuid(userId)) {
+      try {
+        const { data: authData } = await client.auth.getUser();
+        const supabaseId = authData?.user?.id;
+        if (supabaseId) lookupIds.add(supabaseId);
+      } catch {
+        // best-effort only
+      }
+    }
+    const idsArray = Array.from(lookupIds);
     // Prefer lookup by user_id to match auth linkage, but be resilient:
     // - handle rows returned as arrays
     // - allow lookup by id or user_id
-    const { data, error } = await client
-      .from("profiles")
-      .select("*")
-      .or(`user_id.eq.${userId},id.eq.${userId}`)
-      .limit(1);
+    const orClause = `user_id.in.(${idsArray.join(
+      ",",
+    )}),id.in.(${idsArray.join(",")})`;
+    const { data, error } = await client.from("profiles").select("*").or(orClause).limit(1);
     if (error) {
       console.warn("[supabaseProfileAdapter] loadProfile error", error);
       return null;
@@ -31,6 +43,7 @@ export const supabaseProfileAdapter: ProfileAdapter = {
     // Normalize nullable fields to avoid runtime null reads
     const normalized: Profile = {
       ...(row as any),
+      last_profile_check_in: (row as any)?.last_profile_check_in ?? null,
       display_name: String((row as any)?.display_name ?? ""),
     } as Profile;
     return normalized;
