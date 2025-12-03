@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { COURSE_BLUEPRINT } from "@workspace/ui/data/academy/course-blueprint";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -485,8 +485,13 @@ function CreatePathwayClassDataLayer({ pathway }: { pathway: CourseBlueprint }) 
   );
 }
 
-export default async function CreatePathwayClassPage({ params }: PageProps) {
-  const { id } = await params;
+export default function CreatePathwayClassPage(_props: PageProps) {
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+
+  if (!id) {
+    return null;
+  }
   const pathway = COURSE_BLUEPRINT.find((group) => group.id === id);
 
   if (pathway) {

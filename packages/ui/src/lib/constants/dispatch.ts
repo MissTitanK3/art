@@ -9,6 +9,7 @@ export const STATUS_META: Record<
   confirmed: { label: "Confirmed", color: "!bg-blue-600" },
   mobilizing: { label: "Mobilizing", color: "!bg-amber-500" },
   in_progress: { label: "In Progress", color: "!bg-indigo-600" },
+  verified_complete: { label: "Verified", color: "!bg-emerald-700" },
   debriefing: { label: "Debriefing", color: "!bg-purple-600" },
   completed: { label: "Completed", color: "!bg-green-600" },
   cancelled: { label: "Cancelled", color: "!bg-red-600" },

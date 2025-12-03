@@ -12,9 +12,10 @@ function isStandalone() {
   const mq =
     window.matchMedia && window.matchMedia("(display-mode: standalone)");
   // iOS Safari
-  // @ts-ignore
   const iosStandalone =
-    typeof navigator !== "undefined" && (navigator as any).standalone;
+    typeof navigator !== "undefined" &&
+    "standalone" in navigator &&
+    (navigator as any).standalone;
   return (mq && mq.matches) || iosStandalone;
 }
 
@@ -41,7 +42,9 @@ export default function InstallPrompt() {
       setDeferred(null);
       try {
         console.info("PWA installed");
-      } catch {}
+      } catch (error) {
+        console.warn("[pwa] logging install event failed", error);
+      }
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -61,7 +64,9 @@ export default function InstallPrompt() {
       if (choice?.outcome === "accepted") {
         localStorage.setItem("pwaInstalled", "1");
       }
-    } catch {}
+    } catch (error) {
+      console.warn("[pwa] install prompt failed", error);
+    }
     setDeferred(null);
     setVisible(false);
   };

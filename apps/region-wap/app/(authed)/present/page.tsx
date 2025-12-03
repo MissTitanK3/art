@@ -125,52 +125,52 @@ export default function TeleprompterDataLayer() {
   // Sync local state to persisted store (only after rehydration completes)
   React.useEffect(() => {
     if (canSyncRef.current) s_setText(text);
-  }, [text]);
+  }, [text, s_setText]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setScriptId(scriptId);
-  }, [scriptId]);
+  }, [scriptId, s_setScriptId]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setFontSize(fontSize);
-  }, [fontSize]);
+  }, [fontSize, s_setFontSize]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setLineHeight(lineHeight);
-  }, [lineHeight]);
+  }, [lineHeight, s_setLineHeight]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setMirrorH(mirrorH);
-  }, [mirrorH]);
+  }, [mirrorH, s_setMirrorH]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setMirrorV(mirrorV);
-  }, [mirrorV]);
+  }, [mirrorV, s_setMirrorV]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setPreset(preset);
-  }, [preset]);
+  }, [preset, s_setPreset]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setSpeed(speed);
-  }, [speed]);
+  }, [speed, s_setSpeed]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setDefaultSpeed(defaultSpeed);
-  }, [defaultSpeed]);
+  }, [defaultSpeed, s_setDefaultSpeed]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setFontFace(fontFace);
-  }, [fontFace]);
+  }, [fontFace, s_setFontFace]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setCustomTextColor(customTextColor);
-  }, [customTextColor]);
+  }, [customTextColor, s_setCustomTextColor]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setCustomBgColor(customBgColor);
-  }, [customBgColor]);
+  }, [customBgColor, s_setCustomBgColor]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setCustomHighlightColor(customHighlightColor);
-  }, [customHighlightColor]);
+  }, [customHighlightColor, s_setCustomHighlightColor]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setOverlayColor(overlayColor);
-  }, [overlayColor]);
+  }, [overlayColor, s_setOverlayColor]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setOverlayOpacity(overlayOpacity);
-  }, [overlayOpacity]);
+  }, [overlayOpacity, s_setOverlayOpacity]);
   React.useEffect(() => {
     if (canSyncRef.current) s_setCacheEnabled(cacheEnabled);
-  }, [cacheEnabled]);
+  }, [cacheEnabled, s_setCacheEnabled]);
   // Built-in import content is now handled by shared UI component; no local sync needed
 
   const computeLineMsFn = React.useCallback(
@@ -246,7 +246,9 @@ export default function TeleprompterDataLayer() {
   const toggleFullscreen = React.useCallback(async () => {
     try {
       await toggleFs();
-    } catch {}
+    } catch (error) {
+      console.warn("[teleprompter] toggle fullscreen failed", error);
+    }
   }, [toggleFs]);
 
   const { isMobile, isPortrait } = useViewportInfo(768);
@@ -277,7 +279,9 @@ export default function TeleprompterDataLayer() {
           if (isEditable) return;
         }
         el.focus({ preventScroll: true } as FocusOptions);
-      } catch {}
+      } catch (error) {
+        console.warn("[teleprompter] failed to focus in fullscreen", error);
+      }
     }, 100);
     return () => window.clearTimeout(t);
   }, [fullscreen]);
@@ -300,7 +304,9 @@ export default function TeleprompterDataLayer() {
     try {
       const v = localStorage.getItem("teleprompter.viewportHintDismissed");
       if (v === "1") setViewportHintDismissed(true);
-    } catch {}
+    } catch (error) {
+      console.warn("[teleprompter] failed to read viewport hint", error);
+    }
   }, []);
 
   const focusViewport = React.useCallback(() => {
@@ -322,24 +328,21 @@ export default function TeleprompterDataLayer() {
         if (isEditable) return; // don't steal focus while typing
       }
       el.focus({ preventScroll: true } as FocusOptions);
-    } catch {}
+    } catch (error) {
+      console.warn("[teleprompter] focusViewport failed", error);
+    }
   }, []);
 
   React.useEffect(() => {
     if (!mounted) return;
-    if (!importOpen && !settingsOpen) focusViewport();
-  }, [mounted]);
-
-  React.useEffect(() => {
-    if (!mounted) return;
-    if (!importOpen && !settingsOpen) {
-      const t = window.setTimeout(() => focusViewport(), 120);
-      return () => window.clearTimeout(t);
-    }
+    if (importOpen || settingsOpen) return;
+    focusViewport();
+    const t = window.setTimeout(() => focusViewport(), 120);
+    return () => window.clearTimeout(t);
   }, [importOpen, settingsOpen, mounted, focusViewport]);
 
   React.useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || canSyncRef.current) return;
     try {
       if (storeScriptId) setScriptId(storeScriptId as ScriptId);
       if (storeText) setText(storeText);
@@ -364,7 +367,25 @@ export default function TeleprompterDataLayer() {
     } finally {
       canSyncRef.current = true;
     }
-  }, [mounted]);
+  }, [
+    mounted,
+    storeScriptId,
+    storeText,
+    storeFontSize,
+    storeLineHeight,
+    storeMirrorH,
+    storeMirrorV,
+    storePreset,
+    storeSpeed,
+    storeDefaultSpeed,
+    storeFontFace,
+    storeCustomTextColor,
+    storeCustomBgColor,
+    storeCustomHighlightColor,
+    storeOverlayColor,
+    storeOverlayOpacity,
+    storeCacheEnabled,
+  ]);
 
   const shellProps = {
     containerRef: (el: HTMLDivElement | null) => {
@@ -469,7 +490,9 @@ export default function TeleprompterDataLayer() {
           setViewportHintDismissed(true);
           try {
             localStorage.setItem("teleprompter.viewportHintDismissed", "1");
-          } catch {}
+          } catch (error) {
+            console.warn("[teleprompter] failed to persist viewport hint", error);
+          }
         }}
         fullscreen={fullscreen}
         isMobile={isMobile}
@@ -570,7 +593,9 @@ export default function TeleprompterDataLayer() {
         onResetKeyboardHint={() => {
           try {
             localStorage.removeItem("teleprompter.viewportHintDismissed");
-          } catch {}
+          } catch (error) {
+            console.warn("[teleprompter] failed to reset viewport hint", error);
+          }
           setViewportHintDismissed(false);
         }}
         defaultSpeed={defaultSpeed}

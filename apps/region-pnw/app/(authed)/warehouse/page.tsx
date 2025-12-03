@@ -869,9 +869,12 @@ export default function WarehouseDashboardDataLayer() {
     const selectedWarehouse = savedWarehouses.find(
         (warehouse) => warehouse.id === watchWarehouseId,
     );
-    const availableZones = selectedWarehouse?.zones ?? [];
+    const availableZones = useMemo(
+        () => selectedWarehouse?.zones ?? [],
+        [selectedWarehouse],
+    );
     const selectedZone = availableZones.find((zone) => zone.id === watchZoneId);
-    const availableBins = selectedZone?.bins ?? [];
+    const availableBins = useMemo(() => selectedZone?.bins ?? [], [selectedZone]);
     const existingInventoryOptions = useMemo(() => {
         return inventory.map((entry) => {
             const location = resolveInventoryLocation(entry, savedWarehouses);
@@ -985,7 +988,7 @@ export default function WarehouseDashboardDataLayer() {
                 });
             }
         }
-    }, [selectedWarehouse?.id, availableZones, watchZoneId, watchBinId, intakeForm]);
+    }, [selectedWarehouse, availableZones, watchZoneId, watchBinId, intakeForm]);
 
     useEffect(() => {
         if (!selectedZone) {
@@ -1003,7 +1006,7 @@ export default function WarehouseDashboardDataLayer() {
                 });
             }
         }
-    }, [selectedZone?.id, availableBins, watchBinId, intakeForm]);
+    }, [selectedZone, availableBins, watchBinId, intakeForm]);
 
     const derivedStats = useMemo(() => {
         const totalZones = savedWarehouses.reduce(

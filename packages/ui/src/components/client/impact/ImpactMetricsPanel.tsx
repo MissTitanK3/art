@@ -28,9 +28,15 @@ const RISK_LEVEL_DETAILS: { value: ImpactRiskLevel; label: string; description: 
   { value: "critical", label: "Critical", description: "Life safety, deportation risk, or severe state violence confirmed.", tone: "bg-red-100 text-red-900" },
 ];
 
+type DraftMetrics = {
+  people_served: number;
+  resources_distributed: number;
+  risk_level: ImpactRiskLevel;
+};
+
 export function ImpactMetricsPanel({ dispatchId, status, initialMetrics }: Props) {
   const [metrics, setMetrics] = React.useState<DispatchImpactMetrics | null>(null);
-  const [draft, setDraft] = React.useState({
+  const [draft, setDraft] = React.useState<DraftMetrics>({
     people_served: 0,
     resources_distributed: 0,
     risk_level: "unknown",
@@ -257,10 +263,10 @@ export function ImpactMetricsPanel({ dispatchId, status, initialMetrics }: Props
           </Tooltip>
         </label>
         <Select
-          value={draft.risk_level}
+          value={draft.risk_level as ImpactRiskLevel}
           onValueChange={(value) => {
             setDraft((prev) => ({ ...prev, risk_level: value as ImpactRiskLevel }));
-            if (!disabled) saveMetrics({ risk_level: value }, "risk_level");
+            if (!disabled) saveMetrics({ risk_level: value as ImpactRiskLevel }, "risk_level");
           }}
           disabled={disabled || loading}
         >

@@ -111,8 +111,10 @@ export async function GET() {
       const bucketIndex = buckets.findIndex(
         (bucket) => attributedAt >= bucket.start && attributedAt < bucket.end,
       );
-      if (bucketIndex === -1) return;
-      volunteerBuckets[bucketIndex] += Number(row.minutes ?? 0) / 60;
+      if (bucketIndex < 0 || bucketIndex >= volunteerBuckets.length) return;
+      const bucketValue = volunteerBuckets[bucketIndex];
+      if (typeof bucketValue !== "number") return;
+      volunteerBuckets[bucketIndex] = bucketValue + Number(row.minutes ?? 0) / 60;
     });
 
     const peopleBuckets = Array.from({ length: WEEKS }, () => 0);
@@ -122,8 +124,10 @@ export async function GET() {
       const bucketIndex = buckets.findIndex(
         (bucket) => ts >= bucket.start && ts < bucket.end,
       );
-      if (bucketIndex === -1) return;
-      peopleBuckets[bucketIndex] += Math.max(
+      if (bucketIndex < 0 || bucketIndex >= peopleBuckets.length) return;
+      const bucketValue = peopleBuckets[bucketIndex];
+      if (typeof bucketValue !== "number") return;
+      peopleBuckets[bucketIndex] = bucketValue + Math.max(
         0,
         Number(row.people_served ?? 0),
       );

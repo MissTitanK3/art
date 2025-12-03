@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { exportLegalAidReport } from "@/lib/pipelines/exportLegalAidReport";
 import { MissingPersonDetail } from "@workspace/ui/components/missing-persons/MissingPersonDetail";
@@ -324,12 +324,17 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   );
 }
 
-export default async function MissingPersonDetailPage({
-  params,
-}: {
+type PageProps = {
   params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+};
+
+export default function MissingPersonDetailPage(_props: PageProps) {
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+
+  if (!id) {
+    return null;
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 pb-16">
