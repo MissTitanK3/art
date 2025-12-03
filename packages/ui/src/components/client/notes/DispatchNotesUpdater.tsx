@@ -38,7 +38,7 @@ export default function DispatchNotesUpdater({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col sm:items-center sm:justify-between gap-2">
         <p className="font-medium">Notes</p>
         {submission.intended_action_notes ? (
           <p className="text-muted-foreground whitespace-pre-wrap">

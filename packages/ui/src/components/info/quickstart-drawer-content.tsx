@@ -1,10 +1,14 @@
 import {
+  Activity,
   BookOpen,
   CheckCircle2,
   ClipboardList,
+  Compass,
   Eye,
   GraduationCap,
+  Scroll,
   Shield,
+  Users,
 } from "lucide-react";
 import { DrawerDescription, DrawerHeader, DrawerTitle } from "../drawer";
 
@@ -83,6 +87,32 @@ export default function QuickStartDrawerContent() {
           Roles and staffing needs are tracked here, and updates form the
           running incident log for handoffs. Use Dispatches to keep decisions
           visible, responsibilities clear, and progress easy to audit.
+        </Item>
+
+        <Item icon={<Compass className="h-5 w-5" />} title="Intents">
+          Action Intents & Guidance helps you understand what each action intent
+          means and how to fulfill it safely and effectively. It covers
+          everything from Care Roles to Direct Action, ensuring clarity and
+          trust in the field.
+        </Item>
+
+        <Item icon={<Users className="h-5 w-5" />} title="Roles">
+          Field Roles & Responsibilities defines the expectations and required
+          skills for various volunteer positions. It helps match volunteers to
+          the right roles based on risk level and capabilities, ensuring a
+          coordinated response.
+        </Item>
+
+        <Item icon={<Scroll className="h-5 w-5" />} title="Script Builder">
+          The Script Builder allows you to create and manage teleprompter
+          scripts. It includes built-in templates and storage for your custom
+          scripts, making it easy to prepare for broadcasts or announcements.
+        </Item>
+
+        <Item icon={<Activity className="h-5 w-5" />} title="Impact">
+          Personal Impact tracks your volunteer contributions, including logged
+          hours and shifts. It helps you visualize your engagement and ensures
+          your efforts are recognized by administrators.
         </Item>
 
         <Item icon={<BookOpen className="h-5 w-5" />} title="How to Use">

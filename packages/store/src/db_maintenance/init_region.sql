@@ -57,6 +57,27 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     )
   );
 
+  -- Volunteer impact attributions
+  CREATE TABLE IF NOT EXISTS public.volunteer_attributions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    dispatch_id TEXT NOT NULL REFERENCES public.dispatch_submissions(id) ON DELETE CASCADE,
+    profile_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
+    minutes INT NOT NULL CHECK (minutes > 0),
+    attributed_by UUID NOT NULL REFERENCES auth.users(id),
+    attributed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    activity_type TEXT NOT NULL DEFAULT 'ops',
+    notes TEXT,
+    anomaly_flag BOOLEAN DEFAULT FALSE,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','reverted'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_va_dispatch_profile
+    ON public.volunteer_attributions(dispatch_id, profile_id);
+
+  CREATE INDEX IF NOT EXISTS idx_va_attributed_at
+    ON public.volunteer_attributions(attributed_at DESC);
+
   -- Backfill: ensure last_check_in exists when re-running on older schemas
   DO $$ BEGIN
     PERFORM 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'last_check_in';
@@ -156,13 +177,17 @@ CREATE TABLE IF NOT EXISTS public.organization_roles (
   public_signal_link TEXT,
   training BOOLEAN DEFAULT FALSE,
   flagged BOOLEAN DEFAULT FALSE,
+  people_served INT DEFAULT 0 CHECK (people_served >= 0),
+  resources_distributed INT DEFAULT 0 CHECK (resources_distributed >= 0),
+  risk_level TEXT DEFAULT 'unknown',
+  updated_by UUID,
   updated_at TIMESTAMPTZ DEFAULT now(),
   deleted_at TIMESTAMPTZ,
   visibility_scope TEXT DEFAULT 'org_and_region_masked',
   invited_user_ids TEXT[],
   CONSTRAINT dispatch_status_check CHECK (
     status IS NULL OR status IN (
-      'preplanning','unconfirmed','confirmed','mobilizing','in_progress','debriefing','completed','cancelled','expired','archived'
+      'preplanning','unconfirmed','confirmed','mobilizing','in_progress','debriefing','completed','verified_complete','cancelled','expired','archived'
     )
   ),
     CONSTRAINT dispatch_source_check CHECK (
@@ -182,6 +207,9 @@ CREATE TABLE IF NOT EXISTS public.organization_roles (
     ),
     CONSTRAINT dispatch_intended_actions_json_check CHECK (
       intended_actions IS NULL OR jsonb_typeof(intended_actions) = 'array'
+    ),
+    CONSTRAINT dispatch_risk_level_check CHECK (
+      risk_level IS NULL OR risk_level IN ('unknown','low','medium','high','critical')
     )
   );
 
@@ -1690,6 +1718,9 @@ CREATE TABLE IF NOT EXISTS public.trust_signatures (
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_region_settings_updated') THEN
       EXECUTE 'CREATE TRIGGER trg_region_settings_updated BEFORE UPDATE ON public.region_settings FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at()';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_volunteer_attributions_updated') THEN
+      EXECUTE 'CREATE TRIGGER trg_volunteer_attributions_updated BEFORE UPDATE ON public.volunteer_attributions FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at()';
+    END IF;
   END $$;
 
   -- =========================================================
@@ -2017,6 +2048,48 @@ WITH CHECK (
       AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
   )
 );
+
+-- =========================================================
+-- Impact reporting views/materialized views
+CREATE OR REPLACE VIEW public.view_total_people_served_last_30d AS
+SELECT
+  COALESCE(SUM(GREATEST(COALESCE(ds.people_served, 0), 0)), 0)::BIGINT AS total_people_served
+FROM public.dispatch_submissions ds
+WHERE ds.status = 'verified_complete'
+  AND ds.timestamp >= now() - INTERVAL '30 days';
+
+CREATE OR REPLACE VIEW public.view_total_volunteer_hours_last_30d AS
+SELECT
+  COALESCE(ROUND(COALESCE(SUM(va.minutes), 0) / 60.0, 1), 0)::NUMERIC(10,1) AS total_hours
+FROM public.volunteer_attributions va
+JOIN public.dispatch_submissions ds ON ds.id = va.dispatch_id
+WHERE va.status = 'active'
+  AND ds.status = 'verified_complete'
+  AND va.attributed_at >= now() - INTERVAL '30 days';
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_median_response_time_last_30d AS
+SELECT
+  COALESCE(
+    percentile_cont(0.5) WITHIN GROUP (ORDER BY response_minutes),
+    0
+  ) AS median_minutes
+FROM (
+  SELECT
+    GREATEST(EXTRACT(EPOCH FROM (MIN(va.attributed_at) - ds.timestamp)) / 60.0, 0) AS response_minutes
+  FROM public.dispatch_submissions ds
+  JOIN public.volunteer_attributions va
+    ON va.dispatch_id = ds.id
+   AND va.status = 'active'
+  WHERE ds.status = 'verified_complete'
+    AND ds.timestamp >= now() - INTERVAL '30 days'
+  GROUP BY ds.id
+) sub
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW public.mv_median_response_time_last_30d;
+
+CREATE OR REPLACE VIEW public.view_median_response_time_last_30d AS
+SELECT median_minutes FROM public.mv_median_response_time_last_30d;
 
 -- =========================================================
 -- Archive delete helper + RPC wrappers (mirrors migration 20251201_04)

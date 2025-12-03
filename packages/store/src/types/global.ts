@@ -1,4 +1,11 @@
-import { DispatchStatus, DispatchType, DispatchUpdate, LogisticsItem } from './dispatch.ts';
+import {
+  DispatchStatus,
+  DispatchType,
+  DispatchUpdate,
+  LogisticsItem,
+  ImpactRiskLevel,
+  VolunteerAttribution,
+} from "./dispatch.ts";
 import { RosterEntry } from './pod.ts';
 import { WeeklyAvailability } from './profile.ts';
 import { AccessRole, FieldRole, VerifiedBy } from './roles.ts';
@@ -66,6 +73,12 @@ export interface DispatchSubmission {
   signal_link?: string;
   public_signal_link?: string;
   training?: boolean;
+  people_served?: number;
+  resources_distributed?: number;
+  risk_level?: ImpactRiskLevel;
+  updated_by?: string | null;
+  updated_at?: string | null;
+  volunteer_attributions?: VolunteerAttribution[];
   updates?: DispatchUpdate[];
   logistics: LogisticsItem[];
 }

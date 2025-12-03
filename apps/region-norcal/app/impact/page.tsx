@@ -1,4 +1,5 @@
 import { Separator } from "@workspace/ui/components/separator";
+import { PublicImpactSummary } from "@workspace/ui/components/client/impact/PublicImpactSummary";
 
 export default function ImpactPage() {
   return (
@@ -16,6 +17,8 @@ export default function ImpactPage() {
         before, during, and after response efforts. No one sees everything. But
         we all shape the outcome.
       </p>
+
+      <PublicImpactSummary regionId="region-pnw" />
 
       <Separator />
 

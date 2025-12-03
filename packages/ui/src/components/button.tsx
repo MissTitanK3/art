@@ -14,12 +14,12 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border-2 border-primary/60 bg-primary/[0.08] text-primary shadow-sm hover:bg-primary/[0.15] hover:text-primary focus-visible:border-primary focus-visible:ring-primary/25 dark:border-primary/50 dark:bg-primary/[0.22] dark:text-primary dark:hover:text-primary",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+          "bg-[#f3e8ff] text-[#663399] shadow-sm border border-[#d5bdf0] hover:bg-[#ead6ff] hover:border-[#c4a6ec] focus-visible:border-[#c4a6ec] focus-visible:ring-[#c4a6ec]/40 dark:bg-[#2b1742] dark:border-[#4d2a77] dark:text-[#d9befa] dark:hover:bg-[#3b1f5b]",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary font-semibold underline underline-offset-4 border border-transparent bg-primary/5 hover:bg-primary/10 focus-visible:ring-ring",
         light:
           "bg-muted text-foreground shadow-xs hover:bg-accent/80 hover:text-foreground cursor-pointer",
       },

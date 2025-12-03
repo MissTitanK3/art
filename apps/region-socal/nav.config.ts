@@ -65,6 +65,7 @@ export const navConfig: GlobalNavConfigInput = {
         { label: 'Organizations', href: '/organizations', roles: completeOnboarding },
         { label: 'Pods', href: '/pods', roles: completeOnboarding, match: 'exact' },
         { label: 'Collective Calendar', href: '/pods/calendar', roles: completeOnboarding },
+        { label: 'Performance', href: '/performance', roles: completeOnboarding },
       ],
     },
     {

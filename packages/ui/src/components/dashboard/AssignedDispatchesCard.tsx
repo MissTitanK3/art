@@ -15,27 +15,67 @@ import type { DispatchSubmission } from "@workspace/store/types/global";
 export function AssignedDispatchesCard({
   submissions,
   userId,
+  profileId,
 }: {
   submissions: DispatchSubmission[];
   userId?: string | null;
+  profileId?: string | null;
 }) {
-  const assignedDispatches = useMemo(() => {
-    if (!userId) return [];
+  const startOfToday = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
 
-    return submissions
+  const assignedDispatches = useMemo(() => {
+    if (!userId && !profileId) return [];
+
+    const normalizeVolunteers = (input: unknown) => {
+      if (Array.isArray(input)) return input as any[];
+      if (input && typeof input === "object") {
+        return Object.values(input as Record<string, unknown>).flatMap(
+          (value) => {
+            if (Array.isArray(value)) return value as any[];
+            return value ? [value] : [];
+          }
+        );
+      }
+      return [];
+    };
+
+    const upcoming = submissions
       .filter((dispatch) => dispatch.status !== "archived")
-      .filter((dispatch) =>
-        (dispatch.assigned_volunteers ?? []).some((v: any) => {
-          const profile = (v as any)?.profile ?? {};
-          return (
-            v?.id === userId ||
-            profile?.id === userId ||
-            profile?.user_id === userId
+      .filter((dispatch) => {
+        const volunteers = normalizeVolunteers(dispatch.assigned_volunteers);
+        return volunteers.some((v: any) => {
+          const profile = (v?.profile as any) ?? {};
+          const entryProfileId =
+            v?.profile_id ?? profile?.id ?? v?.volunteer_id ?? v?.id;
+          const entryUserId =
+            profile?.user_id ?? v?.profile_user_id ?? v?.user_id;
+
+          return Boolean(
+            (userId && entryUserId && entryUserId === userId) ||
+              (profileId && entryProfileId && entryProfileId === profileId)
           );
-        }),
-      )
+        });
+      })
+      .filter((dispatch) => {
+        const targetDate = dispatch.date_of_event ?? dispatch.timestamp;
+        if (!targetDate) return false;
+        const eventDate = new Date(targetDate);
+        if (Number.isNaN(eventDate.getTime())) return false;
+        return eventDate >= startOfToday;
+      })
+      .sort((a, b) => {
+        const aDate = new Date(a.date_of_event ?? a.timestamp).getTime();
+        const bDate = new Date(b.date_of_event ?? b.timestamp).getTime();
+        return aDate - bDate;
+      })
       .slice(0, 3);
-  }, [submissions, userId]);
+
+    return upcoming;
+  }, [submissions, userId, profileId, startOfToday]);
 
   return (
     <Card className="h-full">
@@ -71,15 +111,6 @@ export function AssignedDispatchesCard({
                     {new Date(dispatch.timestamp).toLocaleDateString()}
                   </span>
                 </div>
-                {dispatch.location && (
-                  <div className="flex items-center text-xs text-muted-foreground gap-2">
-                    <MapPin className="h-3 w-3" />
-                    <span className="truncate">
-                      Lat: {dispatch.location.lat.toFixed(4)}, Lng:{" "}
-                      {dispatch.location.lng.toFixed(4)}
-                    </span>
-                  </div>
-                )}
                 <Button
                   size="sm"
                   variant="secondary"

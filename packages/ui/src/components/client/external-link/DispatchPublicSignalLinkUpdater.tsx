@@ -48,7 +48,7 @@ export default function DispatchPublicSignalLinkUpdater({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
         <p className="font-medium">Public Engagement Signal Link</p>
         {publicLink ? (
           <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export default function DispatchPublicSignalLinkUpdater({
               href={publicLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary underline break-all"
+              className="text-primary text-xs underline break-all"
             >
               {publicLink}
             </a>

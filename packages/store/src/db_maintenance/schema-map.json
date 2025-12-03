@@ -12,7 +12,7 @@
     "delete": "archive"
   },
   "dispatch_submissions": {
-    "children": ["dispatch_updates", "dispatch_logistics", "com_logs", "com_briefings"],
+    "children": ["dispatch_updates", "dispatch_logistics", "com_logs", "com_briefings", "volunteer_attributions"],
     "delete": "cascade"
   },
   "academy_classes": {

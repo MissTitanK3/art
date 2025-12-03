@@ -39,7 +39,8 @@ export default function DispatchSignalLinkUpdater({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(submission?.signal_link ?? "");
   const profile = useProfileStore((s) => s.profile);
-  const assignedVolunteers = (submission.assigned_volunteers ?? []) as AssignmentEntry[];
+  const assignedVolunteers = (submission.assigned_volunteers ??
+    []) as AssignmentEntry[];
 
   const normalizeId = (value?: string | null) =>
     typeof value === "string" ? value.toLowerCase() : null;
@@ -49,14 +50,18 @@ export default function DispatchSignalLinkUpdater({
 
   const matchesProfile = (candidate?: string | null) =>
     Boolean(
-      viewerProfileId && candidate && normalizeId(candidate) === viewerProfileId,
+      viewerProfileId && candidate && normalizeId(candidate) === viewerProfileId
     );
 
   const matchesUser = (candidate?: string | null) =>
-    Boolean(viewerUserId && candidate && normalizeId(candidate) === viewerUserId);
+    Boolean(
+      viewerUserId && candidate && normalizeId(candidate) === viewerUserId
+    );
 
   const isAssignedToDispatch = assignedVolunteers.some((vol) => {
-    const profileRef = vol.profile as { id?: string; user_id?: string } | undefined;
+    const profileRef = vol.profile as
+      | { id?: string; user_id?: string }
+      | undefined;
     const candidateProfileValues = [
       vol.id,
       (vol as { profile_id?: string | null }).profile_id,
@@ -77,7 +82,9 @@ export default function DispatchSignalLinkUpdater({
     return candidateUserValues.some((value) => matchesUser(value));
   });
 
-  const canViewPrivateLink = Boolean(isAssignedToDispatch && submission.signal_link);
+  const canViewPrivateLink = Boolean(
+    isAssignedToDispatch && submission.signal_link
+  );
 
   useEffect(() => {
     setDraft(submission.signal_link ?? "");
@@ -94,7 +101,9 @@ export default function DispatchSignalLinkUpdater({
       return;
     }
     if (!isAssignedToDispatch) {
-      toast.error("You need to be assigned to this dispatch to copy the private link.");
+      toast.error(
+        "You need to be assigned to this dispatch to copy the private link."
+      );
       return;
     }
     await navigator.clipboard.writeText(submission.signal_link);
@@ -103,7 +112,7 @@ export default function DispatchSignalLinkUpdater({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
         <p className="font-medium">Private Dispatch Signal Link</p>
         {submission.signal_link ? (
           canViewPrivateLink ? (
@@ -112,7 +121,7 @@ export default function DispatchSignalLinkUpdater({
                 href={submission.signal_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary underline break-all"
+                className="text-primary text-xs underline break-all"
               >
                 {submission.signal_link}
               </a>
@@ -127,8 +136,8 @@ export default function DispatchSignalLinkUpdater({
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">
-              You need to be assigned to this dispatch to view the private Signal
-              link.
+              You need to be assigned to this dispatch to view the private
+              Signal link.
             </p>
           )
         ) : (

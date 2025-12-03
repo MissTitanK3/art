@@ -25,7 +25,7 @@ export type TeleprompterImportContentProps = {
   builtinScripts?: BuiltinScript[];
   onApplyBuiltin?: (id: string, text: string) => void;
   onFetchDispatch?: (
-    dispatchId: string,
+    dispatchId: string
   ) => Promise<{ text?: string; title?: string }>;
   onFetchAcademy?: (slug: string) => Promise<{ text?: string; title?: string }>;
   // Optional: namespace used by the script builder for localStorage
@@ -44,10 +44,10 @@ export default function TeleprompterImportContent({
   storageNamespace = "teleprompter.builder",
 }: TeleprompterImportContentProps) {
   const [builtinId, setBuiltinId] = React.useState<string>(
-    builtinScripts?.[0]?.id ?? "",
+    builtinScripts?.[0]?.id ?? ""
   );
   const [builtinDraft, setBuiltinDraft] = React.useState<string>(
-    builtinScripts?.[0]?.content ?? "",
+    builtinScripts?.[0]?.content ?? ""
   );
   const [builtinQuery, setBuiltinQuery] = React.useState<string>("");
   const [pasteText, setPasteText] = React.useState<string>("");
@@ -59,7 +59,7 @@ export default function TeleprompterImportContent({
   type BuilderLine = { id?: string; text: string; cues?: string[] };
   const ns = React.useCallback(
     (k: string) => `${storageNamespace}.${k}`,
-    [storageNamespace],
+    [storageNamespace]
   );
   const [userScripts, setUserScripts] = React.useState<BuiltinScript[]>([]);
   const [userId, setUserId] = React.useState<string>("");
@@ -209,14 +209,6 @@ export default function TeleprompterImportContent({
     };
   }, [loadUserScripts, ns]);
 
-  React.useEffect(() => {
-    if (!builtinScripts?.length) return;
-    // keep draft in sync with selection
-    const sel =
-      builtinScripts.find((s) => s.id === builtinId) ?? builtinScripts[0];
-    if (sel) setBuiltinDraft(sel.content);
-  }, [builtinId, builtinScripts]);
-
   return (
     <div className="grid gap-3 p-4 max-h-[70vh] overflow-y-auto">
       {Array.isArray(userScripts) && userScripts.length > 0 && (
@@ -339,7 +331,7 @@ export default function TeleprompterImportContent({
                     );
                   })
                   .sort((a, b) =>
-                    String(a.label ?? "").localeCompare(String(b.label ?? "")),
+                    String(a.label ?? "").localeCompare(String(b.label ?? ""))
                   )
                   .map((s) => (
                     <SelectItem key={s.id} value={s.id}>

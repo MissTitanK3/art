@@ -20,6 +20,22 @@ function toOptionalString(value: unknown): string | null | undefined {
   return undefined;
 }
 
+function normalizeAssignedVolunteers(
+  raw: unknown,
+): DispatchSubmission["assigned_volunteers"] {
+  if (Array.isArray(raw)) return raw as DispatchSubmission["assigned_volunteers"];
+  if (raw && typeof raw === "object") {
+    const entries = Object.values(raw as Record<string, unknown>).flatMap(
+      (value) => {
+        if (Array.isArray(value)) return value as any[];
+        return value ? [value] : [];
+      },
+    );
+    return entries.length ? (entries as DispatchSubmission["assigned_volunteers"]) : undefined;
+  }
+  return undefined;
+}
+
 function normalizeRequiredRolesByType(
   raw: unknown,
 ): Record<string, number> | undefined {
@@ -73,9 +89,7 @@ export function mapRowToSubmission(row: unknown): DispatchSubmission {
         ? typedRow.visibility_radius_km
         : undefined,
     status: (typedRow.status as DispatchSubmission["status"]) ?? "unconfirmed",
-    assigned_volunteers: Array.isArray(typedRow.assigned_volunteers)
-      ? typedRow.assigned_volunteers
-      : undefined,
+    assigned_volunteers: normalizeAssignedVolunteers(typedRow.assigned_volunteers),
     required_roles_by_type:
       normalizeRequiredRolesByType(typedRow.required_roles_by_type),
     location_label:
@@ -106,6 +120,23 @@ export function mapRowToSubmission(row: unknown): DispatchSubmission {
         ? typedRow.public_signal_link
         : undefined,
     training: Boolean(typedRow.training ?? false),
+    people_served:
+      typeof typedRow.people_served === "number"
+        ? typedRow.people_served
+        : undefined,
+    resources_distributed:
+      typeof typedRow.resources_distributed === "number"
+        ? typedRow.resources_distributed
+        : undefined,
+    risk_level: typedRow.risk_level as DispatchSubmission["risk_level"],
+    updated_by: toOptionalString(typedRow.updated_by),
+    updated_at:
+      typeof typedRow.updated_at === "string"
+        ? typedRow.updated_at
+        : undefined,
+    volunteer_attributions: Array.isArray(typedRow.volunteer_attributions)
+      ? (typedRow.volunteer_attributions as DispatchSubmission["volunteer_attributions"])
+      : undefined,
     updates,
     logistics,
   };

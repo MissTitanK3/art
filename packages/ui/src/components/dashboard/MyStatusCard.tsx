@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState, type ComponentType } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+} from "react";
 import {
   Card,
   CardContent,
@@ -28,6 +34,8 @@ import {
   GraduationCap,
   Lightbulb,
   Users,
+  Activity,
+  Flame,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useProfileStore } from "@workspace/store/useProfileStore";
@@ -85,6 +93,14 @@ export function MyStatusCard() {
   const [activeDialog, setActiveDialog] = useState<SupportArea | null>(null);
   const [supportText, setSupportText] = useState("");
   const [supportSubmitting, setSupportSubmitting] = useState(false);
+  const [impactSummary, setImpactSummary] = useState<{
+    totalMinutes: number;
+    totalHours: number;
+    progressRatio: number;
+    anomalyCount: number;
+  } | null>(null);
+  const [impactLoading, setImpactLoading] = useState(false);
+  const [impactError, setImpactError] = useState<string | null>(null);
 
   const isAvailable = !!profile?.availability;
   const lastCheckIn = profile?.last_profile_check_in
@@ -209,6 +225,50 @@ export function MyStatusCard() {
     }
   }, [activeAction, supportText, closeDialog]);
 
+  const profileId = profile?.id ?? null;
+
+  useEffect(() => {
+    if (!profileId) return;
+    let cancelled = false;
+    async function loadImpact() {
+      setImpactLoading(true);
+      setImpactError(null);
+      try {
+        const res = await fetch(
+          `/api/impact/profiles/${profileId}/volunteer-attributions?period=30d`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) {
+          if (res.status === 404 || res.status === 401) {
+            if (!cancelled) setImpactSummary(null);
+            return;
+          }
+          const message = (await res.json())?.error;
+          throw new Error(message ?? "Unable to load impact");
+        }
+        const json = await res.json();
+        if (!cancelled) {
+          setImpactSummary(json?.summary ?? null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setImpactSummary(null);
+          setImpactError(
+            error instanceof Error ? error.message : "Unable to load impact"
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setImpactLoading(false);
+        }
+      }
+    }
+    loadImpact();
+    return () => {
+      cancelled = true;
+    };
+  }, [profileId]);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -255,6 +315,61 @@ export function MyStatusCard() {
           >
             {checkingIn ? "Checking in..." : "Check in now"}
           </Button>
+        </div>
+
+        <div className="rounded-lg border bg-muted/30 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Activity className="h-4 w-4 text-muted-foreground" />
+              Personal impact (last 30d)
+            </div>
+            {impactSummary?.anomalyCount ? (
+              <Badge variant="destructive" className="flex items-center gap-1">
+                <Flame className="h-3 w-3" />
+                {impactSummary.anomalyCount} alert
+                {impactSummary.anomalyCount > 1 ? "s" : ""}
+              </Badge>
+            ) : null}
+          </div>
+          <div className="mt-3 flex flex-wrap items-baseline gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Logged hours
+              </p>
+              <p className="text-2xl font-semibold">
+                {impactLoading
+                  ? "—"
+                  : impactSummary
+                    ? impactSummary.totalHours.toFixed(1)
+                    : "0.0"}
+                <span className="text-base font-normal text-muted-foreground">
+                  {" "}
+                  hrs
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Minutes
+              </p>
+              <p className="text-lg font-semibold">
+                {impactLoading
+                  ? "—"
+                  : impactSummary
+                    ? Math.round(impactSummary.totalMinutes)
+                    : 0}
+              </p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {impactLoading
+              ? "Syncing hours..."
+              : impactError
+                ? impactError
+                : impactSummary && impactSummary.totalHours > 0
+                  ? "Great work. Keep logging attributions so admins can see your lift."
+                  : "No hours logged this month yet. Attribute shifts to see your impact."}
+          </p>
         </div>
 
         <div className="space-y-2">

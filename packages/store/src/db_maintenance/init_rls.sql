@@ -13,6 +13,7 @@ ALTER TABLE dispatch_logistics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dispatch_shifts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pod_shifts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE region_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE volunteer_attributions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 DROP POLICY IF EXISTS dispatchers_view_profiles ON public.profiles;
@@ -1098,6 +1099,73 @@ WITH CHECK (
 );
 CREATE POLICY dispatch_submissions_delete_block_authenticated
 ON dispatch_submissions
+FOR DELETE
+TO authenticated
+USING (FALSE);
+
+-- Volunteer impact: dispatchers-only access
+CREATE POLICY volunteer_attributions_dispatchers_select
+ON volunteer_attributions
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+);
+
+CREATE POLICY volunteer_attributions_dispatchers_insert
+ON volunteer_attributions
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+);
+
+CREATE POLICY volunteer_attributions_dispatchers_update
+ON volunteer_attributions
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.access_role = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+  )
+  OR COALESCE(
+    current_setting('request.jwt.claims', true)::json->>'role',
+    current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role',
+    current_setting('request.jwt.claims', true)::json->'user_metadata'->>'role'
+  ) = ANY (ARRAY['dispatcher_basic','dispatcher_verified','dispatcher_admin','admin','regional_admin','national_admin'])
+);
+
+CREATE POLICY volunteer_attributions_delete_block_authenticated
+ON volunteer_attributions
 FOR DELETE
 TO authenticated
 USING (FALSE);

@@ -25,6 +25,8 @@ import DispatchRolesManager from "@workspace/ui/components/client/roles/Dispatch
 import DispatchUpdates from "@workspace/ui/components/client/updates/DispatchUpdates";
 import LogisticsPanel from "@workspace/ui/components/client/logistics/LogisticsPanel";
 import PublicEngagementPanel from "@workspace/ui/components/client/engagement/PublicEngagementPanel";
+import { VolunteerAttributionPanel } from "@workspace/ui/components/client/impact/VolunteerAttributionPanel";
+import { ImpactMetricsPanel } from "@workspace/ui/components/client/impact/ImpactMetricsPanel";
 import { Button } from "@workspace/ui/components/button";
 import AfterActionReportGuide from "@workspace/ui/components/dispatch/AfterActionReportGuide";
 import { Copy, Share2, Flag } from "lucide-react";
@@ -132,35 +134,29 @@ export function DispatchSubmissionLayout({
   const overviewSections = [
     {
       id: "location",
+      title: "Location & Coverage",
+      description: "Update dispatch location, map pin, and schedule details.",
       content: (
-        <DispatchLocationUpdater
-          submission={submission}
-          onUpdate={onUpdateSubmission}
-        />
-      ),
-    },
-    {
-      id: "date-of-event",
-      // label: "Event Date/Time",
-      content: (
-        <DispatchDateOfEventUpdater
-          submission={submission}
-          onUpdate={onUpdateSubmission}
-        />
-      ),
-    },
-    {
-      id: "location-pin",
-      content: (
-        <DispatchLocationPinSelector
-          submission={submission}
-          onUpdate={onUpdateSubmission}
-        />
+        <div className="space-y-4">
+          <DispatchLocationUpdater
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
+          <DispatchDateOfEventUpdater
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
+          <DispatchLocationPinSelector
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
+        </div>
       ),
     },
     {
       id: "intended-action",
-      label: "Intended Action",
+      title: "Intended Action",
+      description: "Clarify goals, note changes, and coordinate next steps.",
       content: (
         <DispatchIntendedActionsUpdater
           submission={submission}
@@ -170,6 +166,8 @@ export function DispatchSubmissionLayout({
     },
     {
       id: "notes",
+      title: "Notes & Context",
+      description: "Keep field updates and sensitive info in one place.",
       content: (
         <DispatchNotesUpdater
           submission={submission}
@@ -179,19 +177,44 @@ export function DispatchSubmissionLayout({
     },
     {
       id: "signal-link",
+      title: "Signal Links",
+      description: "Set the private and public Signal channels for responders.",
       content: (
-        <DispatchSignalLinkUpdater
-          submission={submission}
-          onUpdate={onUpdateSubmission}
-        />
+        <div className="space-y-4">
+          <DispatchSignalLinkUpdater
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
+          <DispatchPublicSignalLinkUpdater
+            submission={submission}
+            onUpdate={onUpdateSubmission}
+          />
+        </div>
       ),
     },
     {
-      id: "public-signal-link",
+      id: "volunteer-impact",
+      title: "Volunteer Attribution",
+      description: "Track hours, unlock Undo, and keep daily lifts realistic.",
       content: (
-        <DispatchPublicSignalLinkUpdater
-          submission={submission}
-          onUpdate={onUpdateSubmission}
+        <VolunteerAttributionPanel dispatchId={submission.id} roster={roster} />
+      ),
+    },
+    {
+      id: "impact-metrics",
+      title: "Impact Metrics",
+      description: "Log people served, resources moved, and risk level.",
+      content: (
+        <ImpactMetricsPanel
+          dispatchId={submission.id}
+          status={submission.status}
+          initialMetrics={{
+            people_served: submission.people_served ?? 0,
+            resources_distributed: submission.resources_distributed ?? 0,
+            risk_level: submission.risk_level ?? "unknown",
+            updated_at: submission.updated_at,
+            updated_by: submission.updated_by ?? null,
+          }}
         />
       ),
     },
@@ -224,7 +247,7 @@ export function DispatchSubmissionLayout({
             submission={submission}
             onUpdate={onUpdateSubmission}
           />
-          <Button size="sm" variant="outline" onClick={handleShare}>
+          <Button size="sm" variant="default" onClick={handleShare}>
             Share <Share2 className="ml-1 h-4 w-4" />
           </Button>
         </div>
@@ -291,24 +314,25 @@ export function DispatchSubmissionLayout({
         </TabsList>
 
         <TabsContent value="overview" className="flex-1 overflow-y-auto">
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <CardTitle>Overview</CardTitle>
-              <Button size="sm" variant="outline" onClick={handleCopySummary}>
-                <Copy className="mr-1 h-4 w-4" /> Copy
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm" suppressHydrationWarning>
-              {overviewSections.map((section, index) => (
-                <div key={section.id ?? index}>
-                  {section.label ? (
-                    <p className="font-medium">{section.label}</p>
+          <div className="grid gap-4">
+            {overviewSections.map((section) => (
+              <Card key={section.id}>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-base font-semibold">
+                    {section.title}
+                  </CardTitle>
+                  {section.description ? (
+                    <p className="text-xs text-muted-foreground">
+                      {section.description}
+                    </p>
                   ) : null}
-                  <div>{section.content}</div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                </CardHeader>
+                <CardContent suppressHydrationWarning>
+                  {section.content}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
 
         <TabsContent value="roles" className="flex-1" suppressHydrationWarning>

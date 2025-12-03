@@ -25,7 +25,6 @@ import { useActiveRoster } from "@/hooks/useActiveRoster";
 import { MyStatusCard } from "@workspace/ui/components/dashboard/MyStatusCard";
 import { RegionReadinessCard } from "@workspace/ui/components/dashboard/RegionReadinessCard";
 import { AcademyProgressCard } from "@workspace/ui/components/dashboard/AcademyProgressCard";
-import { ImpactSummaryCard } from "@workspace/ui/components/dashboard/ImpactSummaryCard";
 import { AssignedDispatchesCard } from "@workspace/ui/components/dashboard/AssignedDispatchesCard";
 import { RecommendedDispatchesCard } from "@workspace/ui/components/dashboard/RecommendedDispatchesCard";
 import { WatchCard } from "@workspace/ui/components/dashboard/WatchCard";
@@ -37,6 +36,8 @@ import NavTile from "@workspace/ui/components/nav-tile";
 import QuickStartDrawerContent from "@workspace/ui/components/info/quickstart-drawer-content";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
 import { mapRowToShift } from "@workspace/ui/hooks/map-row-to-shift";
+import { PublicImpactSummary } from "@workspace/ui/components/client/impact/PublicImpactSummary";
+import { useProfileStore } from "@workspace/store/useProfileStore";
 
 type ViewMode = RegionViewMode;
 
@@ -93,6 +94,28 @@ export default function Page() {
         quickStartContent={<QuickStartDrawerContent />}
       />
 
+      <section className="w-full px-4">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 rounded-3xl border bg-background/80 p-6 shadow-sm">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Regional Impact
+            </p>
+            <h2 className="text-2xl font-semibold">
+              What dispatchers have delivered together
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              This snapshot rounds and thresholds sensitive data before it leaves our
+              workspace so we can celebrate wins without leaking details.
+            </p>
+          </div>
+          <PublicImpactSummary regionId={REGION_IDENTIFIER} />
+          <p className="text-xs text-muted-foreground">
+            Metrics refresh every few minutes. Verified dispatches only; records under
+            review or below privacy thresholds are masked.
+          </p>
+        </div>
+      </section>
+
       {showToggle ? (
         <div className="flex justify-center">
           <RegionViewToggle current={view} onChange={setView} />
@@ -140,15 +163,59 @@ function DemoDashboard({
 
 function DashboardContent() {
   const submissions = useDispatchStore((state) => state.submissions);
+  const replaceSubmissions = useDispatchStore(
+    (state) => state.replaceSubmissions,
+  );
   const pods = usePodStore((state) => state.pods);
   const roster = usePodStore((state) => state.activeRoster);
   const shifts = useDispatchStore((state) => state.shifts);
+  const replaceShifts = useDispatchStore((state) => state.replaceShifts);
   const { session } = useAuth();
   const userId = session?.user?.id ?? null;
+  const profileId = useProfileStore((state) => state.profile?.id ?? null);
+  const isAuthenticated = !!userId;
 
   // Hydrate data
   usePodData();
   useActiveRoster();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+
+    async function refresh() {
+      try {
+        const [dispatchRes, shiftRes] = await Promise.all([
+          fetch("/api/dispatches", { credentials: "include" }),
+          fetch("/api/dispatch/shifts", { credentials: "include" }),
+        ]);
+
+        if (!cancelled) {
+          if (dispatchRes.ok) {
+            const json = await dispatchRes.json();
+            if (Array.isArray(json)) {
+              replaceSubmissions(json.map(mapRowToSubmission));
+            }
+          }
+          if (shiftRes.ok) {
+            const json = await shiftRes.json();
+            if (Array.isArray(json)) {
+              replaceShifts(json.map(mapRowToShift));
+            }
+          }
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.warn("[Dashboard] failed to refresh dispatch data", e);
+        }
+      }
+    }
+
+    refresh();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, replaceSubmissions, replaceShifts]);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
@@ -167,7 +234,11 @@ function DashboardContent() {
           <NeedsCard />
           <RegionReadinessCard />
           <AcademyProgressCard />
-          <AssignedDispatchesCard submissions={submissions} userId={userId} />
+          <AssignedDispatchesCard
+            submissions={submissions}
+            userId={userId}
+            profileId={profileId}
+          />
         </div>
       </div>
       {/* <div className="grid gap-6">

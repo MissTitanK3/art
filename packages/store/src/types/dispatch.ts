@@ -37,6 +37,7 @@ export type DispatchStatus =
   | "in_progress"
   | "debriefing"
   | "completed"
+  | "verified_complete"
   | "cancelled"
   | "expired"
   | "archived";
@@ -78,4 +79,49 @@ export const DISPATCH_TYPE_LABELS: Record<DispatchType, string> = {
 
 export function getDispatchTypeStyle(type: DispatchType) {
   return DISPATCH_TYPE_VARIANTS[type] ?? DISPATCH_TYPE_VARIANTS.other;
+}
+
+export type ImpactRiskLevel =
+  | "unknown"
+  | "low"
+  | "medium"
+  | "high"
+  | "critical";
+
+export interface VolunteerAttribution {
+  id: string;
+  dispatch_id: string;
+  profile_id: string | null;
+  minutes: number;
+  activity_type: string;
+  status: "active" | "reverted";
+  notes?: string | null;
+  anomaly_flag?: boolean;
+  attributed_at: string;
+  updated_at?: string | null;
+  attributed_by: string;
+  profile_display_name?: string | null;
+  dispatch_label?: string | null;
+  dispatch_status?: DispatchStatus;
+}
+
+export interface VolunteerAttributionSummary {
+  totalMinutes: number;
+  totalHours: number;
+  progressRatio: number;
+  anomalyCount: number;
+}
+
+export interface DispatchVolunteerHoursResponse {
+  attributions: VolunteerAttribution[];
+  summary: VolunteerAttributionSummary;
+}
+
+export interface DispatchImpactMetrics {
+  dispatch_id: string;
+  people_served: number;
+  resources_distributed: number;
+  risk_level: ImpactRiskLevel;
+  updated_at?: string | null;
+  updated_by?: string | null;
 }
