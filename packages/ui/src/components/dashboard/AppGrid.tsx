@@ -29,7 +29,7 @@ export function AppGrid() {
     },
     {
       label: "Dispatches",
-      description: "Mission Management",
+      description: "Movement Management",
       href: "/dispatches",
       icon: <Truck className="h-5 w-5" />,
     },
@@ -46,9 +46,9 @@ export function AppGrid() {
       icon: <HeartHandshake className="h-5 w-5" />,
     },
     {
-      label: "Roster",
-      description: "Team Directory",
-      href: "/roster",
+      label: "Pods",
+      description: "Pod Directory",
+      href: "/pods",
       icon: <Users className="h-5 w-5" />,
     },
     {

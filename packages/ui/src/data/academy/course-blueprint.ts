@@ -2,7 +2,7 @@ import { humanize } from "../../lib/utils";
 import type { TrackVariant } from "../../components/academy/TrackBadge";
 import { GENERATED_ACADEMY_COURSE_GROUPS as ACADEMY_COURSE_GROUPS } from "./course-groups.generated";
 import { CUSTOM_ACADEMY_COURSE_GROUPS } from "./custom-groups";
-import { GENERATED_COURSE_DETAILS as ACADEMY_COURSE_DETAILS } from "./course-details.generated";
+import { GENERATED_COURSE_DETAILS } from "./course-details.generated";
 
 export type CourseBlueprintCourse = {
   slug: string;
@@ -24,6 +24,21 @@ export type CourseBlueprint = {
   variant?: TrackVariant;
   courses: CourseBlueprintCourse[];
 };
+
+type CourseDetail = {
+  title?: string | string[];
+  description?: string | string[];
+  icon?: string;
+  type?: CourseBlueprintCourse["type"];
+  version?: number;
+  durationHours?: number;
+  modality?: CourseBlueprintCourse["modality"];
+  instructorType?: CourseBlueprintCourse["instructorType"];
+  certId?: string;
+};
+
+const ACADEMY_COURSE_DETAILS: Partial<Record<string, CourseDetail>> =
+  GENERATED_COURSE_DETAILS;
 
 export const QUALIFICATION_VARIANTS: Record<string, TrackVariant> = {
   "Getting Started (Everyone)": "movement-strategy",
@@ -50,8 +65,9 @@ export const COURSE_BLUEPRINT: CourseBlueprint[] = COURSE_GROUPS.map(
     const fallbackId = slugifyLabel(group.label);
     const variant = QUALIFICATION_VARIANTS[group.label];
     const isCertifiedGroup = group.courses.some((course) => {
-      const slug = course.slug as keyof typeof ACADEMY_COURSE_DETAILS;
-      const meta = ACADEMY_COURSE_DETAILS[slug];
+      const meta = ACADEMY_COURSE_DETAILS[course.slug];
+
+      return meta?.type === "certified";
     });
 
     return {
@@ -60,12 +76,7 @@ export const COURSE_BLUEPRINT: CourseBlueprint[] = COURSE_GROUPS.map(
       trackLabel: group.track,
       variant,
       courses: group.courses.map((course) => {
-        const meta =
-          course.slug in ACADEMY_COURSE_DETAILS
-            ? ACADEMY_COURSE_DETAILS[
-                course.slug as keyof typeof ACADEMY_COURSE_DETAILS
-              ]
-            : undefined;
+        const meta = ACADEMY_COURSE_DETAILS[course.slug];
 
         return {
           slug: course.slug,

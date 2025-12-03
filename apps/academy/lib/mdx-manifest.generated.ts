@@ -49,25 +49,32 @@ const mod_2_day_educator_safety_resilience_intensive = () => import('@workspace/
 const mod_3_day_educator_resilience_community_safety = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/3-day-educator-resilience-community-safety.mdx');
 const mod_4_day_educator_safety_trauma_rights_leadership = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/4-day-educator-safety-trauma-rights-leadership.mdx');
 const mod_ice_resilience_in_schools = () => import('@workspace/ui/data/academy/courses/K-12__c__Overview/ice-resilience-in-schools.mdx');
-const mod_burner_phones_security_culture = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/burner-phones-security-culture.mdx');
 const mod_digital_security_basics = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/digital-security-basics.mdx');
 const mod_intro_to_art = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/intro-to-art.mdx');
 const mod_kyr_basics = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/kyr-basics.mdx');
-const mod_legal_risk_tech = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/legal-risk-tech.mdx');
-const mod_media_awareness_volunteers = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/media-awareness-volunteers.mdx');
 const mod_mental_health_resilience = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/mental-health-resilience.mdx');
-const mod_mesh_networks_intro = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/mesh-networks-intro.mdx');
 const mod_myth_of_total_anonymity = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/myth-of-total-anonymity.mdx');
 const mod_opsec_101 = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/opsec-101.mdx');
 const mod_signal_tips = () => import('@workspace/ui/data/academy/courses/Level_1__c___Team_Member_Onboarding/signal-tips.mdx');
+const mod_burner_phones_security_culture = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/burner-phones-security-culture.mdx');
 const mod_field_role_training_hub = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/field-role-training-hub.mdx');
+const mod_legal_risk_tech = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/legal-risk-tech.mdx');
+const mod_media_awareness_volunteers = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/media-awareness-volunteers.mdx');
+const mod_mesh_networks_intro = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/mesh-networks-intro.mdx');
 const mod_outreach_messaging_community_trust = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/outreach-messaging-community-trust.mdx');
+const mod_radio_communications = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/radio-communications.mdx');
 const mod_responding_to_dispatch_calls = () => import('@workspace/ui/data/academy/courses/Level_2__c___Field_Coordination_Basics___lp__Basic_Dispatcher__rp__/responding-to-dispatch-calls.mdx');
+const mod_consensus_decision_frameworks = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/consensus-decision-frameworks.mdx');
+const mod_create_a_pod = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/create-a-pod.mdx');
 const mod_dealing_with_chaos = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/dealing-with-chaos.mdx');
+const mod_managing_meetings_virtual_physical = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/managing-meetings-virtual-physical.mdx');
+const mod_mentoring_new_dispatchers = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/mentoring-new-dispatchers.mdx');
+const mod_training_the_trainers = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/training-the-trainers.mdx');
 const mod_trust_and_ethics_in_dispatch = () => import('@workspace/ui/data/academy/courses/Level_3__c___Dispatcher_Certification___lp__Verified_Dispatcher__rp__/trust-and-ethics-in-dispatch.mdx');
 const mod_admin_tools = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/admin-tools.mdx');
 const mod_cross_zone_coordination = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/cross-zone-coordination.mdx');
 const mod_incident_response_admins = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/incident-response-admins.mdx');
+const mod_inter_pod_regional_coordination = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/inter-pod-regional-coordination.mdx');
 const mod_regional_data_stewardship = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/regional-data-stewardship.mdx');
 const mod_trust_networks_signature_management = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/trust-networks-signature-management.mdx');
 const mod_zone_administration = () => import('@workspace/ui/data/academy/courses/Level_4__c___Zone_Lead___lp__Admin_Dispatcher__rp__/zone-administration.mdx');
@@ -93,13 +100,6 @@ const mod_visual_alerts = () => import('@workspace/ui/data/academy/courses/Obser
 const mod_community_defense_center = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/community-defense-center.mdx');
 const mod_pod_directory = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/pod-directory.mdx');
 const mod_pod_video_content = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/pod-video-content.mdx');
-const mod_radio_communications = () => import('@workspace/ui/data/academy/courses/Pod_Creation___and___Regional_Readiness/radio-communications.mdx');
-const mod_consensus_decision_frameworks = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/consensus-decision-frameworks.mdx');
-const mod_create_a_pod = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/create-a-pod.mdx');
-const mod_inter_pod_regional_coordination = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/inter-pod-regional-coordination.mdx');
-const mod_managing_meetings_virtual_physical = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/managing-meetings-virtual-physical.mdx');
-const mod_mentoring_new_dispatchers = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/mentoring-new-dispatchers.mdx');
-const mod_training_the_trainers = () => import('@workspace/ui/data/academy/courses/Pod_Leadership___and___Organizing/training-the-trainers.mdx');
 const mod_arrest_tracker_jail_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/arrest-tracker-jail-support.mdx');
 const mod_asl_interpreter_access = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/asl-interpreter-access.mdx');
 const mod_bondsman_bail_support = () => import('@workspace/ui/data/academy/courses/Specialized_Roles/bondsman-bail-support.mdx');
@@ -160,7 +160,6 @@ const mod_mutual_aid_history = () => import('@workspace/ui/data/academy/courses/
 const mod_risk_and_responsibility = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/risk-and-responsibility.mdx');
 const mod_solidarity_economics_resource_ethics = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/solidarity-economics-resource-ethics.mdx');
 const mod_state_corporate_suppression_tactics = () => import('@workspace/ui/data/academy/courses/Theory___and___Ethics/state-corporate-suppression-tactics.mdx');
-const mod__course_template = () => import('@workspace/ui/data/academy/courses/_course-template.mdx');
 
 export type MDXModule = { default: (props: any) => ReactElement };
 
@@ -209,25 +208,32 @@ export const MDX_COURSE_MODULES = {
   '3-day-educator-resilience-community-safety': mod_3_day_educator_resilience_community_safety,
   '4-day-educator-safety-trauma-rights-leadership': mod_4_day_educator_safety_trauma_rights_leadership,
   'ice-resilience-in-schools': mod_ice_resilience_in_schools,
-  'burner-phones-security-culture': mod_burner_phones_security_culture,
   'digital-security-basics': mod_digital_security_basics,
   'intro-to-art': mod_intro_to_art,
   'kyr-basics': mod_kyr_basics,
-  'legal-risk-tech': mod_legal_risk_tech,
-  'media-awareness-volunteers': mod_media_awareness_volunteers,
   'mental-health-resilience': mod_mental_health_resilience,
-  'mesh-networks-intro': mod_mesh_networks_intro,
   'myth-of-total-anonymity': mod_myth_of_total_anonymity,
   'opsec-101': mod_opsec_101,
   'signal-tips': mod_signal_tips,
+  'burner-phones-security-culture': mod_burner_phones_security_culture,
   'field-role-training-hub': mod_field_role_training_hub,
+  'legal-risk-tech': mod_legal_risk_tech,
+  'media-awareness-volunteers': mod_media_awareness_volunteers,
+  'mesh-networks-intro': mod_mesh_networks_intro,
   'outreach-messaging-community-trust': mod_outreach_messaging_community_trust,
+  'radio-communications': mod_radio_communications,
   'responding-to-dispatch-calls': mod_responding_to_dispatch_calls,
+  'consensus-decision-frameworks': mod_consensus_decision_frameworks,
+  'create-a-pod': mod_create_a_pod,
   'dealing-with-chaos': mod_dealing_with_chaos,
+  'managing-meetings-virtual-physical': mod_managing_meetings_virtual_physical,
+  'mentoring-new-dispatchers': mod_mentoring_new_dispatchers,
+  'training-the-trainers': mod_training_the_trainers,
   'trust-and-ethics-in-dispatch': mod_trust_and_ethics_in_dispatch,
   'admin-tools': mod_admin_tools,
   'cross-zone-coordination': mod_cross_zone_coordination,
   'incident-response-admins': mod_incident_response_admins,
+  'inter-pod-regional-coordination': mod_inter_pod_regional_coordination,
   'regional-data-stewardship': mod_regional_data_stewardship,
   'trust-networks-signature-management': mod_trust_networks_signature_management,
   'zone-administration': mod_zone_administration,
@@ -253,13 +259,6 @@ export const MDX_COURSE_MODULES = {
   'community-defense-center': mod_community_defense_center,
   'pod-directory': mod_pod_directory,
   'pod-video-content': mod_pod_video_content,
-  'radio-communications': mod_radio_communications,
-  'consensus-decision-frameworks': mod_consensus_decision_frameworks,
-  'create-a-pod': mod_create_a_pod,
-  'inter-pod-regional-coordination': mod_inter_pod_regional_coordination,
-  'managing-meetings-virtual-physical': mod_managing_meetings_virtual_physical,
-  'mentoring-new-dispatchers': mod_mentoring_new_dispatchers,
-  'training-the-trainers': mod_training_the_trainers,
   'arrest-tracker-jail-support': mod_arrest_tracker_jail_support,
   'asl-interpreter-access': mod_asl_interpreter_access,
   'bondsman-bail-support': mod_bondsman_bail_support,
@@ -320,7 +319,6 @@ export const MDX_COURSE_MODULES = {
   'risk-and-responsibility': mod_risk_and_responsibility,
   'solidarity-economics-resource-ethics': mod_solidarity_economics_resource_ethics,
   'state-corporate-suppression-tactics': mod_state_corporate_suppression_tactics,
-  '_course-template': mod__course_template,
 } as const satisfies Record<string, () => Promise<MDXModule>>;
 
 export const MDX_COURSE_FRONTMATTER = {
@@ -368,25 +366,32 @@ export const MDX_COURSE_FRONTMATTER = {
   '3-day-educator-resilience-community-safety': {"title":"3-Day Educator Resilience & Community Safety Training","slug":"3-day-educator-resilience-community-safety","description":"A structured 3-day pathway that deepens de-escalation, trauma-informed care, student rights literacy, and coordinated community communication.","type":"qualified","readingTime":10,"version":1},
   '4-day-educator-safety-trauma-rights-leadership': {"title":"4-Day Educator Safety, Trauma & Rights Leadership Pathway","slug":"4-day-educator-safety-trauma-rights-leadership","description":"A comprehensive 4-day professional development pathway that builds advanced de-escalation, trauma-aware stabilization, rights-aligned decision making, and coordinated crisis communication in school environments.","type":"qualified","readingTime":12,"version":1},
   'ice-resilience-in-schools': {"title":"ICE Resilience in Schools: What Educators Can (and Cannot) Do","slug":"ice-resilience-in-schools","description":"A practical guide for protecting and supporting students and families impacted by immigration enforcement, tailored for real school constraints.","type":"qualified","readingTime":10,"version":1},
-  'burner-phones-security-culture': {"title":"Burner Phones & Security Culture (2025 Edition)","slug":"burner-phones-security-culture","description":"Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.","type":"qualified","readingTime":15,"version":1.3},
   'digital-security-basics': {"title":"Digital Security Basics","slug":"digital-security-basics","description":"Learn the foundations of secure communication and digital safety in the ART Network.","type":"qualified","readingTime":7,"version":1.3},
   'intro-to-art': {"title":"Introduction to ART Network","slug":"intro-to-art","description":"Learn what ART is, how it works, and the values we operate by.","type":"qualified","readingTime":5,"version":1.3},
   'kyr-basics': {"title":"Know Your Rights Basics","slug":"kyr-basics","description":"Learn the key rights you and your community members have during encounters with ICE or law enforcement.","type":"qualified","readingTime":7,"version":2.5},
-  'legal-risk-tech': {"title":"Legal Risk & Tech Use for Activists","slug":"legal-risk-tech","description":"Understand what is protected speech, how digital tools create risk, and how to make informed, collective decisions about app use, organizing, and visibility.","type":"qualified","readingTime":30,"version":1.4},
-  'media-awareness-volunteers': {"title":"Media Awareness for Volunteers","slug":"media-awareness-volunteers","description":"Learn how to handle livestreamers, journalists, and public exposure while protecting yourself, your pod, and sensitive information during actions.","type":"qualified","version":1.4,"readingTime":15},
   'mental-health-resilience': {"title":"Mental Health & Resilience Basics","slug":"mental-health-resilience","description":"Learn practical techniques to manage stress, avoid burnout, and build emotional resilience as a volunteer in high-pressure environments.","type":"qualified","version":1.4,"readingTime":15},
-  'mesh-networks-intro': {"title":"Intro to Mesh Networks","slug":"mesh-networks-intro","description":"Learn what mesh networks are, why they matter, and how to send your first Meshtastic message.","type":"qualified","version":1.4,"readingTime":18},
   'myth-of-total-anonymity': {"title":"The Myth of Total Anonymity (2025 Reality Check)","slug":"myth-of-total-anonymity","description":"Why total anonymity is nearly impossible in 2025, and how to redirect energy toward realistic security and resilience.","type":"qualified","version":1.4,"readingTime":12},
   'opsec-101': {"title":"Operational Security 101 for Activists and Revolutionaries","slug":"opsec-101","description":"Learn how to identify, assess, and protect sensitive information from state and corporate surveillance using real-world methods adapted for community defense.","type":"qualified","readingTime":30,"version":1.4},
   'signal-tips': {"title":"Secure Messaging with Signal","slug":"signal-tips","description":"Learn how to use Signal for secure communications, with advanced workflows for pods and dispatch operations.","type":"qualified","readingTime":20,"version":1.3},
+  'burner-phones-security-culture': {"title":"Burner Phones & Security Culture (2025 Edition)","slug":"burner-phones-security-culture","description":"Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.","type":"qualified","readingTime":15,"version":1.3},
   'field-role-training-hub': {"title":"Field Role Training Hub","slug":"field-role-training-hub","description":"Overview of core field roles and links to specialized trainings for safe, coordinated action.","type":"qualified","readingTime":10,"version":1.4},
+  'legal-risk-tech': {"title":"Legal Risk & Tech Use for Activists","slug":"legal-risk-tech","description":"Understand what is protected speech, how digital tools create risk, and how to make informed, collective decisions about app use, organizing, and visibility.","type":"qualified","readingTime":30,"version":1.4},
+  'media-awareness-volunteers': {"title":"Media Awareness for Volunteers","slug":"media-awareness-volunteers","description":"Learn how to handle livestreamers, journalists, and public exposure while protecting yourself, your pod, and sensitive information during actions.","type":"qualified","version":1.4,"readingTime":15},
+  'mesh-networks-intro': {"title":"Intro to Mesh Networks","slug":"mesh-networks-intro","description":"Learn what mesh networks are, why they matter, and how to send your first Meshtastic message.","type":"qualified","version":1.4,"readingTime":18},
   'outreach-messaging-community-trust': {"title":"Outreach Messaging & Community Trust","slug":"outreach-messaging-community-trust","description":"Learn how to confidently engage businesses and community members about ICE activity, share resources, and build lasting relationships without causing panic.","type":"qualified","readingTime":18,"version":1.4},
+  'radio-communications': {"title":"Radio Communications & Protocols","slug":"radio-communications","description":"Learn how to use radios for secure, clear, and effective field coordination.","type":"qualified","readingTime":18,"version":1.3},
   'responding-to-dispatch-calls': {"title":"Responding to Dispatch Calls","slug":"responding-to-dispatch-calls","description":"Learn how to receive, assess, and respond to ART dispatch activations safely and effectively.","type":"qualified","readingTime":8,"version":1.3},
+  'consensus-decision-frameworks': {"title":"Consensus & Rapid Decision Frameworks","slug":"consensus-decision-frameworks","description":"Learn practical methods for making transparent, collective, and time-sensitive decisions without losing trust or momentum.","type":"qualified","version":1.3,"readingTime":38},
+  'create-a-pod': {"title":"How to Create a Pod","slug":"create-a-pod","description":"Learn how to start a local response pod in areas without ART coverage.","type":"qualified","readingTime":22,"version":1.3},
   'dealing-with-chaos': {"title":"Dealing With Chaos","slug":"dealing-with-chaos","description":"Build skills for navigating collapse, lies, escalation, and recovery during live operations.","type":"qualified","readingTime":18,"version":1.3},
+  'managing-meetings-virtual-physical': {"title":"Managing and Conducting Meetings (Virtual & Physical)","slug":"managing-meetings-virtual-physical","description":"Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.","type":"qualified","readingTime":28,"version":1.4},
+  'mentoring-new-dispatchers': {"title":"Mentoring New Dispatchers","slug":"mentoring-new-dispatchers","description":"Learn how to guide, train, and support new dispatchers through active mentoring and thoughtful feedback.","type":"qualified","readingTime":17,"version":1.3},
+  'training-the-trainers': {"title":"Training the Trainers","slug":"training-the-trainers","description":"Learn how to teach ART Academy material, mentor pod members, and scale knowledge across pods while maintaining consistency and trust.","type":"qualified","readingTime":22,"version":1.3},
   'trust-and-ethics-in-dispatch': {"title":"Trust and Ethics in Dispatch","slug":"trust-and-ethics-in-dispatch","description":"Learn how to make ethically grounded decisions when coordinating field responses and holding movement trust.","type":"qualified","readingTime":25,"version":1.4},
   'admin-tools': {"title":"Admin Tools and Oversight","slug":"admin-tools","description":"Learn how to manage dispatch creation, access roles, and trust signatures in ART Dispatch — with clear boundaries on authority, audits, and accountability.","type":"qualified","readingTime":22,"version":1.4},
   'cross-zone-coordination': {"title":"Cross-Zone Coordination & Global Resilience Planning","slug":"cross-zone-coordination","description":"Learn how to link regional zones, share resources, and maintain operational trust across the decentralized network during crises and large-scale events.","type":"qualified","version":1,"readingTime":28},
   'incident-response-admins': {"title":"Incident Response for Regional Admins","slug":"incident-response-admins","description":"Learn how to coordinate high-risk or sensitive incidents at the regional level while maintaining safety, integrity, and legal protection for all pods.","type":"qualified","version":1.3,"readingTime":40},
+  'inter-pod-regional-coordination': {"title":"Inter-Pod & Regional Coordination","slug":"inter-pod-regional-coordination","description":"Learn how to link pods across counties and regions, build fallback mutual aid networks, and coordinate communications during large-scale or multi-day actions.","type":"qualified","readingTime":20,"version":1.4},
   'regional-data-stewardship': {"title":"Regional Data Stewardship & Privacy Oversight","slug":"regional-data-stewardship","description":"Learn how to securely manage volunteer, dispatch, and incident data at the regional level with ethical transparency and legal compliance.","type":"qualified","version":1.3,"readingTime":28},
   'trust-networks-signature-management': {"title":"Trust Networks & Signature Management","slug":"trust-networks-signature-management","description":"Learn to verify, rotate, and audit trust signatures across regional nodes securely and transparently.","type":"qualified","version":1.4,"readingTime":30},
   'zone-administration': {"title":"Strategic Oversight & Zone Administration","slug":"zone-administration","description":"Learn how to manage regional operations, ensure ethical oversight, and maintain resilience across multi-pod or multi-region networks.","type":"qualified","version":1,"readingTime":28},
@@ -412,13 +417,6 @@ export const MDX_COURSE_FRONTMATTER = {
   'community-defense-center': {"title":"Deploying a Community Defense Center","slug":"community-defense-center","description":"Learn how to plan, deploy, and operate a flexible Community Defense Center that anchors safety, outreach, and rapid response in your neighborhood.","type":"qualified","readingTime":30,"version":1.4},
   'pod-directory': {"title":"General Pod Directory","slug":"pod-directory","description":"Find regional entry points to connect with local ART pods or start one safely and securely.","type":"qualified","readingTime":12,"version":1.3},
   'pod-video-content': {"title":"Pod Creator Video Content Framework","slug":"pod-video-content","description":"30 modular video ideas to help Pod Creators recruit, educate, and organize safely with trust.","type":"qualified","readingTime":15,"version":1.3},
-  'radio-communications': {"title":"Radio Communications & Protocols","slug":"radio-communications","description":"Learn how to use radios for secure, clear, and effective field coordination.","type":"qualified","readingTime":18,"version":1.3},
-  'consensus-decision-frameworks': {"title":"Consensus & Rapid Decision Frameworks","slug":"consensus-decision-frameworks","description":"Learn practical methods for making transparent, collective, and time-sensitive decisions without losing trust or momentum.","type":"qualified","version":1.3,"readingTime":38},
-  'create-a-pod': {"title":"How to Create a Pod","slug":"create-a-pod","description":"Learn how to start a local response pod in areas without ART coverage.","type":"qualified","readingTime":22,"version":1.3},
-  'inter-pod-regional-coordination': {"title":"Inter-Pod & Regional Coordination","slug":"inter-pod-regional-coordination","description":"Learn how to link pods across counties and regions, build fallback mutual aid networks, and coordinate communications during large-scale or multi-day actions.","type":"qualified","readingTime":20,"version":1.4},
-  'managing-meetings-virtual-physical': {"title":"Managing and Conducting Meetings (Virtual & Physical)","slug":"managing-meetings-virtual-physical","description":"Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.","type":"qualified","readingTime":28,"version":1.4},
-  'mentoring-new-dispatchers': {"title":"Mentoring New Dispatchers","slug":"mentoring-new-dispatchers","description":"Learn how to guide, train, and support new dispatchers through active mentoring and thoughtful feedback.","type":"qualified","readingTime":17,"version":1.3},
-  'training-the-trainers': {"title":"Training the Trainers","slug":"training-the-trainers","description":"Learn how to teach ART Academy material, mentor pod members, and scale knowledge across pods while maintaining consistency and trust.","type":"qualified","readingTime":22,"version":1.3},
   'arrest-tracker-jail-support': {"title":"Arrest Tracker For Detention & Jail Support Coordination","slug":"arrest-tracker-jail-support","description":"Learn how to track arrests and detentions during actions, collect essential information safely, and coordinate with jail support teams for follow-up and release.","type":"qualified","readingTime":60,"version":1},
   'asl-interpreter-access': {"title":"ASL Interpreter For Sign Language Access & Inclusion","slug":"asl-interpreter-access","description":"Learn how to interpret spoken language into American Sign Language (ASL) and vice versa during actions, meetings, and emergencies, ensuring full participation for Deaf and hard-of-hearing community members.","type":"qualified","readingTime":60,"version":1},
   'bondsman-bail-support': {"title":"Bondsman For Bail Coordination & Post-Arrest Support","slug":"bondsman-bail-support","description":"Learn how to coordinate bail, navigate jail procedures, and connect arrestees with legal and community support networks during and after detention.","type":"qualified","readingTime":65,"version":1},
@@ -479,5 +477,4 @@ export const MDX_COURSE_FRONTMATTER = {
   'risk-and-responsibility': {"title":"Risk and Responsibility","slug":"risk-and-responsibility","description":"Learn to assess and manage physical, legal, emotional, and digital risks in collective action to protect your team and sustain long-term resistance.","type":"qualified","readingTime":35,"version":2.2},
   'solidarity-economics-resource-ethics': {"title":"Solidarity Economics & Resource Ethics","slug":"solidarity-economics-resource-ethics","description":"Learn how to fund and sustain pods without compromising autonomy, avoid exploitative funding traps, and build transparent resource-sharing systems.","type":"qualified","readingTime":18,"version":1.3},
   'state-corporate-suppression-tactics': {"title":"Understanding State & Corporate Suppression Tactics","slug":"state-corporate-suppression-tactics","description":"Learn how to recognize state and corporate tactics like infiltration, surveillance, and disinformation, and how to build resilience against them.","type":"qualified","readingTime":20,"version":1.3},
-  '_course-template': {"title":"Course Title","slug":"_course-template","description":"1–2 sentence summary of what learners gain.","type":"qualified","readingTime":10,"version":1},
 } as const satisfies Record<string, AcademyCourseFrontmatter>;

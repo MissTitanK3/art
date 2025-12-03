@@ -35,9 +35,6 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "label": "Level 1: Team Member Onboarding",
     "courses": [
       {
-        "slug": "burner-phones-security-culture"
-      },
-      {
         "slug": "digital-security-basics"
       },
       {
@@ -47,16 +44,7 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
         "slug": "kyr-basics"
       },
       {
-        "slug": "legal-risk-tech"
-      },
-      {
-        "slug": "media-awareness-volunteers"
-      },
-      {
         "slug": "mental-health-resilience"
-      },
-      {
-        "slug": "mesh-networks-intro"
       },
       {
         "slug": "myth-of-total-anonymity"
@@ -73,10 +61,25 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "label": "Level 2: Field Coordination Basics (Basic Dispatcher)",
     "courses": [
       {
+        "slug": "burner-phones-security-culture"
+      },
+      {
         "slug": "field-role-training-hub"
       },
       {
+        "slug": "legal-risk-tech"
+      },
+      {
+        "slug": "media-awareness-volunteers"
+      },
+      {
+        "slug": "mesh-networks-intro"
+      },
+      {
         "slug": "outreach-messaging-community-trust"
+      },
+      {
+        "slug": "radio-communications"
       },
       {
         "slug": "responding-to-dispatch-calls"
@@ -87,7 +90,22 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
     "label": "Level 3: Dispatcher Certification (Verified Dispatcher)",
     "courses": [
       {
+        "slug": "consensus-decision-frameworks"
+      },
+      {
+        "slug": "create-a-pod"
+      },
+      {
         "slug": "dealing-with-chaos"
+      },
+      {
+        "slug": "managing-meetings-virtual-physical"
+      },
+      {
+        "slug": "mentoring-new-dispatchers"
+      },
+      {
+        "slug": "training-the-trainers"
       },
       {
         "slug": "trust-and-ethics-in-dispatch"
@@ -105,6 +123,9 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "incident-response-admins"
+      },
+      {
+        "slug": "inter-pod-regional-coordination"
       },
       {
         "slug": "regional-data-stewardship"
@@ -343,32 +364,6 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "pod-video-content"
-      },
-      {
-        "slug": "radio-communications"
-      }
-    ]
-  },
-  {
-    "label": "Pod Leadership & Organizing",
-    "courses": [
-      {
-        "slug": "consensus-decision-frameworks"
-      },
-      {
-        "slug": "create-a-pod"
-      },
-      {
-        "slug": "inter-pod-regional-coordination"
-      },
-      {
-        "slug": "managing-meetings-virtual-physical"
-      },
-      {
-        "slug": "mentoring-new-dispatchers"
-      },
-      {
-        "slug": "training-the-trainers"
       }
     ]
   },
@@ -569,14 +564,6 @@ export const GENERATED_ACADEMY_COURSE_GROUPS: AcademyCourseGroupConfig[] = [
       },
       {
         "slug": "state-corporate-suppression-tactics"
-      }
-    ]
-  },
-  {
-    "label": "Template",
-    "courses": [
-      {
-        "slug": "_course-template"
       }
     ]
   }

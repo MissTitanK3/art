@@ -264,12 +264,6 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1,
     "type": "qualified"
   },
-  "burner-phones-security-culture": {
-    "title": "Burner Phones & Security Culture (2025 Edition)",
-    "description": "Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.",
-    "version": 1.3,
-    "type": "qualified"
-  },
   "digital-security-basics": {
     "title": "Digital Security Basics",
     "description": "Learn the foundations of secure communication and digital safety in the ART Network.",
@@ -288,27 +282,9 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 2.5,
     "type": "qualified"
   },
-  "legal-risk-tech": {
-    "title": "Legal Risk & Tech Use for Activists",
-    "description": "Understand what is protected speech, how digital tools create risk, and how to make informed, collective decisions about app use, organizing, and visibility.",
-    "version": 1.4,
-    "type": "qualified"
-  },
-  "media-awareness-volunteers": {
-    "title": "Media Awareness for Volunteers",
-    "description": "Learn how to handle livestreamers, journalists, and public exposure while protecting yourself, your pod, and sensitive information during actions.",
-    "version": 1.4,
-    "type": "qualified"
-  },
   "mental-health-resilience": {
     "title": "Mental Health & Resilience Basics",
     "description": "Learn practical techniques to manage stress, avoid burnout, and build emotional resilience as a volunteer in high-pressure environments.",
-    "version": 1.4,
-    "type": "qualified"
-  },
-  "mesh-networks-intro": {
-    "title": "Intro to Mesh Networks",
-    "description": "Learn what mesh networks are, why they matter, and how to send your first Meshtastic message.",
     "version": 1.4,
     "type": "qualified"
   },
@@ -330,9 +306,33 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.3,
     "type": "qualified"
   },
+  "burner-phones-security-culture": {
+    "title": "Burner Phones & Security Culture (2025 Edition)",
+    "description": "Learn how to choose, use, and dispose of burner phones safely while embedding them in a broader security culture for protests, cross-border travel, and mutual aid.",
+    "version": 1.3,
+    "type": "qualified"
+  },
   "field-role-training-hub": {
     "title": "Field Role Training Hub",
     "description": "Overview of core field roles and links to specialized trainings for safe, coordinated action.",
+    "version": 1.4,
+    "type": "qualified"
+  },
+  "legal-risk-tech": {
+    "title": "Legal Risk & Tech Use for Activists",
+    "description": "Understand what is protected speech, how digital tools create risk, and how to make informed, collective decisions about app use, organizing, and visibility.",
+    "version": 1.4,
+    "type": "qualified"
+  },
+  "media-awareness-volunteers": {
+    "title": "Media Awareness for Volunteers",
+    "description": "Learn how to handle livestreamers, journalists, and public exposure while protecting yourself, your pod, and sensitive information during actions.",
+    "version": 1.4,
+    "type": "qualified"
+  },
+  "mesh-networks-intro": {
+    "title": "Intro to Mesh Networks",
+    "description": "Learn what mesh networks are, why they matter, and how to send your first Meshtastic message.",
     "version": 1.4,
     "type": "qualified"
   },
@@ -342,15 +342,51 @@ export const GENERATED_COURSE_DETAILS = {
     "version": 1.4,
     "type": "qualified"
   },
+  "radio-communications": {
+    "title": "Radio Communications & Protocols",
+    "description": "Learn how to use radios for secure, clear, and effective field coordination.",
+    "version": 1.3,
+    "type": "qualified"
+  },
   "responding-to-dispatch-calls": {
     "title": "Responding to Dispatch Calls",
     "description": "Learn how to receive, assess, and respond to ART dispatch activations safely and effectively.",
     "version": 1.3,
     "type": "qualified"
   },
+  "consensus-decision-frameworks": {
+    "title": "Consensus & Rapid Decision Frameworks",
+    "description": "Learn practical methods for making transparent, collective, and time-sensitive decisions without losing trust or momentum.",
+    "version": 1.3,
+    "type": "qualified"
+  },
+  "create-a-pod": {
+    "title": "How to Create a Pod",
+    "description": "Learn how to start a local response pod in areas without ART coverage.",
+    "version": 1.3,
+    "type": "qualified"
+  },
   "dealing-with-chaos": {
     "title": "Dealing With Chaos",
     "description": "Build skills for navigating collapse, lies, escalation, and recovery during live operations.",
+    "version": 1.3,
+    "type": "qualified"
+  },
+  "managing-meetings-virtual-physical": {
+    "title": "Managing and Conducting Meetings (Virtual & Physical)",
+    "description": "Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.",
+    "version": 1.4,
+    "type": "qualified"
+  },
+  "mentoring-new-dispatchers": {
+    "title": "Mentoring New Dispatchers",
+    "description": "Learn how to guide, train, and support new dispatchers through active mentoring and thoughtful feedback.",
+    "version": 1.3,
+    "type": "qualified"
+  },
+  "training-the-trainers": {
+    "title": "Training the Trainers",
+    "description": "Learn how to teach ART Academy material, mentor pod members, and scale knowledge across pods while maintaining consistency and trust.",
     "version": 1.3,
     "type": "qualified"
   },
@@ -376,6 +412,12 @@ export const GENERATED_COURSE_DETAILS = {
     "title": "Incident Response for Regional Admins",
     "description": "Learn how to coordinate high-risk or sensitive incidents at the regional level while maintaining safety, integrity, and legal protection for all pods.",
     "version": 1.3,
+    "type": "qualified"
+  },
+  "inter-pod-regional-coordination": {
+    "title": "Inter-Pod & Regional Coordination",
+    "description": "Learn how to link pods across counties and regions, build fallback mutual aid networks, and coordinate communications during large-scale or multi-day actions.",
+    "version": 1.4,
     "type": "qualified"
   },
   "regional-data-stewardship": {
@@ -525,48 +567,6 @@ export const GENERATED_COURSE_DETAILS = {
   "pod-video-content": {
     "title": "Pod Creator Video Content Framework",
     "description": "30 modular video ideas to help Pod Creators recruit, educate, and organize safely with trust.",
-    "version": 1.3,
-    "type": "qualified"
-  },
-  "radio-communications": {
-    "title": "Radio Communications & Protocols",
-    "description": "Learn how to use radios for secure, clear, and effective field coordination.",
-    "version": 1.3,
-    "type": "qualified"
-  },
-  "consensus-decision-frameworks": {
-    "title": "Consensus & Rapid Decision Frameworks",
-    "description": "Learn practical methods for making transparent, collective, and time-sensitive decisions without losing trust or momentum.",
-    "version": 1.3,
-    "type": "qualified"
-  },
-  "create-a-pod": {
-    "title": "How to Create a Pod",
-    "description": "Learn how to start a local response pod in areas without ART coverage.",
-    "version": 1.3,
-    "type": "qualified"
-  },
-  "inter-pod-regional-coordination": {
-    "title": "Inter-Pod & Regional Coordination",
-    "description": "Learn how to link pods across counties and regions, build fallback mutual aid networks, and coordinate communications during large-scale or multi-day actions.",
-    "version": 1.4,
-    "type": "qualified"
-  },
-  "managing-meetings-virtual-physical": {
-    "title": "Managing and Conducting Meetings (Virtual & Physical)",
-    "description": "Learn to plan, facilitate, and secure meetings across digital and physical spaces — balancing structure, inclusion, and situational awareness.",
-    "version": 1.4,
-    "type": "qualified"
-  },
-  "mentoring-new-dispatchers": {
-    "title": "Mentoring New Dispatchers",
-    "description": "Learn how to guide, train, and support new dispatchers through active mentoring and thoughtful feedback.",
-    "version": 1.3,
-    "type": "qualified"
-  },
-  "training-the-trainers": {
-    "title": "Training the Trainers",
-    "description": "Learn how to teach ART Academy material, mentor pod members, and scale knowledge across pods while maintaining consistency and trust.",
     "version": 1.3,
     "type": "qualified"
   },
@@ -928,16 +928,6 @@ export const GENERATED_COURSE_DETAILS = {
     "title": "Understanding State & Corporate Suppression Tactics",
     "description": "Learn how to recognize state and corporate tactics like infiltration, surveillance, and disinformation, and how to build resilience against them.",
     "version": 1.3,
-    "type": "qualified"
-  },
-  "_course-template": {
-    "title": [
-      "Course Title"
-    ],
-    "description": [
-      "1–2 sentence summary of what learners gain."
-    ],
-    "version": 1,
     "type": "qualified"
   }
 } as const;

@@ -32,18 +32,27 @@ export function QualificationPathwaysSection({
 }: QualificationPathwaysSectionProps) {
   const profileFromStore = useProfileStore((s) => s.profile);
   const profileRoles = React.useMemo(
-    () => (profileFromStore?.access_role ? [String(profileFromStore.access_role)] : []),
-    [profileFromStore?.access_role],
+    () =>
+      profileFromStore?.access_role
+        ? [String(profileFromStore.access_role)]
+        : [],
+    [profileFromStore?.access_role]
   );
-  const ctx = React.useMemo(() => ({ navRole: profileRoles[0] as NavRole }), [profileRoles]);
-  const { access: effectiveCanManage } = useUnifiedAccess('manage_instructors', ctx);
+  const ctx = React.useMemo(
+    () => ({ navRole: profileRoles[0] as NavRole }),
+    [profileRoles]
+  );
+  const { access: effectiveCanManage } = useUnifiedAccess(
+    "manage_instructors",
+    ctx
+  );
 
   const handleCreatePathwayClass = React.useCallback(
     (pathwayId: string) => {
       if (!effectiveCanManage) return;
-      (onCreatePathwayClass ?? (() => { }))(pathwayId);
+      (onCreatePathwayClass ?? (() => {}))(pathwayId);
     },
-    [effectiveCanManage, onCreatePathwayClass],
+    [effectiveCanManage, onCreatePathwayClass]
   );
 
   return (
@@ -101,17 +110,6 @@ export function QualificationPathwaysSection({
                             <p className="font-medium leading-tight">
                               {course.title}
                             </p>
-                            <Badge
-                              variant={
-                                course.status === "completed"
-                                  ? "default"
-                                  : course.status === "in_progress"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                            >
-                              {course.status.replaceAll("_", " ")}
-                            </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {course.description}
