@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import { exportLegalAidReport } from "@/lib/pipelines/exportLegalAidReport";
-import { MissingPersonDetail } from "@workspace/ui/components/missing-persons/MissingPersonDetail";
+import { MissingPersonDetail } from "@workspace/ui/patterns/features/missing-persons/missing-person-detail";
 import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-import { toast } from "@workspace/ui/components/sonner";
+import { toast } from "@workspace/ui/primitives/sonner";
 
 function mapRowToDetaineeIntake(row: any): DetaineeIntake {
   return {
@@ -110,7 +110,7 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
           "created_at",
           "created_by",
           "version",
-        ].join(", "),
+        ].join(", ")
       )
       .order("last_updated", { ascending: false, nullsFirst: false });
     if (error) throw error;
@@ -119,7 +119,7 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
       .map(mapRowToDetaineeIntake)
       .filter(
         (r): r is DetaineeIntake =>
-          typeof r.caseId === "string" && r.caseId.length > 0,
+          typeof r.caseId === "string" && r.caseId.length > 0
       );
   } catch (e) {
     console.warn("[MissingPersonDetailPage] supabase fetch error", e);
@@ -129,7 +129,7 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
 
 function findRecordBySlug(
   slug: string,
-  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>,
+  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>
 ): DetaineeIntake | null {
   for (const collection of collections) {
     for (const item of collection) {
@@ -157,7 +157,7 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         {label}
       </Link>
     ),
-    [],
+    []
   );
   const handleDeleteSuccess = React.useCallback(
     ({
@@ -169,7 +169,7 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
     }) => {
       router.push(directoryHref);
     },
-    [router],
+    [router]
   );
   const handleSaveRemote = React.useCallback(async (record: DetaineeIntake) => {
     try {
@@ -213,25 +213,18 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
       const { error } = await client.from("missing_person_records").upsert(row);
       if (error) throw error;
     } catch (err) {
-      console.warn(
-        "[MissingPersonDetailPage] supabase upsert failed",
-        err,
-      );
+      console.warn("[MissingPersonDetailPage] supabase upsert failed", err);
     }
   }, []);
   const handleDeleteRemote = React.useCallback(async (caseId: string) => {
     try {
       const client = getSupabaseBrowserClient();
-      const { error } = await client.rpc(
-        "safe_delete_missing_person_record",
-        { p_case_id: caseId },
-      );
+      const { error } = await client.rpc("safe_delete_missing_person_record", {
+        p_case_id: caseId,
+      });
       if (error) throw error;
     } catch (err) {
-      console.warn(
-        "[MissingPersonDetailPage] supabase delete failed",
-        err,
-      );
+      console.warn("[MissingPersonDetailPage] supabase delete failed", err);
     }
   }, []);
 
@@ -248,10 +241,7 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         }
       } catch (err) {
         if (active) {
-          console.warn(
-            "MissingPersonDetailPage: failed to fetch records",
-            err,
-          );
+          console.warn("MissingPersonDetailPage: failed to fetch records", err);
           setError("Unable to load the latest record from the database.");
         }
       } finally {
@@ -270,7 +260,7 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
 
   const record = React.useMemo(
     () => findRecordBySlug(slug, [localRecords, remoteRecords ?? []]),
-    [slug, localRecords, remoteRecords],
+    [slug, localRecords, remoteRecords]
   );
 
   if (!record) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Drawer,
   DrawerTrigger,
@@ -10,9 +10,9 @@ import {
   DrawerDescription,
   DrawerClose,
   DrawerFooter,
-} from "@workspace/ui/components/drawer";
+} from "@workspace/ui/primitives/drawer";
 import { BookOpen } from "lucide-react";
-import ScrollAreaPersist from "@/components/client/ScrollAreaPersist";
+import ScrollAreaPersist from "./ScrollAreaPersist";
 
 export default function MobileCourseSheet({
   children,

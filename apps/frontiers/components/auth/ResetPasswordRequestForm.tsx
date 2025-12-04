@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
+import { Button } from "@workspace/ui/primitives/button";
+import { Input } from "@workspace/ui/primitives/input";
+import { Label } from "@workspace/ui/primitives/label";
 import {
   Card,
   CardContent,

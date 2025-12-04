@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Badge } from "@workspace/ui/components/badge";
+import { Badge } from "@workspace/ui/primitives/badge";
 import { useFactionStore, rankFor } from "@/store/useFactionStore";
 import { useProfileStore } from "@/store/useProfileStore";
 

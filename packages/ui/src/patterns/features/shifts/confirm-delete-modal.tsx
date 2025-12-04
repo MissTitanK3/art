@@ -1,0 +1,52 @@
+// apps/region-template/components/client/common/ConfirmDeleteModal.tsx
+"use client";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@workspace/ui/primitives/dialog";
+import { Button } from "@workspace/ui/primitives/button";
+
+type Props = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title?: string;
+  description?: string;
+  onConfirm: () => void;
+};
+
+export default function ConfirmDeleteModal({
+  open,
+  onOpenChange,
+  title = "Delete Item",
+  description = "Are you sure you want to delete this item? This action cannot be undone.",
+  onConfirm,
+}: Props) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="p-4 max-w-3xl m-auto bg-secondary text-foreground">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <DialogFooter className="mt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -2,13 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { FC, ReactNode } from "react";
 import { ngcData } from "../lib/ngc";
-import { Card, CardContent } from "@workspace/ui/components/card";
-import { Separator } from "@workspace/ui/components/separator";
-import ThemeToggle from "@workspace/ui/components/client/ThemeToggle";
+import { Card, CardContent } from "@workspace/ui/primitives/card";
+import { Separator } from "@workspace/ui/primitives/separator";
+import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 import BackToTopButton from "../components/BackToTopButton";
 import {
   GraduationCap,
-  Shield,
   Eye,
   CheckCircle2,
   ClipboardList,
@@ -17,8 +16,6 @@ import {
   Search,
   User,
   Users,
-  Calendar,
-  MessagesSquare,
   Github,
   ChevronDown,
   Coffee,

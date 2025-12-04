@@ -1,14 +1,14 @@
 import { NestedTOCHeading } from "@/lib/mdx.toc";
 import { DocsSidebar } from "./DocsSidebar";
 import { DocsTocNav } from "./DocsTocNav";
-import { FadeOnScroll } from "@workspace/ui/components/client/FadeOnScroll";
-import { ScrollProgress } from "@workspace/ui/components/client/ScrollProgress";
-import ScrollAreaPersist from "@/components/client/ScrollAreaPersist";
+import { FadeOnScroll } from "@workspace/ui/patterns/common/fade-on-scroll";
+import { ScrollProgress } from "@workspace/ui/patterns/common/scroll-progress";
+import ScrollAreaPersist from "../client/ScrollAreaPersist";
 import MobileCourseSheet from "@/components/client/MobileCourseSheet";
 import DocsSidebarServer from "./DocsSidebarServer";
 import SearchCoursesModal from "@/components/client/SearchCoursesModal";
 import Link from "next/link";
-import PrintButton from "@/components/client/PrintButton";
+import PrintButton from "@workspace/ui/patterns/common/print-button";
 import ShareCourseButton from "@/components/client/ShareCourseButton";
 
 export default async function DocsLayout({

@@ -1,14 +1,14 @@
 "use client";
 
-import { CampaignForm } from "@workspace/ui/components/CampaignForm";
-import { useCampaigns } from "@workspace/ui/hooks/useCampaigns";
+import { CampaignForm } from "@workspace/ui/patterns/features/campaign/campaign-form";
+import { useCampaigns } from "@workspace/ui/hooks/use-campaigns";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
+} from "@workspace/ui/primitives/card";
 
 export default function CampaignsAdminPage() {
   const { items, loading, error, createCampaign } = useCampaigns();

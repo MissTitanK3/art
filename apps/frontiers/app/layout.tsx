@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "@workspace/ui/globals.css";
 import { Providers } from "@/components/providers";
 import { NavbarGate } from "@/components/NavbarGate";
-import { Toaster } from "@workspace/ui/components/sonner";
+import { Toaster } from "@workspace/ui/primitives/sonner";
 import { MissionsSyncAgent } from "@/components/MissionsSyncAgent";
 import { AuthModalGate } from "@/components/AuthModalGate";
 import { ProfileSyncAgent } from "@/components/ProfileSyncAgent";

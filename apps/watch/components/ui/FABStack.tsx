@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/il8n/provider";
 import { useTranslations } from "@/lib/il8n/useTranslations";
 import {
@@ -45,22 +45,18 @@ export default function FABStack({
   const { t } = useTranslations();
   const [compact, setCompact] = useState(false);
 
-  // hydrate compact preference
-  if (
-    typeof window !== "undefined" &&
-    !compact &&
-    localStorage.getItem("fab_compact") === "1"
-  ) {
-    // minimal hydration without useEffect to avoid flicker
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    setCompact(true);
-  }
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("fab_compact") === "1") setCompact(true);
+  }, []);
 
   const setCompactPersist = (v: boolean) => {
     setCompact(v);
     try {
       localStorage.setItem("fab_compact", v ? "1" : "0");
-    } catch {}
+    } catch (error) {
+      console.error("Failed to persist FAB compact setting", error);
+    }
   };
 
   const label = (icon: React.ReactNode, text: string) =>

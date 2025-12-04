@@ -5,7 +5,7 @@ import {
   DispatchStoreContext,
   useDispatchStore,
 } from "@/providers/DispatchStoreProvider";
-import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/DispatchShiftsLayout";
+import { DispatchShiftsLayout } from "@workspace/ui/layout/dispatch/dispatch-shifts-layout";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { usePodStore } from "@/providers/PodStoreProvider";
 
@@ -25,12 +25,12 @@ function mapRowToDispatchShift(row: any): DispatchShift {
         ? row.profile.display_name
         : row?.volunteerName,
     startsAt: String(
-      row?.starts_at ?? row?.startsAt ?? new Date().toISOString(),
+      row?.starts_at ?? row?.startsAt ?? new Date().toISOString()
     ),
     endsAt: String(
       row?.ends_at ??
-      row?.endsAt ??
-      new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        row?.endsAt ??
+        new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
     ),
     notes: typeof row?.notes === "string" ? row.notes : undefined,
   } as DispatchShift;
@@ -54,7 +54,7 @@ async function fetchDispatchShiftsFromDatabase(): Promise<
 async function upsertDispatchShiftToDatabase(
   shift: DispatchShift,
   pods: Pod[],
-  roster: RosterEntry[],
+  roster: RosterEntry[]
 ): Promise<void> {
   // volunteerId from UI is a roster entry id; map to roster_entries.profile_id (or profile.id) if possible
   let volunteer_profile_id: string | null = null;
@@ -66,7 +66,7 @@ async function upsertDispatchShiftToDatabase(
     const uuidRe =
       /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const byProfileId = roster.find(
-      (m: any) => m.profile?.id === shift.volunteerId,
+      (m: any) => m.profile?.id === shift.volunteerId
     )?.profile?.id;
     const fromRosterProfileFk = fromRoster?.profile_id as string | undefined;
     const fromPodProfileFk = (fromPod as any)?.profile_id as string | undefined;
@@ -86,7 +86,7 @@ async function upsertDispatchShiftToDatabase(
     if (!volunteer_profile_id) {
       try {
         const response = await fetch(
-          `/api/roster?pod_id=${shift.podId}`, // Optimization: could filter by ID if API supported it, but pod_id is okay
+          `/api/roster?pod_id=${shift.podId}` // Optimization: could filter by ID if API supported it, but pod_id is okay
         );
         if (response.ok) {
           const { roster: rData } = await response.json();
@@ -136,7 +136,7 @@ export default function SchedulesPage() {
   const dispatchStore = React.useContext(DispatchStoreContext);
   if (!dispatchStore) {
     throw new Error(
-      "DispatchShiftsDataLayer must be used within DispatchStoreProvider",
+      "DispatchShiftsDataLayer must be used within DispatchStoreProvider"
     );
   }
 
@@ -175,7 +175,7 @@ export default function SchedulesPage() {
         if (!cancelled) {
           console.warn(
             "DispatchShiftsDataLayer: failed to fetch shifts",
-            error,
+            error
           );
         }
       } finally {
@@ -197,11 +197,11 @@ export default function SchedulesPage() {
     : getActiveShifts();
   const upcomingShifts = remoteShifts
     ? remoteShifts
-      .filter((shift) => new Date(shift.startsAt) > new Date())
-      .sort(
-        (a, b) =>
-          new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-      )
+        .filter((shift) => new Date(shift.startsAt) > new Date())
+        .sort(
+          (a, b) =>
+            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+        )
     : getUpcomingShifts(24);
   // Use stable placeholder data until mounted to avoid hydration mismatches
   const effShifts = mounted ? mergedShifts : [];
@@ -228,7 +228,7 @@ export default function SchedulesPage() {
         setRemoteShifts((prev) => (prev ? [...prev, added] : prev));
       }
     },
-    [addShift, dispatchStore, pods, roster],
+    [addShift, dispatchStore, pods, roster]
   );
 
   const handleUpdateShift = React.useCallback(
@@ -245,10 +245,10 @@ export default function SchedulesPage() {
         });
       }
       setRemoteShifts((prev) =>
-        prev && updated ? prev.map((s) => (s.id === id ? updated : s)) : prev,
+        prev && updated ? prev.map((s) => (s.id === id ? updated : s)) : prev
       );
     },
-    [dispatchStore, updateShift, pods, roster],
+    [dispatchStore, updateShift, pods, roster]
   );
 
   const handleRemoveShift = React.useCallback(
@@ -261,10 +261,10 @@ export default function SchedulesPage() {
       });
       removeShift(shiftId);
       setRemoteShifts((prev) =>
-        prev ? prev.filter((shift) => shift.id !== shiftId) : prev,
+        prev ? prev.filter((shift) => shift.id !== shiftId) : prev
       );
     },
-    [removeShift],
+    [removeShift]
   );
 
   return (

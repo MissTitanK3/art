@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SignUpCard } from "@/components/auth/SignUpCard";
+// import { SignUpCard } from "@workspace/ui/patterns/features/auth/sign-up-card";
 
 export const metadata: Metadata = {
   title: "Sign up",
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default async function SignUpPage() {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-2xl flex-col px-4 pb-12 pt-6">
-      <SignUpCard />
+      {/* <SignUpCard onSubmit={() => {}} /> */}
     </main>
   );
 }

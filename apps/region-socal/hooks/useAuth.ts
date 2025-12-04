@@ -10,5 +10,3 @@ export function useAuthUser() {
   const { user } = useAuthContext();
   return user;
 }
-
-// sync me

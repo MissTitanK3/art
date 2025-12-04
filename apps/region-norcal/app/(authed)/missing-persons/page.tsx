@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
-import { MissingPersonsDirectory } from "@workspace/ui/components/missing-persons/MissingPersonsDirectory";
+import { MissingPersonsDirectory } from "@workspace/ui/patterns/features/missing-persons/missing-persons-directory";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 
 export default function MissingPersonsPage() {

@@ -5,7 +5,6 @@ import { createSupabaseServerClient } from '@/lib/auth/supabase/server';
 import { getProfileByUserId } from '@/lib/dal/admin';
 import {
   type NavRole,
-  completeOnboarding,
 } from '@workspace/store/utils/nav';
 
 import { isSuspended, isVerified } from '@workspace/store/utils/access';

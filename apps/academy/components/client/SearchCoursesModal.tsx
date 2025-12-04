@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   CommandDialog,
   CommandInput,
@@ -10,7 +10,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-} from "@workspace/ui/components/command";
+} from "@workspace/ui/primitives/command";
 import { Search } from "lucide-react";
 
 type IndexItem = {
@@ -56,7 +56,7 @@ function damerauLevenshtein(a: string, b: string, maxDist = 2): number {
   const max = al + bl;
   const da: Record<string, number> = {};
   const d: number[][] = Array.from({ length: al + 2 }, () =>
-    new Array(bl + 2).fill(0),
+    new Array(bl + 2).fill(0)
   );
   d[0]![0] = max;
   for (let i = 0; i <= al; i++) {
@@ -82,7 +82,7 @@ function damerauLevenshtein(a: string, b: string, maxDist = 2): number {
         d[i]![j]! + cost, // substitution
         d[i + 1]![j]! + 1, // insertion
         d[i]![j + 1]! + 1, // deletion
-        d[i1]![j1]! + (i - i1 - 1) + 1 + (j - j1 - 1), // transposition
+        d[i1]![j1]! + (i - i1 - 1) + 1 + (j - j1 - 1) // transposition
       );
       const cell = d[i + 1]![j + 1]!;
       if (cell < rowMin) rowMin = cell;
@@ -98,7 +98,7 @@ function minWordDistance(
   haystack: string,
   needle: string,
   maxDist = 2,
-  maxWords = 24,
+  maxWords = 24
 ): number {
   const words = tokenize(haystack);
   return minWordDistanceTokens(words, needle, maxDist, maxWords);
@@ -108,7 +108,7 @@ function minWordDistanceTokens(
   words: string[],
   needle: string,
   maxDist = 2,
-  maxWords = 24,
+  maxWords = 24
 ): number {
   let best = maxDist + 1;
   for (let i = 0; i < words.length && i < maxWords; i++) {
@@ -122,7 +122,7 @@ function minWordDistanceTokens(
 function phraseProximityScore(
   s: string,
   tokens: string[],
-  baseWeight: number,
+  baseWeight: number
 ): number {
   // Rough span-based proximity: find first occurrence of each token; score higher when close
   const positions = tokens
@@ -139,7 +139,7 @@ function phraseProximityScore(
 function scorePrepared(
   item: PreparedIndexItem,
   q: string,
-  tokens: string[],
+  tokens: string[]
 ): number {
   const query = norm(q);
   if (!tokens.length) return 0;
@@ -248,7 +248,7 @@ function snippetHtml(text: string, q: string, radius = 60): string {
   const start = Math.max(0, i - radius);
   const end = Math.min(
     text.length,
-    i + (tokens[0]?.length ?? q.length) + radius,
+    i + (tokens[0]?.length ?? q.length) + radius
   );
   const slice = text.slice(start, end);
 

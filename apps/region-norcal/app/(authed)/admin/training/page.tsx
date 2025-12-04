@@ -9,7 +9,7 @@ import type {
 
 function mapRowToSession(
   row: any,
-  bySession: Record<string, AcademyTrainingSessionParticipant[]>,
+  bySession: Record<string, AcademyTrainingSessionParticipant[]>
 ): AcademyTrainingSession {
   return {
     id: String(row.id),
@@ -43,15 +43,17 @@ export default function AdminTrainingPage() {
       try {
         const res = await fetch("/api/admin/academy/sessions");
         if (!res.ok) throw new Error("Failed to load sessions");
-        const { sessions: sessionsData, participants: participantsData } = await res.json();
+        const { sessions: sessionsData, participants: participantsData } =
+          await res.json();
 
         if (cancelled) return;
 
-        const bySession: Record<string, AcademyTrainingSessionParticipant[]> = {};
+        const bySession: Record<string, AcademyTrainingSessionParticipant[]> =
+          {};
         for (const p of participantsData ?? []) {
           const sid = String(p.session_id);
-          if (!bySession[sid]) bySession[sid] = [];
-          bySession[sid].push({
+          const participants = (bySession[sid] ??= []);
+          participants.push({
             id: String(p.id),
             name: String(p.name ?? ""),
             signalHandle: p.signal_handle ?? undefined,
@@ -61,7 +63,7 @@ export default function AdminTrainingPage() {
         }
 
         const mapped = (sessionsData ?? []).map((row: any) =>
-          mapRowToSession(row, bySession),
+          mapRowToSession(row, bySession)
         );
         setSessions(mapped);
       } catch (e) {
@@ -76,7 +78,7 @@ export default function AdminTrainingPage() {
     };
   }, []);
 
-  if (loading) return null; // Or a loading spinner
+  if (loading) return null;
 
   return <TrainingClient initialSessions={sessions} />;
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { triggerResonance } from "@/lib/resonanceClient";
-import ThemeToggle from "@workspace/ui/components/client/ThemeToggle";
+import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,7 +58,7 @@ function AuthControls() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) =>
-      setSession(s),
+      setSession(s)
     );
     return () => sub.subscription.unsubscribe();
   }, []);

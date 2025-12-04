@@ -8,11 +8,11 @@ import { usePodStore } from "@/providers/PodStoreProvider";
 import {
   ClassAssignmentContent,
   type InstructorOption,
-} from "@workspace/ui/components/academy/ClassAssignmentContent";
+} from "@workspace/ui/patterns/features/academy/class-assignment-content";
 import type { AcademyClass } from "@workspace/store/usePodStore";
-import { CreatePathwayClassContent } from "@workspace/ui/components/academy/CreatePathwayClassContent";
+import { CreatePathwayClassContent } from "@workspace/ui/patterns/features/academy/create-pathway-class-content";
 import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
-import { toast } from "@workspace/ui/components/sonner";
+import { toast } from "@workspace/ui/primitives/sonner";
 
 type Params = { id: string };
 type PageProps = {
@@ -504,7 +504,9 @@ function CreatePathwayClassDataLayer({
 }
 
 export default function CreatePathwayClassPage({ params }: PageProps) {
-  const [resolvedParams, setResolvedParams] = React.useState<Params | null>(null);
+  const [resolvedParams, setResolvedParams] = React.useState<Params | null>(
+    null
+  );
 
   React.useEffect(() => {
     let active = true;

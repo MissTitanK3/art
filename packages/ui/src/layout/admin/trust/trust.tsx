@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
+} from "@workspace/ui/primitives/card";
 import {
   Table,
   TableBody,
@@ -16,30 +16,30 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/table";
-import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
+} from "@workspace/ui/primitives/table";
+import { Button } from "@workspace/ui/primitives/button";
+import { Label } from "@workspace/ui/primitives/label";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { Badge } from "@workspace/ui/components/badge";
+} from "@workspace/ui/primitives/dialog";
+import { Badge } from "@workspace/ui/primitives/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
-import { Input } from "@workspace/ui/components/input";
+} from "@workspace/ui/primitives/select";
+import { Input } from "@workspace/ui/primitives/input";
 import { toast } from "sonner";
 import { Plus, PauseCircle, PlayCircle, Download } from "lucide-react";
 import { humanize } from "@workspace/ui/lib/utils";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
-import { Callout } from "@workspace/ui/components/academy/Callout";
+import { Callout } from "@workspace/ui/patterns/features/academy/callout";
 
 type Props = {
   initialEntries: TrustEntry[];
@@ -72,7 +72,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
         hour12: true,
         timeZone: "UTC",
       }),
-    [],
+    []
   );
   const [now, setNow] = React.useState<number | null>(null);
   React.useEffect(() => {
@@ -148,8 +148,8 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                   ? new Date().toISOString()
                   : row.signed_at,
             }
-          : row,
-      ),
+          : row
+      )
     );
     try {
       const res = await fetch(
@@ -162,13 +162,13 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
             signed_at:
               nextStatus === "active" ? new Date().toISOString() : undefined,
           }),
-        },
+        }
       );
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       toast.success(
         nextStatus === "active"
           ? "Entry resumed — check-in reset"
-          : "Entry deactivated",
+          : "Entry deactivated"
       );
     } catch (err: any) {
       toast.error(err?.message ?? "Update failed");
@@ -427,7 +427,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                           const dueAt =
                             signedAt + CHECKIN_DAYS * 24 * 60 * 60 * 1000;
                           const diffDays = Math.ceil(
-                            (dueAt - now) / (24 * 60 * 60 * 1000),
+                            (dueAt - now) / (24 * 60 * 60 * 1000)
                           );
                           if (diffDays < 0) {
                             return (

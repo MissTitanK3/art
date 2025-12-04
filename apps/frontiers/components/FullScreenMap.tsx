@@ -9,7 +9,7 @@ import {
   Circle,
   Tooltip,
 } from "react-leaflet";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +49,10 @@ import { MenuPopover } from "@/components/map/MenuPopover";
 import { computeSignalPoints } from "@/lib/map/signalLayout";
 import { HelpSheet } from "@/components/map/HelpSheet";
 import { StatusPanel } from "@/components/map/StatusPanel";
-import { FogDiscoveryWatcher, FogOfWarOverlay } from "@/components/map/FogOfWarOverlay";
+import {
+  FogDiscoveryWatcher,
+  FogOfWarOverlay,
+} from "@/components/map/FogOfWarOverlay";
 import { RealtimeLayer } from "@/components/map/RealtimeLayer";
 import { MapControls } from "@/components/map/MapControls";
 import { useFogOfWarStore } from "@/store/useFogOfWarStore";
@@ -115,7 +118,7 @@ export function FullScreenMap() {
 
   const center = useMemo<[number, number]>(
     () => [location?.lat ?? 37.8, location?.lng ?? -96],
-    [location?.lat, location?.lng],
+    [location?.lat, location?.lng]
   );
 
   useEffect(() => {
@@ -138,7 +141,7 @@ export function FullScreenMap() {
 
   const handleDockRest = useCallback(
     () => onDockRest(location),
-    [onDockRest, location],
+    [onDockRest, location]
   );
 
   const handleSetDockHere = useCallback(async () => {
@@ -177,9 +180,9 @@ export function FullScreenMap() {
         getPosition,
         setLocation,
         setError,
-        activeProvider.maxNativeZoom,
+        activeProvider.maxNativeZoom
       ),
-    [centerOnMe, map, getPosition, setLocation, setError, activeProvider],
+    [centerOnMe, map, getPosition, setLocation, setError, activeProvider]
   );
 
   const handleMapRef = useCallback((m: LeafletMap | null) => {
@@ -195,7 +198,7 @@ export function FullScreenMap() {
         ringStep: 0.02,
         seasonColors: (seasonReward && (seasonReward as any).colors) || null,
       }),
-    [signals, filters, center, seasonReward],
+    [signals, filters, center, seasonReward]
   );
 
   const zoomIn = useCallback(() => {
@@ -226,7 +229,7 @@ export function FullScreenMap() {
       });
       // Do not reveal fog on camera pan; only reveal on actual location updates/POIs
     },
-    [map],
+    [map]
   );
 
   const handlePoiSelect = useCallback(
@@ -245,7 +248,7 @@ export function FullScreenMap() {
         kind: "poi",
       });
     },
-    [addJournalEntry, markFog, markSignalDiscovered, pushRealtimeEvent],
+    [addJournalEntry, markFog, markSignalDiscovered, pushRealtimeEvent]
   );
 
   const focusOnActive = useCallback(() => {
@@ -445,9 +448,7 @@ export function FullScreenMap() {
                 </Button>
               </div>
               <div className="rounded-md border p-3 bg-muted/40">
-                <div className="text-sm font-semibold mb-1">
-                  Repair Puzzle
-                </div>
+                <div className="text-sm font-semibold mb-1">Repair Puzzle</div>
                 <RepairPuzzle signal={active.signal} />
               </div>
             </div>

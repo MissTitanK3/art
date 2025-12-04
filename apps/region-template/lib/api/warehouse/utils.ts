@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
-import { WarehouseRecord } from "@workspace/ui/components/warehouse/types";
+import { WarehouseRecord } from "@workspace/ui/patterns/features/warehouse/types";
 
 // Generate unique IDs
 export function generateId(): string {

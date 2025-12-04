@@ -3,6 +3,9 @@ import { jsonError } from '@/lib/api/responses';
 import { getAuthenticatedProfile, normalizeWarehouse } from '@/lib/api/warehouse/utils';
 import type { UpdateWarehouseRequest } from '@/lib/api/warehouse/types';
 
+type ZoneUpdate = NonNullable<UpdateWarehouseRequest['zones']>[number];
+type BinUpdate = ZoneUpdate['bins'][number];
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -32,6 +35,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // Handle zones and bins updates
     if (updates.zones) {
+      const zones: ZoneUpdate[] = updates.zones;
+
       const { data: existingZones } = await supabase
         .from('warehouse_zones')
         .select('id, name')
@@ -40,7 +45,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       const existingZoneIds = new Set<string>(
         (existingZones ?? []).map((z: { id: string }) => z.id),
       );
-      const updatedZoneIds = new Set<string>(updates.zones.map((z) => z.id));
+      const updatedZoneIds = new Set<string>(zones.map((zone) => zone.id));
 
       // Delete removed zones
       const zonesToDelete = Array.from(existingZoneIds).filter((id) => !updatedZoneIds.has(id));
@@ -52,7 +57,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
 
       // Process each zone
-      for (const zone of updates.zones) {
+      for (const zone of zones) {
+        const zoneBins: BinUpdate[] = zone.bins;
+
         if (zone.id.startsWith('temp-')) {
           // Insert new zone
           const { data: newZone, error: zoneError } = await supabase
@@ -68,8 +75,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           if (zoneError || !newZone) continue;
 
           // Insert bins for new zone
-          if (zone.bins.length > 0) {
-            const binsToInsert = zone.bins.map((bin) => ({
+          if (zoneBins.length > 0) {
+            const binsToInsert = zoneBins.map((bin) => ({
               zone_id: newZone.id,
               label: bin.label,
               sort_order: bin.sortOrder,
@@ -93,7 +100,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             (existingBins ?? []).map((b: { id: string }) => b.id),
           );
           const updatedBinIds = new Set<string>(
-            zone.bins.filter((b) => !b.id.startsWith('temp-')).map((b) => b.id),
+            zoneBins.filter((b) => !b.id.startsWith('temp-')).map((b) => b.id),
           );
 
           // Delete removed bins
@@ -106,7 +113,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           }
 
           // Update or insert bins
-          for (const bin of zone.bins) {
+          for (const bin of zoneBins) {
             if (bin.id.startsWith('temp-')) {
               await supabase.from('warehouse_bins').insert({
                 zone_id: zone.id,

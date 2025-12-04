@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Plus,
   Minus,
@@ -28,7 +28,9 @@ export function MapControls({
 }) {
   return (
     <div className="rounded-md border bg-card/90 backdrop-blur px-2 py-2 shadow-md flex flex-col items-center gap-2 w-28">
-      <div className="text-xs text-muted-foreground">Zoom {zoom.toFixed(1)}</div>
+      <div className="text-xs text-muted-foreground">
+        Zoom {zoom.toFixed(1)}
+      </div>
       <div className="flex items-center gap-2">
         <Button
           size="icon"

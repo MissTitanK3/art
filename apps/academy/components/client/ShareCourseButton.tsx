@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
 

@@ -5,8 +5,8 @@ import { useAuthContext } from "@/providers/AuthProvider";
 import {
   ConfirmedWatchForm as UIConfirmedWatchForm,
   type ConfirmedWatchPayload,
-} from "@workspace/ui/components/client/watch/ConfirmedWatchForm";
-import { toast } from "@workspace/ui/components/sonner";
+} from "@workspace/ui/patterns/features/watch/confirmed-watch-form";
+import { toast } from "@workspace/ui/primitives/sonner";
 
 export default function ConfirmedWatchForm() {
   const { user } = useAuthContext();

@@ -4,15 +4,15 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@workspace/ui/components/popover";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/popover";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
+} from "@workspace/ui/primitives/select";
 import { Map as MapIcon } from "lucide-react";
 import type { TileProvider } from "@/lib/map/tiles";
 

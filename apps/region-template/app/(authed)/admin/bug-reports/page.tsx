@@ -4,11 +4,11 @@ import * as React from "react";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import BugReportList, {
   type BugReportRow,
-} from "@workspace/ui/components/admin/bug-reports/BugReportList";
+} from "@workspace/ui/patterns/features/bug-reports/bug-report-list";
 import type {
   BugArea,
   BugStatus,
-} from "@workspace/ui/components/admin/bug-report-selects";
+} from "@workspace/ui/patterns/features/admin/bug-report-selects";
 
 export default function AdminBugReportsPage() {
   const [rows, setRows] = React.useState<BugReportRow[]>([]);
@@ -87,7 +87,7 @@ export default function AdminBugReportsPage() {
         setLoading(false);
       }
     },
-    [status, area, sortBy, sortDir],
+    [status, area, sortBy, sortDir]
   );
 
   React.useEffect(() => {

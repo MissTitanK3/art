@@ -8,11 +8,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
-import DonutChart from "@workspace/ui/components/charts/DonutChart";
-import StatCard from "@workspace/ui/components/stat-card";
-import NavTile from "@workspace/ui/components/nav-tile";
+} from "@workspace/ui/primitives/card";
+import { Button } from "@workspace/ui/primitives/button";
+import DonutChart from "@workspace/ui/patterns/features/charts/donut-chart";
+import StatCard from "@workspace/ui/patterns/common/stat-card";
+import NavTile from "@workspace/ui/patterns/common/nav-tile";
 import { toWatchReports } from "@workspace/ui/lib/adapters/dispatch-to-watch";
 import {
   FileChartLine,
@@ -28,11 +28,12 @@ import {
   Bug,
   CalendarDays,
 } from "lucide-react";
-import { toast } from "@workspace/ui/components/sonner";
-import AdminNotificationForm, {
+import { toast } from "@workspace/ui/primitives/sonner";
+import {
+  AdminNotificationForm,
+  AdminNotificationTemplatePanel,
   type SendArgs,
-} from "@workspace/ui/components/admin/notifications/AdminNotificationForm";
-import { AdminNotificationTemplatePanel } from "@workspace/ui/components/admin/notifications/AdminNotificationTemplatePanel";
+} from "@workspace/ui/patterns/features/notifications";
 import { ADMIN_NOTIFICATION_TEMPLATES } from "@workspace/store/admin/notifications/templates";
 
 import type { WizardReport } from "@workspace/store/types/watch.ts";
@@ -44,7 +45,7 @@ import { useProfileStore } from "@workspace/store/useProfileStore";
 
 // Map component (client-only)
 const WatchMap = dynamic(
-  () => import("@workspace/ui/components/client/watch/WatchMap"),
+  () => import("@workspace/ui/patterns/features/watch/watch-map"),
   { ssr: false }
 );
 

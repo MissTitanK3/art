@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import type { PositionTemplate, Assignment } from "@/schemas/positions";
 import type { CrewCatalog } from "@/schemas/crew";
 import {
@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
+} from "@workspace/ui/primitives/select";
 
 type HiredItem = {
   profile_id: string;
@@ -27,13 +27,13 @@ export function StaffingTab(props: {
   hiredCrew: HiredItem[];
   autoStrategy: "balanced" | "max-repair" | "max-signal" | "max-morale";
   setAutoStrategy: (
-    s: "balanced" | "max-repair" | "max-signal" | "max-morale",
+    s: "balanced" | "max-repair" | "max-signal" | "max-morale"
   ) => void;
   saveAssignment: (
     position_id: string,
     slot_index: number,
     shift: number,
-    crew_id: string | null,
+    crew_id: string | null
   ) => void;
   autoAssign: () => void;
 }) {
@@ -108,7 +108,7 @@ export function StaffingTab(props: {
                           (a) =>
                             a.position_id === p.position_id &&
                             a.slot_index === sIdx &&
-                            a.shift === shIdx + 1,
+                            a.shift === shIdx + 1
                         );
                         const selectedId = current?.crew_id || "";
                         return (
@@ -126,7 +126,7 @@ export function StaffingTab(props: {
                                   p.position_id,
                                   sIdx,
                                   shIdx + 1,
-                                  v === "none" ? null : v,
+                                  v === "none" ? null : v
                                 )
                               }
                             >

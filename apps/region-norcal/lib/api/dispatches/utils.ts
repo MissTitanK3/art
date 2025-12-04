@@ -1,6 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 
-// Auth helper: get authenticated user profile for dispatches API routes
 export async function getAuthenticatedProfile() {
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();

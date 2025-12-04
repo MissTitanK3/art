@@ -99,7 +99,8 @@ const STATUS_ORDER: Record<RegionOperationalMinimumSnapshot['coverageStatus'], n
 };
 
 function humanizeKey(key: string): string {
-  if (DEFAULT_LABEL_FALLBACKS[key]) return DEFAULT_LABEL_FALLBACKS[key];
+  const fallback = DEFAULT_LABEL_FALLBACKS[key];
+  if (fallback) return fallback;
   return key
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')

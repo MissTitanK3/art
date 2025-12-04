@@ -2,7 +2,7 @@ import {
   FIELD_ROLE_DETAILS,
   FIELD_ROLE_LABELS,
 } from "@workspace/store/types/roles.ts";
-import { Card, CardContent } from "@workspace/ui/components/card";
+import { Card, CardContent } from "@workspace/ui/primitives/card";
 
 const riskOrder = {
   high: 0,
@@ -68,7 +68,7 @@ export default function RolesPage() {
                 </p>
               </CardContent>
             </Card>
-          ),
+          )
         )}
       </div>
     </div>

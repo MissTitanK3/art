@@ -7,7 +7,7 @@ import type {
   OrgNorms,
   OrgPod,
   OrgPoll,
-} from "@workspace/ui/components/client/orgs/types";
+} from "@workspace/ui/patterns/features/orgs";
 
 function mapOrgRow(row: any): Org {
   return {

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { DispatchListLayout } from "@workspace/ui/layout/dispatch/DispatchListLayout";
+import { DispatchListLayout } from "@workspace/ui/layout/dispatch/dispatch-list-layout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
 
@@ -19,7 +19,7 @@ type ListFilters = {
 };
 
 async function fetchDispatchesFromDatabase(
-  filters?: ListFilters,
+  filters?: ListFilters
 ): Promise<DispatchSubmission[] | null> {
   try {
     const params = new URLSearchParams();
@@ -60,7 +60,7 @@ export default function DispatchesPage() {
       setLoading(true);
       try {
         const paramsRecord = Object.fromEntries(
-          (searchParams ?? new URLSearchParams()).entries(),
+          (searchParams ?? new URLSearchParams()).entries()
         );
         const filters: ListFilters = {
           q: paramsRecord.q,
@@ -87,7 +87,7 @@ export default function DispatchesPage() {
         if (!cancelled) {
           console.warn(
             "DispatchListDataLayer: failed to fetch dispatches",
-            error,
+            error
           );
         }
       } finally {
@@ -112,7 +112,7 @@ export default function DispatchesPage() {
     return unique.sort(
       (a, b) =>
         new Date(a.date_of_event ?? a.timestamp).getTime() -
-        new Date(b.date_of_event ?? b.timestamp).getTime(),
+        new Date(b.date_of_event ?? b.timestamp).getTime()
     );
   }, [remoteSubmissions, submissions]);
 
@@ -120,7 +120,7 @@ export default function DispatchesPage() {
     <DispatchListLayout
       submissions={data}
       initialUrlParams={Object.fromEntries(
-        (searchParams ?? new URLSearchParams()).entries(),
+        (searchParams ?? new URLSearchParams()).entries()
       )}
       onUrlChange={(url) => router.replace(url)}
       persistKey={`dispatchList.filters:${REGION_IDENTIFIER}`}

@@ -33,7 +33,7 @@ type ProfileStoreProviderProps = PropsWithChildren<{
 }>;
 
 const ProfileStoreContext = createContext<StoreApi<ProfileStoreState> | null>(
-  null,
+  null
 );
 
 const PROFILE_SYNC_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -48,11 +48,11 @@ export function ProfileStoreProvider({
   const storeRef = useRef<ProfileStore | null>(null);
   const resolvedStorageKey = useMemo(
     () => resolveScopedStorageKey(PROFILE_BASE_STORAGE_KEY, storageKey),
-    [storageKey],
+    [storageKey]
   );
   const legacyKeys = useMemo(
     () => legacyStorageKeyCandidates(PROFILE_BASE_STORAGE_KEY, storageKey),
-    [storageKey],
+    [storageKey]
   );
 
   if (!storeRef.current) {
@@ -87,9 +87,6 @@ export function ProfileStoreProvider({
     return () => unsubscribe();
   }, []);
 
-  // Centralized hydrator: if profile role is missing, try to fetch profile from adapter
-  // and populate the profile store. This mirrors the behavior users see when visiting
-  // the profile page but keeps it centralized for the app.
   const { session } = useAuth();
   const { profileAdapter } = useRegionAdapters();
 
@@ -102,7 +99,7 @@ export function ProfileStoreProvider({
 
     async function ensureProfile() {
       if (cancelled) return;
-      const s = store!; // narrowed, provider ensures storeRef.current exists
+      const s = store!;
       const state = s.getState();
       const profile = state.profile;
       const userId = session?.user?.id ?? profile?.user_id;
@@ -115,7 +112,8 @@ export function ProfileStoreProvider({
       const now = Date.now();
       const needsInitialProfile = profile == null;
       const isStale =
-        !!profile && (!lastSyncedAt || now - lastSyncedAt > PROFILE_SYNC_TTL_MS);
+        !!profile &&
+        (!lastSyncedAt || now - lastSyncedAt > PROFILE_SYNC_TTL_MS);
       if (!needsInitialProfile && !isStale) return;
       if (isFetching.current) return;
 
@@ -124,7 +122,6 @@ export function ProfileStoreProvider({
         const remote = await profileAdapter.loadProfile(userId);
         if (cancelled) return;
         if (remote) {
-          // set into the per-app store; provider's subscription will mirror to singleton
           s.getState().setProfile(remote as Profile, new Date().toISOString());
         }
       } catch (err) {
@@ -152,14 +149,14 @@ function useProfileStoreContext() {
   const store = useContext(ProfileStoreContext);
   if (!store)
     throw new Error(
-      "useProfileStore must be used within a ProfileStoreProvider",
+      "useProfileStore must be used within a ProfileStoreProvider"
     );
   return store;
 }
 
 export function useProfileStore<T>(
   selector: (state: ProfileStoreState) => T,
-  equalityFn?: (a: T, b: T) => boolean,
+  equalityFn?: (a: T, b: T) => boolean
 ) {
   const store = useProfileStoreContext();
   return equalityFn

@@ -5,10 +5,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfileStore } from "@/store/useProfileStore";
 import { useShipStore } from "@/store/useShipStore";
 import Link from "next/link";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { fetchCurrentShipCached } from "@/lib/shipsApi";
 
-function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
+function MiniStat({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
   return (
     <div className="flex flex-col gap-0.5 w-24">
       <div className="flex justify-between text-[10px] text-muted-foreground">
@@ -85,7 +93,9 @@ export function ShipSelectionBanner() {
     <div className="fixed bottom-3 inset-x-0 flex justify-center z-50 pointer-events-none">
       <div className="pointer-events-auto max-w-3xl w-[95%] rounded-md border bg-card/95 backdrop-blur px-4 py-2 shadow-lg flex items-center justify-between gap-4 animate-in slide-in-from-bottom-2">
         <div className="flex items-center gap-4">
-          <div className="font-medium text-sm hidden sm:block">{shipName || "Current Ship"}</div>
+          <div className="font-medium text-sm hidden sm:block">
+            {shipName || "Current Ship"}
+          </div>
           <div className="flex items-center gap-3">
             <MiniStat
               label="Hull"

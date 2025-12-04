@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
   DialogContent,
@@ -223,7 +223,8 @@ export function CurrentTab(props: {
                         Upkeep {currentShip.ship.upkeep_cost}/day
                       </span>
                       <span className="rounded bg-muted px-1 py-0.5">
-                        Fuel eff. {pct(Number(currentShip.ship.fuel_efficiency))}
+                        Fuel eff.{" "}
+                        {pct(Number(currentShip.ship.fuel_efficiency))}
                       </span>
                       <span className="rounded bg-muted px-1 py-0.5">
                         Power cap {currentShip.ship.power_capacity}
@@ -232,11 +233,15 @@ export function CurrentTab(props: {
                         Morale {pct(Number(currentShip.ship.morale_influence))}
                       </span>
                       <span className="rounded bg-muted px-1 py-0.5">
-                        Depreciation {pct(Number(currentShip.ship.depreciation_rate))}
+                        Depreciation{" "}
+                        {pct(Number(currentShip.ship.depreciation_rate))}
                       </span>
                       {currentShip.ship.sector_bonus
                         ? Object.entries(
-                            currentShip.ship.sector_bonus as Record<string, number>,
+                            currentShip.ship.sector_bonus as Record<
+                              string,
+                              number
+                            >
                           ).map(([region, bonus]) => (
                             <span
                               key={region}
@@ -277,25 +282,25 @@ export function CurrentTab(props: {
                   effects={
                     derivedBonuses
                       ? (
-                        [
                           [
-                            "repair_bonus",
-                            Number(derivedBonuses["repair_bonus"] || 0),
-                          ],
-                          [
-                            "integrity_upkeep",
-                            Number(derivedBonuses["integrity_upkeep"] || 0),
-                          ],
-                        ] as Array<[string, number]>
-                      ).filter(([, v]) => v !== 0)
+                            [
+                              "repair_bonus",
+                              Number(derivedBonuses["repair_bonus"] || 0),
+                            ],
+                            [
+                              "integrity_upkeep",
+                              Number(derivedBonuses["integrity_upkeep"] || 0),
+                            ],
+                          ] as Array<[string, number]>
+                        ).filter(([, v]) => v !== 0)
                       : undefined
                   }
                   extraTooltipLines={[
                     ...(derivedBreakdown
                       ? [
-                        ...(derivedBreakdown.auras || []),
-                        ...(derivedBreakdown.sets || []),
-                      ]
+                          ...(derivedBreakdown.auras || []),
+                          ...(derivedBreakdown.sets || []),
+                        ]
                       : []),
                     "Lowers: Damage taken during missions and events",
                     "Lowers: Natural wear over time (reduced by Integrity Upkeep)",
@@ -308,21 +313,21 @@ export function CurrentTab(props: {
                   effects={
                     derivedBonuses
                       ? (
-                        [
                           [
-                            "morale_recovery",
-                            Number(derivedBonuses["morale_recovery"] || 0),
-                          ],
-                        ] as Array<[string, number]>
-                      ).filter(([, v]) => v !== 0)
+                            [
+                              "morale_recovery",
+                              Number(derivedBonuses["morale_recovery"] || 0),
+                            ],
+                          ] as Array<[string, number]>
+                        ).filter(([, v]) => v !== 0)
                       : undefined
                   }
                   extraTooltipLines={[
                     ...(derivedBreakdown
                       ? [
-                        ...(derivedBreakdown.auras || []),
-                        ...(derivedBreakdown.sets || []),
-                      ]
+                          ...(derivedBreakdown.auras || []),
+                          ...(derivedBreakdown.sets || []),
+                        ]
                       : []),
                     "Lowers: High fatigue and long shifts",
                     "Lowers: Mission failures or negative outcomes",
@@ -335,21 +340,21 @@ export function CurrentTab(props: {
                   effects={
                     derivedBonuses
                       ? (
-                        [
                           [
-                            "fatigue_reduction",
-                            Number(derivedBonuses["fatigue_reduction"] || 0),
-                          ],
-                        ] as Array<[string, number]>
-                      ).filter(([, v]) => v !== 0)
+                            [
+                              "fatigue_reduction",
+                              Number(derivedBonuses["fatigue_reduction"] || 0),
+                            ],
+                          ] as Array<[string, number]>
+                        ).filter(([, v]) => v !== 0)
                       : undefined
                   }
                   extraTooltipLines={
                     derivedBreakdown
                       ? [
-                        ...(derivedBreakdown.auras || []),
-                        ...(derivedBreakdown.sets || []),
-                      ]
+                          ...(derivedBreakdown.auras || []),
+                          ...(derivedBreakdown.sets || []),
+                        ]
                       : undefined
                   }
                 />
@@ -397,9 +402,9 @@ export function CurrentTab(props: {
                     ))}
                 </div>
                 <div className="text-[10px]">
-                  Tip: Component bonuses stack with staffing effects. For example,
-                  a Tier 3 Comms with strong Signal Yield and Clarity boosts scan
-                  payout and quality.
+                  Tip: Component bonuses stack with staffing effects. For
+                  example, a Tier 3 Comms with strong Signal Yield and Clarity
+                  boosts scan payout and quality.
                 </div>
                 <Dialog open={componentsOpen} onOpenChange={setComponentsOpen}>
                   <DialogContent className="sm:max-w-lg bg-card text-card-foreground">
@@ -417,7 +422,8 @@ export function CurrentTab(props: {
                               {it.slot}: {it.name}
                             </div>
                             <div className="text-[10px] text-muted-foreground">
-                              {it.tier ? `Tier ${it.tier} • ` : ""}Lvl {it.level}
+                              {it.tier ? `Tier ${it.tier} • ` : ""}Lvl{" "}
+                              {it.level}
                             </div>
                           </div>
                           {Object.keys(it.contributions).length ? (
@@ -425,7 +431,7 @@ export function CurrentTab(props: {
                               {Object.entries(it.contributions).map(
                                 ([kk, vv]) => (
                                   <ImpactChip key={kk} k={kk} v={Number(vv)} />
-                                ),
+                                )
                               )}
                             </div>
                           ) : (

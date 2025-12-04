@@ -2,8 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { Input } from "@workspace/ui/components/input";
-import ThemeToggle from "@workspace/ui/components/client/ThemeToggle";
+import { Input } from "@workspace/ui/primitives/input";
+import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 
 export type CourseSidebarGroup = {
   label: string;
@@ -32,7 +32,7 @@ export default function CourseSidebarList({
       .map((g) => ({
         ...g,
         courses: g.courses.filter(
-          (c) => norm(c.title).includes(q) || norm(c.slug).includes(q),
+          (c) => norm(c.title).includes(q) || norm(c.slug).includes(q)
         ),
       }))
       .filter((g) => g.courses.length > 0);

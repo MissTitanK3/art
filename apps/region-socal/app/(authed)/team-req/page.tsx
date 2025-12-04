@@ -3,19 +3,18 @@
 import { Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import TeamRequestForm from "@workspace/ui/components/client/team-request/TeamRequestForm";
+import TeamRequestForm from "@workspace/ui/patterns/features/team-request/team-request-form";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { TEAM_CONFIG_PRESETS } from "@workspace/store/types/roles.ts";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@workspace/ui/components/alert";
+} from "@workspace/ui/primitives/alert";
 
 async function createSubmissionInDatabase(
-  submission: DispatchSubmission,
+  submission: DispatchSubmission
 ): Promise<void> {
   try {
     // Use server API to insert and trigger notifications
@@ -140,7 +139,7 @@ function TeamRequestContent() {
               // Non-blocking: log but still update local store for UX continuity
               console.warn(
                 "TeamRequestDataLayer: failed to persist submission",
-                error,
+                error
               );
             }
             addSubmission(draft);

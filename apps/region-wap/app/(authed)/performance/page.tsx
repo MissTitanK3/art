@@ -1,11 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import { Switch } from "@workspace/ui/components/switch";
-import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
-import { Loader2, RefreshCcw, ShieldAlert, Timer, TrendingUp, Users, UserCheck } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/primitives/card";
+import { Switch } from "@workspace/ui/primitives/switch";
+import { Button } from "@workspace/ui/primitives/button";
+import { Badge } from "@workspace/ui/primitives/badge";
+import {
+  Loader2,
+  RefreshCcw,
+  ShieldAlert,
+  Timer,
+  TrendingUp,
+  Users,
+  UserCheck,
+} from "lucide-react";
 
 type DashboardResponse = {
   totals: {
@@ -87,29 +100,26 @@ export default function PerformancePage() {
   const [error, setError] = React.useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = React.useState<string | null>(null);
 
-  const fetchDashboard = React.useCallback(
-    async (showSpinner = true) => {
-      try {
-        if (showSpinner) setLoading(true);
-        setRefreshing(true);
-        setError(null);
-        const res = await fetch("/api/impact/dashboard", { cache: "no-store" });
-        if (!res.ok) {
-          const message = (await res.json())?.error;
-          throw new Error(message ?? "Unable to load dashboard");
-        }
-        const json = (await res.json()) as DashboardResponse;
-        setData(json);
-        setLastUpdated(new Date().toISOString());
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to load dashboard");
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
+  const fetchDashboard = React.useCallback(async (showSpinner = true) => {
+    try {
+      if (showSpinner) setLoading(true);
+      setRefreshing(true);
+      setError(null);
+      const res = await fetch("/api/impact/dashboard", { cache: "no-store" });
+      if (!res.ok) {
+        const message = (await res.json())?.error;
+        throw new Error(message ?? "Unable to load dashboard");
       }
-    },
-    [],
-  );
+      const json = (await res.json()) as DashboardResponse;
+      setData(json);
+      setLastUpdated(new Date().toISOString());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load dashboard");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   React.useEffect(() => {
     fetchDashboard();
@@ -162,7 +172,8 @@ export default function PerformancePage() {
         <div>
           <h1 className="text-2xl font-semibold">Impact Performance</h1>
           <p className="text-sm text-muted-foreground">
-            Live snapshot of volunteer throughput, neighbors served, and inbox risk.
+            Live snapshot of volunteer throughput, neighbors served, and inbox
+            risk.
           </p>
           {lastUpdated ? (
             <p className="text-xs text-muted-foreground">
@@ -179,7 +190,11 @@ export default function PerformancePage() {
               aria-label="Toggle high-risk metric"
             />
           </div>
-          <Button onClick={() => fetchDashboard(false)} variant="outline" size="sm">
+          <Button
+            onClick={() => fetchDashboard(false)}
+            variant="outline"
+            size="sm"
+          >
             {refreshing ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -219,17 +234,18 @@ export default function PerformancePage() {
                 )}
               </CardContent>
             </Card>
-          ),
+          )
         )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-            <CardTitle className="text-base font-semibold">Volunteer hours trend</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              Volunteer hours trend
+            </CardTitle>
             <Badge variant="outline" className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              8 weeks
+              <TrendingUp className="h-3 w-3" />8 weeks
             </Badge>
           </CardHeader>
           <CardContent>
@@ -238,7 +254,9 @@ export default function PerformancePage() {
             ) : (
               <TrendSparkline
                 label="Latest compared to 8-week baseline"
-                points={(data?.hoursTrend ?? []).map((point) => point.hours ?? 0)}
+                points={(data?.hoursTrend ?? []).map(
+                  (point) => point.hours ?? 0
+                )}
                 color="hsl(var(--primary))"
               />
             )}
@@ -247,10 +265,11 @@ export default function PerformancePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-            <CardTitle className="text-base font-semibold">People served trend</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              People served trend
+            </CardTitle>
             <Badge variant="outline" className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              8 weeks
+              <TrendingUp className="h-3 w-3" />8 weeks
             </Badge>
           </CardHeader>
           <CardContent>
@@ -259,7 +278,9 @@ export default function PerformancePage() {
             ) : (
               <TrendSparkline
                 label="Neighbors helped per week"
-                points={(data?.peopleTrend ?? []).map((point) => point.people ?? 0)}
+                points={(data?.peopleTrend ?? []).map(
+                  (point) => point.people ?? 0
+                )}
                 color="hsl(var(--primary))"
               />
             )}

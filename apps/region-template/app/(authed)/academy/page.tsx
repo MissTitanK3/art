@@ -3,11 +3,11 @@
 import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@workspace/ui/components/sonner";
+import { toast } from "@workspace/ui/primitives/sonner";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
-import { Button } from "@workspace/ui/components/button";
-import { PodAcademyDashboardLayout } from "@workspace/ui/layout/pods/PodAcademyDashboardLayout";
+import { Button } from "@workspace/ui/primitives/button";
+import { PodAcademyDashboardLayout } from "@workspace/ui/layout/pods/pod-academy-dashboard-layout";
 import { COURSE_BLUEPRINT } from "@workspace/ui/data/academy/course-blueprint";
 import type {
   AcademyCourseGroup,
@@ -573,10 +573,7 @@ function AcademyDashboardContent({
         cache: "no-store",
       });
     } catch (err) {
-      console.warn(
-        "[AcademyDashboard] readiness cache refresh failed",
-        err
-      );
+      console.warn("[AcademyDashboard] readiness cache refresh failed", err);
     }
   }, []);
   const profile = useProfileStore((s) => s.profile);

@@ -1,5 +1,5 @@
 import { humanize } from "../../lib/utils";
-import type { TrackVariant } from "../../components/academy/TrackBadge";
+import type { TrackVariant } from "@workspace/ui/patterns/features/academy/track-badge";
 import { GENERATED_ACADEMY_COURSE_GROUPS as ACADEMY_COURSE_GROUPS } from "./course-groups.generated";
 import { CUSTOM_ACADEMY_COURSE_GROUPS } from "./custom-groups";
 import { GENERATED_COURSE_DETAILS } from "./course-details.generated";

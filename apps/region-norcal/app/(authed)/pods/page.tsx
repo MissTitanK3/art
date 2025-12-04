@@ -6,12 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PodsListLayout } from "@workspace/ui/layout/pods/PodsListLayout";
-import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/PodsListLayout";
+import { PodsListLayout } from "@workspace/ui/layout/pods/pods-list-layout";
+import type { PodsListLayoutPod } from "@workspace/ui/layout/pods/pods-list-layout";
 import {
   PodCreatorLayout,
   PodCreatorLayoutErrors,
-} from "@workspace/ui/layout/pods/PodCreatorLayout";
+} from "@workspace/ui/layout/pods/pod-creator-layout";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { Pod } from "@workspace/store/types/pod.ts";
 import { channels, slugify } from "@workspace/store/types/pod.ts";
@@ -24,7 +24,7 @@ const podCreationSchema = z.object({
     .max(50, "Keep it under 50 characters")
     .regex(
       /^[\p{L}\p{N}\s''-]+$/u,
-      "Only letters, numbers, spaces, and - ' allowed",
+      "Only letters, numbers, spaces, and - ' allowed"
     ),
   area: z
     .string()
@@ -37,7 +37,6 @@ const podCreationSchema = z.object({
     .optional()
     .or(z.literal("").transform(() => undefined)),
 });
-
 
 type NormalizedPod = Pod & PodsListLayoutPod;
 
@@ -98,15 +97,17 @@ type ListFilters = {
 };
 
 async function fetchPodsFromDatabase(
-  filters?: ListFilters,
+  filters?: ListFilters
 ): Promise<PodsListLayoutPod[]> {
   try {
     const params = new URLSearchParams();
 
     if (filters) {
       if (filters.q) params.set("q", filters.q);
-      if (filters.area && filters.area !== "all") params.set("area", filters.area);
-      if (filters.channel && filters.channel !== "all") params.set("channel", filters.channel);
+      if (filters.area && filters.area !== "all")
+        params.set("area", filters.area);
+      if (filters.channel && filters.channel !== "all")
+        params.set("channel", filters.channel);
     }
 
     const url = `/api/pods${params.toString() ? `?${params.toString()}` : ""}`;
@@ -130,7 +131,7 @@ export default function PodsDirectoryPage() {
   const setPods = usePodStore((state) => state.setPods);
   const addPod = usePodStore((state) => state.addPod);
   const [remotePods, setRemotePods] = useState<PodsListLayoutPod[] | null>(
-    null,
+    null
   );
   const [loadingRemotePods, setLoadingRemotePods] = useState(false);
   const [isCreatorModalOpen, setIsCreatorModalOpen] = useState(false);
@@ -156,7 +157,7 @@ export default function PodsDirectoryPage() {
   const liveSlug = slugify(name);
 
   const onSubmitPodCreation = async (
-    values: z.infer<typeof podCreationSchema>,
+    values: z.infer<typeof podCreationSchema>
   ) => {
     const payload: Pod = {
       id: crypto.randomUUID(),
@@ -210,7 +211,7 @@ export default function PodsDirectoryPage() {
       setLoadingRemotePods(true);
       try {
         const paramsRecord = Object.fromEntries(
-          (searchParams ?? new URLSearchParams()).entries(),
+          (searchParams ?? new URLSearchParams()).entries()
         );
         const filters: ListFilters = {
           q: paramsRecord.q,
@@ -235,7 +236,7 @@ export default function PodsDirectoryPage() {
       } catch (error) {
         console.warn(
           "PodsListDataLayer: failed to fetch pods from database",
-          error,
+          error
         );
       } finally {
         if (mounted) {
@@ -272,7 +273,7 @@ export default function PodsDirectoryPage() {
       <PodsListLayout
         pods={normalizedPods}
         initialUrlParams={Object.fromEntries(
-          (searchParams ?? new URLSearchParams()).entries(),
+          (searchParams ?? new URLSearchParams()).entries()
         )}
         onUrlChange={(url) => router.replace(url)}
         persistKey={`podsList.filters:${REGION_IDENTIFIER}`}

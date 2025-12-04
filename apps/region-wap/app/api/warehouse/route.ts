@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api/responses";
 import { getAuthenticatedProfile, generateId } from "@/lib/api/warehouse/utils";
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
-import type { WarehouseRecord } from "@workspace/ui/components/warehouse/types";
+import type { WarehouseRecord } from "@workspace/ui/patterns/features/warehouse/types";
 
 type CreateWarehouseRequest = {
     warehouseData: Partial<WarehouseRecord>;

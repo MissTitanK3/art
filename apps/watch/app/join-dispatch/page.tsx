@@ -67,7 +67,9 @@ export default function JoinDispatchPage() {
       setShowRadius(s);
       const r = Number(localStorage.getItem("loc_radius"));
       if (!Number.isNaN(r) && r > 0) setRadius(r);
-    } catch {}
+    } catch (error) {
+      console.error("Failed to hydrate saved location preferences", error);
+    }
   }, []);
 
   // Persist location preferences
@@ -141,7 +143,9 @@ export default function JoinDispatchPage() {
                 setLocMode("off");
                 return;
               }
-            } catch {}
+            } catch (error) {
+              console.error("Failed to inspect geolocation permissions", error);
+            }
           }
           setLocMode(m);
           if (m === "report") {
@@ -156,7 +160,9 @@ export default function JoinDispatchPage() {
             localStorage.removeItem("loc_mode");
             localStorage.removeItem("loc_radius");
             localStorage.removeItem("loc_radius_show");
-          } catch {}
+          } catch (error) {
+            console.error("Failed to clear saved location settings", error);
+          }
           setLocMode("off");
           setShowRadius(false);
           setRadius(200);
@@ -166,7 +172,9 @@ export default function JoinDispatchPage() {
                 name: "geolocation" as PermissionName,
               });
             }
-          } catch {}
+          } catch (error) {
+            console.error("Failed to revoke browser geolocation permissions", error);
+          }
           alert(
             "Location data erased. Update browser site permissions to fully revoke access if needed.",
           );

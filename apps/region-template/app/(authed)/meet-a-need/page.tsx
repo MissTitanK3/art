@@ -12,21 +12,21 @@ import type {
   NeedVisibility,
 } from "@workspace/store/types/meet-a-need";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { Button } from "@workspace/ui/primitives/button";
+import { Input } from "@workspace/ui/primitives/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
+} from "@workspace/ui/primitives/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@workspace/ui/components/popover";
-import { Calendar } from "@workspace/ui/components/calendar";
+} from "@workspace/ui/primitives/popover";
+import { Calendar } from "@workspace/ui/primitives/calendar";
 import {
   Pagination,
   PaginationContent,
@@ -35,14 +35,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@workspace/ui/components/pagination";
+} from "@workspace/ui/primitives/pagination";
 import { AccessRoles, roleLabel } from "@workspace/store/types/roles.ts";
-import NeedsList from "@workspace/ui/components/client/meet-a-need/NeedsList";
+import NeedsList from "@workspace/ui/patterns/features/meet-a-need/needs-list";
 import {
   NEED_CATEGORIES,
   humanizeNeedCategory,
 } from "@workspace/ui/lib/constants/meet-a-need";
-import SubmitNeedDrawer from "@workspace/ui/components/client/meet-a-need/SubmitNeedDrawer";
+import SubmitNeedDrawer from "@workspace/ui/patterns/features/meet-a-need/submit-need-drawer";
 
 export default function MeetANeedPage() {
   return (
@@ -82,7 +82,7 @@ function NeedsListWrapper() {
   const [visibility, setVisibility] = React.useState<string>("all");
   const [status, setStatus] = React.useState<string>("all");
   const [dateRange, setDateRange] = React.useState<{ from?: Date; to?: Date }>(
-    {},
+    {}
   );
   const [pageSize, setPageSize] = React.useState<number>(10);
   const [page, setPage] = React.useState<number>(1);
@@ -112,7 +112,7 @@ function NeedsListWrapper() {
     }
 
     const params = Object.fromEntries(
-      (searchParams ?? new URLSearchParams()).entries(),
+      (searchParams ?? new URLSearchParams()).entries()
     );
     if (typeof params.q === "string") setQuery(params.q);
     if (typeof params.category === "string") setCategory(params.category);
@@ -236,7 +236,7 @@ function NeedsListWrapper() {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(Math.max(1, total || filtered.length) / pageSize),
+    Math.ceil(Math.max(1, total || filtered.length) / pageSize)
   );
   const currentPage = Math.min(page, totalPages);
   const startIndex = (currentPage - 1) * pageSize;
@@ -252,7 +252,7 @@ function NeedsListWrapper() {
         .eq("id", id);
       update(id, { status: "matched" });
     },
-    [update],
+    [update]
   );
 
   const onUpdateStatus = React.useCallback(
@@ -261,7 +261,7 @@ function NeedsListWrapper() {
       await client.from("meet_a_need").update({ status }).eq("id", id);
       update(id, { status });
     },
-    [update],
+    [update]
   );
 
   const onUpdateNeed = React.useCallback(
@@ -270,7 +270,7 @@ function NeedsListWrapper() {
       await client.from("meet_a_need").update(patch).eq("id", id);
       update(id, patch);
     },
-    [update],
+    [update]
   );
 
   const onDeleteNeed = React.useCallback(
@@ -279,7 +279,7 @@ function NeedsListWrapper() {
       await client.rpc("safe_delete_meet_a_need", { p_id: id });
       remove(id);
     },
-    [remove],
+    [remove]
   );
 
   const handleGoTo = (p: number) =>
@@ -304,13 +304,13 @@ function NeedsListWrapper() {
           >
             1
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       );
       if (start > 2)
         items.push(
           <PaginationItem key="start-ellipsis">
             <PaginationEllipsis />
-          </PaginationItem>,
+          </PaginationItem>
         );
     }
 
@@ -327,7 +327,7 @@ function NeedsListWrapper() {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
 
@@ -336,7 +336,7 @@ function NeedsListWrapper() {
         items.push(
           <PaginationItem key="end-ellipsis">
             <PaginationEllipsis />
-          </PaginationItem>,
+          </PaginationItem>
         );
       items.push(
         <PaginationItem key={totalPages}>
@@ -349,7 +349,7 @@ function NeedsListWrapper() {
           >
             {totalPages}
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
     return items;
@@ -437,7 +437,7 @@ function NeedsListWrapper() {
                     onClick={() => {
                       const now = new Date();
                       const from = new Date(
-                        now.getTime() - 24 * 60 * 60 * 1000,
+                        now.getTime() - 24 * 60 * 60 * 1000
                       );
                       setDateRange({ from, to: now });
                     }}
@@ -450,7 +450,7 @@ function NeedsListWrapper() {
                     onClick={() => {
                       const now = new Date();
                       const from = new Date(
-                        now.getTime() - 7 * 24 * 60 * 60 * 1000,
+                        now.getTime() - 7 * 24 * 60 * 60 * 1000
                       );
                       setDateRange({ from, to: now });
                     }}
@@ -463,7 +463,7 @@ function NeedsListWrapper() {
                     onClick={() => {
                       const now = new Date();
                       const from = new Date(
-                        now.getTime() - 30 * 24 * 60 * 60 * 1000,
+                        now.getTime() - 30 * 24 * 60 * 60 * 1000
                       );
                       setDateRange({ from, to: now });
                     }}
@@ -502,20 +502,20 @@ function NeedsListWrapper() {
             status !== "all" ||
             dateRange.from ||
             dateRange.to) && (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setQuery("");
-                  setCategory("all");
-                  setUrgency("all");
-                  setVisibility("all");
-                  setStatus("all");
-                  setDateRange({});
-                }}
-              >
-                Clear
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setQuery("");
+                setCategory("all");
+                setUrgency("all");
+                setVisibility("all");
+                setStatus("all");
+                setDateRange({});
+              }}
+            >
+              Clear
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span className="hidden sm:inline">
@@ -631,10 +631,10 @@ function SubmitNeedDrawerWrapper() {
             } catch {
               return null;
             }
-          }),
+          })
         );
         const mediaUrls = uploads.filter(
-          (u): u is string => typeof u === "string",
+          (u): u is string => typeof u === "string"
         );
         if (mediaUrls.length > 0) {
           const nextLocation = {
@@ -672,7 +672,7 @@ function SubmitNeedDrawerWrapper() {
         created_at: res.data.created_at,
       });
     },
-    [addNeed],
+    [addNeed]
   );
 
   return (

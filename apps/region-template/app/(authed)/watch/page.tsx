@@ -9,15 +9,15 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@workspace/ui/components/tabs";
-import WatchReportCard from "@workspace/ui/components/client/watch/WatchReportCard";
+} from "@workspace/ui/primitives/tabs";
+import WatchReportCard from "@workspace/ui/patterns/features/watch/watch-report-card";
 import { useRouter } from "next/navigation";
 // filters UI moved into Map Options drawer inside WatchMap
 
 // Dynamically import WatchMap so Leaflet never loads during SSR
 const WatchMap = dynamic(
-  () => import("@workspace/ui/components/client/watch/WatchMap"),
-  { ssr: false },
+  () => import("@workspace/ui/patterns/features/watch/watch-map"),
+  { ssr: false }
 );
 
 const FOCUS_ZOOM = 11;
@@ -41,7 +41,7 @@ export default function WatchPage() {
   const [movingOnly, setMovingOnly] = useState(false);
   const [timeWindow, setTimeWindow] = useState<string>("any"); // hours: 'any' | '2' | '6' | '12' | '24' | '72'
   const [selectedAgencies, setSelectedAgencies] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
 
   useEffect(() => {

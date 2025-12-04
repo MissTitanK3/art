@@ -2,19 +2,18 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@workspace/ui/components/button";
-import { Separator } from "@workspace/ui/components/separator";
+import { Button } from "@workspace/ui/primitives/button";
+import { Separator } from "@workspace/ui/primitives/separator";
 import { ArrowLeft } from "lucide-react";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
-import { AddMemberButton } from "@workspace/ui/components/client/buttons/AddMemberButton";
+import { AddMemberButton } from "@workspace/ui/patterns/features/buttons/add-member-button";
 import {
   PodRosterLayout,
   PodRosterLayoutProps,
-} from "@workspace/ui/layout/pods/PodRosterLayout";
-import type { RosterEditorSection } from "@workspace/ui/components/client/roster/types";
-
+} from "@workspace/ui/layout/pods/pod-roster-layout";
+import type { RosterEditorSection } from "@workspace/ui/patterns/features/roster/types";
 
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {
@@ -36,10 +35,12 @@ function mapRowToRosterEntry(row: any): RosterEntry {
 }
 
 async function fetchPodRosterFromDatabase(
-  slug: string,
+  slug: string
 ): Promise<RosterEntry[] | null> {
   try {
-    const response = await fetch(`/api/pods/${encodeURIComponent(slug)}/roster`);
+    const response = await fetch(
+      `/api/pods/${encodeURIComponent(slug)}/roster`
+    );
 
     if (!response.ok) {
       if (response.status === 404) return null;
@@ -56,7 +57,7 @@ async function fetchPodRosterFromDatabase(
 
 async function persistRosterEntryToDatabase(
   podSlug: string,
-  entry: RosterEntry,
+  entry: RosterEntry
 ): Promise<void> {
   try {
     const response = await fetch(
@@ -79,7 +80,7 @@ async function persistRosterEntryToDatabase(
 
 async function deleteRosterEntryFromDatabase(
   podSlug: string,
-  rosterId: string,
+  rosterId: string
 ): Promise<void> {
   try {
     const response = await fetch(
@@ -108,11 +109,10 @@ export default function PodRosterPage() {
   const storePodId = pod?.id;
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = React.useState<
-    RosterEditorSection | null
-  >(null);
+  const [selectedSection, setSelectedSection] =
+    React.useState<RosterEditorSection | null>(null);
   const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
-    null,
+    null
   );
   const [loadingRemoteRoster, setLoadingRemoteRoster] =
     React.useState<boolean>(false);
@@ -171,7 +171,7 @@ export default function PodRosterPage() {
     });
 
     setRemoteRoster((prev) =>
-      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev,
+      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev
     );
 
     setSelectedId(null); // close sheet after save
@@ -210,7 +210,7 @@ export default function PodRosterPage() {
       team: pod.team.filter((r) => r.id !== memberId),
     });
     setRemoteRoster((prev) =>
-      prev ? prev.filter((r) => r.id !== memberId) : prev,
+      prev ? prev.filter((r) => r.id !== memberId) : prev
     );
   };
 

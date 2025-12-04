@@ -1,12 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
-import { WarehouseRecord } from "@workspace/ui/components/warehouse/types";
+import { WarehouseRecord } from "@workspace/ui/patterns/features/warehouse";
 
-// Generate unique IDs
 export function generateId(): string {
     return crypto.randomUUID();
 }
-
-// Normalize warehouse data from DB
 export function normalizeWarehouse(w: any): WarehouseRecord {
     return {
         id: w.id,
@@ -35,7 +32,6 @@ export function normalizeWarehouse(w: any): WarehouseRecord {
     };
 }
 
-// Auth helper: get authenticated user profile
 export async function getAuthenticatedProfile() {
     const supabase = await createSupabaseServerClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();

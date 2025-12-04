@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
+} from "@workspace/ui/primitives/card";
 import {
   Table,
   TableBody,
@@ -16,10 +16,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/table";
-import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
-import { Input } from "@workspace/ui/components/input";
+} from "@workspace/ui/primitives/table";
+import { Button } from "@workspace/ui/primitives/button";
+import { Badge } from "@workspace/ui/primitives/badge";
+import { Input } from "@workspace/ui/primitives/input";
 import { toast } from "sonner";
 import { slugify } from "@workspace/store/types/pod.ts";
 import { Plus, Archive, Edit, Users } from "lucide-react";
@@ -30,8 +30,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { Label } from "@workspace/ui/components/label";
+} from "@workspace/ui/primitives/dialog";
+import { Label } from "@workspace/ui/primitives/label";
 
 type Props = {
   initialPods: Pod[];
@@ -48,7 +48,7 @@ export default function PodsClient({ initialPods }: Props) {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((p) =>
-      [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q),
+      [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q)
     );
   }, [rows, query]);
 
@@ -107,10 +107,8 @@ export default function PodsClient({ initialPods }: Props) {
       };
       setRows((prev) =>
         prev.map((x) =>
-          x.id === id
-            ? { ...x, name: String(p.name), slug: String(p.slug) }
-            : x,
-        ),
+          x.id === id ? { ...x, name: String(p.name), slug: String(p.slug) } : x
+        )
       );
       toast.success("Pod renamed");
       setRenameOpen(false);

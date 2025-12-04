@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { ResetPasswordRequestForm } from "@/components/auth/ResetPasswordRequestForm";
@@ -19,7 +19,7 @@ export function AuthModalGate() {
   const pathname = usePathname();
   const router = useRouter();
   const [mode, setMode] = React.useState<"signin" | "signup" | "forgot">(
-    "signin",
+    "signin"
   );
 
   // Only show once auth status is known and user is unauthenticated
@@ -30,7 +30,8 @@ export function AuthModalGate() {
   // Redirect to home when authenticated
   React.useEffect(() => {
     if (status === "authenticated") {
-      if (pathname !== "/" && !pathname?.startsWith("/ship-demo")) router.push("/");
+      if (pathname !== "/" && !pathname?.startsWith("/ship-demo"))
+        router.push("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);

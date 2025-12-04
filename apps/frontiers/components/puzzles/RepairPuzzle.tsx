@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Switch } from "@workspace/ui/components/switch";
-import { Button } from "@workspace/ui/components/button";
+import { Switch } from "@workspace/ui/primitives/switch";
+import { Button } from "@workspace/ui/primitives/button";
 import type { ArtSignal } from "@/schemas/art_signals";
 import { useSignalsStore } from "@/store/useSignalsStore";
 import { supabase } from "@/lib/supabaseClient";

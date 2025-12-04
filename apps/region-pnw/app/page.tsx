@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GraduationCap, Eye } from "lucide-react";
-
 import { navConfig } from "@/nav.config";
 import {
   DispatchStoreProvider,
@@ -14,30 +12,27 @@ import { useAuth } from "@/hooks/useAuth";
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
 import type { DispatchSubmission } from "@workspace/store/types/global";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
-import { RegionHero } from "@workspace/ui/components/info/region-hero";
+import { RegionHero } from "@workspace/ui/patterns/features/info/region-hero";
 import {
   RegionViewMode,
   RegionViewToggle,
-} from "@workspace/ui/components/info/region-view-toggle";
-import { RegionDashboardGate } from "@workspace/ui/components/info/region-dashboard-gate";
-import { RegionTemplateInfo } from "@workspace/ui/components/how-to/RegionTemplateInfo";
+} from "@workspace/ui/patterns/features/info/region-view-toggle";
+import { RegionDashboardGate } from "@workspace/ui/patterns/features/info/region-dashboard-gate";
+import { RegionTemplateInfo } from "@workspace/ui/patterns/features/how-to/region-template-info";
 import { useActiveRoster } from "@/hooks/useActiveRoster";
-import { MyStatusCard } from "@workspace/ui/components/dashboard/MyStatusCard";
-import { RegionReadinessCard } from "@workspace/ui/components/dashboard/RegionReadinessCard";
-import { AcademyProgressCard } from "@workspace/ui/components/dashboard/AcademyProgressCard";
-import { AssignedDispatchesCard } from "@workspace/ui/components/dashboard/AssignedDispatchesCard";
-import { RecommendedDispatchesCard } from "@workspace/ui/components/dashboard/RecommendedDispatchesCard";
-import { WatchCard } from "@workspace/ui/components/dashboard/WatchCard";
-import { WarehouseCard } from "@workspace/ui/components/dashboard/WarehouseCard";
-import { NeedsCard } from "@workspace/ui/components/dashboard/NeedsCard";
-import { AppGrid } from "@workspace/ui/components/dashboard/AppGrid";
-import QuickActionsCard from "@workspace/ui/components/QuickActionsCard";
-import NavTile from "@workspace/ui/components/nav-tile";
-import QuickStartDrawerContent from "@workspace/ui/components/info/quickstart-drawer-content";
+import { MyStatusCard } from "@workspace/ui/patterns/features/dashboard/my-status-card";
+import { RegionReadinessCard } from "@workspace/ui/patterns/features/dashboard/region-readiness-card";
+import { AcademyProgressCard } from "@workspace/ui/patterns/features/dashboard/academy-progress-card";
+import { AssignedDispatchesCard } from "@workspace/ui/patterns/features/dashboard/assigned-dispatches-card";
+import { WatchCard } from "@workspace/ui/patterns/features/dashboard/watch-card";
+import { WarehouseCard } from "@workspace/ui/patterns/features/dashboard/warehouse-card";
+import { NeedsCard } from "@workspace/ui/patterns/features/dashboard/needs-card";
+import { AppGrid } from "@workspace/ui/patterns/features/dashboard/app-grid";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
 import { mapRowToShift } from "@workspace/ui/hooks/map-row-to-shift";
-import { PublicImpactSummary } from "@workspace/ui/components/client/impact/PublicImpactSummary";
+import { PublicImpactSummary } from "@workspace/ui/patterns/features/impact/public-impact-summary";
 import { useProfileStore } from "@workspace/store/useProfileStore";
+import { QuickStartDrawerContent } from "@workspace/ui/patterns/features/info/quickstart-drawer-content";
 
 type ViewMode = RegionViewMode;
 
@@ -104,14 +99,15 @@ export default function Page() {
               What dispatchers have delivered together
             </h2>
             <p className="text-sm text-muted-foreground">
-              This snapshot rounds and thresholds sensitive data before it leaves our
-              workspace so we can celebrate wins without leaking details.
+              This snapshot rounds and thresholds sensitive data before it
+              leaves our workspace so we can celebrate wins without leaking
+              details.
             </p>
           </div>
           <PublicImpactSummary regionId={REGION_IDENTIFIER} />
           <p className="text-xs text-muted-foreground">
-            Metrics refresh every few minutes. Verified dispatches only; records under
-            review or below privacy thresholds are masked.
+            Metrics refresh every few minutes. Verified dispatches only; records
+            under review or below privacy thresholds are masked.
           </p>
         </div>
       </section>
@@ -164,7 +160,7 @@ function DemoDashboard({
 function DashboardContent() {
   const submissions = useDispatchStore((state) => state.submissions);
   const replaceSubmissions = useDispatchStore(
-    (state) => state.replaceSubmissions,
+    (state) => state.replaceSubmissions
   );
   const pods = usePodStore((state) => state.pods);
   const roster = usePodStore((state) => state.activeRoster);

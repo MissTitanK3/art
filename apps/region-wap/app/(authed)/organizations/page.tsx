@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "@workspace/ui/components/sonner";
+import { toast } from "@workspace/ui/primitives/sonner";
 import { VisibilityScope } from "@workspace/store/utils/permissions/types";
 
 import {
@@ -26,11 +26,10 @@ import {
   updateOrganizationVisibilityScope,
 } from "@/lib/dal/organizations";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-import { OrgCard } from "@workspace/ui/components/client/orgs/OrgCard";
-import { OrgDashboardDrawer } from "@workspace/ui/components/client/orgs/OrgDashboardDrawer";
-import { OrgSwitcher } from "@workspace/ui/components/client/orgs/OrgSwitcher";
-import { OrgCreateDrawer } from "@workspace/ui/components/client/orgs/OrgCreateDrawer";
-import { Button } from "@workspace/ui/components/button";
+import { OrgDashboardDrawer } from "@workspace/ui/patterns/features/orgs/org-dashboard-drawer";
+import { OrgSwitcher } from "@workspace/ui/patterns/features/orgs/org-switcher";
+import { OrgCreateDrawer } from "@workspace/ui/patterns/features/orgs/org-create-drawer";
+import { Button } from "@workspace/ui/primitives/button";
 import type {
   Org,
   OrgMember,
@@ -40,7 +39,7 @@ import type {
   OrgPoll,
   OrgRoleOption,
   OrgRegisteredUser,
-} from "@workspace/ui/components/client/orgs/types";
+} from "@workspace/ui/patterns/features/orgs/types";
 
 const ROLE_OPTIONS: OrgRoleOption[] = [
   { value: "owner", label: "Owner" },
@@ -54,10 +53,14 @@ export default function OrganizationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [podsByOrg, setPodsByOrg] = useState<Record<string, OrgPod[]>>({});
-  const [membersByOrg, setMembersByOrg] = useState<Record<string, OrgMember[]>>({});
+  const [membersByOrg, setMembersByOrg] = useState<Record<string, OrgMember[]>>(
+    {}
+  );
   const [pollsByOrg, setPollsByOrg] = useState<Record<string, OrgPoll[]>>({});
   const [allPods, setAllPods] = useState<OrgPod[]>([]);
-  const [registeredUsers, setRegisteredUsers] = useState<OrgRegisteredUser[]>([]);
+  const [registeredUsers, setRegisteredUsers] = useState<OrgRegisteredUser[]>(
+    []
+  );
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<OrgPermissions>({
@@ -81,7 +84,7 @@ export default function OrganizationsPage() {
             id: String(profile.id),
             displayName: profile.display_name ?? "Registered user",
             detail: profile.affiliation ?? profile.access_role ?? null,
-          })),
+          }))
       );
     } catch (e) {
       console.warn("[organizations/page] profile fetch error", e);
@@ -105,7 +108,8 @@ export default function OrganizationsPage() {
     setError(null);
     try {
       // Resolve permissions based on the caller's nav role; RLS still enforces access.
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
       if (userError) throw userError;
       const userId = userData?.user?.id;
       let navRole: string | null = null;
@@ -152,19 +156,19 @@ export default function OrganizationsPage() {
           fetchedOrgs.map(async (org) => {
             const orgPods = await getOrganizationPods(org.id);
             return [org.id, orgPods] as const;
-          }),
+          })
         ),
         Promise.all(
           fetchedOrgs.map(async (org) => {
             const orgMembers = await getOrganizationMembers(org.id);
             return [org.id, orgMembers] as const;
-          }),
+          })
         ),
         Promise.all(
           fetchedOrgs.map(async (org) => {
             const orgPolls = await getOrganizationPolls(org.id);
             return [org.id, orgPolls] as const;
-          }),
+          })
         ),
       ]);
       setPodsByOrg(Object.fromEntries(podEntries));
@@ -187,7 +191,7 @@ export default function OrganizationsPage() {
             slug: pod.slug ?? null,
             area: pod.area ?? null,
             description: pod.description ?? null,
-          })),
+          }))
         );
       }
     } catch (e: any) {
@@ -211,7 +215,7 @@ export default function OrganizationsPage() {
     ]);
     if (nextOrg) {
       setOrgs((prev) =>
-        prev.map((org) => (org.id === orgId ? { ...org, ...nextOrg } : org)),
+        prev.map((org) => (org.id === orgId ? { ...org, ...nextOrg } : org))
       );
     }
     setPodsByOrg((prev) => ({ ...prev, [orgId]: nextPods }));
@@ -221,12 +225,12 @@ export default function OrganizationsPage() {
 
   const handleUpdateOrg = async (
     orgId: string,
-    updates: { name: string; description?: string | null },
+    updates: { name: string; description?: string | null }
   ) => {
     try {
       await updateOrganization(orgId, updates);
       setOrgs((prev) =>
-        prev.map((org) => (org.id === orgId ? { ...org, ...updates } : org)),
+        prev.map((org) => (org.id === orgId ? { ...org, ...updates } : org))
       );
       toast.success("Organization updated");
     } catch (e: any) {
@@ -257,7 +261,7 @@ export default function OrganizationsPage() {
   const handleUpdateMemberRole = async (
     orgId: string,
     memberId: string,
-    role: string,
+    role: string
   ) => {
     try {
       await updateMemberRole(orgId, memberId, role);
@@ -293,7 +297,9 @@ export default function OrganizationsPage() {
       const res = await updateOrganizationNorms(orgId, norms);
       const nextNorms = (res as any)?.norms ?? norms ?? null;
       setOrgs((prev) =>
-        prev.map((org) => (org.id === orgId ? { ...org, norms: nextNorms } : org)),
+        prev.map((org) =>
+          org.id === orgId ? { ...org, norms: nextNorms } : org
+        )
       );
       await refreshOrg(orgId);
     } catch (e: any) {
@@ -302,13 +308,16 @@ export default function OrganizationsPage() {
     }
   };
 
-  const handleUpdateVisibilityScope = async (orgId: string, scope: VisibilityScope) => {
+  const handleUpdateVisibilityScope = async (
+    orgId: string,
+    scope: VisibilityScope
+  ) => {
     try {
       await updateOrganizationVisibilityScope(orgId, scope);
       setOrgs((prev) =>
         prev.map((org) =>
-          org.id === orgId ? { ...org, visibilityScope: scope } : org,
-        ),
+          org.id === orgId ? { ...org, visibilityScope: scope } : org
+        )
       );
       toast.success("Visibility updated");
     } catch (e: any) {
@@ -323,7 +332,7 @@ export default function OrganizationsPage() {
       options: Array<{ label: string; emoji?: string | null }>;
       closesAt?: string | null;
       allowMultiple?: boolean;
-    },
+    }
   ) => {
     try {
       const created = await createOrganizationPoll(orgId, payload);
@@ -338,7 +347,11 @@ export default function OrganizationsPage() {
     }
   };
 
-  const handleVotePoll = async (orgId: string, pollId: string, optionId: string) => {
+  const handleVotePoll = async (
+    orgId: string,
+    pollId: string,
+    optionId: string
+  ) => {
     try {
       await voteOnPoll(pollId, optionId);
       await refreshOrg(orgId);
@@ -350,7 +363,7 @@ export default function OrganizationsPage() {
   const handleUpdatePollStatus = async (
     orgId: string,
     pollId: string,
-    status: "open" | "closed" | "archived",
+    status: "open" | "closed" | "archived"
   ) => {
     try {
       await updatePollStatus(orgId, pollId, status);
@@ -381,15 +394,15 @@ export default function OrganizationsPage() {
   };
 
   const activeOrg = activeOrgId
-    ? orgs.find((org) => org.id === activeOrgId) ?? null
+    ? (orgs.find((org) => org.id === activeOrgId) ?? null)
     : null;
-  const activePods = activeOrgId ? podsByOrg[activeOrgId] ?? [] : [];
-  const activeMembers = activeOrgId ? membersByOrg[activeOrgId] ?? [] : [];
-  const activePolls = activeOrgId ? pollsByOrg[activeOrgId] ?? [] : [];
+  const activePods = activeOrgId ? (podsByOrg[activeOrgId] ?? []) : [];
+  const activeMembers = activeOrgId ? (membersByOrg[activeOrgId] ?? []) : [];
+  const activePolls = activeOrgId ? (pollsByOrg[activeOrgId] ?? []) : [];
   const availablePods = activeOrgId
     ? allPods.filter(
-      (pod) => !(podsByOrg[activeOrgId] ?? []).some((p) => p.id === pod.id),
-    )
+        (pod) => !(podsByOrg[activeOrgId] ?? []).some((p) => p.id === pod.id)
+      )
     : [];
 
   return (
@@ -414,11 +427,12 @@ export default function OrganizationsPage() {
           </Button>
         </div>
         {loading && (
-          <p className="text-xs text-muted-foreground">Loading organizations...</p>
+          <p className="text-xs text-muted-foreground">
+            Loading organizations...
+          </p>
         )}
         {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
-
 
       {activeOrg && (
         <OrgDashboardDrawer
@@ -445,8 +459,12 @@ export default function OrganizationsPage() {
           onVotePoll={(orgId, pollId, optionId) =>
             handleVotePoll(orgId, pollId, optionId)
           }
-          onClosePoll={(orgId, pollId) => handleUpdatePollStatus(orgId, pollId, "closed")}
-          onReopenPoll={(orgId, pollId) => handleUpdatePollStatus(orgId, pollId, "open")}
+          onClosePoll={(orgId, pollId) =>
+            handleUpdatePollStatus(orgId, pollId, "closed")
+          }
+          onReopenPoll={(orgId, pollId) =>
+            handleUpdatePollStatus(orgId, pollId, "open")
+          }
           onDeletePoll={(orgId, pollId) => handleDeletePoll(orgId, pollId)}
           onAddMember={async (orgId, profileId, role) => {
             try {
@@ -472,7 +490,11 @@ export default function OrganizationsPage() {
           setActiveOrgId(created.id);
           if (currentProfileId) {
             try {
-              await addMemberToOrganization(created.id, currentProfileId, "owner");
+              await addMemberToOrganization(
+                created.id,
+                currentProfileId,
+                "owner"
+              );
               await refreshOrg(created.id);
             } catch (e: any) {
               toast.error(e?.message ?? "Unable to add creator as owner");

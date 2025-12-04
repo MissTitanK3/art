@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@workspace/ui/components/input";
-import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/primitives/input";
+import { Button } from "@workspace/ui/primitives/button";
 import { Eye, EyeOff } from "lucide-react";
 
 export function PasswordInput({

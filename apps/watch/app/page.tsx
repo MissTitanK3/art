@@ -41,6 +41,10 @@ const MapWrapper = dynamic(() => import("@/components/map/MapWrapper"), {
   ssr: false,
 });
 
+const logWatchError = (context: string, error: unknown) => {
+  console.error(`[watch] ${context}`, error);
+};
+
 function filterReportsBySettings(
   reports: Report[],
   agencyFilter: string[],
@@ -191,7 +195,7 @@ export default function Home() {
       setReportDrawerOpen(true);
       setPendingAuto(false);
     }
-  }, [pendingAuto, userPos]);
+  }, [pendingAuto, tempLocEnabled, userPos]);
 
   // If auto-detect was requested but geolocation failed/denied, fall back to manual selection
   useEffect(() => {
@@ -208,10 +212,12 @@ export default function Home() {
       setUserPos(null as any);
       try {
         clearCachedLocation();
-      } catch { }
+      } catch (error) {
+        logWatchError("Failed to clear cached location after geo error", error);
+      }
       setSelecting(true);
     }
-  }, [pendingAuto, geoError]);
+  }, [geoError, pendingAuto, showRadius]);
 
   // Load reports for heatmap
   useEffect(() => {
@@ -248,7 +254,9 @@ export default function Home() {
       if (!Number.isNaN(r) && r > 0) setRadius(r);
       const u = localStorage.getItem("unit_pref") as "km" | "mi" | null;
       if (u === "km" || u === "mi") setUnit(u);
-    } catch { }
+    } catch (error) {
+      logWatchError("Failed to hydrate saved location preferences", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -259,7 +267,9 @@ export default function Home() {
         const parsed = JSON.parse(storedAgencies);
         if (Array.isArray(parsed)) setAgencyFilter(parsed);
       }
-    } catch { }
+    } catch (error) {
+      logWatchError("Failed to hydrate saved agency filters", error);
+    }
     try {
       const storedRange = localStorage.getItem("timeRange");
       if (storedRange) {
@@ -274,7 +284,9 @@ export default function Home() {
           setTimeRange([start, end]);
         }
       }
-    } catch { }
+    } catch (error) {
+      logWatchError("Failed to hydrate saved time range filter", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -320,12 +332,16 @@ export default function Home() {
   useEffect(() => {
     try {
       localStorage.setItem("agencyFilter", JSON.stringify(agencyFilter));
-    } catch { }
+    } catch (error) {
+      logWatchError("Failed to persist agency filters", error);
+    }
   }, [agencyFilter]);
   useEffect(() => {
     try {
       localStorage.setItem("timeRange", JSON.stringify(timeRange));
-    } catch { }
+    } catch (error) {
+      logWatchError("Failed to persist time range filters", error);
+    }
   }, [timeRange]);
 
   const filteredReports = useMemo(
@@ -352,7 +368,7 @@ export default function Home() {
   useEffect(() => {
     const shouldShow = !!userPos && (selecting || reportDrawerOpen);
     if (shouldShow !== showRadius) setShowRadius(shouldShow);
-  }, [selecting, reportDrawerOpen, userPos]);
+  }, [reportDrawerOpen, selecting, showRadius, userPos]);
 
   return (
     <>
@@ -521,7 +537,9 @@ export default function Home() {
           setUserPos(null as any);
           try {
             clearCachedLocation();
-          } catch { }
+          } catch (error) {
+            logWatchError("Failed to clear cached location while canceling report", error);
+          }
           // reset draft
           setDraft(initialDraft);
         }}
@@ -564,8 +582,8 @@ export default function Home() {
                   });
                   permState = status.state as any;
                 }
-              } catch {
-                /* ignore */
+              } catch (error) {
+                logWatchError("Failed to query browser geolocation permissions", error);
               }
               if (permState === "denied") {
                 setLocMode("off");
@@ -599,7 +617,8 @@ export default function Home() {
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
               );
-            } catch {
+            } catch (error) {
+              logWatchError("Trusted mode geolocation request failed", error);
               setLocMode("off");
               setLocBlockedOpen(true);
             }
@@ -611,7 +630,9 @@ export default function Home() {
             setUserPos(null as any);
             try {
               clearCachedLocation();
-            } catch { }
+            } catch (error) {
+              logWatchError("Failed to clear cached location when turning Off", error);
+            }
           }
         }}
         showRadius={showRadius}
@@ -624,7 +645,9 @@ export default function Home() {
             localStorage.removeItem("loc_mode");
             localStorage.removeItem("loc_radius");
             localStorage.removeItem("loc_radius_show");
-          } catch { }
+          } catch (error) {
+            logWatchError("Failed to clear stored location preferences", error);
+          }
           setLocMode("off");
           setShowRadius(false);
           setRadius(200);
@@ -634,8 +657,11 @@ export default function Home() {
                 name: "geolocation" as PermissionName,
               });
             }
-          } catch {
-            // silently ignore revoke failures; some browsers require manual action
+          } catch (error) {
+            logWatchError(
+              "Failed to revoke browser geolocation permissions",
+              error,
+            );
           }
           alert(
             "Location data erased. Update browser site permissions to fully revoke access if needed.",

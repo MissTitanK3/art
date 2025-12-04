@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-import { toast } from "@workspace/ui/components/sonner";
-import NotificationPrefsForm from "@workspace/ui/components/settings/NotificationPrefsForm";
-import PreferencesSection from "@workspace/ui/components/settings/PreferencesSection";
+import { toast } from "@workspace/ui/primitives/sonner";
+import NotificationPrefsForm from "@workspace/ui/patterns/features/settings/notification-prefs-form";
+import PreferencesSection from "@workspace/ui/patterns/features/settings/preferences-section";
 import { NOTIFICATION_CHANNELS } from "@workspace/store/types/notifications";
 
 type PrefsRow = {
@@ -47,7 +47,7 @@ export default function SettingsPage() {
             ? row!.muted_channels
             : [];
           (ALL_CHANNELS as readonly string[]).forEach(
-            (c) => (mset[c] = mutedChannels.includes(c as string)),
+            (c) => (mset[c] = mutedChannels.includes(c as string))
           );
           setMuted(mset);
         }

@@ -15,7 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
+} from "@workspace/ui/primitives/card";
 import {
   Table,
   TableBody,
@@ -23,23 +23,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/table";
-import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
+} from "@workspace/ui/primitives/table";
+import { Button } from "@workspace/ui/primitives/button";
+import { Badge } from "@workspace/ui/primitives/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
+} from "@workspace/ui/primitives/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@workspace/ui/components/popover";
-import { Switch } from "@workspace/ui/components/switch";
-import { Input } from "@workspace/ui/components/input";
+} from "@workspace/ui/primitives/popover";
+import { Switch } from "@workspace/ui/primitives/switch";
+import { Input } from "@workspace/ui/primitives/input";
 import { toast } from "sonner";
 import {
   Download,

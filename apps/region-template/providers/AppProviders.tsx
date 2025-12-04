@@ -3,7 +3,7 @@
 import * as React from "react";
 import "@/providers/NotificationsStoreBootstrap"; // side-effect: set notifications storage key
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { Toaster } from "@workspace/ui/components/sonner";
+import { Toaster } from "@workspace/ui/primitives/sonner";
 import { AuthProvider } from "@/providers/AuthProvider";
 import type { AuthSession } from "@/lib/auth/types";
 import { RegionProvider } from "@/providers/RegionProvider";

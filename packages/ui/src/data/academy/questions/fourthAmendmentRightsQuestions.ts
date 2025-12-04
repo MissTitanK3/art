@@ -1,4 +1,4 @@
-import { Question } from "@workspace/ui/components/academy/QuestionRenderer";
+import { Question } from "@workspace/ui/patterns/features/academy/question-renderer";
 
 export const fourthAmendmentRightsQuestions: Question[] = [
   {

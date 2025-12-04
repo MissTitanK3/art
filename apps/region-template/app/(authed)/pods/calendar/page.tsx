@@ -11,8 +11,8 @@ import {
   CollectiveCalendarShiftInput,
   CalendarOrgSummary,
   CalendarPodSummary,
-} from "@workspace/ui/components/client/pods/CollectiveCalendar";
-import { toast } from "@workspace/ui/components/sonner";
+} from "@workspace/ui/patterns/features/pods/collective-calendar";
+import { toast } from "@workspace/ui/primitives/sonner";
 
 const DEFAULT_VISIBILITY_SCOPE = "org_and_region_masked";
 
@@ -43,14 +43,16 @@ const SHIFT_SELECT_FIELDS = `
   signups:calendar_signups(user_id)
 `;
 
-function normalizeVisibility(value: any): CollectiveCalendarShift["visibility"] {
+function normalizeVisibility(
+  value: any
+): CollectiveCalendarShift["visibility"] {
   return value === "org" || value === "private" ? value : "public";
 }
 
 function mapShiftRow(row: any): CollectiveCalendarShift {
   const pod = row.pod ?? row.pods ?? {};
   const orgLinks = Array.isArray(row.orgs ?? row.organization_pods)
-    ? row.orgs ?? row.organization_pods
+    ? (row.orgs ?? row.organization_pods)
     : [];
   const nestedPodOrgs = Array.isArray(pod?.orgs) ? pod.orgs : [];
   const allOrgLinks = [...orgLinks, ...nestedPodOrgs];
@@ -68,23 +70,26 @@ function mapShiftRow(row: any): CollectiveCalendarShift {
 
   const signups = Array.isArray(row.signups)
     ? row.signups
-      .map((s: any) => s?.user_id ?? s?.userId)
-      .filter(Boolean)
-      .map((id: any) => String(id))
+        .map((s: any) => s?.user_id ?? s?.userId)
+        .filter(Boolean)
+        .map((id: any) => String(id))
     : [];
   const owners = Array.isArray(row.owners)
     ? row.owners
-      .map((o: any) => {
-        const ownerType = o?.owner_type ?? o?.ownerType;
-        const ownerId = o?.owner_id ?? o?.ownerId;
-        if (!ownerType || !ownerId) return null;
-        return {
-          ownerType: ownerType as "user" | "pod" | "org",
-          ownerId: String(ownerId),
-        };
-      })
-      .filter(Boolean)
-      .map((o: any) => ({ ...o, ownerProfileId: o.ownerProfileId ?? undefined }))
+        .map((o: any) => {
+          const ownerType = o?.owner_type ?? o?.ownerType;
+          const ownerId = o?.owner_id ?? o?.ownerId;
+          if (!ownerType || !ownerId) return null;
+          return {
+            ownerType: ownerType as "user" | "pod" | "org",
+            ownerId: String(ownerId),
+          };
+        })
+        .filter(Boolean)
+        .map((o: any) => ({
+          ...o,
+          ownerProfileId: o.ownerProfileId ?? undefined,
+        }))
     : [];
 
   return {
@@ -154,12 +159,13 @@ export default function CollectiveCalendarPage() {
       if (!podId) return null;
       return orgByPod.get(podId) ?? null;
     },
-    [orgByPod],
+    [orgByPod]
   );
 
   const buildOwnershipPayload = useCallback(
     (input: CollectiveCalendarShiftInput) => {
-      const ownerProfileId = input.ownerProfileId ?? profileId ?? userId ?? null;
+      const ownerProfileId =
+        input.ownerProfileId ?? profileId ?? userId ?? null;
       const ownerPodIds =
         input.ownerPodIds ?? (input.podId ? [input.podId] : []);
       const orgId =
@@ -177,7 +183,7 @@ export default function CollectiveCalendarPage() {
         organizationId: orgId,
       };
     },
-    [profileId, resolveOrgForPod, userId],
+    [profileId, resolveOrgForPod, userId]
   );
 
   useEffect(() => {
@@ -201,12 +207,12 @@ export default function CollectiveCalendarPage() {
         setShifts(mappedShifts);
 
         const knownPods = Array.isArray(data.pods)
-          ? data.pods.map((p: any) => ({
-            id: String(p.id),
-            name: p.name,
-            slug: p.slug,
-            area: p.area,
-          })) as CalendarPodSummary[]
+          ? (data.pods.map((p: any) => ({
+              id: String(p.id),
+              name: p.name,
+              slug: p.slug,
+              area: p.area,
+            })) as CalendarPodSummary[])
           : [];
         setPods(sortPodsByName(knownPods));
 
@@ -219,16 +225,19 @@ export default function CollectiveCalendarPage() {
 
         const orgRoleRows: CalendarOrgSummary[] = Array.isArray(data.orgRoles)
           ? data.orgRoles.map((row: any) => ({
-            id: String(row.org_id ?? row.organization?.id),
-            name: row.organization?.name ?? "Organization",
-            description: row.organization?.description ?? null,
-            role: row.role ?? null,
-          }))
+              id: String(row.org_id ?? row.organization?.id),
+              name: row.organization?.name ?? "Organization",
+              description: row.organization?.description ?? null,
+              role: row.role ?? null,
+            }))
           : [];
 
         const orgPodRows = Array.isArray(data.orgPods) ? data.orgPods : [];
         const orgIdsFromPods = new Set<string>();
-        const orgMap = new Map<string, CalendarOrgSummary & { pods?: CalendarPodSummary[] }>();
+        const orgMap = new Map<
+          string,
+          CalendarOrgSummary & { pods?: CalendarPodSummary[] }
+        >();
 
         for (const row of orgPodRows) {
           const orgId = row.org_id ?? row.organization?.id;
@@ -276,7 +285,7 @@ export default function CollectiveCalendarPage() {
               ...org,
               pods: sortPodsByName(org.pods ?? []),
             }))
-            .sort((a, b) => a.name.localeCompare(b.name)),
+            .sort((a, b) => a.name.localeCompare(b.name))
         );
 
         const combinedOrgIds = new Set<string>([
@@ -333,14 +342,14 @@ export default function CollectiveCalendarPage() {
 
       setShifts((prev) =>
         prev.map((s) =>
-          s.id === shift.id ? { ...s, signups: [...s.signups, signupId] } : s,
-        ),
+          s.id === shift.id ? { ...s, signups: [...s.signups, signupId] } : s
+        )
       );
       toast.success("Signed up", {
         description: "You are on the crew list for this shift.",
       });
     },
-    [profileId, userId],
+    [profileId, userId]
   );
 
   const handleCreateShift = useCallback(
@@ -365,11 +374,11 @@ export default function CollectiveCalendarPage() {
       const mapped = mapShiftRow(data);
       setShifts((prev) =>
         [...prev.filter((s) => s.id !== mapped.id), mapped].sort(
-          (a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime(),
-        ),
+          (a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime()
+        )
       );
     },
-    [buildOwnershipPayload],
+    [buildOwnershipPayload]
   );
 
   const handleUpdateShift = useCallback(
@@ -396,11 +405,11 @@ export default function CollectiveCalendarPage() {
         prev
           .map((s) => (s.id === shiftId ? mapped : s))
           .sort(
-            (a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime(),
-          ),
+            (a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime()
+          )
       );
     },
-    [buildOwnershipPayload],
+    [buildOwnershipPayload]
   );
 
   const handleDeleteShift = useCallback(async (shiftId: string) => {
@@ -424,7 +433,7 @@ export default function CollectiveCalendarPage() {
       profileId,
       userId,
     }),
-    [membership.orgIds, membership.podIds, profileId, userId],
+    [membership.orgIds, membership.podIds, profileId, userId]
   );
 
   return (

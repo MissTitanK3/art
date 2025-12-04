@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,7 @@ export function ComponentsTab(props: {
   prepareReplaceConfirm: (c: ShipComponent, newKindId: string) => void;
   confirmUpgrade: { slot: ShipComponent["slot"]; cost: number } | null;
   setConfirmUpgrade: (
-    v: { slot: ShipComponent["slot"]; cost: number } | null,
+    v: { slot: ShipComponent["slot"]; cost: number } | null
   ) => void;
   confirmReplace: {
     slot: ShipComponent["slot"];
@@ -57,7 +57,7 @@ export function ComponentsTab(props: {
       kindId: string;
       cost: number;
       deltas: Array<[string, number, number]>;
-    } | null,
+    } | null
   ) => void;
   doUpgrade: (slot: ShipComponent["slot"]) => Promise<void>;
   doReplace: (slot: ShipComponent["slot"], kindId: string) => Promise<void>;
@@ -162,7 +162,7 @@ export function ComponentsTab(props: {
                         className="rounded border p-2 text-left hover:bg-muted"
                         onClick={() => {
                           const cur = components.find(
-                            (x) => x.slot === replaceOpen.slot,
+                            (x) => x.slot === replaceOpen.slot
                           );
                           if (!cur) return;
                           prepareReplaceConfirm(cur, k.id);

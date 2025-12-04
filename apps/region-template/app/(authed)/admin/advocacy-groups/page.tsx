@@ -6,7 +6,7 @@ import { useProfileStore } from "@workspace/store/useProfileStore";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import AdvocacyGroupsAdmin, {
   type AdvocacyGroup,
-} from "@workspace/ui/components/admin/advocacy/AdvocacyGroupsAdmin";
+} from "@workspace/ui/patterns/features/advocacy/advocacy-groups-admin";
 
 export default function AdvocacyGroupsPage() {
   const profile = useProfileStore((s) => s.profile);
@@ -46,13 +46,13 @@ export default function AdvocacyGroupsPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await reload();
     },
-    [reload],
+    [reload]
   );
 
   const toggleActive = React.useCallback(
     async (g: AdvocacyGroup, next: boolean) => {
       setGroups((prev) =>
-        prev.map((x) => (x.id === g.id ? { ...x, active_status: next } : x)),
+        prev.map((x) => (x.id === g.id ? { ...x, active_status: next } : x))
       );
       const res = await fetch(`/api/admin/advocacy-groups/${g.id}`, {
         method: "PATCH",
@@ -62,7 +62,7 @@ export default function AdvocacyGroupsPage() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
     },
-    [],
+    []
   );
 
   const removeGroup = React.useCallback(async (g: AdvocacyGroup) => {
@@ -94,7 +94,7 @@ export default function AdvocacyGroupsPage() {
               ? row.urgent_needs
               : undefined,
             lastUpdated: row.last_updated ?? undefined,
-          }) as DetaineeIntake,
+          }) as DetaineeIntake
       )
       .filter((r: DetaineeIntake) => !!r.caseId);
     return mapped;
@@ -106,7 +106,7 @@ export default function AdvocacyGroupsPage() {
       loading={loading}
       error={error}
       canManage={["admin", "regional_admin", "national_admin"].includes(
-        (profile?.access_role ?? "") as string,
+        (profile?.access_role ?? "") as string
       )}
       profile={profile}
       onReload={reload}

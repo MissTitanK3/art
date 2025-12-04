@@ -3,11 +3,11 @@
 import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@workspace/ui/components/sonner";
+import { toast } from "@workspace/ui/primitives/sonner";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
-import { Button } from "@workspace/ui/components/button";
-import { PodAcademyDashboardLayout } from "@workspace/ui/layout/pods/PodAcademyDashboardLayout";
+import { Button } from "@workspace/ui/primitives/button";
+import { PodAcademyDashboardLayout } from "@workspace/ui/layout/pods/pod-academy-dashboard-layout";
 import { COURSE_BLUEPRINT } from "@workspace/ui/data/academy/course-blueprint";
 import type {
   AcademyCourseGroup,
@@ -58,7 +58,6 @@ type RegionSettingsRow = {
 export default function AcademyDashboardPage() {
   const router = useRouter();
   const pods = usePodStore((state) => state.pods);
-  // Using Supabase-backed classes; do not pull from local pod store
 
   const members = useMemo(() => convertPodsToMemberProgress(pods), [pods]);
   const stats = useMemo(() => deriveStats(pods, members, []), [pods, members]);
@@ -221,7 +220,6 @@ function AcademyDashboardContent({
     };
   }, []);
 
-  // Supabase: hydrate sessions + participants and persist changes
   const supabaseSetSessions = usePodAcademyDashboardStore(
     (state) => state.setSessions
   );
@@ -324,8 +322,6 @@ function AcademyDashboardContent({
       }
     }, [supabaseSetSessions]);
 
-  // moved after callback declarations for init order
-
   const persistSessionToDatabase = React.useCallback(
     async (session: AcademyTrainingSession): Promise<void> => {
       try {
@@ -365,7 +361,6 @@ function AcademyDashboardContent({
     ): Promise<void> => {
       try {
         const client = getSupabaseBrowserClient();
-        // Replace set for simplicity
         const del = await client
           .from("academy_participants")
           .delete()
@@ -392,7 +387,6 @@ function AcademyDashboardContent({
     []
   );
 
-  // Instructors
   const mapRowToInstructor = React.useCallback(
     (row: Record<string, unknown>): AcademyInstructorProfile => {
       const r = row as Record<string, any>;
@@ -459,7 +453,6 @@ function AcademyDashboardContent({
       }
     }, [mapRowToInstructor, supabaseSetInstructors]);
 
-  // Classes
   const mapRowToClass = React.useCallback(
     (row: Record<string, unknown>): AcademyTrainingClass => {
       const r = row as Record<string, any>;
@@ -498,7 +491,6 @@ function AcademyDashboardContent({
       }
     }, [mapRowToClass, supabaseSetClasses]);
 
-  // Hydrate from Supabase once callbacks are ready
   useEffect(() => {
     fetchSessionsFromDatabase();
     fetchInstructorsFromDatabase();
@@ -573,10 +565,7 @@ function AcademyDashboardContent({
         cache: "no-store",
       });
     } catch (err) {
-      console.warn(
-        "[AcademyDashboard] readiness cache refresh failed",
-        err
-      );
+      console.warn("[AcademyDashboard] readiness cache refresh failed", err);
     }
   }, []);
   const profile = useProfileStore((s) => s.profile);
@@ -690,7 +679,6 @@ function AcademyDashboardContent({
         }
       }}
       onCreateInstructor={async (draft) => {
-        // Optimistic create in local store, then persist
         const instructor = addInstructor(draft);
         console.info("Added instructor", instructor.id);
         try {
@@ -834,7 +822,7 @@ function AcademyDashboardContent({
         console.info("Deleted training session", sessionId);
         try {
           const client = getSupabaseBrowserClient();
-          await client.from("academy_sessions").delete().eq("id", sessionId); // cascade deletes participants
+          await client.from("academy_sessions").delete().eq("id", sessionId);
           await refreshReadinessCache();
         } catch (e) {
           console.info(

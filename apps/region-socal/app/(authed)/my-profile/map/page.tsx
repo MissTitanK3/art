@@ -8,20 +8,19 @@ import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import { useAuth } from "@/hooks/useAuth";
 import type { Profile } from "@workspace/store/types/global.ts";
-import type { CountySelectMapProps } from "@workspace/ui/components/maps/CountySelectMap";
+import type { CountySelectMapProps } from "@workspace/ui/patterns/features/maps/county-select-map";
 import { CountyProps, SelectedCounty } from "@workspace/store/types/maps.ts";
 import { GEO_TO_FIPS } from "@workspace/store/utils/map";
-import { CountySelectLayout } from "@workspace/ui/layout/profile/CountySelectLayout";
-import { ToolsLoader } from "@workspace/ui/components/client/Loader";
+import { CountySelectLayout } from "@workspace/ui/layout/profile/county-select-layout";
 
 const CountySelectMap = dynamic<CountySelectMapProps>(
-  () => import("@workspace/ui/components/maps/CountySelectMap"),
-  { ssr: false, loading: () => <div className="h-96 w-full" /> },
+  () => import("@workspace/ui/patterns/features/maps/county-select-map"),
+  { ssr: false, loading: () => <div className="h-96 w-full" /> }
 );
 
 async function fetchOperatingCountiesByUser(
   userId: string,
-  profileAdapter: { loadProfile: (userId: string) => Promise<Profile | null> },
+  profileAdapter: { loadProfile: (userId: string) => Promise<Profile | null> }
 ): Promise<string[] | null> {
   const p = await profileAdapter.loadProfile(userId);
   return p?.operating_counties ?? null;
@@ -30,7 +29,7 @@ async function fetchOperatingCountiesByUser(
 async function saveOperatingCounties(
   current: Profile,
   fipsList: string[],
-  profileAdapter: { saveProfile: (profile: Profile) => Promise<void> },
+  profileAdapter: { saveProfile: (profile: Profile) => Promise<void> }
 ): Promise<void> {
   const next: Profile = { ...current, operating_counties: fipsList };
   await profileAdapter.saveProfile(next);
@@ -47,7 +46,7 @@ function CountySelectDataLayer() {
     SelectedCounty[]
   >([]);
   const [activeCounty, setActiveCounty] = React.useState<SelectedCounty | null>(
-    null,
+    null
   );
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -143,7 +142,7 @@ function CountySelectDataLayer() {
       });
       return authoritative;
     },
-    [],
+    []
   );
 
   const handleMapChange = React.useCallback(
@@ -153,12 +152,12 @@ function CountySelectDataLayer() {
         setActiveCounty((prevActive) =>
           prevActive && !merged.some((c) => c.GEO_ID === prevActive.GEO_ID)
             ? null
-            : prevActive,
+            : prevActive
         );
         return merged;
       });
     },
-    [reconcileSelection],
+    [reconcileSelection]
   );
 
   const toggleEditCounty = React.useCallback((county: SelectedCounty) => {
@@ -168,10 +167,10 @@ function CountySelectDataLayer() {
   const handleUpdateZones = React.useCallback(
     (geoId: string, zones: number[]) => {
       setSelectedCounties((prev) =>
-        prev.map((c) => (c.GEO_ID === geoId ? { ...c, ZONE: zones } : c)),
+        prev.map((c) => (c.GEO_ID === geoId ? { ...c, ZONE: zones } : c))
       );
     },
-    [],
+    []
   );
 
   const handleRemoveCounty = React.useCallback((geoId: string) => {
@@ -202,7 +201,7 @@ function CountySelectDataLayer() {
         }
       })();
     },
-    [profile, profileAdapter, router, selectedCounties, setOperating],
+    [profile, profileAdapter, router, selectedCounties, setOperating]
   );
 
   if (!profile) {
@@ -211,11 +210,11 @@ function CountySelectDataLayer() {
         profileMissing
         selectedCounties={[]}
         activeCounty={null}
-        onMapChange={() => { }}
-        onToggleEditCounty={() => { }}
-        onRemoveCounty={() => { }}
-        onUpdateZones={() => { }}
-        onDone={() => { }}
+        onMapChange={() => {}}
+        onToggleEditCounty={() => {}}
+        onRemoveCounty={() => {}}
+        onUpdateZones={() => {}}
+        onDone={() => {}}
         isSaving={false}
         MapComponent={CountySelectMap}
         noProfileContent={

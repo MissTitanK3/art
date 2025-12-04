@@ -9,10 +9,10 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@workspace/ui/components/card";
-import { Label } from "@workspace/ui/components/label";
-import { Input } from "@workspace/ui/components/input";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/card";
+import { Label } from "@workspace/ui/primitives/label";
+import { Input } from "@workspace/ui/primitives/input";
+import { Button } from "@workspace/ui/primitives/button";
 
 export default function ResetPasswordPage() {
   const { updatePassword } = useAuth();
@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
       setTimeout(() => router.push("/sign-in"), 1200);
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Failed to update password.",
+        err instanceof Error ? err.message : "Failed to update password."
       );
     } finally {
       setPending(false);

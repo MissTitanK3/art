@@ -33,27 +33,18 @@ export default function ChoiceModal({
 
   if (!open) return null;
 
-  const stop = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
-    const anyEvent = e as any;
-    if (anyEvent.nativeEvent?.stopImmediatePropagation)
-      anyEvent.nativeEvent.stopImmediatePropagation();
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+        aria-label="Close choice modal"
+      />
       <div
         className="relative z-[61] w-[92vw] max-w-md rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl p-5 text-white"
         role="dialog"
         aria-modal="true"
-        onClick={stop}
-        onMouseDown={stop}
-        onPointerDown={stop}
-        onTouchStart={stop}
       >
         {title && <h3 className="text-lg font-semibold mb-2">{title}</h3>}
         {description && (

@@ -7,10 +7,10 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
+} from "@workspace/ui/primitives/card";
+import { Button } from "@workspace/ui/primitives/button";
+import { Input } from "@workspace/ui/primitives/input";
+import { Label } from "@workspace/ui/primitives/label";
 
 const BADGE_EMOJI: Record<string, string> = {
   wrench: "🛠️",
@@ -28,11 +28,11 @@ export default function ProfilePage() {
   const dock_lat = useProfileStore((s: any) => s.dock_lat as number | null);
   const dock_lng = useProfileStore((s: any) => s.dock_lng as number | null);
   const dock_radius_km = useProfileStore(
-    (s: any) => s.dock_radius_km as number | null,
+    (s: any) => s.dock_radius_km as number | null
   );
   const setDock = useProfileStore(
     (s: any) =>
-      s.setDock as (lat: number, lng: number, radiusKm?: number) => void,
+      s.setDock as (lat: number, lng: number, radiusKm?: number) => void
   );
   const clearDock = useProfileStore((s: any) => s.clearDock as () => void);
 

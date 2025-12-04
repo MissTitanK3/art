@@ -1,5 +1,5 @@
 // Server-safe input (no functions/classes)
-import { LucideIcon, NavIconId } from '@workspace/ui/components/icons/nav-icons';
+import { LucideIcon, NavIconId } from '@workspace/ui/patterns/features/icons/nav-icons';
 /**
  * Navigation roles and access helpers
  *

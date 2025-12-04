@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@workspace/ui/components/button";
-import ThemeToggle from "@workspace/ui/components/client/ThemeToggle";
+import { Button } from "@workspace/ui/primitives/button";
+import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 
 export default function Home() {
   return (

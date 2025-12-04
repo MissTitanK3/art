@@ -1,0 +1,157 @@
+"use client";
+
+import { RosterEntry } from "@workspace/store/types/pod.ts";
+import { useState } from "react";
+import { Badge } from "@workspace/ui/primitives/badge";
+import { Button } from "@workspace/ui/primitives/button";
+import { Checkbox } from "@workspace/ui/primitives/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/primitives/drawer";
+
+export default function ManageRoleDrawer({
+  role,
+  assigned,
+  manualAssigned = [],
+  onClose,
+  onSave,
+  allRoster,
+  loading,
+}: {
+  role: string;
+  submissionId: string;
+  assigned: string[];
+  manualAssigned?: { volunteer_id: string; name?: string }[];
+  onClose: () => void;
+  onSave: (
+    role: string,
+    selected: string[],
+    manualVolunteers: { id: string; name: string }[]
+  ) => void;
+  allRoster: RosterEntry[];
+  loading?: boolean;
+}) {
+  const [selected, setSelected] = useState<string[]>(assigned);
+  const [manualName, setManualName] = useState("");
+  const [manualVolunteers, setManualVolunteers] = useState<
+    { id: string; name: string }[]
+  >(
+    manualAssigned.map((m) => ({
+      id: m.volunteer_id,
+      name: m.name ?? m.volunteer_id,
+    }))
+  );
+
+  const toggle = (id: string) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+    );
+  };
+
+  const addManualVolunteer = () => {
+    if (!manualName.trim()) return;
+    const id = `manual-${Date.now()}`;
+    const newVolunteer = { id, name: manualName.trim() };
+    setManualVolunteers((prev) => [...prev, newVolunteer]);
+    setSelected((prev) => [...prev, id]);
+    setManualName("");
+  };
+
+  return (
+    <Drawer open onOpenChange={onClose}>
+      <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground h-9/12">
+        <DrawerHeader>
+          <DrawerTitle>Manage Role: {role}</DrawerTitle>
+          <DrawerDescription>
+            Assign or unassign volunteers for this role.
+            {loading ? " Loading eligible users…" : null}
+          </DrawerDescription>
+        </DrawerHeader>
+
+        <div
+          className="max-h-[50vh] overflow-y-auto mt-4 space-y-2"
+          aria-busy={loading}
+        >
+          {loading ? (
+            // Skeleton placeholder to avoid flicker while loading
+            Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-sm bg-muted animate-pulse" />
+                <div className="h-4 w-48 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-16 rounded bg-muted animate-pulse ml-2" />
+              </div>
+            ))
+          ) : (
+            <>
+              {/* Existing roster */}
+              {allRoster.map((r) => (
+                <label
+                  key={r.id}
+                  className="flex items-center gap-2 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selected.includes(r.id)}
+                    onCheckedChange={() => toggle(r.id)}
+                  />
+
+                  <span className="font-medium">{r.profile.display_name}</span>
+                  <Badge variant="outline" className="text-[10px] capitalize">
+                    {r.role}
+                  </Badge>
+                </label>
+              ))}
+
+              {/* Manual volunteers */}
+              {manualVolunteers.map((m) => (
+                <label
+                  key={m.id}
+                  className="flex items-center gap-2 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selected.includes(m.id)}
+                    onCheckedChange={() => toggle(m.id)}
+                  />
+                  <span className="font-medium">{m.name}</span>
+                  <Badge variant="outline" className="text-[10px] capitalize">
+                    manual
+                  </Badge>
+                </label>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Manual entry field */}
+        <div className="flex gap-2 mt-4">
+          <input
+            type="text"
+            value={manualName}
+            onChange={(e) => setManualName(e.target.value)}
+            placeholder="Add volunteer name"
+            className="flex-1 rounded-md border px-2 py-1 text-sm"
+          />
+          <Button size="sm" onClick={addManualVolunteer}>
+            Add
+          </Button>
+        </div>
+
+        <DrawerFooter>
+          <Button
+            onClick={() => onSave(role, selected, manualVolunteers)}
+            disabled={!!loading}
+          >
+            Save
+          </Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}

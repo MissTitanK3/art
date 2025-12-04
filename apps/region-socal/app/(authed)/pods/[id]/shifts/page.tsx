@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "@workspace/ui/components/sonner";
-import { Separator } from "@workspace/ui/components/separator";
-import { Button } from "@workspace/ui/components/button";
+import { toast } from "@workspace/ui/primitives/sonner";
+import { Separator } from "@workspace/ui/primitives/separator";
+import { Button } from "@workspace/ui/primitives/button";
 import { ArrowLeft } from "lucide-react";
 
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -13,8 +13,7 @@ import { BaseShiftIntentionFields, Shift } from "@workspace/store/types/pod.ts";
 import {
   PodShiftsLayout,
   PodShiftsLayoutProps,
-} from "@workspace/ui/layout/pods/PodShiftsLayout";
-
+} from "@workspace/ui/layout/pods/pod-shifts-layout";
 
 type ShiftFormState = BaseShiftIntentionFields & {
   id?: string;
@@ -38,10 +37,12 @@ function mapRowToShift(row: any): Shift {
 }
 
 async function fetchPodShiftsFromDatabase(
-  slug: string,
+  slug: string
 ): Promise<Shift[] | null> {
   try {
-    const response = await fetch(`/api/pods/${encodeURIComponent(slug)}/shifts`);
+    const response = await fetch(
+      `/api/pods/${encodeURIComponent(slug)}/shifts`
+    );
 
     if (!response.ok) {
       if (response.status === 404) return null;
@@ -176,9 +177,9 @@ export default function PodShiftsPage() {
           podId={undefined}
           form={form}
           setForm={setForm}
-          onAddShift={() => { }}
+          onAddShift={() => {}}
           shifts={[]}
-          onRemoveShift={() => { }}
+          onRemoveShift={() => {}}
           notFoundMessage={
             <p className="text-sm text-muted-foreground">Pod not found</p>
           }
@@ -258,7 +259,7 @@ export default function PodShiftsPage() {
     }
     removeShift(shiftId);
     setRemoteShifts((prev) =>
-      prev ? prev.filter((s) => s.id !== shiftId) : prev,
+      prev ? prev.filter((s) => s.id !== shiftId) : prev
     );
   };
 

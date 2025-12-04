@@ -2,11 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { TeleprompterHeader } from "@workspace/ui/components/TeleprompterHeader";
-import { TeleprompterImportDrawer } from "@workspace/ui/components/TeleprompterImportDrawer";
-import { TeleprompterSettingsDrawer } from "@workspace/ui/components/TeleprompterSettingsDrawer";
-import { TeleprompterScriptCard } from "@workspace/ui/components/TeleprompterScriptCard";
-import QuickActionsCard from "@workspace/ui/components/QuickActionsCard";
+import { TeleprompterHeader } from "@workspace/ui/patterns/features/teleprompter/teleprompter-header";
+import { TeleprompterImportDrawer } from "@workspace/ui/patterns/features/teleprompter/teleprompter-import-drawer";
+import { TeleprompterSettingsDrawer } from "@workspace/ui/patterns/features/teleprompter/teleprompter-settings-drawer";
+import { TeleprompterScriptCard } from "@workspace/ui/patterns/features/teleprompter/teleprompter-script-card";
 import { useFullscreenElement } from "@workspace/ui/hooks/use-fullscreen-element";
 import { useAutoHide } from "@workspace/ui/hooks/use-auto-hide";
 import { useViewportInfo } from "@workspace/ui/hooks/use-viewport-info";
@@ -22,10 +21,6 @@ import { useTeleprompterEngine } from "@workspace/ui/hooks/use-teleprompter-engi
 import { useTeleprompterHotkeys } from "@workspace/ui/hooks/use-teleprompter-hotkeys";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import { useTeleprompterStore } from "@workspace/store/useTeleprompterStore";
-import {
-  TransportControls,
-  SpeedControl,
-} from "@workspace/ui/components/teleprompter-controls";
 import {
   TELEPROMPTER_SCRIPTS as SCRIPTS,
   TELEPROMPTER_SCRIPT_META,
@@ -491,7 +486,10 @@ export default function TeleprompterDataLayer() {
           try {
             localStorage.setItem("teleprompter.viewportHintDismissed", "1");
           } catch (error) {
-            console.warn("[teleprompter] failed to persist viewport hint", error);
+            console.warn(
+              "[teleprompter] failed to persist viewport hint",
+              error
+            );
           }
         }}
         fullscreen={fullscreen}

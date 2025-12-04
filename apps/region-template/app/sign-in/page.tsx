@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
-import { SignInCard } from "@/components/auth/SignInCard";
+import { SignInCard } from "@workspace/ui/patterns/features/auth/sign-in-card";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -32,7 +32,7 @@ export default async function SignInPage({
   return (
     <main className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-2xl flex-col px-4 pb-12 pt-6">
       <Suspense fallback={null}>
-        <SignInCard />
+        <SignInCard onSubmit={() => {}} />
       </Suspense>
     </main>
   );

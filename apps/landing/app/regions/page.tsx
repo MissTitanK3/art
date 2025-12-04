@@ -4,18 +4,18 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/card";
+import { Badge } from "@workspace/ui/primitives/badge";
+import { Button } from "@workspace/ui/primitives/button";
 import { ExternalLink, MapPin, MessagesSquare } from "lucide-react";
 import { REGIONS, regionUrl } from "./regions";
 
 export default function RegionsPage() {
   const live = REGIONS.filter((r) => !r.disabled).sort((a, b) =>
-    a.name.localeCompare(b.name),
+    a.name.localeCompare(b.name)
   );
   const planned = REGIONS.filter((r) => r.disabled).sort((a, b) =>
-    a.name.localeCompare(b.name),
+    a.name.localeCompare(b.name)
   );
 
   return (

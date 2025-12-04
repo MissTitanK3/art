@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PrintButton from "@/components/client/PrintButton";
+import PrintButton from "@workspace/ui/patterns/common/print-button";
 
 export default function CommunityGuidelinesPage() {
   return (

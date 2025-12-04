@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllCourses } from "@/lib/mdx-loader";
 import { COURSE_GROUPS } from "@/lib/course-index";
-import ThemeToggle from "@workspace/ui/components/client/ThemeToggle";
-import { Callout } from "@workspace/ui/components/academy/Callout";
-import PrintButton from "@/components/client/PrintButton";
-// (LighthouseNav intentionally not used here to maintain legacy design)
+import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
+import PrintButton from "@workspace/ui/patterns/common/print-button";
+import { Callout } from "@workspace/ui/patterns/features/academy/callout";
 
 export default async function AcademyHome() {
   const allCourses = await getAllCourses();
@@ -60,7 +59,7 @@ export default async function AcademyHome() {
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {group.courses.map((course) => {
                 const courseMeta = allCourses.find(
-                  (c) => c.slug === course.slug,
+                  (c) => c.slug === course.slug
                 );
                 if (!courseMeta) return null;
                 return (

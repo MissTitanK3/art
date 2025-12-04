@@ -6,7 +6,7 @@ import {
     PickListItem,
     CatalogItem,
     InventoryIntakeValues
-} from "@workspace/ui/components/warehouse/types";
+} from "@workspace/ui/patterns/features/warehouse/types";
 
 // GET /api/warehouse/data response
 export type WarehouseDataResponse = {

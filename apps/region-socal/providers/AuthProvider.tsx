@@ -23,16 +23,14 @@ type AuthContextValue = {
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
   signUpWithPassword: (
-    payload: PasswordSignUpPayload,
+    payload: PasswordSignUpPayload
   ) => Promise<AuthSession | null>;
-  /** Send a password reset email. */
   requestPasswordReset: (email: string, redirectTo?: string) => Promise<void>;
-  /** Complete a password reset for the current recovery session. */
   updatePassword: (newPassword: string) => Promise<void>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
-  undefined,
+  undefined
 );
 
 type AuthProviderProps = {
@@ -54,10 +52,10 @@ export function AuthProvider({
   > | null>(null);
 
   const [session, setSession] = React.useState<AuthSession | null>(
-    initialSession,
+    initialSession
   );
   const [status, setStatus] = React.useState<AuthStatus>(
-    toStatus(initialSession),
+    toStatus(initialSession)
   );
 
   const ensureClient = React.useCallback(() => {
@@ -119,7 +117,7 @@ export function AuthProvider({
     const supabase = ensureClient();
 
     async function hydrate() {
-      if (initialSession) return; // already hydrated from server
+      if (initialSession) return;
       setStatus("loading");
       const { data, error } = await supabase.auth.getSession();
       if (!active) return;
@@ -141,7 +139,6 @@ export function AuthProvider({
       const next = mapSupabaseSession(s);
       setSession(next);
       setStatus(toStatus(next));
-      // Keep server cookies in sync for SSR
       postAuthCallback(event, s);
     });
 
@@ -182,10 +179,9 @@ export function AuthProvider({
       const next = mapSupabaseSession(data.session);
       setSession(next);
       setStatus(toStatus(next));
-      // onAuthStateChange will also fire, but we return immediately
       return next as AuthSession;
     },
-    [ensureClient],
+    [ensureClient]
   );
 
   const signInWithOtp = React.useCallback(
@@ -196,7 +192,7 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient],
+    [ensureClient]
   );
 
   const signUpWithPassword = React.useCallback(
@@ -220,7 +216,7 @@ export function AuthProvider({
       }
       return next;
     },
-    [ensureClient],
+    [ensureClient]
   );
 
   const requestPasswordReset = React.useCallback(
@@ -239,7 +235,7 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient],
+    [ensureClient]
   );
 
   const updatePassword = React.useCallback(
@@ -250,11 +246,10 @@ export function AuthProvider({
       });
       if (error) throw error;
       try {
-        // Keep local state and SSR cookies in sync after password change
         const refreshed = await supabase.auth.getSession();
         await postAuthCallback(
           "USER_UPDATED",
-          refreshed.data.session as unknown as SupabaseSession,
+          refreshed.data.session as unknown as SupabaseSession
         );
         const next = mapSupabaseSession(refreshed.data.session);
         setSession(next);
@@ -263,13 +258,12 @@ export function AuthProvider({
         // ignore
       }
     },
-    [ensureClient],
+    [ensureClient]
   );
 
   const signOut = React.useCallback(async () => {
     const supabase = ensureClient();
     await supabase.auth.signOut();
-    // onAuthStateChange will update state and trigger callback to sync cookies
   }, [ensureClient]);
 
   const value = React.useMemo<AuthContextValue>(
@@ -298,7 +292,7 @@ export function AuthProvider({
       signUpWithPassword,
       requestPasswordReset,
       updatePassword,
-    ],
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

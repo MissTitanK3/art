@@ -11,7 +11,7 @@ export function NotificationsRealtime() {
 
   useEffect(() => {
     // Use the same browser client as AuthProvider to ensure auth cookies/session are attached
-    let supabase;
+    let supabase: ReturnType<typeof getSupabaseBrowserClient>;
     try {
       supabase = getSupabaseBrowserClient();
     } catch {
@@ -42,7 +42,7 @@ export function NotificationsRealtime() {
         const { data } = await supabase
           .from("user_notifications")
           .select(
-            "notification_id, title, body, level, channel, link, sticky, expires_at, read_at, dismissed_at",
+            "notification_id, title, body, level, channel, link, sticky, expires_at, read_at, dismissed_at"
           )
           .eq("user_id", userId)
           .order("notification_id", { ascending: false });
@@ -91,7 +91,7 @@ export function NotificationsRealtime() {
             const { data } = await supabase
               .from("notifications")
               .select(
-                "id, title, body, level, channel, link, sticky, expires_at",
+                "id, title, body, level, channel, link, sticky, expires_at"
               )
               .eq("id", row.notification_id)
               .single();
@@ -109,7 +109,7 @@ export function NotificationsRealtime() {
               sticky: Boolean(data.sticky),
               ttlMs: ttlMs && ttlMs > 0 ? ttlMs : undefined,
             });
-          },
+          }
         )
         .on(
           "postgres_changes",
@@ -133,7 +133,7 @@ export function NotificationsRealtime() {
             if (row.read_at) {
               notificationsStore.getState().markRead(row.notification_id);
             }
-          },
+          }
         )
         .subscribe();
     }

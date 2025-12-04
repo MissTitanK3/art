@@ -33,7 +33,15 @@ export default function BottomDrawer({
         <div
           className="fixed inset-0 z-[45] bg-black/30"
           onClick={onClose}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onClose();
+            }
+          }}
           aria-label="Close feed"
+          role="button"
+          tabIndex={0}
         />
       )}
       <div

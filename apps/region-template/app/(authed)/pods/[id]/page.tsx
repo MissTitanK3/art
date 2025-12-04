@@ -8,12 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Channel, Pod } from "@workspace/store/types/pod.ts";
-import { toast } from "@workspace/ui/components/sonner";
+import { toast } from "@workspace/ui/primitives/sonner";
 import {
   PodManagementLayout,
   PodManagementLayoutErrors,
-} from "@workspace/ui/layout/pods/PodManagementLayout";
-
+} from "@workspace/ui/layout/pods/pod-management-layout";
 
 // Schema uses new channels model
 const schema = z.object({
@@ -126,7 +125,7 @@ export default function PodManagementPage() {
       channels: [{ type: "Signal" as Channel["type"], link: "" }],
       team: [],
     }),
-    [id],
+    [id]
   );
 
   const initialPod = storePod ?? fallbackPod;
@@ -187,7 +186,7 @@ export default function PodManagementPage() {
               channelType: channel?.type ?? "Signal",
               channelLink: channel?.link ?? "",
             },
-            { keepDirty: false },
+            { keepDirty: false }
           );
         }
       } catch (error) {
@@ -267,8 +266,8 @@ export default function PodManagementPage() {
             message: msg,
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       toast.error(msg);
     }
@@ -299,8 +298,8 @@ export default function PodManagementPage() {
         JSON.stringify(
           { context: "archivePodViaApi", podId: activePod.id, message: msg },
           null,
-          2,
-        ),
+          2
+        )
       );
       toast.error(msg);
     }

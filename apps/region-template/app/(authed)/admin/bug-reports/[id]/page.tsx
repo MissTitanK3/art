@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import BugReportDetail, {
   type BugReport,
-} from "@workspace/ui/components/admin/bug-reports/BugReportDetail";
+} from "@workspace/ui/patterns/features/bug-reports/bug-report-detail";
 
 export default function AdminBugReportDetailPage() {
   const params = useParams<{ id: string }>();

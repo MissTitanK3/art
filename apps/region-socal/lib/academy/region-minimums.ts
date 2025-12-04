@@ -99,7 +99,8 @@ const STATUS_ORDER: Record<RegionOperationalMinimumSnapshot['coverageStatus'], n
 };
 
 function humanizeKey(key: string): string {
-  if (DEFAULT_LABEL_FALLBACKS[key]) return DEFAULT_LABEL_FALLBACKS[key];
+  const fallback = DEFAULT_LABEL_FALLBACKS[key];
+  if (fallback) return fallback;
   return key
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')
@@ -261,7 +262,10 @@ export function buildRegionOperationalMinimums(
   for (const override of overrideMap.values()) {
     const alreadyPresent = merged.some((item) => item.key === override.key);
     if (alreadyPresent) continue;
-    const label = override.label && override.label.length > 0 ? override.label : humanizeKey(override.key);
+    const label =
+      typeof override.label === 'string' && override.label.length > 0
+        ? override.label
+        : humanizeKey(override.key);
     merged.push(
       normalizeDefinition({
         key: override.key,

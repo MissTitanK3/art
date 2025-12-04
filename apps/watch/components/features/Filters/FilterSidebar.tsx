@@ -36,7 +36,9 @@ export default function FilterSidebar({
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed)) setSelected(parsed);
         }
-      } catch {}
+      } catch (error) {
+        console.error("Failed to hydrate agency filters", error);
+      }
     } else {
       setSelected(initialAgencies);
     }
@@ -57,7 +59,9 @@ export default function FilterSidebar({
             setTimeRange([start, Math.max(start, endCandidate)]);
           }
         }
-      } catch {}
+      } catch (error) {
+        console.error("Failed to hydrate saved time range", error);
+      }
     } else {
       setTimeRange(initialTimeRange);
     }
@@ -66,13 +70,17 @@ export default function FilterSidebar({
   useEffect(() => {
     try {
       localStorage.setItem("agencyFilter", JSON.stringify(selected));
-    } catch {}
+    } catch (error) {
+      console.error("Failed to persist agency filters", error);
+    }
   }, [selected]);
 
   useEffect(() => {
     try {
       localStorage.setItem("timeRange", JSON.stringify(timeRange));
-    } catch {}
+    } catch (error) {
+      console.error("Failed to persist time range", error);
+    }
   }, [timeRange]);
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import TeleprompterScriptBuilder from "@workspace/ui/components/teleprompter-script-builder";
+import TeleprompterScriptBuilder from "@workspace/ui/patterns/features/teleprompter/teleprompter-script-builder";
 import {
   TELEPROMPTER_SCRIPTS,
   TELEPROMPTER_SCRIPT_META,

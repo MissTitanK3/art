@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { supabase } from "@/lib/supabaseClient";
 import { useSignalsStore } from "@/store/useSignalsStore";
 import type { ArtSignal } from "@/schemas/art_signals";
@@ -44,7 +44,7 @@ export function PingButton() {
   const markPing = useShipStore((s) => s.markPing);
   const regionIdFromStore = useProfileStore((s) => s.region_id);
   const sectorFromStore = useProfileStore(
-    (s) => s.sector_code || s.profile?.sector_code || null,
+    (s) => s.sector_code || s.profile?.sector_code || null
   );
 
   const onPing = useCallback(async () => {

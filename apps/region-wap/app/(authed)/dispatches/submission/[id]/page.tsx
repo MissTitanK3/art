@@ -4,7 +4,7 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
-import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/DispatchSubmissionLayout";
+import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/dispatch-submission-layout";
 
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
@@ -14,23 +14,21 @@ import type {
   LogisticsItem,
 } from "@workspace/store/types/dispatch";
 import { useCommsData } from "@/hooks/useCommsData";
-import { CommsDashboardView } from "@workspace/ui/components/dispatch/CommsDashboardView";
+import { CommsDashboardView } from "@workspace/ui/patterns/features/dispatch/comms-dashboard-view";
 
 async function fetchDispatchSubmissionFromDatabase(
-  id: string,
+  id: string
 ): Promise<DispatchSubmission | null> {
   try {
     const res = await fetch(`/api/dispatches/${id}`);
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] fetch error', res.status);
+      console.warn("[DispatchSubmissionDataLayer] fetch error", res.status);
       return null;
     }
     const json = await res.json();
-    return json?.submission
-      ? mapRowToSubmission(json.submission)
-      : null;
+    return json?.submission ? mapRowToSubmission(json.submission) : null;
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] fetch error', e);
+    console.warn("[DispatchSubmissionDataLayer] fetch error", e);
     return null;
   }
 }
@@ -39,13 +37,16 @@ async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
   try {
     const res = await fetch(`/api/dispatches/${id}/updates`);
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] fetch updates error', res.status);
+      console.warn(
+        "[DispatchSubmissionDataLayer] fetch updates error",
+        res.status
+      );
       return [];
     }
     const json = await res.json();
     return json.updates as DispatchUpdate[];
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] fetch updates error', e);
+    console.warn("[DispatchSubmissionDataLayer] fetch updates error", e);
     return [];
   }
 }
@@ -54,98 +55,113 @@ async function fetchSubmissionLogistics(id: string): Promise<LogisticsItem[]> {
   try {
     const res = await fetch(`/api/dispatches/${id}/logistics`);
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] fetch logistics error', res.status);
+      console.warn(
+        "[DispatchSubmissionDataLayer] fetch logistics error",
+        res.status
+      );
       return [];
     }
     const json = await res.json();
     return json.logistics as LogisticsItem[];
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] fetch logistics error', e);
+    console.warn("[DispatchSubmissionDataLayer] fetch logistics error", e);
     return [];
   }
 }
 
 async function persistSubmissionPatchToDatabase(
   id: string,
-  patch: Partial<DispatchSubmission>,
+  patch: Partial<DispatchSubmission>
 ): Promise<void> {
   // Send patch to API
   try {
     const res = await fetch(`/api/dispatches/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     });
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] PATCH error', res.status);
+      console.warn("[DispatchSubmissionDataLayer] PATCH error", res.status);
     }
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] PATCH error', e);
+    console.warn("[DispatchSubmissionDataLayer] PATCH error", e);
   }
 }
 
 async function insertUpdateRow(
   dispatchId: string,
-  update: DispatchUpdate,
+  update: DispatchUpdate
 ): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/${dispatchId}/updates`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(update),
     });
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] insert update error', res.status);
+      console.warn(
+        "[DispatchSubmissionDataLayer] insert update error",
+        res.status
+      );
     }
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] insert update error', e);
+    console.warn("[DispatchSubmissionDataLayer] insert update error", e);
   }
 }
 
 async function updateUpdateRow(updateId: string, text: string): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/updates/${updateId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] update update error', res.status);
+      console.warn(
+        "[DispatchSubmissionDataLayer] update update error",
+        res.status
+      );
     }
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] update update error', e);
+    console.warn("[DispatchSubmissionDataLayer] update update error", e);
   }
 }
 
 async function deleteUpdateRow(updateId: string): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/updates/${updateId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] delete update error', res.status);
+      console.warn(
+        "[DispatchSubmissionDataLayer] delete update error",
+        res.status
+      );
     }
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] delete update error', e);
+    console.warn("[DispatchSubmissionDataLayer] delete update error", e);
   }
 }
 
 async function persistLogisticsDiff(
   dispatchId: string,
   prevItems: LogisticsItem[],
-  nextItems: LogisticsItem[],
+  nextItems: LogisticsItem[]
 ): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/${dispatchId}/logistics`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ items: nextItems }),
     });
     if (!res.ok) {
-      console.warn('[DispatchSubmissionDataLayer] logistics diff error', res.status);
+      console.warn(
+        "[DispatchSubmissionDataLayer] logistics diff error",
+        res.status
+      );
     }
   } catch (e) {
-    console.warn('[DispatchSubmissionDataLayer] logistics diff error', e);
+    console.warn("[DispatchSubmissionDataLayer] logistics diff error", e);
   }
 }
 
@@ -157,7 +173,7 @@ export default function DispatchSubmissionPage() {
   const commsData = useCommsData({ eventId: id });
 
   const storeSubmission = useDispatchStore((s) =>
-    s.submissions.find((sub) => sub.id === id),
+    s.submissions.find((sub) => sub.id === id)
   );
   const updateSubmission = useDispatchStore((s) => s.updateSubmission);
   const addSubmission = useDispatchStore((s) => s.addSubmission);
@@ -202,7 +218,7 @@ export default function DispatchSubmissionPage() {
         if (!cancelled) {
           console.warn(
             "DispatchSubmissionDataLayer: failed to fetch submission",
-            error,
+            error
           );
         }
       } finally {
@@ -253,7 +269,7 @@ export default function DispatchSubmissionPage() {
   };
 
   const handleAddUpdate = async (
-    u: Omit<DispatchUpdate, "id" | "createdAt">,
+    u: Omit<DispatchUpdate, "id" | "createdAt">
   ) => {
     const newUpdate: DispatchUpdate = {
       id: crypto.randomUUID(),
@@ -279,7 +295,7 @@ export default function DispatchSubmissionPage() {
       // already logged
     }
     const nextUpdates = (submission.updates ?? []).map((u) =>
-      u.id === updateId ? { ...u, text } : u,
+      u.id === updateId ? { ...u, text } : u
     );
     updateSubmission(submission.id, { updates: nextUpdates });
   };
@@ -291,7 +307,7 @@ export default function DispatchSubmissionPage() {
       // already logged
     }
     const nextUpdates = (submission.updates ?? []).filter(
-      (u) => u.id !== updateId,
+      (u) => u.id !== updateId
     );
     updateSubmission(submission.id, { updates: nextUpdates });
   };

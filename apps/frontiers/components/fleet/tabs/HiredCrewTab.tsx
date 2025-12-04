@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { humanizeKey, pct } from "@/lib/format";
 import type { CrewCatalog } from "@/schemas/crew";
 type HiredItem = {

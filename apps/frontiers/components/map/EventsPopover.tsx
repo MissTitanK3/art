@@ -4,8 +4,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@workspace/ui/components/popover";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/popover";
+import { Button } from "@workspace/ui/primitives/button";
 import { List } from "lucide-react";
 import { EventFeed } from "@/components/EventFeed";
 

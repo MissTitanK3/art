@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import "@workspace/ui/globals.css";
 import "./print.css";
 import { Providers } from "@/components/providers";
-import { Toaster } from "@workspace/ui/components/sonner";
+import { Toaster } from "@workspace/ui/primitives/sonner";
 
 const fontSans = Geist({
   subsets: ["latin"],

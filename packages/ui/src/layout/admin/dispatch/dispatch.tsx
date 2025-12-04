@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
+} from "@workspace/ui/primitives/card";
 import {
   Table,
   TableBody,
@@ -16,17 +16,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/table";
-import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
+} from "@workspace/ui/primitives/table";
+import { Button } from "@workspace/ui/primitives/button";
+import { Badge } from "@workspace/ui/primitives/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
-import { Input } from "@workspace/ui/components/input";
+} from "@workspace/ui/primitives/select";
+import { Input } from "@workspace/ui/primitives/input";
 import { toast } from "sonner";
 import { Map, Table2, Archive, Flag, FlagOff } from "lucide-react";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
@@ -34,7 +34,7 @@ import { DISPATCH_TYPE_LABELS } from "@workspace/store/types/dispatch.ts";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 
 const WatchMap = React.lazy(
-  () => import("@workspace/ui/components/client/watch/WatchMap"),
+  () => import("@workspace/ui/patterns/features/watch/watch-map")
 );
 
 type Props = {
@@ -70,7 +70,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
   const [type, setType] = React.useState<string>("");
   const [mapView, setMapView] = React.useState(false);
   const [rows, setRows] = React.useState<DispatchSubmission[]>(
-    () => initialItems,
+    () => initialItems
   );
 
   // Keep local rows in sync when new data arrives from the data layer
@@ -107,7 +107,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
           return { ...d, flagged: next } as any;
         }
         return d;
-      }),
+      })
     );
     onToggleFlag?.(id, nextFlag);
     try {
@@ -117,7 +117,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ flagged: nextFlag }),
-        },
+        }
       );
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       toast.success(nextFlag ? "Flagged for review" : "Flag removed");
@@ -128,7 +128,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
 
   async function archive(id: string) {
     setRows((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: "archived" } : d)),
+      prev.map((d) => (d.id === id ? { ...d, status: "archived" } : d))
     );
     try {
       const res = await fetch(
@@ -137,7 +137,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "archived" }),
-        },
+        }
       );
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       toast.success("Dispatch archived");

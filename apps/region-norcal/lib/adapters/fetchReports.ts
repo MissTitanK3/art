@@ -18,7 +18,6 @@ export async function fetchReports(options?: {
 
   const cutoff = since ?? null;
 
-  // 1. Try localStorage cache (keyed by cutoff)
   const cacheKey = cutoff ? `${CACHE_KEY}:${cutoff}` : `${CACHE_KEY}:all`;
   if (!forceRefresh && typeof window !== 'undefined') {
     const cached = localStorage.getItem(cacheKey);
@@ -36,7 +35,6 @@ export async function fetchReports(options?: {
     }
   }
 
-  // 2. Build query
   const params = new URLSearchParams();
   params.set('includeTests', String(includeTests));
   if (cutoff) params.set('since', cutoff);
@@ -67,7 +65,6 @@ export async function fetchReports(options?: {
       ? payload.reports
       : [];
 
-  // 4. Save to cache
   if (typeof window !== 'undefined') {
     const entry: CacheEntry = { timestamp: Date.now(), data: reports };
     localStorage.setItem(cacheKey, JSON.stringify(entry));

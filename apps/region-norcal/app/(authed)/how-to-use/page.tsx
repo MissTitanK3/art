@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import HowToLayout from "@workspace/ui/components/how-to/HowToLayout";
+import HowToLayout from "@workspace/ui/patterns/features/how-to/how-to-layout";
 import {
   HowToBugTracker,
   NavRolesGuide,
@@ -29,9 +29,9 @@ import {
   AdminTrustGuide,
   type HowToSectionId,
   DEFAULT_HOW_TO_SECTION_ID,
-} from "@workspace/ui/components/how-to";
-import { Button } from "@workspace/ui/components/button";
-import { BugReportForm } from "@workspace/ui/components/feedback/BugReportForm";
+} from "@workspace/ui/patterns/features/how-to";
+import { Button } from "@workspace/ui/primitives/button";
+import { BugReportForm } from "@workspace/ui/patterns/features/feedback/bug-report-form";
 
 export default function HowToUsePage() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function HowToUsePage() {
       params.set("section", id);
       router.replace(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams],
+    [router, searchParams]
   );
 
   const renderers = React.useMemo(
@@ -97,7 +97,7 @@ export default function HowToUsePage() {
         "admin-training": <AdminTrainingGuide />,
         "admin-trust": <AdminTrustGuide />,
       }) as Record<string, React.ReactNode>,
-    [],
+    []
   );
 
   const quick = (

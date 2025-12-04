@@ -4,9 +4,10 @@ import * as React from "react";
 
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-import AdvocacyGroupsAdmin, {
+import {
+  AdvocacyGroupsAdmin,
   type AdvocacyGroup,
-} from "@workspace/ui/components/admin/advocacy/AdvocacyGroupsAdmin";
+} from "@workspace/ui/patterns/features/advocacy";
 
 export default function AdvocacyGroupsPage() {
   const profile = useProfileStore((s) => s.profile);

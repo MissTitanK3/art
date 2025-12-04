@@ -9,10 +9,10 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@workspace/ui/components/card";
-import { Label } from "@workspace/ui/components/label";
-import { Input } from "@workspace/ui/components/input";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/card";
+import { Label } from "@workspace/ui/primitives/label";
+import { Input } from "@workspace/ui/primitives/input";
+import { Button } from "@workspace/ui/primitives/button";
 
 export default function ForgotPasswordPage() {
   const { requestPasswordReset } = useAuth();
@@ -30,11 +30,11 @@ export default function ForgotPasswordPage() {
     try {
       await requestPasswordReset(email);
       setInfo(
-        "Check your email for a reset link. It will open a page to set a new password.",
+        "Check your email for a reset link. It will open a page to set a new password."
       );
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Failed to send reset email.",
+        err instanceof Error ? err.message : "Failed to send reset email."
       );
     } finally {
       setPending(false);

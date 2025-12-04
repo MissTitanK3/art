@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +66,7 @@ export function ResonanceMeter() {
           const { data: effects } = await supabase
             .from("resonance_effects")
             .select(
-              "id, expires_at, created_at, source_email, source_id, hop, strength",
+              "id, expires_at, created_at, source_email, source_id, hop, strength"
             )
             .eq("recipient_id", profileId)
             .gte("expires_at", nowIso)
@@ -90,13 +90,13 @@ export function ResonanceMeter() {
           let query = supabase
             .from("resonance_effects")
             .select(
-              "id, created_at, hop, strength, source_email, source_id, recipient_id, amount, expires_at",
+              "id, created_at, hop, strength, source_email, source_id, recipient_id, amount, expires_at"
             )
             .order("created_at", { ascending: false })
             .limit(10);
           if (email && profileId) {
             query = query.or(
-              `source_email.eq.${email},recipient_id.eq.${profileId}`,
+              `source_email.eq.${email},recipient_id.eq.${profileId}`
             );
           } else if (email) {
             query = query.eq("source_email", email);
@@ -145,9 +145,9 @@ export function ResonanceMeter() {
         (payload) => {
           const amount = (payload.new as any)?.amount;
           toast.success(
-            `Ko-fi donation detected. Pulse triggered (+${amount}).`,
+            `Ko-fi donation detected. Pulse triggered (+${amount}).`
           );
-        },
+        }
       )
       .subscribe();
     return () => {
@@ -172,7 +172,7 @@ export function ResonanceMeter() {
         },
         () => {
           setAffected((n) => n + 1);
-        },
+        }
       )
       .subscribe();
     return () => {
@@ -184,7 +184,7 @@ export function ResonanceMeter() {
 
   const kofiUrl = useMemo(
     () => process.env.NEXT_PUBLIC_KOFI_URL || "https://ko-fi.com",
-    [],
+    []
   );
 
   return (

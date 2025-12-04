@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+import { Badge } from "@workspace/ui/primitives/badge";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
   DialogContent,
@@ -54,11 +54,11 @@ export function SignalCard({ signal }: { signal: ArtSignal }) {
   const [open, setOpen] = useState(false);
   const rel = useMemo(
     () => relativeFromNow(signal.created_at),
-    [signal.created_at],
+    [signal.created_at]
   );
   const badgeVariant = useMemo(
     () => sourceBadgeVariant(signal.source_type),
-    [signal.source_type],
+    [signal.source_type]
   );
 
   return (

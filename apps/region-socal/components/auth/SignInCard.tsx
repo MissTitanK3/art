@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import UiSignInCard from "@workspace/ui/components/auth/SignInCard";
+import UiSignInCard from "@workspace/ui/patterns/features/auth/sign-in-card";
 import { useAuth } from "@/hooks/useAuth";
 
 type SignInCardProps = { redirectTo?: string };
@@ -15,7 +15,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
 
   const target = React.useMemo(
     () => redirectTo ?? searchParams?.get("redirectTo") ?? FALLBACK_REDIRECT,
-    [redirectTo, searchParams],
+    [redirectTo, searchParams]
   );
 
   const onSubmit = React.useCallback(
@@ -41,7 +41,7 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
       await refresh();
       router.push(target);
     },
-    [signInWithPassword, setSession, refresh, router, target],
+    [signInWithPassword, setSession, refresh, router, target]
   );
 
   return (

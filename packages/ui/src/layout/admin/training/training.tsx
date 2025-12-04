@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
+} from "@workspace/ui/primitives/card";
 import {
   Table,
   TableBody,
@@ -16,16 +16,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/table";
-import { Badge } from "@workspace/ui/components/badge";
+} from "@workspace/ui/primitives/table";
+import { Badge } from "@workspace/ui/primitives/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select";
-import { Input } from "@workspace/ui/components/input";
+} from "@workspace/ui/primitives/select";
+import { Input } from "@workspace/ui/primitives/input";
 
 type Props = {
   initialSessions: AcademyTrainingSession[];
@@ -49,7 +49,7 @@ export default function TrainingClient({ initialSessions }: Props) {
   const [status, setStatus] = React.useState<string>("");
   const [modality, setModality] = React.useState<string>("");
   const [rows, setRows] = React.useState<AcademyTrainingSession[]>(
-    () => initialSessions,
+    () => initialSessions
   );
 
   const filtered = React.useMemo(() => {

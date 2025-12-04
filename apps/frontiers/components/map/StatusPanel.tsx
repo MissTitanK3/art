@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { Satellite } from "lucide-react";
 import { FactionBadge } from "@/components/FactionBadge";
 import { StatBar } from "@/components/map/StatBar";

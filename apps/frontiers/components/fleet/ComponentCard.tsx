@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import type { ShipComponent } from "@/schemas/ship_components";
 import { humanizeKey, pct } from "@/lib/format";
 
@@ -24,7 +24,7 @@ export function ComponentCard({
 }) {
   const resolvedKind = React.useMemo(
     () => kinds.find((k) => k.id === (c as any).kind) || kinds[0],
-    [kinds, c],
+    [kinds, c]
   );
   const base = (resolvedKind?.base || {}) as Record<string, number>;
   const per = (resolvedKind?.perLevel || {}) as Record<string, number>;
@@ -38,7 +38,7 @@ export function ComponentCard({
   }, [base, per, level]);
   const integrityPct = React.useMemo(
     () => Math.round(Math.max(0, Math.min(1, c.integrity)) * 100),
-    [c.integrity],
+    [c.integrity]
   );
   return (
     <div className="rounded border p-3 space-y-2 text-sm">

@@ -6,10 +6,10 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@workspace/ui/components/alert";
+} from "@workspace/ui/primitives/alert";
 
 import { exportLegalAidReport } from "@/lib/pipelines/exportLegalAidReport";
-import { MissingPersonIntakeForm } from "@workspace/ui/components/missing-persons/MissingPersonIntakeForm";
+import { MissingPersonIntakeForm } from "@workspace/ui/patterns/features/missing-persons/missing-person-intake-form";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
@@ -64,13 +64,10 @@ function MissingPersonIntakeDataLayer() {
           .upsert(row);
         if (error) throw error;
       } catch (err) {
-        console.warn(
-          "[MissingPersonIntakePage] supabase upsert failed",
-          err,
-        );
+        console.warn("[MissingPersonIntakePage] supabase upsert failed", err);
       }
     },
-    [],
+    []
   );
 
   // Load existing case IDs from Supabase to help suggest next sequence
@@ -91,13 +88,13 @@ function MissingPersonIntakeDataLayer() {
           .map((row: any) => ({ caseId: row?.case_id }))
           .filter(
             (r: DetaineeIntake) =>
-              typeof r.caseId === "string" && r.caseId.length > 0,
+              typeof r.caseId === "string" && r.caseId.length > 0
           );
         setRemoteSeedRecords(mapped);
       } catch (err) {
         console.warn(
           "[MissingPersonIntakePage] failed to load existing case IDs",
-          err,
+          err
         );
         setRemoteSeedRecords(undefined);
       }
@@ -119,10 +116,7 @@ function MissingPersonIntakeDataLayer() {
       const row = Array.isArray(data) && data.length > 0 ? data[0] : null;
       return row?.case_id ?? null;
     } catch (e) {
-      console.warn(
-        "[MissingPersonIntakePage] failed to load last case id",
-        e,
-      );
+      console.warn("[MissingPersonIntakePage] failed to load last case id", e);
       return null;
     }
   }, []);

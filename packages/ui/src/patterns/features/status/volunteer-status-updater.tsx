@@ -1,0 +1,65 @@
+"use client";
+
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+} from "@workspace/ui/primitives/drawer";
+import { Button } from "@workspace/ui/primitives/button";
+import {
+  STATUS_FLOW,
+  STATUS_INFO,
+  STATUS_COLOR_CLASSES,
+  DispatchPersonnelStatus,
+} from "@workspace/ui/lib/constants/dispatch";
+import { useState } from "react";
+
+export function VolunteerStatusUpdater({
+  current,
+  onChange,
+}: {
+  current: DispatchPersonnelStatus;
+  onChange: (status: DispatchPersonnelStatus) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+        Update Status
+      </Button>
+
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
+          <DrawerHeader>
+            <DrawerTitle>Update Volunteer Status</DrawerTitle>
+          </DrawerHeader>
+
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            {STATUS_FLOW.map((status) => (
+              <Button
+                key={status}
+                variant="light"
+                onClick={() => {
+                  onChange(status);
+                  setOpen(false);
+                }}
+                className={`justify-start ${STATUS_COLOR_CLASSES[status]} !hover:text-black`}
+              >
+                {STATUS_INFO[status].label}
+              </Button>
+            ))}
+          </div>
+
+          <DrawerFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
+  );
+}

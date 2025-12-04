@@ -6,8 +6,8 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@workspace/ui/components/alert";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/alert";
+import { Button } from "@workspace/ui/primitives/button";
 import {
   LogIn,
   GraduationCap,
@@ -21,11 +21,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import {
   Drawer,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
   DrawerTrigger,
-} from "@workspace/ui/components/drawer";
+} from "@workspace/ui/primitives/drawer";
 
 import { navConfig } from "@/nav.config";
 import {
@@ -41,13 +38,13 @@ import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 
 // UI Components
-import { DashboardOverviewCards } from "@workspace/ui/components/dispatch/DashboardOverviewCards";
-import { ResourceCoverageCard } from "@workspace/ui/components/dispatch/ResourceCoverageCard";
-import { ActiveDispatchesPreview } from "@workspace/ui/components/dispatch/ActiveDispatchesPreview";
-import { PodsPreview } from "@workspace/ui/components/dispatch/PodsPreview";
-import { RegionTemplateInfo } from "@workspace/ui/components/how-to/RegionTemplateInfo";
+import { DashboardOverviewCards } from "@workspace/ui/patterns/features/dispatch/dashboard-overview-cards";
+import { ResourceCoverageCard } from "@workspace/ui/patterns/features/dispatch/resource-coverage-card";
+import { ActiveDispatchesPreview } from "@workspace/ui/patterns/features/dispatch/active-dispatches-preview";
+import { PodsPreview } from "@workspace/ui/patterns/features/dispatch/pods-preview";
+import { RegionTemplateInfo } from "@workspace/ui/patterns/features/how-to/region-template-info";
 import { useActiveRoster } from "@/hooks/useActiveRoster";
-import QuickStartDrawerContent from "@workspace/ui/components/info/quickstart-drawer-content";
+import QuickStartDrawerContent from "@workspace/ui/patterns/features/info/quickstart-drawer-content";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
 import { mapRowToShift } from "@workspace/ui/hooks/map-row-to-shift";
 

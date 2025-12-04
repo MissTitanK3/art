@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
-import BugReportList, {
+import {
+  BugReportList,
   type BugReportRow,
-} from "@workspace/ui/components/admin/bug-reports/BugReportList";
+} from "@workspace/ui/patterns/features/bug-reports";
 import type {
   BugArea,
   BugStatus,
-} from "@workspace/ui/components/admin/bug-report-selects";
+} from "@workspace/ui/patterns/features/admin";
 
 export default function AdminBugReportsPage() {
   const [rows, setRows] = React.useState<BugReportRow[]>([]);

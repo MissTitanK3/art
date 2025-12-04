@@ -11,7 +11,6 @@ type AdminLayoutProps = {
 };
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
-  // Require authentication first; use server redirect capturing current path
   const supabase = await createSupabaseServerClient();
   const { data: userRes } = await supabase.auth.getUser();
   const user = userRes?.user;
@@ -21,7 +20,6 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     redirect(`/sign-in?redirectTo=${encodeURIComponent(nextUrl)}`);
   }
 
-  // Primary gate: session role includes region-level admins
   const meta = (user as unknown as { user_metadata?: Record<string, unknown> })
     .user_metadata;
   const metaRole = meta?.role;
@@ -34,7 +32,6 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
         : "guest";
   const allowed: string[] = ["dispatcher_admin", ...regionAdmins];
   if (!allowed.includes(role)) {
-    // Fallback check via DAL in case session role is stale or missing
     const profile = await getProfileByUserId(user!.id);
     const profileRole = profile?.access_role ?? null;
     if (

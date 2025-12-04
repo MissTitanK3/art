@@ -8,7 +8,7 @@ import type { Profile } from "@workspace/store/types/global.ts";
 import { FIELD_ROLE_OPTIONS } from "@workspace/store/types/roles.ts";
 import UiSignUpCard, {
   type SignUpValues,
-} from "@workspace/ui/components/auth/SignUpCard";
+} from "@workspace/ui/patterns/features/auth/sign-up-card";
 
 const PENDING_PROFILE_KEY = "pending-profile";
 
@@ -21,7 +21,7 @@ export function SignUpCard({ redirectTo }: Props) {
   const { profileAdapter } = useRegionAdapters();
   const target = React.useMemo(
     () => redirectTo ?? searchParams?.get("redirectTo") ?? "/",
-    [redirectTo, searchParams],
+    [redirectTo, searchParams]
   );
 
   const onSubmit = React.useCallback(
@@ -129,7 +129,7 @@ export function SignUpCard({ redirectTo }: Props) {
       profileAdapter,
       router,
       target,
-    ],
+    ]
   );
 
   return (

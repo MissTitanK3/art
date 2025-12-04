@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-import { ProfileLayout } from "@workspace/ui/layout/profile/ProfileLayout";
+import { ProfileLayout } from "@workspace/ui/layout/profile/profile-layout";
 import { NextImageAdapter } from "@/lib/adapters/NextImageAdapter";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import { Profile } from "@workspace/store/types/global.ts";
@@ -22,7 +22,7 @@ function toStoreCoverage(input: unknown): string[] {
     return input
       .map((z: any) => (typeof z === "string" ? z : z?.id))
       .filter(
-        (v: unknown): v is string => typeof v === "string" && v.length > 0,
+        (v: unknown): v is string => typeof v === "string" && v.length > 0
       );
   }
   return [];
@@ -31,21 +31,21 @@ function toStoreCoverage(input: unknown): string[] {
 // Adapter bridges (Supabase in production via RegionProvider)
 async function fetchProfileByUserId(
   userId: string,
-  profileAdapter: { loadProfile: (userId: string) => Promise<Profile | null> },
+  profileAdapter: { loadProfile: (userId: string) => Promise<Profile | null> }
 ): Promise<Profile | null> {
   return profileAdapter.loadProfile(userId);
 }
 
 async function saveProfileToDatabase(
   profile: Profile,
-  profileAdapter: { saveProfile: (profile: Profile) => Promise<void> },
+  profileAdapter: { saveProfile: (profile: Profile) => Promise<void> }
 ): Promise<void> {
   await profileAdapter.saveProfile(profile);
 }
 
 async function deleteProfileFromDatabase(
   idOrUserId: string,
-  profileAdapter: { deleteProfile: (idOrUserId: string) => Promise<void> },
+  profileAdapter: { deleteProfile: (idOrUserId: string) => Promise<void> }
 ): Promise<void> {
   await profileAdapter.deleteProfile(idOrUserId);
 }
@@ -58,7 +58,7 @@ function ProfileDataLayerComponent() {
   const { session } = useAuth();
 
   const [remoteProfile, setRemoteProfile] = React.useState<Profile | null>(
-    null,
+    null
   );
   const [loadingRemoteProfile, setLoadingRemoteProfile] = React.useState(false);
 
@@ -243,9 +243,9 @@ function ReasonBanner() {
       default:
         return reason
           ? {
-            title: "Access limited",
-            text: "You were redirected due to access restrictions.",
-          }
+              title: "Access limited",
+              text: "You were redirected due to access restrictions.",
+            }
           : null;
     }
   }, [reason]);
@@ -272,7 +272,7 @@ function ReasonBanner() {
             const params = new URLSearchParams(searchParams.toString());
             params.delete("reason");
             router.replace(
-              `${pathname}${params.size ? `?${params.toString()}` : ""}`,
+              `${pathname}${params.size ? `?${params.toString()}` : ""}`
             );
           }}
         >

@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Campaign } from "@/schemas/campaigns";
-import { Card } from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
+import { Card } from "@workspace/ui/primitives/card";
+import { Button } from "@workspace/ui/primitives/button";
 import Link from "next/link";
 
 function daysRemaining(endAt?: string | null) {

@@ -34,6 +34,12 @@ export default function RightSidebar({
           role="button"
           tabIndex={0}
           aria-label="Close panel"
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onClose();
+            }
+          }}
         />
       )}
       <aside

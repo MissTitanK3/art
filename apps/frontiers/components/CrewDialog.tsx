@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/dialog";
+import { Button } from "@workspace/ui/primitives/button";
 import { useShipStore } from "@/store/useShipStore";
 import { useJournalStore } from "@/store/useJournalStore";
 
@@ -29,7 +29,7 @@ export function CrewDialog() {
 
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState<{ morale?: boolean; fatigue?: boolean }>(
-    {},
+    {}
   );
 
   // Trigger when thresholds are crossed, but only once until reset

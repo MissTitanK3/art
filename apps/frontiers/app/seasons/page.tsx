@@ -11,8 +11,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
+} from "@workspace/ui/primitives/card";
+import { Button } from "@workspace/ui/primitives/button";
 import { useMissionsStore, type Mission } from "@/store/useMissionsStore";
 function slugify(s: string): string {
   return s
@@ -45,7 +45,7 @@ export default function SeasonsPage() {
       s.region_id ||
       s.profile?.region_id ||
       process.env.NEXT_PUBLIC_REGION_ID ||
-      null,
+      null
   );
   const { active_campaign_id, setActiveCampaign, clearActiveCampaign } =
     useSeasonStore();
@@ -86,7 +86,7 @@ export default function SeasonsPage() {
         c.start_at &&
         c.end_at &&
         new Date(c.start_at) <= now &&
-        now <= new Date(c.end_at),
+        now <= new Date(c.end_at)
     );
     const loadAll = async () => {
       const map: Record<string, Mission[]> = {};
@@ -171,12 +171,12 @@ export default function SeasonsPage() {
                                       acc +
                                       Math.min(
                                         1,
-                                        (prog[k] || 0) / (req[k] || 1),
+                                        (prog[k] || 0) / (req[k] || 1)
                                       ),
-                                    0,
+                                    0
                                   ) /
                                     keys.length) *
-                                    100,
+                                    100
                                 );
                           return (
                             <li key={m.id} className="text-xs">

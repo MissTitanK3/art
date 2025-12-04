@@ -34,6 +34,7 @@ export default function WizardDrawer({
 }: Props) {
   const { t } = useTranslations();
   const [submitting, setSubmitting] = useState(false);
+  const otherAgencyInputId = "report-wizard-other-agency";
   const directionOptions = useMemo(
     () =>
       [
@@ -102,7 +103,7 @@ export default function WizardDrawer({
         )}
 
         <div>
-          <label className="block text-white/80 mb-2">Agency Type</label>
+          <p className="mb-2 block text-white/80">Agency Type</p>
           <div className="grid grid-cols-2 gap-2">
             {AGENCY_OPTIONS.map((agency) => {
               const active = draft.agency_type.includes(agency);
@@ -129,8 +130,14 @@ export default function WizardDrawer({
         </div>
 
         <div>
-          <label className="block text-white/80 mb-2">Other Agency</label>
+          <label
+            className="mb-2 block text-white/80"
+            htmlFor={otherAgencyInputId}
+          >
+            Other Agency
+          </label>
           <input
+            id={otherAgencyInputId}
             className="w-full rounded bg-white/10 border border-white/20 px-3 py-2 text-white placeholder:text-white/60"
             placeholder="Optional"
             value={draft.agency_other}
@@ -139,7 +146,7 @@ export default function WizardDrawer({
         </div>
 
         <div className="space-y-3">
-          <label className="block text-white/80">Movement</label>
+          <p className="block text-white/80">Movement</p>
           <div className="grid grid-cols-2 gap-2">
             <FrostedButton
               type="button"
@@ -158,9 +165,9 @@ export default function WizardDrawer({
           </div>
 
           <div>
-            <label className="block text-white/80 mb-2">
+            <p className="mb-2 block text-white/80">
               {t("directionOfTravel")}
-            </label>
+            </p>
             <div className="grid grid-cols-3 gap-2 text-center">
               {directionOptions.map((dir) =>
                 dir ? (
@@ -185,32 +192,34 @@ export default function WizardDrawer({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <span>Lights On</span>
             <button
               type="button"
               aria-pressed={!!draft.lights_on}
               onClick={() => onChange({ lights_on: !draft.lights_on })}
+              aria-label="Toggle whether lights are on"
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${draft.lights_on ? "bg-blue-600" : "bg-gray-400"}`}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${draft.lights_on ? "translate-x-5" : "translate-x-1"}`}
               />
             </button>
-          </label>
-          <label className="flex items-center gap-2">
+          </div>
+          <div className="flex items-center gap-2">
             <span>Sirens On</span>
             <button
               type="button"
               aria-pressed={!!draft.sirens_on}
               onClick={() => onChange({ sirens_on: !draft.sirens_on })}
+              aria-label="Toggle whether sirens are on"
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${draft.sirens_on ? "bg-blue-600" : "bg-gray-400"}`}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${draft.sirens_on ? "translate-x-5" : "translate-x-1"}`}
               />
             </button>
-          </label>
+          </div>
         </div>
 
         <div className="flex gap-2">

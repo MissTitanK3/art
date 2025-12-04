@@ -50,8 +50,8 @@ export default function AdminTrainingPage() {
         const bySession: Record<string, AcademyTrainingSessionParticipant[]> = {};
         for (const p of participantsData ?? []) {
           const sid = String(p.session_id);
-          if (!bySession[sid]) bySession[sid] = [];
-          bySession[sid].push({
+          const sessionParticipants = bySession[sid] ?? (bySession[sid] = []);
+          sessionParticipants.push({
             id: String(p.id),
             name: String(p.name ?? ""),
             signalHandle: p.signal_handle ?? undefined,

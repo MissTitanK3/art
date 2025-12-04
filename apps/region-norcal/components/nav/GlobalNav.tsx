@@ -3,7 +3,7 @@
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 
-import { GlobalNavCore } from "@workspace/ui/components/client/global-nav";
+import { GlobalNavCore } from "@workspace/ui/patterns/common/global-nav";
 import { LinkLikeProps } from "@workspace/store/types/global.ts";
 import {
   GlobalNavConfig,
@@ -12,8 +12,7 @@ import {
   NavItemInput,
   NavRole,
 } from "@workspace/store/utils/nav";
-import { navIconMap } from "@workspace/ui/components/icons/nav-icons";
-import { Button } from "@workspace/ui/components/button";
+import { navIconMap } from "@workspace/ui/patterns/features/icons/nav-icons";
 
 function LinkAdapter(props: LinkLikeProps) {
   const { href = "#", children, className, target, rel, onClick } = props;
@@ -33,11 +32,14 @@ function LinkAdapter(props: LinkLikeProps) {
 }
 
 function mapItems(inputs: NavItemInput[]): NavItem[] {
-  return inputs.map((i) => ({
-    ...i,
-    icon: i.icon ? navIconMap[i.icon] : undefined,
-    children: i.children ? mapItems(i.children) : undefined,
-  }));
+  return inputs.map((i) => {
+    const iconId = i.icon as keyof typeof navIconMap | undefined;
+    return {
+      ...i,
+      icon: iconId ? navIconMap[iconId] : undefined,
+      children: i.children ? mapItems(i.children) : undefined,
+    };
+  });
 }
 
 export function GlobalNav({

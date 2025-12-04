@@ -7,12 +7,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card";
-import { Switch } from "@workspace/ui/components/switch";
-import { Input } from "@workspace/ui/components/input";
-import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
+} from "@workspace/ui/primitives/card";
+import { Switch } from "@workspace/ui/primitives/switch";
+import { Input } from "@workspace/ui/primitives/input";
+import { Button } from "@workspace/ui/primitives/button";
+import { Label } from "@workspace/ui/primitives/label";
+import { Textarea } from "@workspace/ui/primitives/textarea";
 import { toast } from "sonner";
 import { RegionSettings } from "@workspace/store/types/global";
 import { usePreferencesStore } from "@workspace/store/usePreferencesStore";
@@ -20,7 +20,9 @@ import { kmToMi, miToKm } from "@workspace/ui/lib/distance";
 
 type Props = {
   initialSettings: RegionSettings;
-  onSave: (settings: RegionSettings) => Promise<{ ok: boolean; error?: string }>;
+  onSave: (
+    settings: RegionSettings
+  ) => Promise<{ ok: boolean; error?: string }>;
 };
 
 export default function SettingsClient({ initialSettings, onSave }: Props) {
@@ -29,7 +31,7 @@ export default function SettingsClient({ initialSettings, onSave }: Props) {
 
   function onChange<K extends keyof RegionSettings>(
     key: K,
-    value: RegionSettings[K],
+    value: RegionSettings[K]
   ) {
     setValues((v) => ({ ...v, [key]: value }));
   }
@@ -114,14 +116,14 @@ export default function SettingsClient({ initialSettings, onSave }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Maintenance Mode</CardTitle>
-          <CardDescription>
-            Control global system behavior.
-          </CardDescription>
+          <CardDescription>Control global system behavior.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between space-x-2">
             <div className="space-y-0.5">
-              <Label htmlFor="notifications-mode">Disable All Notifications</Label>
+              <Label htmlFor="notifications-mode">
+                Disable All Notifications
+              </Label>
               <p className="text-sm text-muted-foreground">
                 Prevent any notifications from being sent (useful for testing).
               </p>

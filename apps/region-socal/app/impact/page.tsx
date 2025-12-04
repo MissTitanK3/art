@@ -1,5 +1,5 @@
-import { Separator } from "@workspace/ui/components/separator";
-import { PublicImpactSummary } from "@workspace/ui/components/client/impact/PublicImpactSummary";
+import { Separator } from "@workspace/ui/primitives/separator";
+import { PublicImpactSummary } from "@workspace/ui/patterns/features/impact/public-impact-summary";
 
 export default function ImpactPage() {
   return (

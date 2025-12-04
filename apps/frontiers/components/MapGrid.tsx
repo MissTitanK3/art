@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@workspace/ui/primitives/button";
 import { useSignalsStore } from "@/store/useSignalsStore";
 import { RepairPuzzle } from "@/components/puzzles/RepairPuzzle";
 
@@ -83,7 +83,7 @@ export function MapGrid({ signals }: { signals: ArtSignal[] }) {
     // Position nodes in concentric rings around center for now
     const enabled = new Set<FilterKey>(FILTERS.filter((k) => filters[k]));
     const visible = signals.filter((s) =>
-      enabled.has(sourceToFilter(s.source_type)),
+      enabled.has(sourceToFilter(s.source_type))
     );
     const result: {
       signal: ArtSignal;
