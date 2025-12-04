@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ComBriefing } from "@workspace/store/types/comms.ts";
 import {
   Card,
@@ -19,16 +18,13 @@ import {
 } from "@workspace/ui/primitives/popover";
 import { cn } from "@workspace/ui/lib/utils";
 import { Info, Sparkles } from "lucide-react";
-
 type Props = {
   briefing: ComBriefing | null;
   onSave?: (patch: Partial<ComBriefing>) => void | Promise<void>;
   className?: string;
 };
 type SectionKey = "overview" | "comms_plan" | "safety_notes";
-
 type BriefingForm = Record<SectionKey, string>;
-
 const SECTION_CONFIG: Array<{
   key: SectionKey;
   label: string;
@@ -55,7 +51,6 @@ const SECTION_CONFIG: Array<{
     description: "Call out anything that keeps people safe and calm.",
   },
 ];
-
 const DEFAULT_TEMPLATE: BriefingForm = {
   overview: `## Mission Snapshot (what a new volunteer needs)
 
@@ -90,48 +85,48 @@ const DEFAULT_TEMPLATE: BriefingForm = {
 > Speak plainly, stay kind, and repeat the why behind each instruction.
 `,
 };
-
-const MARKDOWN_KEY: Array<{ label: string; syntax: string; preview: string }> =
-  [
-    {
-      label: "Heading",
-      syntax: "## Section Title",
-      preview: "## Section Title",
-    },
-    {
-      label: "Bullets",
-      syntax: "- Item one\n- Item two",
-      preview: "- Item one\n- Item two",
-    },
-    {
-      label: "Numbered list",
-      syntax: "1. First step\n2. Second step",
-      preview: "1. First step\n2. Second step",
-    },
-    {
-      label: "Callout",
-      syntax: "> Radio reminder",
-      preview: "> Radio reminder",
-    },
-    {
-      label: "Checklist",
-      syntax: "- [ ] Pending\n- [x] Done",
-      preview: "- [ ] Pending\n- [x] Done",
-    },
-    {
-      label: "Emphasis",
-      syntax: "**Bold** and _italics_",
-      preview: "**Bold** and _italics_",
-    },
-  ];
-
+const MARKDOWN_KEY: Array<{
+  label: string;
+  syntax: string;
+  preview: string;
+}> = [
+  {
+    label: "Heading",
+    syntax: "## Section Title",
+    preview: "## Section Title",
+  },
+  {
+    label: "Bullets",
+    syntax: "- Item one\n- Item two",
+    preview: "- Item one\n- Item two",
+  },
+  {
+    label: "Numbered list",
+    syntax: "1. First step\n2. Second step",
+    preview: "1. First step\n2. Second step",
+  },
+  {
+    label: "Callout",
+    syntax: "> Radio reminder",
+    preview: "> Radio reminder",
+  },
+  {
+    label: "Checklist",
+    syntax: "- [ ] Pending\n- [x] Done",
+    preview: "- [ ] Pending\n- [x] Done",
+  },
+  {
+    label: "Emphasis",
+    syntax: "**Bold** and _italics_",
+    preview: "**Bold** and _italics_",
+  },
+];
 const BRIEFING_TIPS = [
   "Write like you're texting a friend who just tuned in.",
   "Explain acronyms the first time you use them (or skip them).",
   "Include what to do *and* why it matters to the community.",
   "Stamp every update with a time + name so handoffs are easy.",
 ];
-
 const TeachingMoment = () => (
   <div className="rounded-lg border border-dashed bg-muted/40 px-3 py-3 text-xs">
     <div className="flex items-center gap-2 font-medium text-sm">
@@ -145,7 +140,6 @@ const TeachingMoment = () => (
     </ul>
   </div>
 );
-
 const MarkdownKey = () => (
   <div className="rounded-lg border bg-muted/30 p-3 text-xs">
     <div className="flex items-center justify-between">
@@ -202,9 +196,7 @@ const MarkdownKey = () => (
     </div>
   </div>
 );
-
 const createTemplate = (): BriefingForm => ({ ...DEFAULT_TEMPLATE });
-
 const deriveBriefingState = (briefing: ComBriefing | null): BriefingForm => {
   const base = createTemplate();
   if (!briefing) return base;
@@ -214,30 +206,22 @@ const deriveBriefingState = (briefing: ComBriefing | null): BriefingForm => {
     safety_notes: briefing.safety_notes ?? base.safety_notes,
   };
 };
-
 export function CommsBriefing({ briefing, onSave, className }: Props) {
-  const [editing, setEditing] = React.useState(false);
-  const persisted = React.useMemo(
-    () => deriveBriefingState(briefing),
-    [briefing]
-  );
-  const [form, setForm] = React.useState<BriefingForm>(persisted);
-
-  React.useEffect(() => {
+  const [editing, setEditing] = useState(false);
+  const persisted = useMemo(() => deriveBriefingState(briefing), [briefing]);
+  const [form, setForm] = useState<BriefingForm>(persisted);
+  useEffect(() => {
     if (!editing) {
       setForm(persisted);
     }
   }, [persisted, editing]);
-
-  const handleChange = React.useCallback((key: SectionKey, value: string) => {
+  const handleChange = useCallback((key: SectionKey, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
-
-  const resetToTemplate = React.useCallback(() => {
+  const resetToTemplate = useCallback(() => {
     setForm(createTemplate());
   }, []);
-
-  const toggleEditing = React.useCallback(() => {
+  const toggleEditing = useCallback(() => {
     if (editing) {
       setForm(persisted);
       setEditing(false);
@@ -245,8 +229,7 @@ export function CommsBriefing({ briefing, onSave, className }: Props) {
       setEditing(true);
     }
   }, [editing, persisted]);
-
-  const save = React.useCallback(async () => {
+  const save = useCallback(async () => {
     if (!onSave) {
       setEditing(false);
       return;
@@ -254,30 +237,27 @@ export function CommsBriefing({ briefing, onSave, className }: Props) {
     await onSave(form);
     setEditing(false);
   }, [form, onSave]);
-
   const contentToDisplay = editing ? form : persisted;
-  const isDirty = React.useMemo(
+  const isDirty = useMemo(
     () =>
       SECTION_CONFIG.some(
-        (section) => form[section.key] !== persisted[section.key]
+        (section) => form[section.key] !== persisted[section.key],
       ),
-    [form, persisted]
+    [form, persisted],
   );
-  const isTemplate = React.useMemo(
+  const isTemplate = useMemo(
     () =>
       SECTION_CONFIG.every(
-        (section) => form[section.key] === DEFAULT_TEMPLATE[section.key]
+        (section) => form[section.key] === DEFAULT_TEMPLATE[section.key],
       ),
-    [form]
+    [form],
   );
-
-  const lastUpdatedLabel = React.useMemo(() => {
+  const lastUpdatedLabel = useMemo(() => {
     if (!briefing?.updated_at) return null;
     const date = new Date(briefing.updated_at);
     if (Number.isNaN(date.getTime())) return null;
     return date.toLocaleString();
   }, [briefing?.updated_at]);
-
   return (
     <Card className={cn("flex h-full flex-col", className)}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
@@ -358,5 +338,4 @@ export function CommsBriefing({ briefing, onSave, className }: Props) {
     </Card>
   );
 }
-
 export default CommsBriefing;

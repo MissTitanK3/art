@@ -1,23 +1,18 @@
 "use client";
-
-import React from "react";
 import { Badge } from "@workspace/ui/primitives/badge";
 import { humanize } from "@workspace/ui/lib/utils";
 import { DISPATCH_TYPE_LABELS } from "@workspace/store/types/dispatch.ts";
 import { STATUS_META } from "@workspace/ui/lib/constants/dispatch";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
-
 type LinkWrapperProps = {
   href: string;
   children: React.ReactNode;
 };
-
 type DispatchPastListProps = {
   items: DispatchSubmission[];
   LinkComponent: React.ComponentType<LinkWrapperProps>;
   getHref: (submission: DispatchSubmission) => string;
 };
-
 export function DispatchPastList({
   items,
   LinkComponent,
@@ -30,7 +25,6 @@ export function DispatchPastList({
       </div>
     );
   }
-
   return (
     <div className="space-y-4">
       <div className="hidden md:block">
@@ -112,7 +106,6 @@ export function DispatchPastList({
     </div>
   );
 }
-
 function formatDate(submission: DispatchSubmission) {
   const date = submission.date_of_event
     ? new Date(submission.date_of_event)

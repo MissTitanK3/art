@@ -1,6 +1,10 @@
 "use client";
 
-import { FIELD_ROLE_OPTIONS } from "@workspace/store/types/roles.ts";
+import {
+  FIELD_ROLE_OPTIONS,
+  FIELD_ROLE_DETAILS,
+  FieldRole,
+} from "@workspace/store/types/roles.ts";
 import { useState } from "react";
 import {
   Drawer,
@@ -13,6 +17,7 @@ import {
 import { Input } from "@workspace/ui/primitives/input";
 import { Checkbox } from "@workspace/ui/primitives/checkbox";
 import { Button } from "@workspace/ui/primitives/button";
+import { Badge } from "@workspace/ui/primitives/badge";
 import { humanize } from "@workspace/ui/lib/utils";
 
 export default function RolesEditorDrawer({
@@ -48,31 +53,61 @@ export default function RolesEditorDrawer({
     role.toLowerCase().includes(query.toLowerCase())
   ).sort((a, b) => a.localeCompare(b));
 
+  const detailsMap = Object.fromEntries(
+    FIELD_ROLE_DETAILS.map((d) => [d.role, d])
+  ) as Record<FieldRole, (typeof FIELD_ROLE_DETAILS)[number]>;
+
   const selectedRoles = allFiltered.filter((r) => rolesState[r] !== undefined);
   const unselectedRoles = allFiltered.filter(
     (r) => rolesState[r] === undefined
   );
 
-  const renderRoleRow = (role: string) => (
-    <div key={role} className="flex items-center justify-between gap-2 text-sm">
-      <label className="flex items-center gap-2 cursor-pointer">
-        <Checkbox
-          checked={rolesState[role] !== undefined}
-          onCheckedChange={() => toggleRole(role)}
-        />
-        <span className="capitalize">{humanize(role)}</span>
-      </label>
-      {rolesState[role] !== undefined && (
-        <Input
-          type="number"
-          min={1}
-          value={rolesState[role]}
-          onChange={(e) => updateCount(role, Number(e.target.value))}
-          className="w-16 text-center"
-        />
-      )}
-    </div>
-  );
+  const renderRoleRow = (role: string) => {
+    const details = detailsMap[role as FieldRole];
+    return (
+      <div
+        key={role}
+        className="flex flex-row md:items-center justify-between gap-2 text-sm py-2 border-b border-border/50 last:border-0"
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={rolesState[role] !== undefined}
+              onCheckedChange={() => toggleRole(role)}
+            />
+            <span className="capitalize font-medium">{humanize(role)}</span>
+          </label>
+          {details && (
+            <div className="flex items-center gap-2 ml-6 md:ml-0 mt-1 md:mt-0">
+              {details.trainingRequired && (
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] h-5 px-1 font-normal"
+                >
+                  Training Desired
+                </Badge>
+              )}
+              <Badge
+                variant="outline"
+                className="text-[10px] h-5 px-1 font-normal capitalize"
+              >
+                {details.riskLevel} Risk
+              </Badge>
+            </div>
+          )}
+        </div>
+        {rolesState[role] !== undefined && (
+          <Input
+            type="number"
+            min={1}
+            value={rolesState[role]}
+            onChange={(e) => updateCount(role, Number(e.target.value))}
+            className="w-16 text-center"
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <Drawer open onOpenChange={onClose}>

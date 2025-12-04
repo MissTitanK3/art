@@ -1,6 +1,5 @@
 "use client";
-
-import React from "react";
+import { useCallback } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -17,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
-
 type DispatchPaginationProps = {
   currentPage: number;
   totalPages: number;
@@ -29,7 +27,6 @@ type DispatchPaginationProps = {
   pageSizeOptions: number[];
   onPageSizeChange: (size: number) => void;
 };
-
 export function DispatchPagination({
   currentPage,
   totalPages,
@@ -41,7 +38,7 @@ export function DispatchPagination({
   pageSizeOptions,
   onPageSizeChange,
 }: DispatchPaginationProps) {
-  const renderPaginationNumbers = React.useCallback(() => {
+  const renderPaginationNumbers = useCallback(() => {
     const items: React.ReactNode[] = [];
     const windowSize = 1; // show current ±1
     const addPage = (p: number) =>
@@ -57,38 +54,33 @@ export function DispatchPagination({
           >
             {p}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
-
     if (totalPages <= 7) {
       for (let p = 1; p <= totalPages; p += 1) addPage(p);
       return items;
     }
-
     addPage(1);
     if (currentPage - windowSize > 2) {
       items.push(
         <PaginationItem key="start-ellipsis">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-
     const start = Math.max(2, currentPage - windowSize);
     const end = Math.min(totalPages - 1, currentPage + windowSize);
     for (let p = start; p <= end; p += 1) addPage(p);
-
     if (currentPage + windowSize < totalPages - 1) {
       items.push(
         <PaginationItem key="end-ellipsis">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     addPage(totalPages);
     return items;
   }, [currentPage, onPageChange, totalPages]);
-
   if (totalPages <= 1) {
     return (
       <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
@@ -105,7 +97,6 @@ export function DispatchPagination({
       </div>
     );
   }
-
   return (
     <div className="mt-6 flex flex-col gap-3">
       <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -146,7 +137,6 @@ export function DispatchPagination({
     </div>
   );
 }
-
 function PageSizeSelect({
   value,
   options,

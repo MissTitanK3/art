@@ -1,7 +1,5 @@
 "use client";
-
-import * as React from "react";
-
+import { useCallback, useMemo, useState } from "react";
 import { TrackBadge } from "@workspace/ui/patterns/features/academy/track-badge";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -21,27 +19,23 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { Textarea } from "@workspace/ui/primitives/textarea";
-
 import type { AcademyClass } from "@workspace/store/usePodStore";
 import type { CourseBlueprint } from "@workspace/ui/data/academy/course-blueprint";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
 import { NavRole } from "@workspace/store/utils/permissions/types";
-
 type CreatePathwayClassContentProps = {
   pathway: CourseBlueprint;
   onCreateClass: (academyClass: AcademyClass) => Promise<void> | void;
   onBackToAcademy: () => void;
   onCancel?: () => void;
 };
-
 function generateClassId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
   return `cls_${Math.random().toString(36).slice(2, 10)}`;
 }
-
 export function CreatePathwayClassContent({
   pathway,
   onCreateClass,
@@ -49,28 +43,27 @@ export function CreatePathwayClassContent({
   onCancel,
 }: CreatePathwayClassContentProps) {
   const profileFromStore = useProfileStore((s) => s.profile);
-  const profileRoles = React.useMemo(
+  const profileRoles = useMemo(
     () =>
       profileFromStore?.access_role
         ? [String(profileFromStore.access_role)]
         : [],
-    [profileFromStore?.access_role]
+    [profileFromStore?.access_role],
   );
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: profileRoles[0] as NavRole }),
-    [profileRoles]
+    [profileRoles],
   );
   const { access: effectiveCanManage } = useUnifiedAccess(
     "manage_instructors",
-    ctx
+    ctx,
   );
   const defaultCourse = pathway.courses[0];
-  const [submitting, setSubmitting] = React.useState(false);
-
-  const totalTrackHours = React.useMemo(() => {
+  const [submitting, setSubmitting] = useState(false);
+  const totalTrackHours = useMemo(() => {
     const total = pathway.courses.reduce(
       (sum, course) => sum + (course.durationHours ?? 0),
-      0
+      0,
     );
     if (total > 0) {
       return Number.parseFloat(total.toFixed(1));
@@ -80,29 +73,25 @@ export function CreatePathwayClassContent({
     }
     return 1;
   }, [defaultCourse?.durationHours, pathway.courses]);
-
-  const [title, setTitle] = React.useState<string>(() =>
-    defaultCourse ? `${pathway.label} · Cohort` : `${pathway.label} Class`
+  const [title, setTitle] = useState<string>(() =>
+    defaultCourse ? `${pathway.label} · Cohort` : `${pathway.label} Class`,
   );
-  const [capacity, setCapacity] = React.useState<string>("18");
-  const [modality, setModality] = React.useState<
-    "in_person" | "online" | "hybrid"
-  >(defaultCourse?.modality ?? "online");
-  const [instructorType, setInstructorType] = React.useState<
+  const [capacity, setCapacity] = useState<string>("18");
+  const [modality, setModality] = useState<"in_person" | "online" | "hybrid">(
+    defaultCourse?.modality ?? "online",
+  );
+  const [instructorType, setInstructorType] = useState<
     "dispatcher" | "mentor" | "expert"
   >(defaultCourse?.instructorType ?? "dispatcher");
-  const [notes, setNotes] = React.useState<string>("");
-
-  const handleSubmit = React.useCallback(
+  const [notes, setNotes] = useState<string>("");
+  const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-
       const classId = generateClassId();
       const parsedCapacity = Number.parseInt(capacity, 10) || 0;
       const description =
         pathway.trackLabel ??
         `Live cohort moving through the ${pathway.label} pathway together.`;
-
       const academyClass: AcademyClass = {
         id: classId,
         pathwayId: pathway.id,
@@ -125,7 +114,6 @@ export function CreatePathwayClassContent({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-
       try {
         setSubmitting(true);
         await onCreateClass(academyClass);
@@ -145,9 +133,8 @@ export function CreatePathwayClassContent({
       pathway.variant,
       title,
       totalTrackHours,
-    ]
+    ],
   );
-
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 py-8">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

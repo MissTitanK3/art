@@ -1,5 +1,4 @@
 import { Shield, ShieldCheck, User } from "lucide-react";
-import React from "react";
 import {
   endOfDay,
   endOfMonth,
@@ -8,18 +7,14 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-
 import { VisibilityScope } from "@workspace/store/utils/permissions/types";
-
 export type CalendarVisibility = "public" | "org" | "private";
-
 export type CalendarPodSummary = {
   id: string;
   name: string;
   slug?: string | null;
   area?: string | null;
 };
-
 export type CalendarOrgSummary = {
   id: string;
   name: string;
@@ -27,18 +22,15 @@ export type CalendarOrgSummary = {
   role?: string | null;
   pods?: CalendarPodSummary[];
 };
-
 export type CalendarRouteMeta = {
   type?: string;
   data?: unknown;
 } | null;
-
 export type CalendarOwnerLink = {
   ownerType: "user" | "pod" | "org";
   ownerId: string;
   ownerProfileId?: string;
 };
-
 export type CollectiveCalendarShift = {
   id: string;
   start: string;
@@ -59,16 +51,13 @@ export type CollectiveCalendarShift = {
   invitedUserIds?: string[];
   owners?: CalendarOwnerLink[];
 };
-
 export type CollectiveCalendarMembership = {
   podIds: string[];
   orgIds: string[];
   profileId?: string | null;
   userId?: string | null;
 };
-
 export type CollectiveCalendarShiftScope = "independent" | "pod" | "org";
-
 export type CollectiveCalendarShiftInput = {
   id?: string;
   podId: string;
@@ -90,7 +79,6 @@ export type CollectiveCalendarShiftInput = {
   ownerPodIds?: string[];
   ownerOrgIds?: string[];
 };
-
 export function EyeOpen(props: React.ComponentProps<"svg">) {
   return (
     <svg
@@ -107,7 +95,6 @@ export function EyeOpen(props: React.ComponentProps<"svg">) {
     </svg>
   );
 }
-
 export function visibilityBadge(
   visibility: CalendarVisibility,
   scope?: VisibilityScope | null,
@@ -132,7 +119,6 @@ export function visibilityBadge(
       };
   }
 }
-
 export function routeSummary(route?: CalendarRouteMeta) {
   if (!route) return "No route provided";
   const type = typeof route.type === "string" ? route.type : "route";
@@ -141,11 +127,9 @@ export function routeSummary(route?: CalendarRouteMeta) {
   }
   return type;
 }
-
 export function needsRemaining(shift: CollectiveCalendarShift) {
   return Math.max(0, (shift.needed ?? 0) - (shift.signups?.length ?? 0));
 }
-
 export function computeRange(timeRange: "today" | "week" | "month") {
   const now = new Date();
   if (timeRange === "today") {
@@ -159,7 +143,6 @@ export function computeRange(timeRange: "today" | "week" | "month") {
   }
   return { start: startOfMonth(now), end: endOfMonth(now) };
 }
-
 export function isShiftVisibleToUser(
   shift: CollectiveCalendarShift,
   pods: Set<string>,
@@ -170,7 +153,6 @@ export function isShiftVisibleToUser(
   const orgIds = shift.organizations.map((o) => o.id);
   return orgIds.some((id) => orgs.has(id)) || pods.has(shift.pod.id);
 }
-
 export function formatDay(date: Date) {
   return date.toLocaleDateString(undefined, {
     weekday: "short",

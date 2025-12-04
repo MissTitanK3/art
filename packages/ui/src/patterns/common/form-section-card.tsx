@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { cn } from "@workspace/ui/lib/utils";
 import { Button, type ButtonProps } from "@workspace/ui/primitives/button";
 import {
@@ -10,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-
 interface FormSectionCardProps {
   title: React.ReactNode;
   description?: React.ReactNode;
@@ -24,7 +21,6 @@ interface FormSectionCardProps {
   headerClassName?: string;
   contentClassName?: string;
 }
-
 /**
  * Structured card for form sections with header metadata and a consistent footer action.
  * Consumers supply the inner content and can opt into the default save button or custom footer content.
@@ -44,7 +40,6 @@ export function FormSectionCard({
 }: FormSectionCardProps) {
   const computedSaveLabel =
     saveLabel ?? (sectionName ? <>Save {sectionName}</> : "Save Section");
-
   return (
     <Card>
       <CardHeader className={cn("pb-4", headerClassName)}>

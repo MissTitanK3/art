@@ -1,19 +1,15 @@
 "use client";
-
-import * as React from "react";
-
+import { useCallback, useEffect, useRef, useState } from "react";
 export function useAutoHide(delayMs = 3000) {
-  const [visible, setVisible] = React.useState(true);
-  const timer = React.useRef<number | null>(null);
-  const containerRef = React.useRef<HTMLElement | null>(null);
-
-  const onActivity = React.useCallback(() => {
+  const [visible, setVisible] = useState(true);
+  const timer = useRef<number | null>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
+  const onActivity = useCallback(() => {
     setVisible(true);
     if (timer.current) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setVisible(false), delayMs);
   }, [delayMs]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const el = containerRef.current ?? document;
     onActivity();
     const onKey = onActivity;
@@ -38,6 +34,5 @@ export function useAutoHide(delayMs = 3000) {
       );
     };
   }, [onActivity]);
-
   return { visible, containerRef, onActivity } as const;
 }

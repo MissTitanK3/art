@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useProfileStore } from "@/store/useProfileStore";
 import { useNotifStore } from "@/store/useNotifStore";
@@ -8,14 +7,12 @@ import { toast } from "sonner";
 import { useShipStore } from "@/store/useShipStore";
 import { useRealtimeMapStore } from "@/store/useRealtimeMapStore";
 import { useJournalStore } from "@/store/useJournalStore";
-
 export function ResonanceRealtime() {
   const profileId = useProfileStore((s) => s.profile?.id ?? null);
   // Keep minimal reactive state; use store getters inside effects to avoid loops
-  const lastCheckRef = React.useRef<string | null>(null);
-
+  const lastCheckRef = useRef<string | null>(null);
   // Realtime subscription
-  React.useEffect(() => {
+  useEffect(() => {
     if (!profileId) return;
     const ch = supabase
       .channel(`resonance_rx_${profileId}`)
@@ -49,7 +46,7 @@ export function ResonanceRealtime() {
               .add("other", `Resonance from ${who} detected on sensors.`);
           } catch {}
           useNotifStore.getState().markSeen(row.id);
-        },
+        }
       )
       .subscribe();
     return () => {
@@ -58,9 +55,8 @@ export function ResonanceRealtime() {
       } catch {}
     };
   }, [profileId]);
-
   // 5-minute polling fallback
-  React.useEffect(() => {
+  useEffect(() => {
     if (!profileId) return;
     let active = true;
     // Initialize from store on effect start
@@ -88,7 +84,7 @@ export function ResonanceRealtime() {
           useShipStore
             .getState()
             .applyPulse(
-              Math.max(0, Math.min(1, Number((row as any).strength) || 0)),
+              Math.max(0, Math.min(1, Number((row as any).strength) || 0))
             );
         } catch {}
         try {
@@ -114,6 +110,5 @@ export function ResonanceRealtime() {
       clearInterval(t);
     };
   }, [profileId]);
-
   return null;
 }

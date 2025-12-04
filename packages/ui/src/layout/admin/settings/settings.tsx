@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useId, useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,25 +16,22 @@ import { toast } from "sonner";
 import { RegionSettings } from "@workspace/store/types/global";
 import { usePreferencesStore } from "@workspace/store/usePreferencesStore";
 import { kmToMi, miToKm } from "@workspace/ui/lib/distance";
-
 type Props = {
   initialSettings: RegionSettings;
-  onSave: (
-    settings: RegionSettings
-  ) => Promise<{ ok: boolean; error?: string }>;
+  onSave: (settings: RegionSettings) => Promise<{
+    ok: boolean;
+    error?: string;
+  }>;
 };
-
 export default function SettingsClient({ initialSettings, onSave }: Props) {
-  const [values, setValues] = React.useState<RegionSettings>(initialSettings);
+  const [values, setValues] = useState<RegionSettings>(initialSettings);
   const unit = usePreferencesStore((s) => s.distanceUnit);
-
   function onChange<K extends keyof RegionSettings>(
     key: K,
-    value: RegionSettings[K]
+    value: RegionSettings[K],
   ) {
     setValues((v) => ({ ...v, [key]: value }));
   }
-
   async function save() {
     const res = await onSave(values);
     if (res.ok) {
@@ -44,12 +40,10 @@ export default function SettingsClient({ initialSettings, onSave }: Props) {
       toast.error("Failed to save settings", { description: res.error });
     }
   }
-
   function reset() {
     setValues(initialSettings);
     toast.info("Reset to last saved");
   }
-
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-bold">Region Settings</h1>
@@ -188,7 +182,6 @@ export default function SettingsClient({ initialSettings, onSave }: Props) {
     </section>
   );
 }
-
 function Field({
   label,
   children,
@@ -196,7 +189,7 @@ function Field({
   label: string;
   children: React.ReactNode;
 }) {
-  const id = React.useId();
+  const id = useId();
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>

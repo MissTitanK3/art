@@ -1,23 +1,18 @@
-import React from "react";
-
 type CampaignRow = {
   id: string;
   title: string | null;
   start_at: string | null;
   end_at: string | null;
 };
-
 interface CampaignListProps {
   campaigns: CampaignRow[];
 }
-
 export const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
   if (campaigns.length === 0) {
     return (
       <div className="text-sm text-muted-foreground">No campaigns yet</div>
     );
   }
-
   return (
     <ul className="space-y-2">
       {campaigns.map((c) => (

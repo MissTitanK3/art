@@ -7,7 +7,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const CollapsibleSection: React.FC<Props> = ({ title, children }) => {
+export const CollapsibleSection = ({ title, children }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (

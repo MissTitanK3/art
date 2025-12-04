@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * Convert `.check-unaligned-region/report.json` into a Markdown summary that can seed a PR description.
+ *
+ * Usage:
+ *   node scripts/post-check-report.mjs
+ *
+ * Writes `pr_suggestion.md` (or `$PR_SUGGEST_OUT`) containing top diffs and per-region breakdowns.
+ */
 import fs from 'fs';
 import path from 'path';
 

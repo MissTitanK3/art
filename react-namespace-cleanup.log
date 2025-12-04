@@ -1,0 +1,42 @@
+=== React Namespace Cleanup Log ===
+
+[FC/VFC Conversions]
+
+[Fragment Conversions]
+
+[Runtime API Conversions]
+
+[Hooks Only]
+packages/ui/src/layout/dispatch/dispatch-card.tsx
+packages/ui/src/layout/dispatch/dispatch-filters.tsx
+packages/ui/src/layout/dispatch/dispatch-list-layout.tsx
+packages/ui/src/layout/dispatch/dispatch-pagination.tsx
+packages/ui/src/layout/dispatch/dispatch-past-list.tsx
+packages/ui/src/layout/dispatch/dispatch-shifts-layout.tsx
+packages/ui/src/layout/dispatch/dispatch-submission-layout.tsx
+packages/ui/src/layout/dispatch/dispatch-upcoming-list.tsx
+packages/ui/src/layout/dispatch/use-dispatch-filter-state.ts
+packages/ui/src/layout/pods/pod-creator-layout.tsx
+packages/ui/src/layout/pods/pod-roster-layout.tsx
+packages/ui/src/layout/pods/pod-shifts-layout.tsx
+packages/ui/src/layout/profile/county-select-layout.tsx
+packages/ui/src/patterns/common/error-message.tsx
+packages/ui/src/patterns/common/loading-button.tsx
+packages/ui/src/patterns/features/campaign/campaign-list.tsx
+packages/ui/src/patterns/features/pods/collective-calendar-shared.tsx
+packages/ui/src/patterns/features/teleprompter/teleprompter-script-builder.tsx
+apps/watch/components/DataAccessExplainer.tsx
+apps/watch/components/SearchBar.tsx
+apps/academy/components/client/ScrollAreaPersist.tsx
+apps/academy/components/client/SearchCoursesModal.tsx
+apps/frontiers/app/ship-demo/page.tsx
+apps/frontiers/components/ship/ShipRenderer.tsx
+apps/region-norcal/app/script-builder/page.tsx
+apps/region-pnw/app/script-builder/page.tsx
+apps/region-socal/app/script-builder/page.tsx
+apps/region-template/app/script-builder/page.tsx
+apps/region-wap/app/script-builder/page.tsx
+apps/watch/app/resources/page.tsx
+
+[Duplicate React Imports]
+<none>

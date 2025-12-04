@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useMemo, useState } from "react";
 import type { Pod } from "@workspace/store/types/pod.ts";
 import {
   Card,
@@ -32,26 +31,22 @@ import {
   DialogTitle,
 } from "@workspace/ui/primitives/dialog";
 import { Label } from "@workspace/ui/primitives/label";
-
 type Props = {
   initialPods: Pod[];
 };
-
 export default function PodsClient({ initialPods }: Props) {
-  const [query, setQuery] = React.useState("");
-  const [rows, setRows] = React.useState<Pod[]>(() => initialPods);
-  const [renameOpen, setRenameOpen] = React.useState(false);
-  const [renameId, setRenameId] = React.useState<string | null>(null);
-  const [renameValue, setRenameValue] = React.useState<string>("");
-
-  const filtered = React.useMemo(() => {
+  const [query, setQuery] = useState("");
+  const [rows, setRows] = useState<Pod[]>(() => initialPods);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState<string>("");
+  const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((p) =>
-      [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q)
+      [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q),
     );
   }, [rows, query]);
-
   async function createPod() {
     const name = prompt("Pod name");
     if (!name || !name.trim()) return;
@@ -62,7 +57,9 @@ export default function PodsClient({ initialPods }: Props) {
         body: JSON.stringify({ name: name.trim() }),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
-      const json = (await res.json()) as { pod: any };
+      const json = (await res.json()) as {
+        pod: any;
+      };
       const p = json.pod;
       const pod: Pod = {
         id: String(p.id),
@@ -78,13 +75,11 @@ export default function PodsClient({ initialPods }: Props) {
       toast.error(e?.message ?? "Create failed");
     }
   }
-
   function openRename(pod: Pod) {
     setRenameId(pod.id);
     setRenameValue(pod.name);
     setRenameOpen(true);
   }
-
   async function submitRename() {
     const id = renameId;
     const nextName = renameValue.trim();
@@ -97,7 +92,9 @@ export default function PodsClient({ initialPods }: Props) {
         body: JSON.stringify({ name: nextName }),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
-      const json = (await res.json()) as { pod?: any };
+      const json = (await res.json()) as {
+        pod?: any;
+      };
       const p = json.pod ?? {
         id,
         name: nextName,
@@ -107,8 +104,10 @@ export default function PodsClient({ initialPods }: Props) {
       };
       setRows((prev) =>
         prev.map((x) =>
-          x.id === id ? { ...x, name: String(p.name), slug: String(p.slug) } : x
-        )
+          x.id === id
+            ? { ...x, name: String(p.name), slug: String(p.slug) }
+            : x,
+        ),
       );
       toast.success("Pod renamed");
       setRenameOpen(false);
@@ -116,7 +115,6 @@ export default function PodsClient({ initialPods }: Props) {
       toast.error(e?.message ?? "Rename failed");
     }
   }
-
   async function archivePod(id: string) {
     const p = rows.find((x) => x.id === id);
     if (!p) return;
@@ -132,7 +130,6 @@ export default function PodsClient({ initialPods }: Props) {
       toast.error(e?.message ?? "Archive failed");
     }
   }
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -235,7 +232,6 @@ export default function PodsClient({ initialPods }: Props) {
     </section>
   );
 }
-
 // Rename dialog modal
 function RenameDialog({
   open,

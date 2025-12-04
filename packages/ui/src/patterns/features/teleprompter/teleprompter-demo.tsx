@@ -1,30 +1,26 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import TeleprompterViewer from "@workspace/ui/patterns/features/teleprompter/teleprompter-viewer";
 import {
   TransportControls,
   SpeedControl,
 } from "@workspace/ui/patterns/features/teleprompter/teleprompter-controls";
-
 const SAMPLE = [
   "Welcome team. We’ll start with a quick overview. [pause]",
   "If you’re on comms, confirm batteries and backups now. [look up]",
   "Key points: maintain presence, document interactions. [breathe]",
 ].join("\n\n");
-
 export function TeleprompterDemo() {
-  const [text, setText] = React.useState(SAMPLE);
-  const [index, setIndex] = React.useState(0);
-  const [playing, setPlaying] = React.useState(false);
-  const [speed, setSpeed] = React.useState(1);
-  const [lineMs] = React.useState(1500);
-  const [lineStartedAt, setLineStartedAt] = React.useState<number | undefined>(
-    undefined
+  const [text, setText] = useState(SAMPLE);
+  const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [lineMs] = useState(1500);
+  const [lineStartedAt, setLineStartedAt] = useState<number | undefined>(
+    undefined,
   );
-  const timer = React.useRef<number | null>(null);
-
-  React.useEffect(() => {
+  const timer = useRef<number | null>(null);
+  useEffect(() => {
     if (!playing) return;
     if (timer.current) window.clearTimeout(timer.current);
     setLineStartedAt(Date.now());
@@ -35,15 +31,13 @@ export function TeleprompterDemo() {
           return Math.min(lines.length - 1, i + 1);
         });
       },
-      Math.max(500, lineMs / Math.max(0.25, speed))
+      Math.max(500, lineMs / Math.max(0.25, speed)),
     );
     return () => {
       if (timer.current) window.clearTimeout(timer.current);
     };
   }, [playing, index, text, speed, lineMs]);
-
-  const lines = React.useMemo(() => text.split(/\r?\n/), [text]);
-
+  const lines = useMemo(() => text.split(/\r?\n/), [text]);
   return (
     <div className="flex flex-col gap-3">
       <TransportControls
@@ -76,5 +70,4 @@ export function TeleprompterDemo() {
     </div>
   );
 }
-
 export default TeleprompterDemo;

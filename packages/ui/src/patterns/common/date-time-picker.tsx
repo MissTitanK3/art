@@ -1,9 +1,7 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/primitives/button";
 import { Calendar } from "@workspace/ui/primitives/calendar";
@@ -13,24 +11,20 @@ import {
   PopoverTrigger,
 } from "@workspace/ui/primitives/popover";
 import { TimePickerSelect } from "./time-picker-select";
-
 type Props = {
   label: string;
   value?: string; // ISO string
   onChange: (value: string) => void;
 };
-
 export function DateTimePicker({ label, value, onChange }: Props) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const date = value ? new Date(value) : undefined;
-
   const handleDateChange = (selected?: Date) => {
     if (!selected) return;
     const current = date ?? new Date();
     selected.setHours(current.getHours(), current.getMinutes());
     onChange(selected.toISOString());
   };
-
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium">{label}</label>
@@ -42,7 +36,7 @@ export function DateTimePicker({ label, value, onChange }: Props) {
               variant="outline"
               className={cn(
                 "justify-start text-left font-normal w-[200px]",
-                !date && "text-muted-foreground"
+                !date && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />

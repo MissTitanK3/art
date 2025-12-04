@@ -1,8 +1,5 @@
 "use client";
-
-import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
-
 export type KeyboardHintProps = {
   show: boolean;
   onDismiss: () => void;
@@ -10,7 +7,6 @@ export type KeyboardHintProps = {
   children: React.ReactNode;
   dismissLabel?: string;
 };
-
 export default function KeyboardHint({
   show,
   onDismiss,

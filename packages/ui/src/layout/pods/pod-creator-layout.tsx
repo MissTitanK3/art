@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Select,
   SelectContent,
@@ -10,7 +9,6 @@ import { Label } from "@workspace/ui/primitives/label";
 import { Input } from "@workspace/ui/primitives/input";
 import { Button } from "@workspace/ui/primitives/button";
 import { cn } from "@workspace/ui/lib/utils";
-
 type RegisteredFieldBinding = {
   name: string;
   onBlur?: (...args: any[]) => void;
@@ -18,19 +16,16 @@ type RegisteredFieldBinding = {
   ref: React.RefCallback<HTMLInputElement>;
   [key: string]: unknown;
 };
-
 type ChannelFieldBinding = {
   value: string;
   onChange: (value: string) => void;
 };
-
 export type PodCreatorLayoutErrors = Partial<{
   name: string;
   area: string;
   channel: string;
   channelLink: string;
 }>;
-
 export type PodCreatorLayoutProps = {
   heading?: React.ReactNode;
   formId?: string;
@@ -51,7 +46,6 @@ export type PodCreatorLayoutProps = {
   submitLabel?: string;
   description?: React.ReactNode;
 };
-
 export function PodCreatorLayout({
   heading = <h1 className="text-2xl font-bold">Create Pod</h1>,
   formId = "pod-creator-form",
@@ -101,7 +95,7 @@ export function PodCreatorLayout({
             {...fieldBindings.area}
             className={cn(
               errors?.area ? "ring-1 ring-destructive" : undefined,
-              "w-full"
+              "w-full",
             )}
           />
           {errors?.area ? (
@@ -119,7 +113,7 @@ export function PodCreatorLayout({
               id="pod-channel"
               className={cn(
                 "w-[220px]",
-                errors?.channel ? "ring-1 ring-destructive" : undefined
+                errors?.channel ? "ring-1 ring-destructive" : undefined,
               )}
             >
               <SelectValue placeholder="Select a channel…" />
@@ -145,7 +139,7 @@ export function PodCreatorLayout({
             {...fieldBindings.channelLink}
             className={cn(
               errors?.channelLink ? "ring-1 ring-destructive" : undefined,
-              "w-full"
+              "w-full",
             )}
           />
           {errors?.channelLink ? (
@@ -162,5 +156,4 @@ export function PodCreatorLayout({
     </section>
   );
 }
-
 export default PodCreatorLayout;

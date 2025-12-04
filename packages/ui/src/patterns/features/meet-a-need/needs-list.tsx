@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -33,12 +32,10 @@ import type {
   NeedVisibility,
 } from "@workspace/store/types/meet-a-need";
 import { AccessRoles, roleLabel } from "@workspace/store/types/roles.ts";
-
 type OfferPayload = {
   resource_type: "time" | "transport" | "supplies" | "funding" | "other";
   notes?: string;
 };
-
 type NeedsListProps = {
   needs: MeetANeed[];
   onOfferHelp: (needId: string, payload: OfferPayload) => Promise<void> | void;
@@ -55,13 +52,14 @@ type NeedsListProps = {
         | "contact_preference"
         | "location"
       >
-    > & { locationLabel?: string }
+    > & {
+      locationLabel?: string;
+    },
   ) => Promise<void> | void;
   onDeleteNeed: (needId: string) => Promise<void> | void;
   canManageStatus?: boolean;
   canManageNeed?: boolean;
 };
-
 export default function NeedsList({
   needs,
   onOfferHelp,
@@ -71,7 +69,7 @@ export default function NeedsList({
   canManageStatus = true,
   canManageNeed = true,
 }: NeedsListProps) {
-  const [viewerUrl, setViewerUrl] = React.useState<string | null>(null);
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   if (!needs?.length) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -222,7 +220,7 @@ export default function NeedsList({
                     .sort(
                       (a, b) =>
                         new Date(b.created_at).getTime() -
-                        new Date(a.created_at).getTime()
+                        new Date(a.created_at).getTime(),
                     )
                     .map((r, idx) => (
                       <div
@@ -293,7 +291,6 @@ export default function NeedsList({
     </div>
   );
 }
-
 function EditNeedDrawer({
   need,
   onSave,
@@ -310,22 +307,21 @@ function EditNeedDrawer({
         | "contact_preference"
         | "location"
       >
-    > & { locationLabel?: string }
+    > & {
+      locationLabel?: string;
+    },
   ) => void | Promise<void>;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [category, setCategory] = React.useState(need.category);
-  const [description, setDescription] = React.useState(need.description);
-  const [urgency, setUrgency] = React.useState<NeedUrgency>(need.urgency);
-  const [visibility, setVisibility] = React.useState<NeedVisibility>(
-    need.visibility
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState(need.category);
+  const [description, setDescription] = useState(need.description);
+  const [urgency, setUrgency] = useState<NeedUrgency>(need.urgency);
+  const [visibility, setVisibility] = useState<NeedVisibility>(need.visibility);
+  const [locationLabel, setLocationLabel] = useState(
+    need.location?.label ?? "",
   );
-  const [locationLabel, setLocationLabel] = React.useState(
-    need.location?.label ?? ""
-  );
-  const [contact, setContact] = React.useState(need.contact_preference ?? "");
-  const [pending, setPending] = React.useState(false);
-
+  const [contact, setContact] = useState(need.contact_preference ?? "");
+  const [pending, setPending] = useState(false);
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setPending(true);
@@ -343,7 +339,6 @@ function EditNeedDrawer({
       setPending(false);
     }
   };
-
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
@@ -441,7 +436,6 @@ function EditNeedDrawer({
     </>
   );
 }
-
 function OfferHelpButton({
   needId,
   onOfferHelp,
@@ -449,7 +443,7 @@ function OfferHelpButton({
   needId: string;
   onOfferHelp: NeedsListProps["onOfferHelp"];
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   return (
     <div>
       {!open ? (
@@ -466,7 +460,6 @@ function OfferHelpButton({
     </div>
   );
 }
-
 function OfferHelpForm({
   needId,
   onClose,
@@ -476,11 +469,10 @@ function OfferHelpForm({
   onClose: () => void;
   onOfferHelp: NeedsListProps["onOfferHelp"];
 }) {
-  const [pending, setPending] = React.useState(false);
+  const [pending, setPending] = useState(false);
   const [resourceType, setResourceType] =
-    React.useState<OfferPayload["resource_type"]>("time");
-  const [notes, setNotes] = React.useState("");
-
+    useState<OfferPayload["resource_type"]>("time");
+  const [notes, setNotes] = useState("");
   const submit = async () => {
     setPending(true);
     try {
@@ -490,7 +482,6 @@ function OfferHelpForm({
       setPending(false);
     }
   };
-
   return (
     <div className="border rounded p-3 space-y-2">
       <div className="grid grid-cols-2 gap-2">

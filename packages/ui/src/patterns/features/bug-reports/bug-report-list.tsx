@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -32,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
-
 export type BugReportRow = {
   id: string;
   created_at: string;
@@ -44,7 +42,6 @@ export type BugReportRow = {
   status: BugStatus;
   priority: BugPriority;
 };
-
 export interface BugReportListProps {
   rows: BugReportRow[];
   loading?: boolean;
@@ -58,7 +55,6 @@ export interface BugReportListProps {
   onSortByChange: (v: "created_at" | "priority" | "status" | "title") => void;
   onSortDirChange: (v: "asc" | "desc") => void;
 }
-
 export function BugReportList({
   rows,
   loading,
@@ -72,7 +68,7 @@ export function BugReportList({
   onSortByChange,
   onSortDirChange,
 }: BugReportListProps) {
-  const grouped = React.useMemo(() => {
+  const grouped = useMemo(() => {
     const map = new Map<string, BugReportRow[]>();
     for (const r of rows) {
       const key = r.status || "open";
@@ -112,10 +108,9 @@ export function BugReportList({
       return 0;
     };
     return Array.from(map.entries()).map(
-      ([k, arr]) => [k, arr.slice().sort(compare)] as const
+      ([k, arr]) => [k, arr.slice().sort(compare)] as const,
     );
   }, [rows, sortBy, sortDir]);
-
   return (
     <section className="space-y-6">
       <PageHeader title="Bug Reports" />
@@ -253,5 +248,4 @@ export function BugReportList({
     </section>
   );
 }
-
 export default BugReportList;

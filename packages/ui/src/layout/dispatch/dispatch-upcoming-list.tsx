@@ -1,16 +1,13 @@
 "use client";
-
-import React from "react";
+import { useMemo } from "react";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { DispatchCard } from "./dispatch-card";
 import type { BucketGroups, UrgencyBucket } from "./dispatch-buckets";
 import { bucketEmoji } from "./dispatch-buckets";
-
 type LinkWrapperProps = {
   href: string;
   children: React.ReactNode;
 };
-
 type DispatchUpcomingListProps = {
   order: UrgencyBucket[];
   groups: BucketGroups;
@@ -18,7 +15,6 @@ type DispatchUpcomingListProps = {
   LinkComponent: React.ComponentType<LinkWrapperProps>;
   getHref: (submission: DispatchSubmission) => string;
 };
-
 export function DispatchUpcomingList({
   order,
   groups,
@@ -26,11 +22,10 @@ export function DispatchUpcomingList({
   LinkComponent,
   getHref,
 }: DispatchUpcomingListProps) {
-  const pageSet = React.useMemo(
+  const pageSet = useMemo(
     () => new Set(pageItems.map((s) => s.id)),
-    [pageItems]
+    [pageItems],
   );
-
   return (
     <div className="space-y-8">
       {order.map((label) => {

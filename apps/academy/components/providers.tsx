@@ -1,14 +1,14 @@
 "use client";
 
-import * as React from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
+import { useEffect } from "react";
 
 const SUPPORTED_THEME_CLASSNAMES = ["light", "dark", "dim", "lofi"] as const;
 
 function ThemeClassSync() {
   const { theme, resolvedTheme } = useTheme();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const activeTheme = theme === "system" ? resolvedTheme : theme;
     if (!activeTheme) {
       return;

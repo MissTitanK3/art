@@ -1,22 +1,17 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { useShipStore } from "@/store/useShipStore";
 import { toast } from "sonner";
-
 export function RepairInterface() {
   const condition = useShipStore((s) => s.ship_condition);
   const setCondition = useShipStore((s) => s.setCondition);
   const componentIntegrity = useShipStore((s) => s.component_integrity);
   const repairComponent = useShipStore((s) => s.repairComponent);
-
   const handleHullRepair = () => {
     // In real app, check resources
     setCondition(Math.min(100, condition + 10));
     toast.success("Hull repaired");
   };
-
   return (
     <div className="space-y-4 p-4 border rounded-md bg-card">
       <h3 className="text-lg font-medium">Repair Station</h3>

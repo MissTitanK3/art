@@ -1,15 +1,11 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import DispatchClient from "@workspace/ui/layout/admin/dispatch/dispatch";
 import {
   DispatchStoreProvider,
   useDispatchStore,
 } from "@/providers/DispatchStoreProvider";
-
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
-
-
 function mapRow(row: any): DispatchSubmission {
   return {
     id: String(row.id ?? crypto.randomUUID()),
@@ -42,7 +38,7 @@ function mapRow(row: any): DispatchSubmission {
       : undefined,
     required_roles_by_type:
       typeof row?.required_roles_by_type === "object" &&
-        row?.required_roles_by_type
+      row?.required_roles_by_type
         ? row.required_roles_by_type
         : undefined,
     location_label:
@@ -75,16 +71,12 @@ function mapRow(row: any): DispatchSubmission {
     logistics: Array.isArray(row?.logistics) ? row.logistics : [],
   } as DispatchSubmission;
 }
-
 function AdminDispatchBridge() {
   const updateSubmission = useDispatchStore((s) => s.updateSubmission);
   const replaceSubmissions = useDispatchStore((s) => s.replaceSubmissions);
   const submissions = useDispatchStore((s) => s.submissions);
-  const [initial, setInitial] = React.useState<DispatchSubmission[] | null>(
-    null,
-  );
-
-  React.useEffect(() => {
+  const [initial, setInitial] = useState<DispatchSubmission[] | null>(null);
+  useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
@@ -93,11 +85,8 @@ function AdminDispatchBridge() {
         });
         if (res.ok) {
           const json = await res.json();
-          const rows = Array.isArray(json?.submissions)
-            ? json.submissions
-            : [];
+          const rows = Array.isArray(json?.submissions) ? json.submissions : [];
           const mapped = rows.map(mapRow);
-
           if (!cancelled) {
             setInitial(mapped);
             // Replace store for consistency across app
@@ -114,7 +103,6 @@ function AdminDispatchBridge() {
       cancelled = true;
     };
   }, [replaceSubmissions, submissions]);
-
   return (
     <DispatchClient
       initialItems={initial ?? submissions}
@@ -122,7 +110,6 @@ function AdminDispatchBridge() {
     />
   );
 }
-
 export default function AdminDispatchPage() {
   return (
     <DispatchStoreProvider>

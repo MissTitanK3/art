@@ -1,13 +1,11 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { navConfig } from "@/nav.config";
 import { GlobalNav } from "./GlobalNav";
 import type { NavRole } from "@workspace/store/utils/nav";
 import { useRegionAdapters } from "@/providers/RegionProvider";
 import type { Profile } from "@workspace/store/types/global.ts";
-
 const ALLOWED_ROLES: NavRole[] = [
   "team_member",
   "pod_leader",
@@ -19,7 +17,6 @@ const ALLOWED_ROLES: NavRole[] = [
   "regional_admin",
   "national_admin",
 ];
-
 export function GlobalNavBridge({
   rightSlot,
 }: {
@@ -27,18 +24,15 @@ export function GlobalNavBridge({
 }) {
   const { session, status } = useAuth();
   const { profileAdapter } = useRegionAdapters();
-
-  const [profile, setProfile] = React.useState<Profile | null>(null);
-  const [loadingProfile, setLoadingProfile] = React.useState(false);
-
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const isAuthenticated = Boolean(session);
   const baseRoleUnsafe = (session?.user?.role as any) ?? "team_member";
   const allowedRoles = ALLOWED_ROLES;
   const baseRole: NavRole = allowedRoles.includes(baseRoleUnsafe)
     ? (baseRoleUnsafe as NavRole)
     : "team_member"; // sanitize unknown auth roles like "authenticated"
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     async function loadProfile() {
       const userId = session?.user?.id;
@@ -61,17 +55,14 @@ export function GlobalNavBridge({
       cancelled = true;
     };
   }, [session?.user?.id, profileAdapter]);
-
   // Prefer profile.access_role if it is a NavRole; else use baseRole
-  const role: NavRole = React.useMemo(() => {
+  const role: NavRole = useMemo(() => {
     const ar = profile?.access_role as any;
     if (ar && ALLOWED_ROLES.includes(ar)) return ar as NavRole;
     return baseRole;
   }, [baseRole, profile?.access_role]);
-
   // wait until auth initialized
   if (status === "loading") return null;
-
   return (
     <GlobalNav
       config={navConfig}

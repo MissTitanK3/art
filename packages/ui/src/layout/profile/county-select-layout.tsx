@@ -1,10 +1,7 @@
 "use client";
-
-import React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import type { CountySelectMapProps } from "@workspace/ui/patterns/features/maps/county-select-map";
 import type { SelectedCounty } from "@workspace/store/types/maps.ts";
-
 export type CountySelectLayoutProps = {
   profileMissing: boolean;
   noProfileContent?: React.ReactNode;
@@ -20,7 +17,6 @@ export type CountySelectLayoutProps = {
   mapProps?: Omit<CountySelectMapProps, "selected" | "onChange" | "editor">;
   loadingMessage?: React.ReactNode;
 };
-
 export function CountySelectLayout({
   profileMissing,
   noProfileContent,
@@ -50,7 +46,6 @@ export function CountySelectLayout({
       </div>
     );
   }
-
   const countyList = selectedCounties.map((county, index) => (
     <div
       key={county.GEO_ID}
@@ -85,7 +80,6 @@ export function CountySelectLayout({
       </div>
     </div>
   ));
-
   return (
     <div className="z-0 flex flex-col gap-4">
       <div className="flex flex-col items-center justify-between gap-3 md:flex-row">
@@ -144,5 +138,4 @@ export function CountySelectLayout({
     </div>
   );
 }
-
 export default CountySelectLayout;

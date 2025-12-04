@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,7 +18,6 @@ import {
   Users,
   UserCheck,
 } from "lucide-react";
-
 type DashboardResponse = {
   totals: {
     volunteerHours: number;
@@ -27,12 +25,16 @@ type DashboardResponse = {
     medianResponseMinutes: number;
     highRiskCount: number;
   };
-  hoursTrend: { weekStart: string; hours?: number }[];
-  peopleTrend: { weekStart: string; people?: number }[];
+  hoursTrend: {
+    weekStart: string;
+    hours?: number;
+  }[];
+  peopleTrend: {
+    weekStart: string;
+    people?: number;
+  }[];
 };
-
-const REFRESH_INTERVAL_MS = 120_000;
-
+const REFRESH_INTERVAL_MS = 120000;
 function formatDuration(minutes: number) {
   if (minutes <= 0) return "Instant";
   const hours = Math.floor(minutes / 60);
@@ -41,17 +43,14 @@ function formatDuration(minutes: number) {
   if (hours) return `${hours}h`;
   return `${mins}m`;
 }
-
 function formatNumber(value: number) {
   return new Intl.NumberFormat().format(Math.round(value));
 }
-
 type SparklineProps = {
   label: string;
   points: number[];
   color: string;
 };
-
 function TrendSparkline({ label, points, color }: SparklineProps) {
   const width = 200;
   const height = 60;
@@ -67,7 +66,6 @@ function TrendSparkline({ label, points, color }: SparklineProps) {
       return `${index === 0 ? "M" : "L"} ${x} ${y}`;
     })
     .join(" ");
-
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -91,16 +89,14 @@ function TrendSparkline({ label, points, color }: SparklineProps) {
     </div>
   );
 }
-
 export default function PerformancePage() {
-  const [data, setData] = React.useState<DashboardResponse | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [showHighRisk, setShowHighRisk] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = React.useState<string | null>(null);
-
-  const fetchDashboard = React.useCallback(async (showSpinner = true) => {
+  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showHighRisk, setShowHighRisk] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const fetchDashboard = useCallback(async (showSpinner = true) => {
     try {
       if (showSpinner) setLoading(true);
       setRefreshing(true);
@@ -120,8 +116,7 @@ export default function PerformancePage() {
       setRefreshing(false);
     }
   }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     fetchDashboard();
     const handleVisibility = () => {
       if (!document.hidden) {
@@ -137,9 +132,7 @@ export default function PerformancePage() {
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [fetchDashboard]);
-
   const totals = data?.totals;
-
   const metricCards = [
     {
       label: "Volunteer hours (30d)",
@@ -157,7 +150,6 @@ export default function PerformancePage() {
       icon: <Timer className="h-5 w-5 text-primary" />,
     },
   ];
-
   if (showHighRisk) {
     metricCards.push({
       label: "High-risk dispatches",
@@ -165,9 +157,8 @@ export default function PerformancePage() {
       icon: <ShieldAlert className="h-5 w-5 text-primary" />,
     });
   }
-
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6 p-1">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Impact Performance</h1>
@@ -181,7 +172,7 @@ export default function PerformancePage() {
             </p>
           ) : null}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-col justify-center items-center gap-3">
           <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
             <span>Show high-risk</span>
             <Switch

@@ -1,8 +1,6 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { humanizeKey, pct } from "@/lib/format";
-
 export function StatBar({
   value,
   label,
@@ -14,7 +12,7 @@ export function StatBar({
   effects?: Array<[string, number]>;
   extraTooltipLines?: string[];
 }) {
-  const color = React.useMemo(
+  const color = useMemo(
     () =>
       value >= 70
         ? "bg-green-500"
@@ -23,7 +21,7 @@ export function StatBar({
           : "bg-red-500",
     [value],
   );
-  const final = React.useMemo(() => {
+  const final = useMemo(() => {
     if (!effects || effects.length === 0)
       return Math.max(0, Math.min(100, value));
     let delta = 0;
@@ -45,7 +43,7 @@ export function StatBar({
     delta = Math.max(-15, Math.min(15, delta));
     return Math.max(0, Math.min(100, value + delta));
   }, [effects, label, value]);
-  const tooltip = React.useMemo(() => {
+  const tooltip = useMemo(() => {
     const parts: string[] = [];
     parts.push(`Base: ${Math.round(Math.max(0, Math.min(100, value)))}%`);
     if (effects && effects.length > 0) {
@@ -58,9 +56,9 @@ export function StatBar({
     for (const line of extraTooltipLines || []) parts.push(line);
     return parts.join(" • ");
   }, [effects, extraTooltipLines, final, value]);
-  const [open, setOpen] = React.useState(false);
-  const popRef = React.useRef<HTMLDivElement | null>(null);
-  React.useEffect(() => {
+  const [open, setOpen] = useState(false);
+  const popRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
     if (!open) return;
     const onDocClick = (e: MouseEvent) => {
       const t = e.target as Node | null;
@@ -71,7 +69,7 @@ export function StatBar({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
-  const tooltipLines = React.useMemo(() => tooltip.split(" • "), [tooltip]);
+  const tooltipLines = useMemo(() => tooltip.split(" • "), [tooltip]);
   return (
     <div
       className="flex items-center gap-2 min-w-[140px] relative"

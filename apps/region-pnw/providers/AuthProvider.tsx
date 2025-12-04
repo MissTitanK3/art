@@ -1,6 +1,13 @@
 "use client";
-
-import * as React from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type { Session as SupabaseSession } from "@supabase/supabase-js";
 import type {
@@ -11,7 +18,6 @@ import type {
   PasswordSignInPayload,
   PasswordSignUpPayload,
 } from "@/lib/auth/types";
-
 type AuthContextValue = {
   providerId: AuthProviderId;
   session: AuthSession | null;
@@ -23,48 +29,35 @@ type AuthContextValue = {
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
   signUpWithPassword: (
-    payload: PasswordSignUpPayload
+    payload: PasswordSignUpPayload,
   ) => Promise<AuthSession | null>;
   requestPasswordReset: (email: string, redirectTo?: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
 };
-
-const AuthContext = React.createContext<AuthContextValue | undefined>(
-  undefined
-);
-
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 type AuthProviderProps = {
   initialSession?: AuthSession | null;
   children: React.ReactNode;
 };
-
 function toStatus(session: AuthSession | null): AuthStatus {
   return session ? "authenticated" : "unauthenticated";
 }
-
 export function AuthProvider({
   children,
   initialSession = null,
 }: AuthProviderProps) {
-  const providerId = React.useMemo<AuthProviderId>(() => "supabase", []);
-  const supabaseRef = React.useRef<ReturnType<
+  const providerId = useMemo<AuthProviderId>(() => "supabase", []);
+  const supabaseRef = useRef<ReturnType<
     typeof getSupabaseBrowserClient
   > | null>(null);
-
-  const [session, setSession] = React.useState<AuthSession | null>(
-    initialSession
-  );
-  const [status, setStatus] = React.useState<AuthStatus>(
-    toStatus(initialSession)
-  );
-
-  const ensureClient = React.useCallback(() => {
+  const [session, setSession] = useState<AuthSession | null>(initialSession);
+  const [status, setStatus] = useState<AuthStatus>(toStatus(initialSession));
+  const ensureClient = useCallback(() => {
     if (!supabaseRef.current) {
       supabaseRef.current = getSupabaseBrowserClient();
     }
     return supabaseRef.current;
   }, []);
-
   function mapSupabaseSession(s: SupabaseSession | null): AuthSession | null {
     if (!s) return null;
     const u = s.user;
@@ -85,7 +78,6 @@ export function AuthProvider({
       provider: "supabase",
     };
   }
-
   async function postAuthCallback(event: string, s: SupabaseSession | null) {
     try {
       await fetch("/auth/callback", {
@@ -106,16 +98,13 @@ export function AuthProvider({
       // Ignore network errors; SSR cookies can refresh later
     }
   }
-
-  React.useEffect(() => {
+  useEffect(() => {
     setSession(initialSession);
     setStatus(toStatus(initialSession));
   }, [initialSession]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
     const supabase = ensureClient();
-
     async function hydrate() {
       if (initialSession) return;
       setStatus("loading");
@@ -131,9 +120,7 @@ export function AuthProvider({
       setSession(next);
       setStatus(toStatus(next));
     }
-
     hydrate();
-
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!active) return;
       const next = mapSupabaseSession(s);
@@ -141,7 +128,6 @@ export function AuthProvider({
       setStatus(toStatus(next));
       postAuthCallback(event, s);
     });
-
     return () => {
       active = false;
       try {
@@ -151,8 +137,7 @@ export function AuthProvider({
       }
     };
   }, [ensureClient, initialSession]);
-
-  const refresh = React.useCallback(async () => {
+  const refresh = useCallback(async () => {
     setStatus("loading");
     const supabase = ensureClient();
     const { data, error } = await supabase.auth.getSession();
@@ -166,8 +151,7 @@ export function AuthProvider({
     setStatus(toStatus(next));
     return next;
   }, [ensureClient]);
-
-  const signInWithPassword = React.useCallback(
+  const signInWithPassword = useCallback(
     async (payload: PasswordSignInPayload) => {
       setStatus("loading");
       const supabase = ensureClient();
@@ -181,10 +165,9 @@ export function AuthProvider({
       setStatus(toStatus(next));
       return next as AuthSession;
     },
-    [ensureClient]
+    [ensureClient],
   );
-
-  const signInWithOtp = React.useCallback(
+  const signInWithOtp = useCallback(
     async (payload: OtpSignInPayload) => {
       const supabase = ensureClient();
       const { error } = await supabase.auth.signInWithOtp({
@@ -192,10 +175,9 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient]
+    [ensureClient],
   );
-
-  const signUpWithPassword = React.useCallback(
+  const signUpWithPassword = useCallback(
     async (payload: PasswordSignUpPayload) => {
       const supabase = ensureClient();
       const { data, error } = await supabase.auth.signUp({
@@ -216,10 +198,9 @@ export function AuthProvider({
       }
       return next;
     },
-    [ensureClient]
+    [ensureClient],
   );
-
-  const requestPasswordReset = React.useCallback(
+  const requestPasswordReset = useCallback(
     async (email: string, redirectTo?: string) => {
       const supabase = ensureClient();
       const url = (() => {
@@ -235,10 +216,9 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient]
+    [ensureClient],
   );
-
-  const updatePassword = React.useCallback(
+  const updatePassword = useCallback(
     async (newPassword: string) => {
       const supabase = ensureClient();
       const { error } = await supabase.auth.updateUser({
@@ -249,7 +229,7 @@ export function AuthProvider({
         const refreshed = await supabase.auth.getSession();
         await postAuthCallback(
           "USER_UPDATED",
-          refreshed.data.session as unknown as SupabaseSession
+          refreshed.data.session as unknown as SupabaseSession,
         );
         const next = mapSupabaseSession(refreshed.data.session);
         setSession(next);
@@ -258,15 +238,13 @@ export function AuthProvider({
         // ignore
       }
     },
-    [ensureClient]
+    [ensureClient],
   );
-
-  const signOut = React.useCallback(async () => {
+  const signOut = useCallback(async () => {
     const supabase = ensureClient();
     await supabase.auth.signOut();
   }, [ensureClient]);
-
-  const value = React.useMemo<AuthContextValue>(
+  const value = useMemo<AuthContextValue>(
     () => ({
       providerId,
       session,
@@ -292,14 +270,12 @@ export function AuthProvider({
       signUpWithPassword,
       requestPasswordReset,
       updatePassword,
-    ]
+    ],
   );
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
 export function useAuthContext(): AuthContextValue {
-  const ctx = React.useContext(AuthContext);
+  const ctx = useContext(AuthContext);
   if (!ctx) {
     throw new Error("useAuthContext must be used within AuthProvider");
   }

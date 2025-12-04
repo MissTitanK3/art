@@ -1,16 +1,12 @@
-import * as React from "react";
-
 import { Badge } from "@workspace/ui/primitives/badge";
-
 import type {
   ContactInfo,
   InfoSource,
   TransferRecord,
 } from "@workspace/ui/types/missing-person-intake";
-
 export function formatText(
   value?: React.ReactNode,
-  fallback = "Not provided"
+  fallback = "Not provided",
 ): React.ReactNode {
   if (value === undefined || value === null) {
     return <span className="text-muted-foreground">{fallback}</span>;
@@ -28,10 +24,9 @@ export function formatText(
   }
   return value;
 }
-
 export function formatDateTime(
   value?: string,
-  fallback = "Not provided"
+  fallback = "Not provided",
 ): React.ReactNode {
   if (!value) return <span className="text-muted-foreground">{fallback}</span>;
   const date = new Date(value);
@@ -40,10 +35,9 @@ export function formatDateTime(
   }
   return date.toLocaleString();
 }
-
 export function formatList(
   values?: string[],
-  fallback = "Not provided"
+  fallback = "Not provided",
 ): React.ReactNode {
   if (!values || values.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
@@ -58,10 +52,9 @@ export function formatList(
     </div>
   );
 }
-
 export function formatContacts(
   records?: ContactInfo[],
-  fallback = "No contacts recorded"
+  fallback = "No contacts recorded",
 ): React.ReactNode {
   if (!records || records.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
@@ -81,10 +74,9 @@ export function formatContacts(
     </div>
   );
 }
-
 export function formatTransfers(
   records?: TransferRecord[],
-  fallback = "No documented transfers"
+  fallback = "No documented transfers",
 ): React.ReactNode {
   if (!records || records.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;
@@ -109,10 +101,9 @@ export function formatTransfers(
     </div>
   );
 }
-
 export function formatInfoSources(
   records?: InfoSource[],
-  fallback = "No verification notes recorded"
+  fallback = "No verification notes recorded",
 ): React.ReactNode {
   if (!records || records.length === 0) {
     return <span className="text-muted-foreground">{fallback}</span>;

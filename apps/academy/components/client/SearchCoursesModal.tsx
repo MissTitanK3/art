@@ -1,6 +1,5 @@
 "use client";
-
-import React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -12,7 +11,6 @@ import {
   CommandItem,
 } from "@workspace/ui/primitives/command";
 import { Search } from "lucide-react";
-
 type IndexItem = {
   slug: string;
   title: string;
@@ -20,7 +18,6 @@ type IndexItem = {
   version?: number | string | null;
   text: string;
 };
-
 // Locally prepared item for faster scoring
 type PreparedIndexItem = {
   raw: IndexItem;
@@ -30,19 +27,15 @@ type PreparedIndexItem = {
   wordsTitle: string[];
   wordsDesc: string[];
 };
-
 // --- Fuzzy matching utilities (lightweight, typo tolerant) ---
-
 function norm(s: unknown) {
   return String(s ?? "").toLowerCase();
 }
-
 function tokenize(s: string): string[] {
   return norm(s)
     .split(/[^a-z0-9]+/i)
     .filter(Boolean);
 }
-
 // Damerau–Levenshtein distance with adjacent transpositions
 // Based on pseudocode from Wikipedia; includes early bailouts for performance
 function damerauLevenshtein(a: string, b: string, maxDist = 2): number {
@@ -52,11 +45,10 @@ function damerauLevenshtein(a: string, b: string, maxDist = 2): number {
   if (al === 0) return bl;
   if (bl === 0) return al;
   if (Math.abs(al - bl) > maxDist) return maxDist + 1;
-
   const max = al + bl;
   const da: Record<string, number> = {};
   const d: number[][] = Array.from({ length: al + 2 }, () =>
-    new Array(bl + 2).fill(0)
+    new Array(bl + 2).fill(0),
   );
   d[0]![0] = max;
   for (let i = 0; i <= al; i++) {
@@ -82,7 +74,7 @@ function damerauLevenshtein(a: string, b: string, maxDist = 2): number {
         d[i]![j]! + cost, // substitution
         d[i + 1]![j]! + 1, // insertion
         d[i]![j + 1]! + 1, // deletion
-        d[i1]![j1]! + (i - i1 - 1) + 1 + (j - j1 - 1) // transposition
+        d[i1]![j1]! + (i - i1 - 1) + 1 + (j - j1 - 1), // transposition
       );
       const cell = d[i + 1]![j + 1]!;
       if (cell < rowMin) rowMin = cell;
@@ -93,22 +85,20 @@ function damerauLevenshtein(a: string, b: string, maxDist = 2): number {
   const dist = d[al + 1]![bl + 1]!;
   return dist;
 }
-
 function minWordDistance(
   haystack: string,
   needle: string,
   maxDist = 2,
-  maxWords = 24
+  maxWords = 24,
 ): number {
   const words = tokenize(haystack);
   return minWordDistanceTokens(words, needle, maxDist, maxWords);
 }
-
 function minWordDistanceTokens(
   words: string[],
   needle: string,
   maxDist = 2,
-  maxWords = 24
+  maxWords = 24,
 ): number {
   let best = maxDist + 1;
   for (let i = 0; i < words.length && i < maxWords; i++) {
@@ -118,11 +108,10 @@ function minWordDistanceTokens(
   }
   return best;
 }
-
 function phraseProximityScore(
   s: string,
   tokens: string[],
-  baseWeight: number
+  baseWeight: number,
 ): number {
   // Rough span-based proximity: find first occurrence of each token; score higher when close
   const positions = tokens
@@ -135,31 +124,26 @@ function phraseProximityScore(
   const proximity = Math.max(0, baseWeight - Math.floor(span / 20));
   return proximity;
 }
-
 function scorePrepared(
   item: PreparedIndexItem,
   q: string,
-  tokens: string[]
+  tokens: string[],
 ): number {
   const query = norm(q);
   if (!tokens.length) return 0;
   const title = item.title;
   const desc = item.desc;
   const text = item.text;
-
   let score = 0;
-
   // Full phrase boosts
   if (title.includes(query)) score += 28;
   if (desc.includes(query)) score += 12;
   if (text.includes(query)) score += 7;
-
   // Phrase proximity weighting (prefer nearby token groupings)
   const proxTitle = phraseProximityScore(title, tokens, 14);
   const proxDesc = phraseProximityScore(desc, tokens, 7);
   const proxText = phraseProximityScore(text, tokens, 4);
   score += proxTitle + proxDesc + proxText;
-
   // Token-based scoring with typo tolerance (levenshtein <= 1/2)
   let covered = 0;
   for (const t of tokens) {
@@ -209,13 +193,10 @@ function scorePrepared(
     }
     if (tokenCovered) covered += 1;
   }
-
   // Coverage bonus when most tokens matched
   if (covered >= Math.ceil(tokens.length * 0.8)) score += 6;
-
   return score;
 }
-
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -224,11 +205,9 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-
 function snippetHtml(text: string, q: string, radius = 60): string {
   const tokens = Array.from(new Set(tokenize(q).filter(Boolean)));
   const lower = text.toLowerCase();
@@ -248,12 +227,10 @@ function snippetHtml(text: string, q: string, radius = 60): string {
   const start = Math.max(0, i - radius);
   const end = Math.min(
     text.length,
-    i + (tokens[0]?.length ?? q.length) + radius
+    i + (tokens[0]?.length ?? q.length) + radius,
   );
   const slice = text.slice(start, end);
-
   if (tokens.length === 0) return escapeHtml(slice);
-
   // Build highlighting safely: split by regex and wrap matches
   const re = new RegExp(`(${tokens.map(escapeRegExp).join("|")})`, "gi");
   const parts: string[] = [];
@@ -265,27 +242,23 @@ function snippetHtml(text: string, q: string, radius = 60): string {
     return match;
   });
   parts.push(escapeHtml(slice.slice(lastIndex)));
-
   const prefix = start > 0 ? "…" : "";
   const suffix = end < text.length ? "…" : "";
   return prefix + parts.join("") + suffix;
 }
-
 export default function SearchCoursesModal() {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
-  const [query, setQuery] = React.useState("");
-  const [rawItems, setRawItems] = React.useState<IndexItem[] | null>(null);
-  const [items, setItems] = React.useState<PreparedIndexItem[] | null>(null);
-  const [debouncedQuery, setDebouncedQuery] = React.useState("");
-
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [rawItems, setRawItems] = useState<IndexItem[] | null>(null);
+  const [items, setItems] = useState<PreparedIndexItem[] | null>(null);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   // debounce user input to reduce scoring churn
-  React.useEffect(() => {
+  useEffect(() => {
     const t = window.setTimeout(() => setDebouncedQuery(query), 150);
     return () => window.clearTimeout(t);
   }, [query]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
@@ -295,9 +268,8 @@ export default function SearchCoursesModal() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
-
   // Preload index when idle (or on open as fallback)
-  React.useEffect(() => {
+  useEffect(() => {
     let aborted = false;
     const load = () => {
       if (rawItems !== null) return; // already loaded/attempted
@@ -345,9 +317,8 @@ export default function SearchCoursesModal() {
       cancel?.();
     };
   }, [rawItems]);
-
   // Fallback: ensure index loads when opening if idle prefetch hasn't run
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open || rawItems !== null) return;
     let aborted = false;
     const ac = new AbortController();
@@ -364,9 +335,8 @@ export default function SearchCoursesModal() {
       ac.abort();
     };
   }, [open, rawItems]);
-
   // Prepare normalized fields once after raw items load
-  React.useEffect(() => {
+  useEffect(() => {
     if (!rawItems) {
       setItems(rawItems as any);
       return;
@@ -386,17 +356,15 @@ export default function SearchCoursesModal() {
     });
     setItems(prepared);
   }, [rawItems]);
-
   // Reset query when closing to keep next open fresh
-  const handleOpenChange = React.useCallback((v: boolean) => {
+  const handleOpenChange = useCallback((v: boolean) => {
     setOpen(v);
     if (!v) {
       // allow closing animation then clear
       setTimeout(() => setQuery(""), 100);
     }
   }, []);
-
-  const results = React.useMemo(() => {
+  const results = useMemo(() => {
     if (!items || !debouncedQuery) return [] as IndexItem[];
     const tokens = tokenize(debouncedQuery);
     const scored = items
@@ -410,7 +378,6 @@ export default function SearchCoursesModal() {
       .map((x) => x.it);
     return scored;
   }, [items, debouncedQuery]);
-
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>

@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { humanizeKey, pct } from "@/lib/format";
 import type { CrewCatalog } from "@/schemas/crew";
@@ -11,7 +9,6 @@ type HiredItem = {
   status: "active" | "inactive";
   crew: CrewCatalog;
 };
-
 export function HiredCrewTab(props: {
   profileId: string | null;
   hiredLoading: boolean;
@@ -20,7 +17,6 @@ export function HiredCrewTab(props: {
   hireCrew: (crewId: string) => Promise<void>;
 }) {
   const { profileId, hiredLoading, hiredCrew, fireCrew, hireCrew } = props;
-
   return (
     <section>
       <h2 className="text-sm font-medium text-muted-foreground mb-2">

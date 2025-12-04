@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Select,
@@ -14,33 +13,26 @@ import {
   closestSpeedPresetId,
   PresetId,
 } from "@workspace/ui/lib/teleprompter";
-
 export type TeleprompterSettingsProps = {
   fontFace: "sans" | "serif" | "mono" | "dyslexic";
   onFontFaceChange: (v: "sans" | "serif" | "mono" | "dyslexic") => void;
-
   preset: PresetId;
   onPresetChange: (v: PresetId) => void;
-
   customTextColor: string;
   onCustomTextColorChange: (v: string) => void;
   customBgColor: string;
   onCustomBgColorChange: (v: string) => void;
   customHighlightColor: string;
   onCustomHighlightColorChange: (v: string) => void;
-
   overlayColor: string;
   overlayOpacity: number;
   onOverlayColorChange: (v: string) => void;
   onOverlayOpacityChange: (v: number) => void;
-
   onResetKeyboardHint: () => void;
-
   defaultSpeed: number;
   onDefaultSpeedChange: (v: number) => void;
   onApplyDefaultSpeed: () => void;
   onResetDefaultSpeed: () => void;
-
   fontSize: string;
   onFontSizeChange: (v: string) => void;
   lineHeight: string;
@@ -50,7 +42,6 @@ export type TeleprompterSettingsProps = {
   mirrorV: boolean;
   onMirrorVChange: (v: boolean) => void;
 };
-
 export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
   const {
     fontFace,
@@ -81,10 +72,8 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
     mirrorV,
     onMirrorVChange,
   } = props;
-
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
@@ -211,7 +200,7 @@ export default function TeleprompterSettings(props: TeleprompterSettingsProps) {
             value={closestSpeedPresetId(defaultSpeed)}
             onValueChange={(v) =>
               onDefaultSpeedChange(
-                SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value
+                SPEED_PRESETS[v as keyof typeof SPEED_PRESETS].value,
               )
             }
           >

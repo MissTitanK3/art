@@ -1,25 +1,23 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import {
   BugReportDetail,
   type BugReport,
 } from "@workspace/ui/patterns/features/bug-reports";
-
 export default function AdminBugReportDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{
+    id: string;
+  }>();
   const router = useRouter();
   const id = params?.id;
-
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [report, setReport] = React.useState<BugReport | null>(null);
-  const [saving, setSaving] = React.useState(false);
-  const [deleting, setDeleting] = React.useState(false);
-
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [report, setReport] = useState<BugReport | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  useEffect(() => {
     const controller = new AbortController();
     const load = async () => {
       try {
@@ -28,7 +26,9 @@ export default function AdminBugReportDetailPage() {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(await safeErrorMessage(res));
-        const j = (await res.json()) as { report?: BugReport };
+        const j = (await res.json()) as {
+          report?: BugReport;
+        };
         if (!j.report) throw new Error("Not found");
         setReport(j.report);
         setError(null);
@@ -49,12 +49,10 @@ export default function AdminBugReportDetailPage() {
     if (id) load();
     return () => controller.abort();
   }, [id]);
-
-  const onChange = React.useCallback((patch: Partial<BugReport>) => {
+  const onChange = useCallback((patch: Partial<BugReport>) => {
     setReport((prev) => (prev ? { ...prev, ...patch } : prev));
   }, []);
-
-  const onSave = React.useCallback(async () => {
+  const onSave = useCallback(async () => {
     if (!report) return;
     setSaving(true);
     try {
@@ -83,8 +81,7 @@ export default function AdminBugReportDetailPage() {
       setSaving(false);
     }
   }, [report]);
-
-  const onDelete = React.useCallback(async () => {
+  const onDelete = useCallback(async () => {
     if (!report) return;
     setDeleting(true);
     try {
@@ -101,7 +98,6 @@ export default function AdminBugReportDetailPage() {
       setDeleting(false);
     }
   }, [report, router]);
-
   return (
     <BugReportDetail
       loading={loading}

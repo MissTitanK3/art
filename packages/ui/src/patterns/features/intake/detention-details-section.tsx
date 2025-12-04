@@ -1,6 +1,4 @@
-import * as React from "react";
 import { type Control } from "react-hook-form";
-
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import {
   FormControl,
@@ -25,32 +23,26 @@ import {
   formatTransfers,
 } from "@workspace/ui/patterns/features/intake/utils";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-
 interface BaseProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   sectionName?: string;
 }
-
 interface EditProps extends BaseProps {
   mode?: "edit";
   control: Control<any>;
   onSave?: () => void;
 }
-
 interface ViewProps extends BaseProps {
   mode: "view";
   data: DetaineeIntake;
 }
-
 export type DetentionDetailsSectionProps = EditProps | ViewProps;
-
 export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
   const title = props.title ?? "Detention Details";
   const description =
     props.description ?? "Where they were last seen and custody updates.";
   const sectionName = props.sectionName ?? "Detention Details";
-
   if (props.mode === "view") {
     const { data } = props;
     return (
@@ -74,7 +66,7 @@ export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
             label="Stated Reason for Detention"
             value={formatText(
               data.statedReasonForDetention,
-              "No reason recorded"
+              "No reason recorded",
             )}
           />
           <DetailItem
@@ -95,9 +87,7 @@ export function DetentionDetailsSection(props: DetentionDetailsSectionProps) {
       </FormSectionCard>
     );
   }
-
   const { control, onSave } = props;
-
   return (
     <FormSectionCard
       title={title}

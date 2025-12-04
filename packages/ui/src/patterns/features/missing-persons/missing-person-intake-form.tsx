@@ -1,14 +1,11 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
-
 import { DetaineeIntakeSchema } from "@workspace/ui/lib/detainee-intake-schema";
 import {
   CASE_ID_STORAGE_KEY,
@@ -32,24 +29,20 @@ import {
   VerificationSection,
 } from "../intake";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
-
 type ExportFormat = "pdf" | "json";
-
 export interface MissingPersonIntakeFormProps {
   seedRecords?: Iterable<DetaineeIntake>;
   defaultCaseZone?: string;
   onExportRecord?: (
     record: DetaineeIntake,
-    format: ExportFormat
+    format: ExportFormat,
   ) => Promise<Blob | string | void>;
   onPersistRecord?: (record: DetaineeIntake) => Promise<void> | void;
   region?: string; // optional region code to enable REGION-ZONE-YYYY-MM-NNNN
   // Optional: fetch last submitted case's caseId from backend ordered by auto-increment id
   loadLastCaseId?: () => Promise<string | null>;
 }
-
 type DetaineeIntakeFormValues = z.infer<typeof DetaineeIntakeSchema>;
-
 const emptyValues: DetaineeIntakeFormValues = {
   caseId: "",
   detentionDateTime: "",
@@ -90,7 +83,6 @@ const emptyValues: DetaineeIntakeFormValues = {
   createdBy: "",
   version: undefined,
 };
-
 const sanitizeCaseIdList = (payload: unknown): string[] => {
   if (Array.isArray(payload)) {
     return payload.filter((id): id is string => typeof id === "string");
@@ -100,7 +92,6 @@ const sanitizeCaseIdList = (payload: unknown): string[] => {
   }
   return [];
 };
-
 export function MissingPersonIntakeForm({
   seedRecords,
   defaultCaseZone = DEFAULT_CASE_ZONE,
@@ -109,37 +100,31 @@ export function MissingPersonIntakeForm({
   region,
   loadLastCaseId,
 }: MissingPersonIntakeFormProps): React.ReactElement {
-  const [lastJson, setLastJson] = React.useState<string>("");
-  const [exportingFormat, setExportingFormat] =
-    React.useState<ExportFormat | null>(null);
-  const [caseIdInitialized, setCaseIdInitialized] = React.useState(false);
-  const [persistedCaseId, setPersistedCaseId] = React.useState<string | null>(
-    null
+  const [lastJson, setLastJson] = useState<string>("");
+  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(
+    null,
   );
-
+  const [caseIdInitialized, setCaseIdInitialized] = useState(false);
+  const [persistedCaseId, setPersistedCaseId] = useState<string | null>(null);
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
   const removeRecordFromStore = useMissingPersonStore(
-    (state) => state.removeRecord
+    (state) => state.removeRecord,
   );
   const hasRecord = useMissingPersonStore((state) => state.hasRecord);
   const storeRecords = useMissingPersonStore((state) => state.records);
-
-  const currentYear = React.useMemo(() => new Date().getFullYear(), []);
-
-  const caseIdExamplePrimary = React.useMemo(
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
+  const caseIdExamplePrimary = useMemo(
     () => `${defaultCaseZone}-${currentYear}-001`,
-    [defaultCaseZone, currentYear]
+    [defaultCaseZone, currentYear],
   );
-  const caseIdExampleSecondary = React.useMemo(
+  const caseIdExampleSecondary = useMemo(
     () => `TX-${currentYear}-017`,
-    [currentYear]
+    [currentYear],
   );
-
-  const seedCaseIds = React.useMemo(
+  const seedCaseIds = useMemo(
     () => collectCaseIds(seedRecords ? Array.from(seedRecords) : []),
-    [seedRecords]
+    [seedRecords],
   );
-
   const [storedCaseIds, setStoredCaseIds] = useLocalStorage<string[]>(
     CASE_ID_STORAGE_KEY,
     [],
@@ -155,15 +140,13 @@ export function MissingPersonIntakeForm({
         }
       },
       migrate: (payload) => sanitizeCaseIdList(payload),
-    }
+    },
   );
-
-  const storeCaseIds = React.useMemo(
+  const storeCaseIds = useMemo(
     () => collectCaseIds(storeRecords),
-    [storeRecords]
+    [storeRecords],
   );
-
-  const allCaseIds = React.useMemo(() => {
+  const allCaseIds = useMemo(() => {
     const map = new Map<string, string>();
     seedCaseIds.forEach((id) => {
       map.set(normaliseCaseId(id), id);
@@ -176,14 +159,12 @@ export function MissingPersonIntakeForm({
     });
     return Array.from(map.values());
   }, [seedCaseIds, storeCaseIds, storedCaseIds]);
-
   const form = useForm<DetaineeIntakeFormValues>({
     resolver: zodResolver(DetaineeIntakeSchema),
     defaultValues: emptyValues,
     mode: "onBlur",
   });
-
-  React.useEffect(() => {
+  useEffect(() => {
     const initialCaseId = form.getValues("caseId");
     if (!initialCaseId) return;
     const normalized = normaliseCaseId(initialCaseId);
@@ -191,15 +172,13 @@ export function MissingPersonIntakeForm({
       setPersistedCaseId(normalized);
     }
   }, [form, hasRecord]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (caseIdInitialized) return;
     const generated = generateNextCaseId(defaultCaseZone, allCaseIds);
     form.setValue("caseId", generated, { shouldDirty: false });
     setCaseIdInitialized(true);
   }, [allCaseIds, caseIdInitialized, form, defaultCaseZone]);
-
-  const rememberCaseId = React.useCallback(
+  const rememberCaseId = useCallback(
     (caseId: string) => {
       const normalised = normaliseCaseId(caseId);
       setStoredCaseIds((prev) => {
@@ -210,10 +189,9 @@ export function MissingPersonIntakeForm({
         return [...existing, caseId];
       });
     },
-    [setStoredCaseIds]
+    [setStoredCaseIds],
   );
-
-  const persistRecord = React.useCallback(
+  const persistRecord = useCallback(
     async (record: DetaineeIntake, caseId: string) => {
       const timestamp = new Date().toISOString();
       const finalRecord: MissingPersonRecord = {
@@ -234,10 +212,9 @@ export function MissingPersonIntakeForm({
         console.warn("MissingPersonIntakeForm: remote persist failed", err);
       }
     },
-    [addRecordToStore, rememberCaseId, onPersistRecord]
+    [addRecordToStore, rememberCaseId, onPersistRecord],
   );
-
-  const generateNewCaseId = React.useCallback(() => {
+  const generateNewCaseId = useCallback(() => {
     const currentId = form.getValues("caseId");
     const candidate = generateNextCaseId(defaultCaseZone, [
       ...allCaseIds,
@@ -247,8 +224,7 @@ export function MissingPersonIntakeForm({
     form.clearErrors("caseId");
     setPersistedCaseId(null);
   }, [allCaseIds, form, defaultCaseZone]);
-
-  const ensureUniqueCaseId = React.useCallback(
+  const ensureUniqueCaseId = useCallback(
     (value: string | undefined): string | null => {
       const trimmed = value?.trim();
       if (!trimmed) {
@@ -263,66 +239,55 @@ export function MissingPersonIntakeForm({
       }
       return null;
     },
-    [allCaseIds, persistedCaseId]
+    [allCaseIds, persistedCaseId],
   );
-
   const handleSubmit = async (values: DetaineeIntakeFormValues) => {
     const error = ensureUniqueCaseId(values.caseId);
     if (error) {
       form.setError("caseId", { type: "manual", message: error });
       return;
     }
-
     const normalizedCaseId = normaliseCaseId(values.caseId ?? "");
     form.setValue("caseId", normalizedCaseId, { shouldDirty: false });
-
     const normalizedInput: DetaineeIntake = {
       ...values,
       caseId: normalizedCaseId,
     };
     const normalized = deepCompact(normalizedInput);
-
     await persistRecord(normalized, normalizedCaseId);
     setLastJson(JSON.stringify(normalized, null, 2));
     toast.success(
-      "Intake saved locally. Refresh the directory to see the new record."
+      "Intake saved locally. Refresh the directory to see the new record.",
     );
   };
-
   const handleExport = async (format: ExportFormat) => {
     if (!onExportRecord) {
       toast.error("Export is not available for this intake.");
       return;
     }
-
     try {
       const caseIdError = ensureUniqueCaseId(form.getValues("caseId"));
       if (caseIdError) {
         form.setError("caseId", { type: "manual", message: caseIdError });
         return;
       }
-
       setExportingFormat(format);
       const rawValues = form.getValues();
       const normalizedCaseId = normaliseCaseId(rawValues.caseId ?? "");
       form.setValue("caseId", normalizedCaseId, { shouldDirty: false });
-
       const normalizedInput: DetaineeIntake = {
         ...rawValues,
         caseId: normalizedCaseId,
       };
       const normalized = deepCompact(normalizedInput);
-
       const validated = await DetaineeIntakeSchema.parseAsync(normalized);
       await persistRecord(normalized, normalizedCaseId);
       const result = await onExportRecord(validated, format);
-
       if (format === "json" && typeof result === "string") {
         await navigator.clipboard?.writeText(result);
         setLastJson(result);
         return;
       }
-
       if (format === "pdf" && result instanceof Blob) {
         const url = URL.createObjectURL(result);
         const anchor = document.createElement("a");
@@ -341,7 +306,6 @@ export function MissingPersonIntakeForm({
       setExportingFormat(null);
     }
   };
-
   return (
     <Form {...form}>
       <form className="grid gap-6" onSubmit={form.handleSubmit(handleSubmit)}>

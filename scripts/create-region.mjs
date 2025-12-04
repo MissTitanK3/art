@@ -1,3 +1,12 @@
+/**
+ * Interactive scaffolder that clones the region template into a new `apps/region-*` workspace.
+ *
+ * Usage:
+ *   pnpm ts-node scripts/create-region.mjs region-new [--dry-run] [--skip-install] [--supa|--no-verify]
+ *
+ * Prompts for region metadata, copies files, installs dependencies (unless skipped),
+ * and optionally verifies the resulting app.
+ */
 import fs from "fs/promises";
 import path from "path";
 import readline from "readline/promises";

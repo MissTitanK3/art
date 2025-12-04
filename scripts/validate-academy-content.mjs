@@ -4,6 +4,9 @@
  * - Ensure frontmatter uses numeric `readingTime` (and report any `estimatedReadingTime`).
  * - Verify internal links to /courses/<slug> point to existing MDX slugs.
  *
+ * Usage:
+ *   node scripts/validate-academy-content.mjs
+ *
  * Exits with code 1 if issues are found.
  */
 import fs from 'node:fs';

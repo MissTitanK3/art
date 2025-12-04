@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import "@/providers/NotificationsStoreBootstrap"; // side-effect: set notifications storage key
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster } from "@workspace/ui/primitives/sonner";
@@ -10,12 +8,10 @@ import { RegionProvider } from "@/providers/RegionProvider";
 import { AutoCreateProfile } from "@/components/auth/AutoCreateProfile";
 import { NotificationsRealtime } from "@/providers/NotificationsRealtime";
 import { ProfileStoreProvider } from "@/providers/ProfileStoreProvider";
-
 type AppProvidersProps = {
   children: React.ReactNode;
   initialSession?: AuthSession | null;
 };
-
 export function AppProviders({ children, initialSession }: AppProvidersProps) {
   return (
     <AuthProvider initialSession={initialSession}>

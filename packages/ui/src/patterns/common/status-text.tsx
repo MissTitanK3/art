@@ -1,10 +1,7 @@
-import * as React from "react";
-
 type Props = {
   children?: React.ReactNode;
   className?: string;
 };
-
 export function LoadingText({ children = "Loading…", className }: Props) {
   return (
     <div
@@ -16,7 +13,6 @@ export function LoadingText({ children = "Loading…", className }: Props) {
     </div>
   );
 }
-
 export function ErrorText({ children, className }: Props) {
   return (
     <div
@@ -26,7 +22,6 @@ export function ErrorText({ children, className }: Props) {
     </div>
   );
 }
-
 export function EmptyText({ children = "No results.", className }: Props) {
   return (
     <div

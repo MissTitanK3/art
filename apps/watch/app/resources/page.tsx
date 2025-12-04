@@ -1,6 +1,4 @@
 import GroupedImmigrantResources from "@/components/GroupedImmigrantResources";
-import React from "react";
-
 const Resources = () => {
   return (
     <div className="m-0 p-0">
@@ -91,5 +89,4 @@ const Resources = () => {
     </div>
   );
 };
-
 export default Resources;

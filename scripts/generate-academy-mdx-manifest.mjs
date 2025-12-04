@@ -1,7 +1,12 @@
 #!/usr/bin/env node
-// Generate a static MDX import manifest for Academy courses
-// This enables Next to include MDX modules in the bundle while still selecting by slug at runtime.
-
+/**
+ * Generate a static manifest that maps Academy course slugs to dynamic imports and cached frontmatter.
+ *
+ * Usage:
+ *   node scripts/generate-academy-mdx-manifest.mjs
+ *
+ * Outputs `apps/academy/lib/mdx-manifest.generated.ts`, enabling Next.js to pre-bundle MDX modules.
+ */
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'

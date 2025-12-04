@@ -1,17 +1,14 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { PositionTemplate, Assignment } from "@/schemas/positions";
-
 export function useStaffing(profileId: string | null, currentShip: any | null) {
-  const [positionTemplates, setPositionTemplates] = React.useState<
+  const [positionTemplates, setPositionTemplates] = useState<
     PositionTemplate[]
   >([]);
-  const [assignments, setAssignments] = React.useState<Assignment[]>([]);
-
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   // load positions + assignments
-  React.useEffect(() => {
+  useEffect(() => {
     const run = async () => {
       const shipId = currentShip?.ship_id || currentShip?.ship?.id;
       if (!shipId) {
@@ -36,8 +33,7 @@ export function useStaffing(profileId: string | null, currentShip: any | null) {
     };
     run();
   }, [currentShip?.ship_id, (currentShip as any)?.ship?.id, profileId]);
-
-  const saveAssignment = React.useCallback(
+  const saveAssignment = useCallback(
     async (
       position_id: string,
       slot_index: number,
@@ -79,8 +75,7 @@ export function useStaffing(profileId: string | null, currentShip: any | null) {
     },
     [profileId, currentShip],
   );
-
-  const autoAssign = React.useCallback(
+  const autoAssign = useCallback(
     async (
       strategy: "balanced" | "max-repair" | "max-signal" | "max-morale",
     ) => {
@@ -107,7 +102,6 @@ export function useStaffing(profileId: string | null, currentShip: any | null) {
     },
     [profileId, currentShip],
   );
-
   return {
     positionTemplates,
     assignments,

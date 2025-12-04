@@ -1,10 +1,7 @@
 "use client";
-
-import * as React from "react";
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import DistanceUnitToggle from "@workspace/ui/patterns/common/distance-unit-toggle";
 import { usePreferencesStore } from "@workspace/store/usePreferencesStore";
-
 export default function PreferencesSection() {
   const unit = usePreferencesStore((s) => s.distanceUnit);
   return (

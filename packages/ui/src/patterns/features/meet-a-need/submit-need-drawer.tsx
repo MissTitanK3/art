@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { Input } from "@workspace/ui/primitives/input";
 import { Textarea } from "@workspace/ui/primitives/textarea";
@@ -29,7 +28,6 @@ import {
   NEED_CATEGORIES,
   humanizeNeedCategory,
 } from "@workspace/ui/lib/constants/meet-a-need";
-
 export type SubmitNeedFormData = {
   category: string;
   description: string;
@@ -39,29 +37,26 @@ export type SubmitNeedFormData = {
   contact?: string;
   files: File[];
 };
-
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: SubmitNeedFormData) => Promise<void> | void;
 };
-
 export default function SubmitNeedDrawer({
   open,
   onOpenChange,
   onSubmit,
 }: Props) {
-  const [pending, setPending] = React.useState(false);
-  const [category, setCategory] = React.useState("other");
-  const [description, setDescription] = React.useState("");
-  const [urgency, setUrgency] = React.useState<NeedUrgency>("normal");
+  const [pending, setPending] = useState(false);
+  const [category, setCategory] = useState("other");
+  const [description, setDescription] = useState("");
+  const [urgency, setUrgency] = useState<NeedUrgency>("normal");
   const [visibility, setVisibility] =
-    React.useState<NeedVisibility>("role:team_member");
-  const [locationLabel, setLocationLabel] = React.useState("");
-  const [contact, setContact] = React.useState("");
-  const [files, setFiles] = React.useState<File[]>([]);
-  const [previews, setPreviews] = React.useState<string[]>([]);
-
+    useState<NeedVisibility>("role:team_member");
+  const [locationLabel, setLocationLabel] = useState("");
+  const [contact, setContact] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const reset = () => {
     setCategory("other");
     setDescription("");
@@ -72,7 +67,6 @@ export default function SubmitNeedDrawer({
     setFiles([]);
     setPreviews([]);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim()) return;
@@ -93,13 +87,11 @@ export default function SubmitNeedDrawer({
       setPending(false);
     }
   };
-
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = Array.from(e.target.files ?? []);
     setFiles(f);
     setPreviews(f.map((file) => URL.createObjectURL(file)));
   };
-
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">

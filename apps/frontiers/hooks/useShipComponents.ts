@@ -1,9 +1,7 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { ShipComponent } from "@/schemas/ship_components";
-
 type Kind = {
   id: string;
   name: string;
@@ -15,16 +13,14 @@ type Kind = {
   upgradeCostGrowth?: number;
   replaceCost?: number;
 };
-
 export function useShipComponents(profileId: string | null) {
-  const [componentsLoading, setComponentsLoading] = React.useState(false);
-  const [components, setComponents] = React.useState<ShipComponent[]>([]);
-  const [catalogKinds, setCatalogKinds] = React.useState<
+  const [componentsLoading, setComponentsLoading] = useState(false);
+  const [components, setComponents] = useState<ShipComponent[]>([]);
+  const [catalogKinds, setCatalogKinds] = useState<
     Record<ShipComponent["slot"], Kind[]>
   >({} as any);
-
   // initial load
-  React.useEffect(() => {
+  useEffect(() => {
     const run = async () => {
       if (!profileId) {
         setComponents([]);
@@ -48,9 +44,8 @@ export function useShipComponents(profileId: string | null) {
     };
     run();
   }, [profileId]);
-
   // catalog kinds
-  React.useEffect(() => {
+  useEffect(() => {
     const run = async () => {
       try {
         const res = await fetch("/api/ship/components/catalog", {
@@ -62,8 +57,7 @@ export function useShipComponents(profileId: string | null) {
     };
     run();
   }, []);
-
-  const refreshComponents = React.useCallback(async () => {
+  const refreshComponents = useCallback(async () => {
     if (!profileId) return;
     try {
       const u = new URL(window.location.href);
@@ -75,8 +69,7 @@ export function useShipComponents(profileId: string | null) {
         setComponents(Array.isArray(json.components) ? json.components : []);
     } catch {}
   }, [profileId]);
-
-  const doUpgrade = React.useCallback(
+  const doUpgrade = useCallback(
     async (slot: ShipComponent["slot"]) => {
       if (!profileId) return;
       try {
@@ -95,8 +88,7 @@ export function useShipComponents(profileId: string | null) {
     },
     [profileId, refreshComponents],
   );
-
-  const doReplace = React.useCallback(
+  const doReplace = useCallback(
     async (slot: ShipComponent["slot"], kind: string) => {
       if (!profileId) return;
       try {
@@ -117,7 +109,6 @@ export function useShipComponents(profileId: string | null) {
     },
     [profileId, refreshComponents],
   );
-
   return {
     componentsLoading,
     components,

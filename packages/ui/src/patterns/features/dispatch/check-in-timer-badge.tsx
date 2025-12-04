@@ -1,24 +1,18 @@
 "use client";
-
-import * as React from "react";
-
+import { useEffect, useState } from "react";
 export type CheckInStatus = "green" | "yellow" | "red";
-
 type HookArgs = {
   lastCheckIn: string | null | undefined;
   intervalMinutes: number;
 };
-
 export function useCheckInTimer({ lastCheckIn, intervalMinutes }: HookArgs) {
-  const [now, setNow] = React.useState<number>(() => Date.now());
-
-  React.useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 15_000);
+  const [now, setNow] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15000);
     return () => clearInterval(id);
   }, []);
-
   const last = lastCheckIn ? new Date(lastCheckIn).getTime() : 0;
-  const intervalMs = Math.max(1, intervalMinutes) * 60_000;
+  const intervalMs = Math.max(1, intervalMinutes) * 60000;
   const elapsed = last ? now - last : intervalMs * 2; // never checked => overdue
   const percent = Math.min(1, Math.max(0, elapsed / intervalMs));
   const status: CheckInStatus =
@@ -28,10 +22,8 @@ export function useCheckInTimer({ lastCheckIn, intervalMinutes }: HookArgs) {
         ? "yellow"
         : "red";
   const overdueMinutes = (elapsed - intervalMs) / 60000;
-
   return { status, percent, overdueMinutes } as const;
 }
-
 type BadgeProps = HookArgs & {
   /**
    * percent: shows percent until due or "Overdue Xm"
@@ -39,7 +31,6 @@ type BadgeProps = HookArgs & {
    */
   mode?: "percent" | "due";
 };
-
 export function CheckInTimerBadge({
   lastCheckIn,
   intervalMinutes,
@@ -55,7 +46,6 @@ export function CheckInTimerBadge({
       : status === "yellow"
         ? "bg-amber-500/15 text-amber-900 border-amber-200"
         : "bg-red-500/15 text-red-900 border-red-200";
-
   let label: string;
   if (mode === "due") {
     const remainingMinutes = Math.max(
@@ -74,11 +64,9 @@ export function CheckInTimerBadge({
         ? `Overdue ${Math.max(0, Math.round(overdueMinutes))}m`
         : `${Math.round(percent * 100)}%`;
   }
-
   const title = lastCheckIn
     ? `Last check-in: ${new Date(lastCheckIn).toLocaleString()}`
     : "No previous check-in";
-
   return (
     <span
       className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs ${color}`}

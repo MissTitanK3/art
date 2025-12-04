@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
 import { NavRole } from "@workspace/store/utils/permissions/types";
@@ -31,15 +30,13 @@ import type {
   AcademyInstructorProfile,
   AcademyInstructorVettingStatus,
 } from "@workspace/store/types/academy";
-
 import InstructorCard from "@workspace/ui/patterns/features/pod/instructor-card";
-
 type InstructorBenchProps = {
   instructors: AcademyInstructorProfile[];
   onCreateInstructor?: (instructor: AcademyInstructorDraft) => void;
   onUpdateInstructor?: (
     instructorId: string,
-    patch: Partial<AcademyInstructorProfile>
+    patch: Partial<AcademyInstructorProfile>,
   ) => void;
   onRemoveInstructor?: (instructorId: string) => void;
   learnerCount: number;
@@ -47,7 +44,6 @@ type InstructorBenchProps = {
   currentUserRole?: string;
   currentUserRoles?: string[];
 };
-
 export function InstructorBench({
   instructors,
   onCreateInstructor,
@@ -61,58 +57,53 @@ export function InstructorBench({
   const handleCreateInstructor = onCreateInstructor ?? (() => {});
   const handleUpdateInstructor = onUpdateInstructor ?? (() => {});
   const handleRemoveInstructor = onRemoveInstructor ?? (() => {});
-
-  React.useEffect(() => {
+  useEffect(() => {
     // If the parent did not pass real handlers, warn so devs know no network calls will happen
     if (!onCreateInstructor)
       console.warn(
-        "InstructorBench: onCreateInstructor prop not provided — create will be a no-op."
+        "InstructorBench: onCreateInstructor prop not provided — create will be a no-op.",
       );
     if (!onUpdateInstructor)
       console.warn(
-        "InstructorBench: onUpdateInstructor prop not provided — update will be a no-op."
+        "InstructorBench: onUpdateInstructor prop not provided — update will be a no-op.",
       );
     if (!onRemoveInstructor)
       console.warn(
-        "InstructorBench: onRemoveInstructor prop not provided — remove will be a no-op."
+        "InstructorBench: onRemoveInstructor prop not provided — remove will be a no-op.",
       );
   }, [onCreateInstructor, onUpdateInstructor, onRemoveInstructor]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
-  const [isManageSheetOpen, setIsManageSheetOpen] = React.useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isManageSheetOpen, setIsManageSheetOpen] = useState(false);
   const totalInstructors = instructors.length;
   const profileRoles = useProfileStore((s) =>
-    s.profile?.access_role ? [String(s.profile.access_role)] : []
+    s.profile?.access_role ? [String(s.profile.access_role)] : [],
   );
-
-  const effectiveRoles = React.useMemo(() => {
+  const effectiveRoles = useMemo(() => {
     if (profileRoles && profileRoles.length > 0) return profileRoles;
     if (currentUserRoles && currentUserRoles.length > 0)
       return currentUserRoles;
     if (currentUserRole) return [currentUserRole];
     return [];
   }, [profileRoles, currentUserRoles, currentUserRole]);
-
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: effectiveRoles[0] as NavRole }),
-    [effectiveRoles]
+    [effectiveRoles],
   );
   const { access: canManageInstructorsFromRole } = useUnifiedAccess(
     "manage_instructors",
-    ctx
+    ctx,
   );
-
-  const effectiveCanManageInstructors = React.useMemo(() => {
+  const effectiveCanManageInstructors = useMemo(() => {
     if (canManageInstructors) return true;
     return canManageInstructorsFromRole ?? false;
   }, [canManageInstructors, canManageInstructorsFromRole]);
-
   const {
     registeredInstructorCount,
     guestInstructorCount,
     clearedInstructorCount,
     needsReviewInstructorCount,
     awaitingInstructorCount,
-  } = React.useMemo(() => {
+  } = useMemo(() => {
     let registered = 0;
     let guests = 0;
     let cleared = 0;
@@ -142,12 +133,11 @@ export function InstructorBench({
       awaitingInstructorCount: awaiting,
     };
   }, [instructors]);
-
-  const instructorSummaryLabel = React.useMemo(() => {
+  const instructorSummaryLabel = useMemo(() => {
     if (totalInstructors === 0) return "No instructors added yet";
     const parts: string[] = [];
     parts.push(
-      `${totalInstructors} ${totalInstructors === 1 ? "instructor" : "instructors"}`
+      `${totalInstructors} ${totalInstructors === 1 ? "instructor" : "instructors"}`,
     );
     const detailSegments: string[] = [];
     if (registeredInstructorCount > 0) {
@@ -155,7 +145,7 @@ export function InstructorBench({
     }
     if (guestInstructorCount > 0) {
       detailSegments.push(
-        `${guestInstructorCount} guest SME${guestInstructorCount === 1 ? "" : "s"}`
+        `${guestInstructorCount} guest SME${guestInstructorCount === 1 ? "" : "s"}`,
       );
     }
     if (clearedInstructorCount > 0) {
@@ -179,51 +169,39 @@ export function InstructorBench({
     registeredInstructorCount,
     totalInstructors,
   ]);
-
-  const learnerSummaryLabel = React.useMemo(
+  const learnerSummaryLabel = useMemo(
     () => `${learnerCount} active learner${learnerCount === 1 ? "" : "s"}`,
-    [learnerCount]
+    [learnerCount],
   );
-
   // Add dialog uses InstructorForm; it manages its own form state
-  const addFormRef = React.useRef<InstructorFormHandle | null>(null);
-
-  const [manageInstructorId, setManageInstructorId] = React.useState<
-    string | null
-  >(null);
-  const manageFormRef = React.useRef<InstructorFormHandle | null>(null);
-
-  const selectedInstructor = React.useMemo(
+  const addFormRef = useRef<InstructorFormHandle | null>(null);
+  const [manageInstructorId, setManageInstructorId] = useState<string | null>(
+    null,
+  );
+  const manageFormRef = useRef<InstructorFormHandle | null>(null);
+  const selectedInstructor = useMemo(
     () =>
       instructors.find((instructor) => instructor.id === manageInstructorId) ??
       null,
-    [instructors, manageInstructorId]
+    [instructors, manageInstructorId],
   );
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isManageSheetOpen) {
       setManageInstructorId(null);
       return;
     }
   }, [isManageSheetOpen]);
-
-  const openManageSheetForInstructor = React.useCallback(
-    (instructorId: string) => {
-      setManageInstructorId(instructorId);
-      setIsManageSheetOpen(true);
-    },
-    []
-  );
-
+  const openManageSheetForInstructor = useCallback((instructorId: string) => {
+    setManageInstructorId(instructorId);
+    setIsManageSheetOpen(true);
+  }, []);
   // No add form local state — InstructorForm handles it
-
   function handleRemoveSelectedInstructor() {
     if (!selectedInstructor) return;
     // console.debug("InstructorBench: invoking handleRemoveInstructor", selectedInstructor.id);
     handleRemoveInstructor(selectedInstructor.id);
     setIsManageSheetOpen(false);
   }
-
   return (
     <section className="space-y-4 m-auto max-w-7xl">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

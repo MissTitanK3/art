@@ -33,7 +33,10 @@ export default function RoleSelector({
   };
 
   const detailMap = Object.fromEntries(
-    FIELD_ROLE_DETAILS.map((d) => [d.role, d])
+    FIELD_ROLE_DETAILS.sort((a, b) => a.role.localeCompare(b.role)).map((d) => [
+      d.role,
+      d,
+    ])
   ) as Record<FieldRole, (typeof FIELD_ROLE_DETAILS)[number]>;
 
   const riskIcons: Record<string, string> = {

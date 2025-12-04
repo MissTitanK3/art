@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * Generate solid-color Apple splash/launch images (and icons) for every region app.
+ *
+ * Usage:
+ *   node scripts/generate-apple-splash.mjs
+ *
+ * Creates PNGs under each `apps/<region>/public/splash` folder that match the sizes referenced in metadata.
+ */
 import { promises as fs } from 'fs';
 import path from 'path';
 import zlib from 'zlib';

@@ -1,7 +1,5 @@
 "use client";
-
-import * as React from "react";
-
+import { useCallback, useMemo, useState } from "react";
 import { Callout } from "@workspace/ui/patterns/features/academy/callout";
 import { AcademyStatsGrid } from "@workspace/ui/patterns/features/pod/academy-stats-grid";
 import { ActiveClassesSection } from "@workspace/ui/patterns/features/pod/active-classes-section";
@@ -28,7 +26,6 @@ import type {
   RegionReadinessChecklistItem,
   RegionOperationalMinimumDefinition,
 } from "@workspace/store/types/academy-readiness.ts";
-
 export type {
   AcademySummaryStat,
   AcademyCourseGroup,
@@ -42,7 +39,6 @@ export type {
   AcademySessionUnderstandingLevel,
   AcademyTrainingSessionStatus,
 } from "@workspace/store/types/academy.ts";
-
 export type PodAcademyDashboardLayoutProps = {
   /** Current user's roles. Optional; if omitted, conservative defaults are used. */
   roles?: string[];
@@ -63,29 +59,28 @@ export type PodAcademyDashboardLayoutProps = {
   operationalMinimumDefinitions?: RegionOperationalMinimumDefinition[];
   readinessChecklist?: RegionReadinessChecklistItem[];
   onSaveOperationalMinimums?: (
-    definitions: RegionOperationalMinimumDefinition[]
+    definitions: RegionOperationalMinimumDefinition[],
   ) => Promise<void> | void;
   isSavingOperationalMinimums?: boolean;
   onScheduleClass?: (classId: string) => void;
   onUpdateSessionStatus?: (
     sessionId: string,
-    status: AcademyTrainingSession["status"]
+    status: AcademyTrainingSession["status"],
   ) => void;
   onCreateInstructor?: (instructor: AcademyInstructorDraft) => void;
   onUpdateInstructor?: (
     instructorId: string,
-    patch: Partial<AcademyInstructorProfile>
+    patch: Partial<AcademyInstructorProfile>,
   ) => void;
   onDeleteInstructor?: (instructorId: string) => void;
   onCreatePathwayClass?: (pathwayId: string) => void;
   onCreateTrainingSession?: (session: AcademyTrainingSessionDraft) => void;
   onUpdateTrainingSession?: (
     sessionId: string,
-    patch: Partial<AcademyTrainingSession>
+    patch: Partial<AcademyTrainingSession>,
   ) => void;
   onDeleteTrainingSession?: (sessionId: string) => void;
 };
-
 export function PodAcademyDashboardLayout({
   roles = [],
   heading = {
@@ -119,7 +114,7 @@ export function PodAcademyDashboardLayout({
   // attempt to read the profile from the shared store as a fallback so the
   // layout can compute permissions correctly once the profile is available.
   const profileFromStore = useProfileStore((s) => s.profile);
-  const effectiveRoles = React.useMemo(() => {
+  const effectiveRoles = useMemo(() => {
     const profileRoles = profileFromStore?.access_role
       ? [String(profileFromStore.access_role)]
       : [];
@@ -127,72 +122,68 @@ export function PodAcademyDashboardLayout({
     if (profileRoles.length) return profileRoles;
     return [];
   }, [roles, profileFromStore]);
-
   // Use the first role as the primary NavRole for now
   const primaryRole = effectiveRoles[0] as NavRole | undefined;
-  const ctx = React.useMemo(() => ({ navRole: primaryRole }), [primaryRole]);
-
+  const ctx = useMemo(() => ({ navRole: primaryRole }), [primaryRole]);
   const { access: canManageInstructorsFromRole } = useUnifiedAccess(
     "manage_instructors",
-    ctx
+    ctx,
   );
   const { access: canManageSessions } = useUnifiedAccess(
     "manage_sessions",
-    ctx
+    ctx,
   );
   const { access: canScheduleClasses } = useUnifiedAccess(
     "schedule_classes",
-    ctx
+    ctx,
   );
   const { access: canCreatePathwayClass } = useUnifiedAccess(
     "create_pathway_class",
-    ctx
+    ctx,
   );
-
-  const resolvedCanManageInstructors = React.useMemo(
+  const resolvedCanManageInstructors = useMemo(
     () => canManageInstructors ?? canManageInstructorsFromRole,
-    [canManageInstructors, canManageInstructorsFromRole]
+    [canManageInstructors, canManageInstructorsFromRole],
   );
-
-  const handleScheduleClass = React.useMemo(
+  const handleScheduleClass = useMemo(
     () => onScheduleClass ?? (() => {}),
-    [onScheduleClass]
+    [onScheduleClass],
   );
-  const handleUpdateSessionStatus = React.useMemo(
+  const handleUpdateSessionStatus = useMemo(
     () => onUpdateSessionStatus ?? (() => {}),
-    [onUpdateSessionStatus]
+    [onUpdateSessionStatus],
   );
-  const handleCreateInstructor = React.useMemo(
+  const handleCreateInstructor = useMemo(
     () => onCreateInstructor ?? (() => {}),
-    [onCreateInstructor]
+    [onCreateInstructor],
   );
-  const handleUpdateInstructor = React.useMemo(
+  const handleUpdateInstructor = useMemo(
     () => onUpdateInstructor ?? (() => {}),
-    [onUpdateInstructor]
+    [onUpdateInstructor],
   );
-  const handleDeleteInstructor = React.useMemo(
+  const handleDeleteInstructor = useMemo(
     () => onDeleteInstructor ?? (() => {}),
-    [onDeleteInstructor]
+    [onDeleteInstructor],
   );
-  const handleCreatePathwayClass = React.useMemo(
+  const handleCreatePathwayClass = useMemo(
     () => onCreatePathwayClass ?? (() => {}),
-    [onCreatePathwayClass]
+    [onCreatePathwayClass],
   );
-  const handleCreateTrainingSession = React.useMemo(
+  const handleCreateTrainingSession = useMemo(
     () => onCreateTrainingSession ?? (() => {}),
-    [onCreateTrainingSession]
+    [onCreateTrainingSession],
   );
-  const handleUpdateTrainingSession = React.useMemo(
+  const handleUpdateTrainingSession = useMemo(
     () => onUpdateTrainingSession ?? (() => {}),
-    [onUpdateTrainingSession]
+    [onUpdateTrainingSession],
   );
-  const handleDeleteTrainingSession = React.useMemo(
+  const handleDeleteTrainingSession = useMemo(
     () => onDeleteTrainingSession ?? (() => {}),
-    [onDeleteTrainingSession]
+    [onDeleteTrainingSession],
   );
-  const [isMinimumsSheetOpen, setIsMinimumsSheetOpen] = React.useState(false);
+  const [isMinimumsSheetOpen, setIsMinimumsSheetOpen] = useState(false);
   // Wrap handlers so they only run when the current role set has permission. No-ops otherwise.
-  const guardedScheduleClass = React.useCallback(
+  const guardedScheduleClass = useCallback(
     (classId: string) => {
       // If we don't yet know the user's roles (empty array), allow the action to
       // proceed to avoid blocking during client-side hydration. When roles are
@@ -204,7 +195,7 @@ export function PodAcademyDashboardLayout({
             {
               roles: effectiveRoles,
               canScheduleClasses,
-            }
+            },
           );
         }
         return;
@@ -220,15 +211,14 @@ export function PodAcademyDashboardLayout({
           "[PodAcademyDashboardLayout] scheduleClass proceeding with unknown roles (hydration)",
           {
             roles: effectiveRoles,
-          }
+          },
         );
       }
       return handleScheduleClass(classId);
     },
-    [canScheduleClasses, handleScheduleClass, effectiveRoles]
+    [canScheduleClasses, handleScheduleClass, effectiveRoles],
   );
-
-  const guardedCreateTrainingSession = React.useCallback(
+  const guardedCreateTrainingSession = useCallback(
     (session: AcademyTrainingSessionDraft) => {
       if (!canManageSessions && effectiveRoles.length > 0) {
         if (process.env.NODE_ENV !== "production") {
@@ -237,7 +227,7 @@ export function PodAcademyDashboardLayout({
             {
               roles: effectiveRoles,
               canManageSessions,
-            }
+            },
           );
         }
         return;
@@ -251,15 +241,14 @@ export function PodAcademyDashboardLayout({
           "[PodAcademyDashboardLayout] createTrainingSession proceeding with unknown roles (hydration)",
           {
             roles: effectiveRoles,
-          }
+          },
         );
       }
       return handleCreateTrainingSession(session);
     },
-    [canManageSessions, handleCreateTrainingSession, effectiveRoles]
+    [canManageSessions, handleCreateTrainingSession, effectiveRoles],
   );
-
-  const guardedUpdateSessionStatus = React.useCallback(
+  const guardedUpdateSessionStatus = useCallback(
     (sessionId: string, status: AcademyTrainingSession["status"]) => {
       if (!canManageSessions && effectiveRoles.length > 0) {
         if (process.env.NODE_ENV !== "production") {
@@ -268,7 +257,7 @@ export function PodAcademyDashboardLayout({
             {
               roles: effectiveRoles,
               canManageSessions,
-            }
+            },
           );
         }
         return;
@@ -282,15 +271,14 @@ export function PodAcademyDashboardLayout({
           "[PodAcademyDashboardLayout] updateSessionStatus proceeding with unknown roles (hydration)",
           {
             roles: effectiveRoles,
-          }
+          },
         );
       }
       return handleUpdateSessionStatus(sessionId, status);
     },
-    [canManageSessions, handleUpdateSessionStatus, effectiveRoles]
+    [canManageSessions, handleUpdateSessionStatus, effectiveRoles],
   );
-
-  const guardedUpdateTrainingSession = React.useCallback(
+  const guardedUpdateTrainingSession = useCallback(
     (sessionId: string, patch: Partial<AcademyTrainingSession>) => {
       if (!canManageSessions && effectiveRoles.length > 0) {
         if (process.env.NODE_ENV !== "production") {
@@ -299,7 +287,7 @@ export function PodAcademyDashboardLayout({
             {
               roles: effectiveRoles,
               canManageSessions,
-            }
+            },
           );
         }
         return;
@@ -313,15 +301,14 @@ export function PodAcademyDashboardLayout({
           "[PodAcademyDashboardLayout] updateTrainingSession proceeding with unknown roles (hydration)",
           {
             roles: effectiveRoles,
-          }
+          },
         );
       }
       return handleUpdateTrainingSession(sessionId, patch);
     },
-    [canManageSessions, handleUpdateTrainingSession, effectiveRoles]
+    [canManageSessions, handleUpdateTrainingSession, effectiveRoles],
   );
-
-  const guardedDeleteTrainingSession = React.useCallback(
+  const guardedDeleteTrainingSession = useCallback(
     (sessionId: string) => {
       if (!canManageSessions && effectiveRoles.length > 0) {
         if (process.env.NODE_ENV !== "production") {
@@ -330,7 +317,7 @@ export function PodAcademyDashboardLayout({
             {
               roles: effectiveRoles,
               canManageSessions,
-            }
+            },
           );
         }
         return;
@@ -344,15 +331,14 @@ export function PodAcademyDashboardLayout({
           "[PodAcademyDashboardLayout] deleteTrainingSession proceeding with unknown roles (hydration)",
           {
             roles: effectiveRoles,
-          }
+          },
         );
       }
       return handleDeleteTrainingSession(sessionId);
     },
-    [canManageSessions, handleDeleteTrainingSession, effectiveRoles]
+    [canManageSessions, handleDeleteTrainingSession, effectiveRoles],
   );
-
-  const guardedCreatePathwayClass = React.useCallback(
+  const guardedCreatePathwayClass = useCallback(
     (pathwayId: string) => {
       if (!canCreatePathwayClass && effectiveRoles.length > 0) return;
       if (
@@ -364,17 +350,17 @@ export function PodAcademyDashboardLayout({
           "[PodAcademyDashboardLayout] createPathwayClass proceeding with unknown roles (hydration)",
           {
             roles: effectiveRoles,
-          }
+          },
         );
       }
       return handleCreatePathwayClass(pathwayId);
     },
-    [canCreatePathwayClass, handleCreatePathwayClass, effectiveRoles]
+    [canCreatePathwayClass, handleCreatePathwayClass, effectiveRoles],
   );
-  const benchStat = React.useMemo(() => {
+  const benchStat = useMemo(() => {
     const total = instructors.length;
     const registered = instructors.filter(
-      (instructor) => instructor.registrationStatus !== "unregistered"
+      (instructor) => instructor.registrationStatus !== "unregistered",
     ).length;
     const unregistered = total - registered;
     let cleared = 0;
@@ -403,7 +389,7 @@ export function PodAcademyDashboardLayout({
     }
     if (unregistered > 0) {
       helperSegments.push(
-        `${unregistered} unregistered SME${unregistered === 1 ? "" : "s"}`
+        `${unregistered} unregistered SME${unregistered === 1 ? "" : "s"}`,
       );
     }
     if (cleared > 0) {
@@ -425,12 +411,18 @@ export function PodAcademyDashboardLayout({
       href: "#instructor-bench",
     };
   }, [instructors]);
-  const statsWithBench = React.useMemo(() => {
+  const statsWithBench = useMemo(() => {
     const filtered = stats.filter((stat) => stat.label !== "Instructor Bench");
     return [benchStat, ...filtered];
   }, [benchStat, stats]);
-  const courseOptions = React.useMemo(() => {
-    const map = new Map<string, { id: string; title: string }>();
+  const courseOptions = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        id: string;
+        title: string;
+      }
+    >();
     for (const group of courseGroups) {
       if (!group?.courses) continue;
       for (const course of group.courses) {
@@ -443,25 +435,22 @@ export function PodAcademyDashboardLayout({
       }
     }
     return Array.from(map.values()).sort((a, b) =>
-      a.title.localeCompare(b.title)
+      a.title.localeCompare(b.title),
     );
   }, [courseGroups]);
-
-  const handleManageMinimumsClick = React.useCallback(() => {
+  const handleManageMinimumsClick = useCallback(() => {
     if (operationalMinimumDefinitions.length === 0) return;
     setIsMinimumsSheetOpen(true);
   }, [operationalMinimumDefinitions]);
-
-  const handleMinimumsSubmit = React.useCallback(
+  const handleMinimumsSubmit = useCallback(
     (definitions: RegionOperationalMinimumDefinition[]) => {
       if (!onSaveOperationalMinimums) {
         return Promise.resolve();
       }
       return onSaveOperationalMinimums(definitions);
     },
-    [onSaveOperationalMinimums]
+    [onSaveOperationalMinimums],
   );
-
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <header className="flex flex-col gap-6 rounded-2xl border bg-card/40 p-6 text-card-foreground shadow-sm lg:flex-row lg:items-center lg:justify-between">
@@ -544,5 +533,4 @@ export function PodAcademyDashboardLayout({
     </section>
   );
 }
-
 export default PodAcademyDashboardLayout;

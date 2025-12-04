@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { Input } from "@workspace/ui/primitives/input";
 import { Label } from "@workspace/ui/primitives/label";
@@ -12,12 +11,10 @@ import {
   CardContent,
   CardFooter,
 } from "@workspace/ui/primitives/card";
-
 export type SignInSubmit = (
   email: string,
-  password: string
+  password: string,
 ) => Promise<void> | void;
-
 export interface SignInCardProps {
   onSubmit: SignInSubmit;
   pendingText?: string;
@@ -25,7 +22,6 @@ export interface SignInCardProps {
   description?: string;
   footer?: React.ReactNode;
 }
-
 export function SignInCard({
   onSubmit,
   pendingText = "Signing in…",
@@ -33,13 +29,12 @@ export function SignInCard({
   description = "Use your email and password to sign in.",
   footer,
 }: SignInCardProps) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [pending, setPending] = React.useState(false);
-
-  const handleSubmit = React.useCallback(
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError(null);
@@ -52,9 +47,8 @@ export function SignInCard({
         setPending(false);
       }
     },
-    [email, password, onSubmit]
+    [email, password, onSubmit],
   );
-
   return (
     <Card className="mx-auto mt-12 w-full max-w-md border-border/60 bg-background/95 backdrop-blur">
       <CardHeader>
@@ -108,5 +102,4 @@ export function SignInCard({
     </Card>
   );
 }
-
 export default SignInCard;

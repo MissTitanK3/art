@@ -1,19 +1,16 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { fetchShipState, resetShipState } from "@/lib/ship";
-
 export function useShipState(profileId: string | null) {
-  const [shipLoading, setShipLoading] = React.useState(false);
-  const [ship, setShip] = React.useState<{
+  const [shipLoading, setShipLoading] = useState(false);
+  const [ship, setShip] = useState<{
     ship_condition: number;
     morale: number;
     fatigue: number;
   } | null>(null);
-  const [resetting, setResetting] = React.useState(false);
-
-  React.useEffect(() => {
+  const [resetting, setResetting] = useState(false);
+  useEffect(() => {
     const run = async () => {
       if (!profileId) {
         setShip(null);
@@ -36,8 +33,7 @@ export function useShipState(profileId: string | null) {
     };
     run();
   }, [profileId]);
-
-  const onDockRepair = React.useCallback(async () => {
+  const onDockRepair = useCallback(async () => {
     if (!profileId) return;
     setResetting(true);
     try {
@@ -56,6 +52,5 @@ export function useShipState(profileId: string | null) {
       setResetting(false);
     }
   }, [profileId]);
-
   return { shipLoading, ship, setShip, resetting, onDockRepair };
 }

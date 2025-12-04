@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
@@ -11,25 +10,21 @@ import {
   DialogDescription,
 } from "@workspace/ui/primitives/dialog";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
-
 type RemoveMemberButtonProps = {
   podName: string;
   member: RosterEntry;
   onRemoveMember: () => void;
 };
-
 export function RemoveMemberButton({
   podName,
   member,
   onRemoveMember,
 }: RemoveMemberButtonProps) {
-  const [open, setOpen] = React.useState(false);
-
+  const [open, setOpen] = useState(false);
   const handleRemove = () => {
     onRemoveMember();
     setOpen(false);
   };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { Input } from "@workspace/ui/primitives/input";
 import { Label } from "@workspace/ui/primitives/label";
@@ -15,7 +14,6 @@ import {
 } from "@workspace/ui/primitives/card";
 import { humanize } from "@workspace/ui/lib/utils";
 import { cn } from "@workspace/ui/lib/utils";
-
 export interface SignUpValues {
   email: string;
   password: string;
@@ -27,11 +25,9 @@ export interface SignUpValues {
   coordinationZone: string;
   fieldRoles: string[];
 }
-
-export type SignUpSubmit = (
-  values: SignUpValues
-) => Promise<{ info?: string } | void>;
-
+export type SignUpSubmit = (values: SignUpValues) => Promise<{
+  info?: string;
+} | void>;
 export interface SignUpCardProps {
   onSubmit: SignUpSubmit;
   pendingText?: string;
@@ -39,7 +35,6 @@ export interface SignUpCardProps {
   description?: string;
   roleOptions?: string[]; // optional list for checkboxes
 }
-
 export function SignUpCard({
   onSubmit,
   pendingText = "Creating account…",
@@ -47,21 +42,20 @@ export function SignUpCard({
   description = "Use your email and a password to sign up.",
   roleOptions = [],
 }: SignUpCardProps) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [displayName, setDisplayName] = React.useState("");
-  const [affiliation, setAffiliation] = React.useState("");
-  const [city, setCity] = React.useState("");
-  const [state, setState] = React.useState("");
-  const [contactSignal, setContactSignal] = React.useState("");
-  const [coordinationZone, setCoordinationZone] = React.useState("");
-  const [fieldRoles, setFieldRoles] = React.useState<string[]>([]);
-  const [error, setError] = React.useState<string | null>(null);
-  const [info, setInfo] = React.useState<string | null>(null);
-  const [pending, setPending] = React.useState(false);
-
-  const passwordRules = React.useMemo(() => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [affiliation, setAffiliation] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [contactSignal, setContactSignal] = useState("");
+  const [coordinationZone, setCoordinationZone] = useState("");
+  const [fieldRoles, setFieldRoles] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const passwordRules = useMemo(() => {
     const length = password.length >= 8;
     const lower = /[a-z]/.test(password);
     const upper = /[A-Z]/.test(password);
@@ -70,38 +64,35 @@ export function SignUpCard({
     const valid = length && lower && upper && number && special;
     return { length, lower, upper, number, special, valid };
   }, [password]);
-
-  const normalizeSignalUsername = React.useCallback(
+  const normalizeSignalUsername = useCallback(
     (s: string) => s.replace(/[\u200B-\u200D\uFEFF]/g, "").trim(),
-    []
+    [],
   );
-  const contactSignalClean = React.useMemo(
+  const contactSignalClean = useMemo(
     () => normalizeSignalUsername(contactSignal),
-    [contactSignal, normalizeSignalUsername]
+    [contactSignal, normalizeSignalUsername],
   );
-  const contactSignalValid = React.useMemo(
+  const contactSignalValid = useMemo(
     () =>
       /^@[A-Za-z_][A-Za-z0-9_]{2,31}\.(?:0[1-9]|[1-9][0-9]{0,8}|1000000000)$/.test(
-        contactSignalClean
+        contactSignalClean,
       ),
-    [contactSignalClean]
+    [contactSignalClean],
   );
-  const displayNameValid = React.useMemo(
+  const displayNameValid = useMemo(
     () => displayName.trim().length > 0,
-    [displayName]
+    [displayName],
   );
-  const coordinationZoneValid = React.useMemo(
+  const coordinationZoneValid = useMemo(
     () => coordinationZone.trim().length > 0,
-    [coordinationZone]
+    [coordinationZone],
   );
-
-  const toggleRole = React.useCallback((role: string) => {
+  const toggleRole = useCallback((role: string) => {
     setFieldRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   }, []);
-
-  const handleSubmit = React.useCallback(
+  const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError(null);
@@ -113,11 +104,10 @@ export function SignUpCard({
         if (!displayNameValid) throw new Error("Display name is required.");
         if (!contactSignalValid)
           throw new Error(
-            "Signal username must match @name.12 (ends with at least two digits)."
+            "Signal username must match @name.12 (ends with at least two digits).",
           );
         if (!coordinationZoneValid)
           throw new Error("Coordination zone is required.");
-
         const result = await onSubmit({
           email,
           password,
@@ -151,9 +141,8 @@ export function SignUpCard({
       displayNameValid,
       contactSignalValid,
       coordinationZoneValid,
-    ]
+    ],
   );
-
   return (
     <Card className="mx-auto mt-12 w-full max-w-md border-border/60 bg-background/95 backdrop-blur">
       <CardHeader>
@@ -331,7 +320,7 @@ export function SignUpCard({
                       key={r}
                       className={cn(
                         "flex items-center gap-2 rounded-md border p-2 text-sm transition focus-within:ring-2 focus-within:ring-[rebeccapurple]",
-                        selected ? "bg-accent/60" : "hover:bg-accent/50"
+                        selected ? "bg-accent/60" : "hover:bg-accent/50",
                       )}
                       style={{
                         borderColor: selected
@@ -352,7 +341,7 @@ export function SignUpCard({
                       <span
                         className={cn(
                           "truncate",
-                          selected ? "font-medium" : undefined
+                          selected ? "font-medium" : undefined,
                         )}
                       >
                         {humanize(r)}
@@ -381,5 +370,4 @@ export function SignUpCard({
     </Card>
   );
 }
-
 export default SignUpCard;

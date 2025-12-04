@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   ComTeam,
   ComOperator,
@@ -12,28 +11,26 @@ import type {
   ComAlert,
 } from "@workspace/store/types/comms.ts";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-
-type UseCommsDataArgs = { eventId: string };
-
+type UseCommsDataArgs = {
+  eventId: string;
+};
 export function useCommsData({ eventId }: UseCommsDataArgs) {
-  const [teams, setTeams] = React.useState<ComTeam[]>([]);
-  const [operators, setOperators] = React.useState<ComOperator[]>([]);
-  const [logs, setLogs] = React.useState<ComLog[]>([]);
-  const [channels, setChannels] = React.useState<ComChannel[]>([]);
-  const [briefing, setBriefing] = React.useState<ComBriefing | null>(null);
-  const [alerts, setAlerts] = React.useState<ComAlert[]>([]);
-  const [globalCheckInMinutes, setGlobalCheckInMinutes] = React.useState<
+  const [teams, setTeams] = useState<ComTeam[]>([]);
+  const [operators, setOperators] = useState<ComOperator[]>([]);
+  const [logs, setLogs] = useState<ComLog[]>([]);
+  const [channels, setChannels] = useState<ComChannel[]>([]);
+  const [briefing, setBriefing] = useState<ComBriefing | null>(null);
+  const [alerts, setAlerts] = useState<ComAlert[]>([]);
+  const [globalCheckInMinutes, setGlobalCheckInMinutes] = useState<
     number | undefined
   >(60);
-  const clientRef = React.useRef<ReturnType<
-    typeof getSupabaseBrowserClient
-  > | null>(null);
-
-  React.useEffect(() => {
+  const clientRef = useRef<ReturnType<typeof getSupabaseBrowserClient> | null>(
+    null,
+  );
+  useEffect(() => {
     let cancelled = false;
     const client = getSupabaseBrowserClient();
     clientRef.current = client;
-
     async function initialFetch() {
       try {
         // NOTE: real tables are expected: com_teams, com_operators, com_logs, com_channels, com_briefings
@@ -74,22 +71,18 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
         console.warn("[useCommsData] initial fetch error", e);
       }
     }
-
     initialFetch();
-
     // Real-time channels can be set up here (commented for safety):
     // const sub = client
     //   .channel('comms')
     //   .on('postgres_changes', { event: '*', schema: 'public', table: 'com_logs', filter: `event_id=eq.${eventId}` }, payload => { /* update logs */ })
     //   .subscribe();
     // return () => { sub.unsubscribe(); cancelled = true; };
-
     return () => {
       cancelled = true;
     };
   }, [eventId]);
-
-  const addLog = React.useCallback(
+  const addLog = useCallback(
     (log: {
       operator_id?: string | null;
       incident_id?: string | null;
@@ -136,9 +129,8 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     },
     [eventId],
   );
-
   // Operators: check-in action
-  const checkInOperator = React.useCallback(async (id: string) => {
+  const checkInOperator = useCallback(async (id: string) => {
     const nowIso = new Date().toISOString();
     setOperators((prev) =>
       prev.map((op) => (op.id === id ? { ...op, last_check_in: nowIso } : op)),
@@ -162,9 +154,8 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     }
     return nowIso;
   }, []);
-
   // Teams CRUD
-  const createTeam = React.useCallback(
+  const createTeam = useCallback(
     async (input: Omit<ComTeam, "id">) => {
       const id = crypto.randomUUID();
       setTeams((prev) => [...prev, { id, ...input } as ComTeam]);
@@ -186,8 +177,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     },
     [eventId],
   );
-
-  const updateTeam = React.useCallback(
+  const updateTeam = useCallback(
     async (id: string, patch: Partial<ComTeam>) => {
       setTeams((prev) =>
         prev.map((t) => (t.id === id ? { ...t, ...patch } : t)),
@@ -202,8 +192,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     },
     [],
   );
-
-  const deleteTeam = React.useCallback(async (id: string) => {
+  const deleteTeam = useCallback(async (id: string) => {
     setTeams((prev) => prev.filter((t) => t.id !== id));
     const client = clientRef.current ?? getSupabaseBrowserClient();
     // Archive model: drop client-side, keep record server-side
@@ -213,9 +202,8 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
       .eq("id", id);
     if (error) console.warn("[useCommsData] archive com_teams failed", error);
   }, []);
-
   // Team check-in action
-  const checkInTeam = React.useCallback(async (id: string) => {
+  const checkInTeam = useCallback(async (id: string) => {
     const nowIso = new Date().toISOString();
     setTeams((prev) =>
       prev.map((t) => (t.id === id ? { ...t, last_check_in: nowIso } : t)),
@@ -236,9 +224,8 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     }
     return nowIso;
   }, []);
-
   // Briefing upsert
-  const upsertBriefing = React.useCallback(
+  const upsertBriefing = useCallback(
     async (patch: Omit<ComBriefing, "id" | "event_id" | "updated_at">) => {
       const client = clientRef.current ?? getSupabaseBrowserClient();
       const nowIso = new Date().toISOString();
@@ -276,9 +263,8 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     },
     [briefing, eventId],
   );
-
   // Alerts CRUD
-  const createAlert = React.useCallback(
+  const createAlert = useCallback(
     async (input: { direction: string; description: string; id?: string }) => {
       const id = input.id ?? crypto.randomUUID();
       const nowIso = new Date().toISOString();
@@ -308,8 +294,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     },
     [eventId],
   );
-
-  const updateAlert = React.useCallback(
+  const updateAlert = useCallback(
     async (
       id: string,
       patch: Partial<Pick<ComAlert, "direction" | "description">>,
@@ -335,8 +320,7 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
     },
     [],
   );
-
-  const deleteAlert = React.useCallback(async (id: string) => {
+  const deleteAlert = useCallback(async (id: string) => {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
     try {
       const client = clientRef.current ?? getSupabaseBrowserClient();
@@ -344,12 +328,12 @@ export function useCommsData({ eventId }: UseCommsDataArgs) {
         .from("com_alerts")
         .update({ updated_at: new Date().toISOString() })
         .eq("id", id);
-      if (error) console.warn("[useCommsData] archive com_alerts failed", error);
+      if (error)
+        console.warn("[useCommsData] archive com_alerts failed", error);
     } catch (e) {
       console.warn("[useCommsData] delete com_alerts error", e);
     }
   }, []);
-
   return {
     teams,
     operators,

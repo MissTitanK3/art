@@ -1,18 +1,18 @@
 "use client";
 
-import * as React from "react";
 import {
   MDX_COURSE_MODULES,
   type MDXModule,
 } from "@/lib/mdx-manifest.generated";
+import { useEffect, useState } from "react";
 
 export function MDXRender({ slug }: { slug: string }) {
-  const [Comp, setComp] = React.useState<
-    null | ((props: any) => React.ReactElement)
-  >(null);
-  const [error, setError] = React.useState<string | null>(null);
+  const [Comp, setComp] = useState<null | ((props: any) => React.ReactElement)>(
+    null
+  );
+  const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     async function load() {
       try {

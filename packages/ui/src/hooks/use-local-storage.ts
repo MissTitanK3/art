@@ -1,7 +1,5 @@
-'use client';
-
-import * as React from 'react';
-
+"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
 type UseLocalStorageOptions<T> = {
   serialize?: (value: T) => string;
   deserialize?: (raw: string) => T;
@@ -13,7 +11,6 @@ type UseLocalStorageOptions<T> = {
   debounceMs?: number;
   onError?: (err: unknown) => void;
 };
-
 export function useLocalStorage<T>(
   key: string,
   initial: T,
@@ -29,43 +26,39 @@ export function useLocalStorage<T>(
     onError,
   }: UseLocalStorageOptions<T> = {},
 ) {
-  const initialRef = React.useRef(initial);
-  React.useEffect(() => {
+  const initialRef = useRef(initial);
+  useEffect(() => {
     initialRef.current = initial;
   }, [initial]);
-
-  const serializeRef = React.useRef(serialize);
-  React.useEffect(() => {
+  const serializeRef = useRef(serialize);
+  useEffect(() => {
     serializeRef.current = serialize;
   }, [serialize]);
-
-  const deserializeRef = React.useRef(deserialize);
-  React.useEffect(() => {
+  const deserializeRef = useRef(deserialize);
+  useEffect(() => {
     deserializeRef.current = deserialize;
   }, [deserialize]);
-
-  const migrateRef = React.useRef(migrate);
-  React.useEffect(() => {
+  const migrateRef = useRef(migrate);
+  useEffect(() => {
     migrateRef.current = migrate;
   }, [migrate]);
-
-  const onErrorRef = React.useRef(onError);
-  React.useEffect(() => {
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
     onErrorRef.current = onError;
   }, [onError]);
-
-  const [state, setState] = React.useState<T>(() => initialRef.current);
-  const hydratedRef = React.useRef(false);
-  const timerRef = React.useRef<number | undefined>(undefined);
-  const selfWriteRef = React.useRef(false);
-  const lastStoredRef = React.useRef<string | null>(null);
+  const [state, setState] = useState<T>(() => initialRef.current);
+  const hydratedRef = useRef(false);
+  const timerRef = useRef<number | undefined>(undefined);
+  const selfWriteRef = useRef(false);
+  const lastStoredRef = useRef<string | null>(null);
   const persistEnabled = persist ?? true;
-
-  const readRaw = React.useCallback(
+  const readRaw = useCallback(
     (raw: string | null) => {
       if (raw == null) {
         lastStoredRef.current = null;
-        setState((prev) => (Object.is(prev, initialRef.current) ? prev : initialRef.current));
+        setState((prev) =>
+          Object.is(prev, initialRef.current) ? prev : initialRef.current,
+        );
         return;
       }
       lastStoredRef.current = raw;
@@ -73,27 +66,40 @@ export function useLocalStorage<T>(
       let storedVersion: number | undefined;
       try {
         parsed = JSON.parse(raw);
-        if (typeof parsed === 'object' && parsed !== null && 'v' in (parsed as any)) {
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "v" in (parsed as any)
+        ) {
           storedVersion = Number((parsed as any).v);
-        } else if (typeof parsed === 'object' && parsed !== null && 'version' in (parsed as any)) {
+        } else if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "version" in (parsed as any)
+        ) {
           storedVersion = Number((parsed as any).version);
         }
       } catch {
         /* raw was a primitive/legacy string */
       }
       const payload =
-        typeof parsed === 'object' && parsed !== null && 'data' in (parsed as any)
+        typeof parsed === "object" &&
+        parsed !== null &&
+        "data" in (parsed as any)
           ? (parsed as any).data
-          : typeof parsed === 'object' && parsed !== null && 'value' in (parsed as any)
+          : typeof parsed === "object" &&
+              parsed !== null &&
+              "value" in (parsed as any)
             ? (parsed as any).value
             : parsed;
-
       const migrateFn = migrateRef.current;
       if (migrateFn) {
         try {
           const maybeMigrated = migrateFn(payload, storedVersion);
           if (maybeMigrated !== undefined) {
-            setState((prev) => (Object.is(prev, maybeMigrated) ? prev : maybeMigrated));
+            setState((prev) =>
+              Object.is(prev, maybeMigrated) ? prev : maybeMigrated,
+            );
             return;
           }
         } catch (err) {
@@ -103,12 +109,19 @@ export function useLocalStorage<T>(
         }
       }
       const isVersioned = version !== undefined || storedVersion !== undefined;
-      if (isVersioned && storedVersion !== undefined && version !== undefined && storedVersion !== version) {
+      if (
+        isVersioned &&
+        storedVersion !== undefined &&
+        version !== undefined &&
+        storedVersion !== version
+      ) {
         setState(initialRef.current);
         return;
       }
       if (isVersioned) {
-        setState((prev) => (Object.is(prev, payload as T) ? prev : (payload as T)));
+        setState((prev) =>
+          Object.is(prev, payload as T) ? prev : (payload as T),
+        );
         return;
       }
       setState((prev) => {
@@ -124,15 +137,13 @@ export function useLocalStorage<T>(
     },
     [initialRef, version],
   );
-
-  const getStorage = React.useCallback(() => {
+  const getStorage = useCallback(() => {
     if (!persistEnabled) return undefined;
     if (storage) return storage;
-    if (typeof window === 'undefined') return undefined;
+    if (typeof window === "undefined") return undefined;
     return window.localStorage;
   }, [persistEnabled, storage]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!persistEnabled) {
       hydratedRef.current = true;
       return;
@@ -150,10 +161,9 @@ export function useLocalStorage<T>(
       hydratedRef.current = true;
     }
   }, [getStorage, key, persistEnabled, readRaw]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!persistEnabled) {
-      if (timerRef.current && typeof window !== 'undefined') {
+      if (timerRef.current && typeof window !== "undefined") {
         window.clearTimeout(timerRef.current);
         timerRef.current = undefined;
       }
@@ -169,7 +179,10 @@ export function useLocalStorage<T>(
     const write = () => {
       try {
         const serializer = serializeRef.current ?? JSON.stringify;
-        const payload = version !== undefined ? JSON.stringify({ v: version, data: state }) : serializer(state);
+        const payload =
+          version !== undefined
+            ? JSON.stringify({ v: version, data: state })
+            : serializer(state);
         if (lastStoredRef.current === payload) return;
         selfWriteRef.current = true;
         store.setItem(key, payload);
@@ -192,11 +205,10 @@ export function useLocalStorage<T>(
       }
     };
   }, [debounceMs, getStorage, key, persistEnabled, state, version]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!persistEnabled || !sync) return;
     const store = getStorage();
-    if (!store || typeof window === 'undefined') return;
+    if (!store || typeof window === "undefined") return;
     const handler = (e: StorageEvent) => {
       if (e.key !== key) return;
       if (selfWriteRef.current) return;
@@ -206,9 +218,8 @@ export function useLocalStorage<T>(
         onErrorRef.current?.(err);
       }
     };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
   }, [getStorage, key, persistEnabled, readRaw, sync]);
-
   return [state, setState] as const;
 }

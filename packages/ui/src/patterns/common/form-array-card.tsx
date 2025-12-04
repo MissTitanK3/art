@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { cn } from "@workspace/ui/lib/utils";
 import { Button, type ButtonProps } from "@workspace/ui/primitives/button";
 import {
@@ -9,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-
 interface FormArrayCardProps {
   label: React.ReactNode;
   description?: React.ReactNode;
@@ -21,7 +18,6 @@ interface FormArrayCardProps {
   addButtonProps?: ButtonProps;
   headerContent?: React.ReactNode;
 }
-
 /**
  * Renders a Card wrapper for dynamic array fields that share the same
  * structure across multiple forms. Consumers provide the item content

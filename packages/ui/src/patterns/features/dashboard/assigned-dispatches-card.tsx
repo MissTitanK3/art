@@ -11,6 +11,7 @@ import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import { Calendar, ArrowRight, ClipboardList } from "lucide-react";
 import type { DispatchSubmission } from "@workspace/store/types/global";
+import { humanize } from "@workspace/ui/lib";
 
 export function AssignedDispatchesCard({
   submissions,
@@ -108,8 +109,13 @@ export function AssignedDispatchesCard({
                 <div className="flex items-center text-xs text-muted-foreground gap-2">
                   <Calendar className="h-3 w-3" />
                   <span>
-                    {new Date(dispatch.timestamp).toLocaleDateString()}
+                    {new Date(
+                      dispatch.date_of_event ?? dispatch.timestamp
+                    ).toLocaleDateString()}
                   </span>
+                  {dispatch.type && (
+                    <span className="ml-2">{humanize(dispatch.type)}</span>
+                  )}
                 </div>
                 <Button
                   size="sm"

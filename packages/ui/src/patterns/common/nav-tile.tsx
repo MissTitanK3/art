@@ -1,8 +1,5 @@
 "use client";
-
-import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
-
 type Props = {
   href: string;
   icon: React.ReactNode;
@@ -10,7 +7,6 @@ type Props = {
   description?: string;
   className?: string;
 };
-
 export default function NavTile({
   href,
   icon,

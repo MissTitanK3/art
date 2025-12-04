@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -8,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
-
 export function MarketFilters({
   positionTemplates,
   marketFilter,
@@ -18,7 +16,9 @@ export function MarketFilters({
   marketOnlyUncovered,
   setMarketOnlyUncovered,
 }: {
-  positionTemplates: Array<{ position_id: string }>;
+  positionTemplates: Array<{
+    position_id: string;
+  }>;
   marketFilter: string;
   setMarketFilter: (v: string) => void;
   marketBestFit: boolean;
@@ -26,9 +26,9 @@ export function MarketFilters({
   marketOnlyUncovered: boolean;
   setMarketOnlyUncovered: (v: boolean) => void;
 }) {
-  const pids = React.useMemo(
+  const pids = useMemo(
     () => Array.from(new Set(positionTemplates.map((p) => p.position_id))),
-    [positionTemplates]
+    [positionTemplates],
   );
   return (
     <div className="flex flex-col md:flex-row justify-between mb-2">

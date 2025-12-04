@@ -539,7 +539,9 @@ export default function TeamRequestForm({
                   </span>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                  {FIELD_ROLE_DETAILS.map((r) => (
+                  {FIELD_ROLE_DETAILS.sort((a, b) =>
+                    a.role.localeCompare(b.role)
+                  ).map((r) => (
                     <SelectableRoleCard
                       key={r.role}
                       role={r.role}

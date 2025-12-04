@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -9,9 +8,8 @@ import {
   CardDescription,
 } from "@workspace/ui/primitives/card";
 import { Textarea } from "@workspace/ui/primitives/textarea";
-
 export function CommsScratchpad() {
-  const [text, setText] = React.useState("");
+  const [text, setText] = useState("");
   return (
     <Card>
       <CardHeader>
@@ -29,5 +27,4 @@ export function CommsScratchpad() {
     </Card>
   );
 }
-
 export default CommsScratchpad;

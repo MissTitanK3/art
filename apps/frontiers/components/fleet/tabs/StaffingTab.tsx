@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import type { PositionTemplate, Assignment } from "@/schemas/positions";
 import type { CrewCatalog } from "@/schemas/crew";
@@ -11,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
-
 type HiredItem = {
   profile_id: string;
   crew_id: string;
@@ -19,7 +16,6 @@ type HiredItem = {
   status: "active" | "inactive";
   crew: CrewCatalog;
 };
-
 export function StaffingTab(props: {
   currentShip: any | null;
   positionTemplates: PositionTemplate[];
@@ -27,13 +23,13 @@ export function StaffingTab(props: {
   hiredCrew: HiredItem[];
   autoStrategy: "balanced" | "max-repair" | "max-signal" | "max-morale";
   setAutoStrategy: (
-    s: "balanced" | "max-repair" | "max-signal" | "max-morale"
+    s: "balanced" | "max-repair" | "max-signal" | "max-morale",
   ) => void;
   saveAssignment: (
     position_id: string,
     slot_index: number,
     shift: number,
-    crew_id: string | null
+    crew_id: string | null,
   ) => void;
   autoAssign: () => void;
 }) {
@@ -47,7 +43,6 @@ export function StaffingTab(props: {
     saveAssignment,
     autoAssign,
   } = props;
-
   return (
     <section>
       <h2 className="text-sm font-medium text-muted-foreground mb-2">
@@ -108,7 +103,7 @@ export function StaffingTab(props: {
                           (a) =>
                             a.position_id === p.position_id &&
                             a.slot_index === sIdx &&
-                            a.shift === shIdx + 1
+                            a.shift === shIdx + 1,
                         );
                         const selectedId = current?.crew_id || "";
                         return (
@@ -126,7 +121,7 @@ export function StaffingTab(props: {
                                   p.position_id,
                                   sIdx,
                                   shIdx + 1,
-                                  v === "none" ? null : v
+                                  v === "none" ? null : v,
                                 )
                               }
                             >

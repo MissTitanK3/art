@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import {
   ngcData,
   type NGC as NGCTypes,
@@ -29,8 +29,8 @@ function Highlight({ text, query }: { text: string; query: string }) {
               {part}
             </mark>
           ) : (
-            <React.Fragment key={i}>{part}</React.Fragment>
-          ),
+            <Fragment key={i}>{part}</Fragment>
+          )
         )}
       </>
     );
@@ -48,7 +48,7 @@ type Filtered<T> = T & { __matched?: boolean };
 
 function filterSubSections(
   subs: SubSection[],
-  q: string,
+  q: string
 ): Filtered<SubSection>[] {
   if (!q) return subs;
   return subs
@@ -114,7 +114,7 @@ function countMatches(ngc: NGCTypes, q: string) {
         if (includes(c.preface, q) || includes(c.statement, q)) total++;
         if (c.subSections) {
           total += c.subSections.filter(
-            (ss) => includes(ss.title, q) || includes(ss.content, q),
+            (ss) => includes(ss.title, q) || includes(ss.content, q)
           ).length;
         }
       }
@@ -144,7 +144,7 @@ export default function NGCPage() {
 
   const resultsCount = useMemo(
     () => countMatches(ngcData, query.trim()),
-    [query],
+    [query]
   );
 
   return (

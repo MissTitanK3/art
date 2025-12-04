@@ -1,4 +1,13 @@
 #!/usr/bin/env node
+/**
+ * Compare per-region app directories against a baseline template and emit a diff report.
+ *
+ * Usage:
+ *   node scripts/check-align-regions.mjs [--baseline region-pnw] [--out-dir .check-unaligned-region] [--format json|diff] [--staged] [--git]
+ *
+ * Writes the report into the chosen output directory for follow-up scripts such as
+ * `scripts/post-check-report.mjs` or `scripts/prioritize-diffs.mjs`.
+ */
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';

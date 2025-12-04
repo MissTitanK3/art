@@ -1,15 +1,13 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import TrainingClient from "@workspace/ui/layout/admin/training/training";
 import type {
   AcademyTrainingSession,
   AcademyTrainingSessionParticipant,
 } from "@workspace/store/types/academy";
-
 function mapRowToSession(
   row: any,
-  bySession: Record<string, AcademyTrainingSessionParticipant[]>
+  bySession: Record<string, AcademyTrainingSessionParticipant[]>,
 ): AcademyTrainingSession {
   return {
     id: String(row.id),
@@ -32,12 +30,10 @@ function mapRowToSession(
     participants: bySession[String(row.id)] ?? [],
   } as AcademyTrainingSession;
 }
-
 export default function AdminTrainingPage() {
-  const [sessions, setSessions] = React.useState<AcademyTrainingSession[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
+  const [sessions, setSessions] = useState<AcademyTrainingSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
@@ -45,9 +41,7 @@ export default function AdminTrainingPage() {
         if (!res.ok) throw new Error("Failed to load sessions");
         const { sessions: sessionsData, participants: participantsData } =
           await res.json();
-
         if (cancelled) return;
-
         const bySession: Record<string, AcademyTrainingSessionParticipant[]> =
           {};
         for (const p of participantsData ?? []) {
@@ -61,9 +55,8 @@ export default function AdminTrainingPage() {
             status: p.status ?? "confirmed",
           });
         }
-
         const mapped = (sessionsData ?? []).map((row: any) =>
-          mapRowToSession(row, bySession)
+          mapRowToSession(row, bySession),
         );
         setSessions(mapped);
       } catch (e) {
@@ -77,8 +70,6 @@ export default function AdminTrainingPage() {
       cancelled = true;
     };
   }, []);
-
   if (loading) return null;
-
   return <TrainingClient initialSessions={sessions} />;
 }

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { PageHeader } from "@workspace/ui/patterns/common/page-header";
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import { Input } from "@workspace/ui/primitives/input";
@@ -28,7 +27,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/primitives/dialog";
-
 export type BugReport = {
   id: string;
   created_at: string;
@@ -42,7 +40,6 @@ export type BugReport = {
   priority?: BugPriority | null;
   metadata?: Record<string, unknown> | null;
 };
-
 export interface BugReportDetailProps {
   loading?: boolean;
   error?: string | null;
@@ -54,7 +51,6 @@ export interface BugReportDetailProps {
   onDelete: () => void;
   onChange: (patch: Partial<BugReport>) => void;
 }
-
 export function BugReportDetail({
   loading,
   error,
@@ -66,11 +62,10 @@ export function BugReportDetail({
   onDelete,
   onChange,
 }: BugReportDetailProps) {
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   if (loading) return <LoadingText />;
   if (error) return <ErrorText>{String(error)}</ErrorText>;
   if (!report) return <EmptyText>Not found</EmptyText>;
-
   return (
     <section className="space-y-6">
       <PageHeader
@@ -197,5 +192,4 @@ export function BugReportDetail({
     </section>
   );
 }
-
 export default BugReportDetail;

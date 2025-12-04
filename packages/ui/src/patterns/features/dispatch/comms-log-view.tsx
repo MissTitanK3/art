@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import type {
   ComLog,
   CommsImportance,
@@ -18,7 +17,6 @@ import {
   CommsImportanceSelect,
   CommsTypeSelect,
 } from "@workspace/ui/patterns/features/dispatch/comms-selects";
-
 type Props = {
   logs: ComLog[];
   onAddLog: (log: {
@@ -31,12 +29,10 @@ type Props = {
     incident_id?: string | null;
   }) => void;
 };
-
 export function CommsLogView({ logs, onAddLog }: Props) {
-  const [message, setMessage] = React.useState("");
-  const [type, setType] = React.useState<CommsMessageType>("Routine");
-  const [importance, setImportance] = React.useState<CommsImportance>("Normal");
-
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState<CommsMessageType>("Routine");
+  const [importance, setImportance] = useState<CommsImportance>("Normal");
   const submit = () => {
     if (!message.trim()) return;
     onAddLog({
@@ -47,7 +43,6 @@ export function CommsLogView({ logs, onAddLog }: Props) {
     });
     setMessage("");
   };
-
   return (
     <div className="grid h-full grid-rows-[auto,1fr] gap-3">
       <Card>
@@ -104,5 +99,4 @@ export function CommsLogView({ logs, onAddLog }: Props) {
     </div>
   );
 }
-
 export default CommsLogView;

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, X, ShieldAlert, Search } from "lucide-react";
 import {
   FIELD_ROLE_DETAILS,
@@ -30,16 +29,17 @@ import {
   type FieldValues,
   type Path,
 } from "react-hook-form";
-
 /* ---------- helpers ---------- */
-
 type RiskLevel = "low" | "medium" | "high";
 const LABEL = FIELD_ROLE_LABELS;
 const TIER = FIELD_ROLE_TIERS;
 const TIERS = [1, 2, 3, 4] as const;
 type Tier = (typeof TIERS)[number];
 const DETAILS = Object.fromEntries(
-  FIELD_ROLE_DETAILS.map((d) => [d.role, d])
+  FIELD_ROLE_DETAILS.sort((a, b) => a.role.localeCompare(b.role)).map((d) => [
+    d.role,
+    d,
+  ])
 ) as Record<FieldRole, (typeof FIELD_ROLE_DETAILS)[number]>;
 const riskDot: Record<RiskLevel, string> = {
   low: "bg-emerald-500",
@@ -56,9 +56,7 @@ const tierNames: Record<1 | 2 | 3 | 4, string> = {
   3: "Supportive",
   4: "Auxiliary",
 };
-
 /* ---------- Badge ---------- */
-
 export function RoleBadge({
   role,
   onRemove,
@@ -92,9 +90,7 @@ export function RoleBadge({
     </Badge>
   );
 }
-
 /* ---------- Display ---------- */
-
 export function FieldRolesDisplay({
   roles,
   emptyText = "No roles yet",
@@ -140,9 +136,7 @@ export function FieldRolesDisplay({
     </div>
   );
 }
-
 /* ---------- Editor (no Command) ---------- */
-
 export interface FieldRolesEditorProps {
   value: FieldRole[];
   onChange: (roles: FieldRole[]) => void;
@@ -151,7 +145,6 @@ export interface FieldRolesEditorProps {
   maxSelections?: number;
   className?: string;
 }
-
 export function FieldRolesEditor({
   value,
   onChange,
@@ -160,17 +153,12 @@ export function FieldRolesEditor({
   maxSelections,
   className,
 }: FieldRolesEditorProps) {
-  const [open, setOpen] = React.useState(false);
-  const [query, setQuery] = React.useState("");
-  const [activeIndex, setActiveIndex] = React.useState(0); // keyboard focus
-  const buttonRef = React.useRef<HTMLButtonElement | null>(null);
-  const listRef = React.useRef<HTMLDivElement | null>(null);
-
-  const chosen = React.useMemo(
-    () => new Set((value ?? []) as FieldRole[]),
-    [value]
-  );
-
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0); // keyboard focus
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const chosen = useMemo(() => new Set((value ?? []) as FieldRole[]), [value]);
   const toggle = (role: FieldRole) => {
     const next = new Set(chosen);
     if (next.has(role)) next.delete(role);
@@ -180,8 +168,7 @@ export function FieldRolesEditor({
     }
     onChange([...next]);
   };
-
-  const groups = React.useMemo(() => {
+  const groups = useMemo(() => {
     const grouped: Record<Tier, FieldRole[]> = { 1: [], 2: [], 3: [], 4: [] };
     FIELD_ROLE_OPTIONS.forEach((r) => grouped[FIELD_ROLE_TIERS[r]].push(r));
     TIERS.forEach((t) =>
@@ -193,11 +180,17 @@ export function FieldRolesEditor({
     );
     return grouped;
   }, []);
-
   // filtered flat list with tier labels inline
   const filtered: Array<
-    { kind: "label"; text: string } | { kind: "item"; role: FieldRole }
-  > = React.useMemo(() => {
+    | {
+        kind: "label";
+        text: string;
+      }
+    | {
+        kind: "item";
+        role: FieldRole;
+      }
+  > = useMemo(() => {
     const q = query.trim().toLowerCase();
     const out: typeof filtered = [];
     TIERS.forEach((t) => {
@@ -218,29 +211,24 @@ export function FieldRolesEditor({
     });
     return out;
   }, [groups, query]);
-
   // keep the highlighted item in view
-  React.useEffect(() => {
+  useEffect(() => {
     const el = listRef.current?.querySelector<HTMLElement>(
       `[data-index="${activeIndex}"]`
     );
     el?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, filtered.length]);
-
   const itemCount = filtered.filter((f) => f.kind === "item").length;
-
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (!open) return;
     // move only across items (skip labels)
     const indices = filtered
       .map((f, i) => (f.kind === "item" ? i : -1))
       .filter((i) => i >= 0);
-
     if (indices.length === 0) return;
     const cur = indices.indexOf(
       indices.find((i) => i >= activeIndex) ?? indices[0]!
     );
-
     if (e.key === "ArrowDown") {
       e.preventDefault();
       const next = indices[Math.min(cur + 1, indices.length - 1)];
@@ -259,7 +247,6 @@ export function FieldRolesEditor({
       buttonRef.current?.focus();
     }
   };
-
   return (
     <div className={cn("w-full", className)}>
       {/* Selected badges list is scrollable so the trigger stays visible */}
@@ -447,7 +434,6 @@ export function FieldRolesEditor({
     </div>
   );
 }
-
 /* ---------- RHF wrapper ---------- */
 export function RHFFieldRoles<TFieldValues extends FieldValues>({
   name,

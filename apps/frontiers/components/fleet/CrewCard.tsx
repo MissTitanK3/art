@@ -1,10 +1,8 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import type { CrewCatalog } from "@/schemas/crew";
 import { humanizeKey, pct } from "@/lib/format";
-
 export function CrewCard({
   m,
   active,
@@ -21,9 +19,9 @@ export function CrewCard({
   autoStrategy: "balanced" | "max-repair" | "max-signal" | "max-morale";
 }) {
   const fits = (m.allowed_positions || []).map(String);
-  const [fitOpen, setFitOpen] = React.useState(false);
-  const fitRef = React.useRef<HTMLDivElement | null>(null);
-  React.useEffect(() => {
+  const [fitOpen, setFitOpen] = useState(false);
+  const fitRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
     if (!fitOpen) return;
     const onDocClick = (e: MouseEvent) => {
       const t = e.target as Node | null;
@@ -34,7 +32,7 @@ export function CrewCard({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [fitOpen]);
-  const fitDetail = React.useMemo(() => {
+  const fitDetail = useMemo(() => {
     let s = 0;
     const lines: string[] = [];
     const bon = m.bonuses || {};
@@ -85,7 +83,7 @@ export function CrewCard({
     uncoveredNeeds,
     autoStrategy,
   ]);
-  const score = React.useMemo(() => {
+  const score = useMemo(() => {
     let s = 0;
     const bon = m.bonuses || {};
     for (const v of Object.values(bon))

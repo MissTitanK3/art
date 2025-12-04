@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 import type {
   ComTeam,
@@ -30,10 +29,8 @@ import { CommsLogView } from "@workspace/ui/patterns/features/dispatch/comms-log
 import { CommsScratchpad } from "@workspace/ui/patterns/features/dispatch/comms-scratchpad";
 import { CommsBriefing } from "@workspace/ui/patterns/features/dispatch/comms-briefing";
 import { CommsAlertsCard } from "@workspace/ui/patterns/features/dispatch/comms-alerts-card";
-
 const CHECK_IN_STORAGE_KEY = "comms.defaultCheckInMinutes";
 const DEFAULT_CHECK_IN_MINUTES = 60;
-
 const coerceMinutes = (value: unknown): number | undefined => {
   if (typeof value === "number") {
     return Number.isFinite(value) && value > 0 ? Math.round(value) : undefined;
@@ -46,7 +43,6 @@ const coerceMinutes = (value: unknown): number | undefined => {
   }
   return undefined;
 };
-
 type Props = {
   teams: ComTeam[];
   logs: ComLog[];
@@ -67,11 +63,13 @@ type Props = {
   }) => Promise<string> | string | void;
   updateAlert?: (
     id: string,
-    patch: Partial<{ direction: string; description: string }>
+    patch: Partial<{
+      direction: string;
+      description: string;
+    }>,
   ) => Promise<void> | void;
   deleteAlert?: (id: string) => Promise<void> | void;
 };
-
 export function CommsDashboardView({
   teams,
   logs,
@@ -90,7 +88,7 @@ export function CommsDashboardView({
   updateAlert,
   deleteAlert,
 }: Props): React.ReactElement {
-  const resolvedInitialMinutes = React.useMemo(() => {
+  const resolvedInitialMinutes = useMemo(() => {
     if (
       typeof globalCheckInMinutes === "number" &&
       Number.isFinite(globalCheckInMinutes) &&
@@ -108,12 +106,10 @@ export function CommsDashboardView({
       deserialize: (raw) => coerceMinutes(raw) ?? resolvedInitialMinutes,
       migrate: (payload) => coerceMinutes(payload) ?? resolvedInitialMinutes,
     });
-
-  const [checkInInput, setCheckInInput] = React.useState<string>(() =>
-    String(resolvedInitialMinutes)
+  const [checkInInput, setCheckInInput] = useState<string>(() =>
+    String(resolvedInitialMinutes),
   );
-
-  const persistGlobalCheckInMinutes = React.useCallback(
+  const persistGlobalCheckInMinutes = useCallback(
     (mins: number) => {
       const normalized = coerceMinutes(mins);
       if (!normalized) return;
@@ -121,18 +117,16 @@ export function CommsDashboardView({
       setStoredCheckInMinutes(normalized);
       setGlobalCheckInMinutes(normalized);
     },
-    [setGlobalCheckInMinutes, setStoredCheckInMinutes]
+    [setGlobalCheckInMinutes, setStoredCheckInMinutes],
   );
-
-  const effectiveCheckInMinutes = React.useMemo(() => {
+  const effectiveCheckInMinutes = useMemo(() => {
     const globalMinutes = coerceMinutes(globalCheckInMinutes);
     if (globalMinutes) return globalMinutes;
     const storedMinutes = coerceMinutes(storedCheckInMinutes);
     if (storedMinutes) return storedMinutes;
     return resolvedInitialMinutes;
   }, [globalCheckInMinutes, resolvedInitialMinutes, storedCheckInMinutes]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     setCheckInInput((prev) => {
       const prevValue = coerceMinutes(prev);
       return prevValue === effectiveCheckInMinutes
@@ -140,8 +134,7 @@ export function CommsDashboardView({
         : String(effectiveCheckInMinutes);
     });
   }, [effectiveCheckInMinutes]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const globalMinutes = coerceMinutes(globalCheckInMinutes);
     if (globalMinutes) {
       if (storedCheckInMinutes !== globalMinutes) {
@@ -157,12 +150,10 @@ export function CommsDashboardView({
     setStoredCheckInMinutes,
     storedCheckInMinutes,
   ]);
-
   const applyGlobalInterval = () => {
     const next = coerceMinutes(checkInInput);
     if (next) persistGlobalCheckInMinutes(next);
   };
-
   return (
     <div className="flex h-full w-full flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(320px,0.85fr)]">
       <div className="flex flex-col gap-3">
@@ -261,5 +252,4 @@ export function CommsDashboardView({
     </div>
   );
 }
-
 export default CommsDashboardView;

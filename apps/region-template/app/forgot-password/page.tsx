@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -13,15 +12,13 @@ import {
 import { Label } from "@workspace/ui/primitives/label";
 import { Input } from "@workspace/ui/primitives/input";
 import { Button } from "@workspace/ui/primitives/button";
-
 export default function ForgotPasswordPage() {
   const { requestPasswordReset } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = React.useState("");
-  const [pending, setPending] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [info, setInfo] = React.useState<string | null>(null);
-
+  const [email, setEmail] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -30,17 +27,16 @@ export default function ForgotPasswordPage() {
     try {
       await requestPasswordReset(email);
       setInfo(
-        "Check your email for a reset link. It will open a page to set a new password."
+        "Check your email for a reset link. It will open a page to set a new password.",
       );
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Failed to send reset email."
+        err instanceof Error ? err.message : "Failed to send reset email.",
       );
     } finally {
       setPending(false);
     }
   };
-
   return (
     <div className="mx-auto mt-12 w-full max-w-md">
       <Card>

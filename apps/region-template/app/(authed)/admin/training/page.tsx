@@ -1,12 +1,10 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import TrainingClient from "@workspace/ui/layout/admin/training/training";
 import type {
   AcademyTrainingSession,
   AcademyTrainingSessionParticipant,
 } from "@workspace/store/types/academy";
-
 function mapRowToSession(
   row: any,
   bySession: Record<string, AcademyTrainingSessionParticipant[]>,
@@ -32,22 +30,20 @@ function mapRowToSession(
     participants: bySession[String(row.id)] ?? [],
   } as AcademyTrainingSession;
 }
-
 export default function AdminTrainingPage() {
-  const [sessions, setSessions] = React.useState<AcademyTrainingSession[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
+  const [sessions, setSessions] = useState<AcademyTrainingSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         const res = await fetch("/api/admin/academy/sessions");
         if (!res.ok) throw new Error("Failed to load sessions");
-        const { sessions: sessionsData, participants: participantsData } = await res.json();
-
+        const { sessions: sessionsData, participants: participantsData } =
+          await res.json();
         if (cancelled) return;
-
-        const bySession: Record<string, AcademyTrainingSessionParticipant[]> = {};
+        const bySession: Record<string, AcademyTrainingSessionParticipant[]> =
+          {};
         for (const p of participantsData ?? []) {
           const sid = String(p.session_id);
           const sessionParticipants = bySession[sid] ?? (bySession[sid] = []);
@@ -59,7 +55,6 @@ export default function AdminTrainingPage() {
             status: p.status ?? "confirmed",
           });
         }
-
         const mapped = (sessionsData ?? []).map((row: any) =>
           mapRowToSession(row, bySession),
         );
@@ -75,8 +70,6 @@ export default function AdminTrainingPage() {
       cancelled = true;
     };
   }, []);
-
   if (loading) return null; // Or a loading spinner
-
   return <TrainingClient initialSessions={sessions} />;
 }

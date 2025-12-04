@@ -1,12 +1,10 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "@workspace/ui/primitives/sonner";
 import { Separator } from "@workspace/ui/primitives/separator";
 import { Button } from "@workspace/ui/primitives/button";
 import { ArrowLeft } from "lucide-react";
-
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { combineLocalDateTime } from "@workspace/ui/lib/utils";
 import { BaseShiftIntentionFields, Shift } from "@workspace/store/types/pod.ts";
@@ -14,13 +12,11 @@ import {
   PodShiftsLayout,
   PodShiftsLayoutProps,
 } from "@workspace/ui/layout/pods/pod-shifts-layout";
-
 type ShiftFormState = BaseShiftIntentionFields & {
   id?: string;
   tz: string;
   dispatchLink: string;
 };
-
 function mapRowToShift(row: any): Shift {
   return {
     id: String(row.id),
@@ -35,20 +31,17 @@ function mapRowToShift(row: any): Shift {
     notes: row.notes ?? undefined,
   };
 }
-
 async function fetchPodShiftsFromDatabase(
-  slug: string
+  slug: string,
 ): Promise<Shift[] | null> {
   try {
     const response = await fetch(
-      `/api/pods/${encodeURIComponent(slug)}/shifts`
+      `/api/pods/${encodeURIComponent(slug)}/shifts`,
     );
-
     if (!response.ok) {
       if (response.status === 404) return null;
       throw new Error("Failed to fetch shifts");
     }
-
     const { shifts } = await response.json();
     return (Array.isArray(shifts) ? shifts : []).map(mapRowToShift);
   } catch (e) {
@@ -56,10 +49,9 @@ async function fetchPodShiftsFromDatabase(
     return null;
   }
 }
-
 async function persistShiftToDatabase(
   podSlug: string,
-  shift: Shift
+  shift: Shift,
 ): Promise<void> {
   try {
     const response = await fetch(
@@ -68,9 +60,8 @@ async function persistShiftToDatabase(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shift }),
-      }
+      },
     );
-
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || "Failed to save shift");
@@ -79,17 +70,15 @@ async function persistShiftToDatabase(
     throw new Error(e?.message ?? "Failed to save shift");
   }
 }
-
 async function deleteShiftFromDatabase(
   podSlug: string,
-  shiftId: string
+  shiftId: string,
 ): Promise<void> {
   try {
     const response = await fetch(
       `/api/pods/${encodeURIComponent(podSlug)}/shifts/${encodeURIComponent(shiftId)}`,
-      { method: "DELETE" }
+      { method: "DELETE" },
     );
-
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.error || "Failed to delete shift");
@@ -98,22 +87,21 @@ async function deleteShiftFromDatabase(
     throw new Error(e?.message ?? "Failed to delete shift");
   }
 }
-
 export default function PodShiftsPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{
+    id: string;
+  }>();
   const podSlug = decodeURIComponent(params.id ?? "");
   const router = useRouter();
-
   const pods = usePodStore((state) => state.pods);
   const shifts = usePodStore((state) => state.shifts);
   const addShift = usePodStore((state) => state.addShift);
   const removeShift = usePodStore((state) => state.removeShift);
   const pod = pods.find((p) => p.slug === podSlug);
-
-  const [remoteShifts, setRemoteShifts] = React.useState<Shift[] | null>(null);
+  const [remoteShifts, setRemoteShifts] = useState<Shift[] | null>(null);
   const [loadingRemoteShifts, setLoadingRemoteShifts] =
-    React.useState<boolean>(false);
-  const [form, setForm] = React.useState<ShiftFormState>({
+    useState<boolean>(false);
+  const [form, setForm] = useState<ShiftFormState>({
     id: pod?.id,
     startDate: "",
     startTime: "",
@@ -125,10 +113,8 @@ export default function PodShiftsPage() {
     label: "",
     dispatchLink: "",
   });
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-
     async function loadRemoteShifts() {
       if (!podSlug) return;
       setLoadingRemoteShifts(true);
@@ -147,20 +133,17 @@ export default function PodShiftsPage() {
         }
       }
     }
-
     loadRemoteShifts();
     return () => {
       cancelled = true;
     };
   }, [podSlug]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     setForm((prev) => ({
       ...prev,
       id: pod?.id,
     }));
   }, [pod?.id]);
-
   if (!pod) {
     return (
       <>
@@ -187,9 +170,7 @@ export default function PodShiftsPage() {
       </>
     );
   }
-
   const podShifts = remoteShifts ?? shifts.filter((s) => s.podId === pod.id);
-
   async function handleAdd() {
     if (!pod) {
       return;
@@ -201,10 +182,8 @@ export default function PodShiftsPage() {
       });
       return;
     }
-
     const start = combineLocalDateTime(form.startDate, form.startTime);
     const end = combineLocalDateTime(form.endDate, form.endTime);
-
     if (!start || !end || end <= start) {
       toast.error("Invalid shift times", {
         description: "End must be after start.",
@@ -212,7 +191,6 @@ export default function PodShiftsPage() {
       });
       return;
     }
-
     const newShift: Shift = {
       id: crypto.randomUUID(),
       podId: pod.id,
@@ -224,16 +202,13 @@ export default function PodShiftsPage() {
       label: form.label,
       dispatchLink: form.dispatchLink,
     };
-
     try {
       await persistShiftToDatabase(podSlug, newShift);
     } catch (error) {
       console.warn("PodShiftsDataLayer: failed to persist shift", error);
     }
-
     addShift(newShift);
     setRemoteShifts((prev) => (prev ? [...prev, newShift] : prev));
-
     setForm({
       id: pod.id,
       startDate: "",
@@ -247,7 +222,6 @@ export default function PodShiftsPage() {
       dispatchLink: "",
     });
   }
-
   const handleRemove = async (shiftId: string) => {
     if (!pod) {
       return;
@@ -259,10 +233,9 @@ export default function PodShiftsPage() {
     }
     removeShift(shiftId);
     setRemoteShifts((prev) =>
-      prev ? prev.filter((s) => s.id !== shiftId) : prev
+      prev ? prev.filter((s) => s.id !== shiftId) : prev,
     );
   };
-
   const layoutProps: PodShiftsLayoutProps<ShiftFormState> = {
     podSlug,
     podId: pod.id,
@@ -281,7 +254,6 @@ export default function PodShiftsPage() {
       </p>
     ),
   };
-
   return (
     <>
       <div className="flex items-center gap-2">

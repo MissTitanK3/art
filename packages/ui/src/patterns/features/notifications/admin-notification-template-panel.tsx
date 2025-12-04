@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Label } from "@workspace/ui/primitives/label";
 import { Input } from "@workspace/ui/primitives/input";
 import { Textarea } from "@workspace/ui/primitives/textarea";
@@ -23,33 +22,30 @@ import {
 } from "@workspace/store/admin/notifications/templates";
 import { humanize } from "@workspace/ui/lib/utils";
 import type { SendArgs } from "./admin-notification-form";
-
 type AdminNotificationTemplatePanelProps = {
   templateOptions: AdminNotificationTemplateDescriptor[];
   onSend: (args: SendArgs) => Promise<boolean> | boolean;
 };
-
 export function AdminNotificationTemplatePanel({
   templateOptions,
   onSend,
 }: AdminNotificationTemplatePanelProps) {
   const [selectedTemplate, setSelectedTemplate] =
-    React.useState<AdminNotificationTemplateKey | null>(null);
-  const selectedOption = React.useMemo(
+    useState<AdminNotificationTemplateKey | null>(null);
+  const selectedOption = useMemo(
     () =>
       templateOptions.find((option) => option.value === selectedTemplate) ??
       null,
-    [selectedTemplate, templateOptions]
+    [selectedTemplate, templateOptions],
   );
-  const [draftTitle, setDraftTitle] = React.useState("");
-  const [draftBody, setDraftBody] = React.useState("");
-  const [draftLevel, setDraftLevel] = React.useState<NotificationLevel>("info");
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [draftLevel, setDraftLevel] = useState<NotificationLevel>("info");
   const [draftChannel, setDraftChannel] =
-    React.useState<NotificationChannel>("system");
-  const [draftLink, setDraftLink] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-
-  React.useEffect(() => {
+    useState<NotificationChannel>("system");
+  const [draftLink, setDraftLink] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  useEffect(() => {
     if (!selectedOption) {
       setDraftTitle("");
       setDraftBody("");
@@ -64,8 +60,7 @@ export function AdminNotificationTemplatePanel({
     setDraftChannel(selectedOption.defaults.channel);
     setDraftLink(selectedOption.defaults.link ?? "");
   }, [selectedOption]);
-
-  const handleSend = React.useCallback(async () => {
+  const handleSend = useCallback(async () => {
     if (!selectedOption) return;
     const title = draftTitle.trim();
     const body = draftBody.trim();
@@ -80,7 +75,7 @@ export function AdminNotificationTemplatePanel({
           level: draftLevel,
           channel: draftChannel,
           link: draftLink.trim() ? draftLink.trim() : undefined,
-        })
+        }),
       );
     } finally {
       setIsSending(false);
@@ -94,11 +89,9 @@ export function AdminNotificationTemplatePanel({
     onSend,
     selectedOption,
   ]);
-
   if (!templateOptions.length) {
     return null;
   }
-
   return (
     <div className="space-y-3">
       <div className="grid gap-2 sm:max-w-sm">

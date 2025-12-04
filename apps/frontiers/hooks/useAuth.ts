@@ -1,18 +1,14 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
-
 export function useAuth() {
-  const [status, setStatus] = React.useState<AuthStatus>("loading");
-  const [session, setSession] = React.useState<
+  const [status, setStatus] = useState<AuthStatus>("loading");
+  const [session, setSession] = useState<
     | Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]
     | null
   >(null);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
@@ -29,6 +25,5 @@ export function useAuth() {
       sub.subscription.unsubscribe();
     };
   }, []);
-
   return { session, status };
 }

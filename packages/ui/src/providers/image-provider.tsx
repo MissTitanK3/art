@@ -1,12 +1,10 @@
 // packages/ui/src/providers/ImageProvider.tsx
 "use client";
-import * as React from "react";
+import { createContext, useContext } from "react";
 import { ImageComponent } from "@workspace/store/utils/image";
 import { BasicImage } from "../patterns/common";
-
-const ImageContext = React.createContext<ImageComponent>(BasicImage);
-export const useImage = () => React.useContext(ImageContext);
-
+const ImageContext = createContext<ImageComponent>(BasicImage);
+export const useImage = () => useContext(ImageContext);
 export function ImageProvider({
   component,
   children,

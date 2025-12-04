@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * Run the same generation, validation, lint, and build pipeline that CI executes, logging output.
+ *
+ * Usage:
+ *   node scripts/ci-local.mjs
+ *
+ * Creates timestamped logs under `.logs/ci-local-*.log` so failures can be reviewed later.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';

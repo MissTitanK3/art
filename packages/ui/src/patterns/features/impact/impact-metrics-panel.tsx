@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { toast } from "sonner";
 import type {
   DispatchImpactMetrics,
@@ -24,13 +23,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/primitives/tooltip";
-
 type Props = {
   dispatchId: string;
   status: DispatchStatus;
   initialMetrics?: Partial<DispatchImpactMetrics>;
 };
-
 const RISK_LEVEL_DETAILS: {
   value: ImpactRiskLevel;
   label: string;
@@ -71,35 +68,30 @@ const RISK_LEVEL_DETAILS: {
     tone: "bg-red-100 text-red-900",
   },
 ];
-
 type DraftMetrics = {
   people_served: number;
   resources_distributed: number;
   risk_level: ImpactRiskLevel;
 };
-
 export function ImpactMetricsPanel({
   dispatchId,
   status,
   initialMetrics,
 }: Props) {
-  const [metrics, setMetrics] = React.useState<DispatchImpactMetrics | null>(
-    null
-  );
-  const [draft, setDraft] = React.useState<DraftMetrics>({
+  const [metrics, setMetrics] = useState<DispatchImpactMetrics | null>(null);
+  const [draft, setDraft] = useState<DraftMetrics>({
     people_served: 0,
     resources_distributed: 0,
     risk_level: "unknown",
   });
-  const [loading, setLoading] = React.useState(!initialMetrics);
-  const [error, setError] = React.useState<string | null>(null);
-  const [savingField, setSavingField] = React.useState<string | null>(null);
+  const [loading, setLoading] = useState(!initialMetrics);
+  const [error, setError] = useState<string | null>(null);
+  const [savingField, setSavingField] = useState<string | null>(null);
   const disabled = status === "verified_complete";
-  const peopleInputId = React.useId();
-  const resourcesInputId = React.useId();
-  const riskSelectId = React.useId();
-
-  const fetchMetrics = React.useCallback(async () => {
+  const peopleInputId = useId();
+  const resourcesInputId = useId();
+  const riskSelectId = useId();
+  const fetchMetrics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -114,14 +106,13 @@ export function ImpactMetricsPanel({
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Unable to load impact metrics"
+        err instanceof Error ? err.message : "Unable to load impact metrics",
       );
     } finally {
       setLoading(false);
     }
   }, [dispatchId]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!initialMetrics) return;
     const next: DispatchImpactMetrics = {
       dispatch_id: dispatchId,
@@ -139,12 +130,10 @@ export function ImpactMetricsPanel({
     });
     setLoading(false);
   }, [dispatchId, initialMetrics]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     fetchMetrics();
   }, [fetchMetrics]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!metrics) return;
     setDraft({
       people_served: metrics.people_served,
@@ -152,10 +141,9 @@ export function ImpactMetricsPanel({
       risk_level: metrics.risk_level,
     });
   }, [metrics]);
-
   const saveMetrics = async (
     patch: Partial<DispatchImpactMetrics>,
-    field: string
+    field: string,
   ) => {
     try {
       setSavingField(field);
@@ -173,20 +161,18 @@ export function ImpactMetricsPanel({
       toast.success("Impact metrics saved");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Unable to update impact metrics"
+        err instanceof Error ? err.message : "Unable to update impact metrics",
       );
       setError(
-        err instanceof Error ? err.message : "Unable to update impact metrics"
+        err instanceof Error ? err.message : "Unable to update impact metrics",
       );
     } finally {
       setSavingField(null);
     }
   };
-
   const currentRisk = RISK_LEVEL_DETAILS.find(
-    (detail) => detail.value === (draft.risk_level as ImpactRiskLevel)
+    (detail) => detail.value === (draft.risk_level as ImpactRiskLevel),
   );
-
   return (
     <TooltipProvider>
       <section className="rounded-lg border bg-card/40 p-4">
@@ -267,7 +253,7 @@ export function ImpactMetricsPanel({
                 if (metrics?.people_served === draft.people_served) return;
                 saveMetrics(
                   { people_served: Math.max(0, draft.people_served) },
-                  "people_served"
+                  "people_served",
                 );
               }}
             />
@@ -317,10 +303,10 @@ export function ImpactMetricsPanel({
                   {
                     resources_distributed: Math.max(
                       0,
-                      draft.resources_distributed
+                      draft.resources_distributed,
                     ),
                   },
-                  "resources_distributed"
+                  "resources_distributed",
                 );
               }}
             />
@@ -360,7 +346,7 @@ export function ImpactMetricsPanel({
               if (!disabled)
                 saveMetrics(
                   { risk_level: value as ImpactRiskLevel },
-                  "risk_level"
+                  "risk_level",
                 );
             }}
             disabled={disabled || loading}

@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
@@ -14,7 +12,6 @@ import { ComponentCard } from "@/components/fleet/ComponentCard";
 import { MissingSlotCard } from "@/components/fleet/MissingSlotCard";
 import { ConfirmUpgradeDialog } from "@/components/fleet/ConfirmUpgradeDialog";
 import { ConfirmReplaceDialog } from "@/components/fleet/ConfirmReplaceDialog";
-
 type Kind = {
   id: string;
   name: string;
@@ -26,7 +23,6 @@ type Kind = {
   upgradeCostGrowth?: number;
   replaceCost?: number;
 };
-
 export function ComponentsTab(props: {
   profileId: string | null;
   componentsLoading: boolean;
@@ -37,13 +33,25 @@ export function ComponentsTab(props: {
   catalogKinds: Record<ShipComponent["slot"], Kind[]>;
   getDefaultKindForSlot: (slot: ShipComponent["slot"]) => string | null;
   installComponentForSlot: (slot: ShipComponent["slot"]) => Promise<void>;
-  replaceOpen: { slot: ShipComponent["slot"] | null } | null;
-  setReplaceOpen: (r: { slot: ShipComponent["slot"] | null } | null) => void;
+  replaceOpen: {
+    slot: ShipComponent["slot"] | null;
+  } | null;
+  setReplaceOpen: (
+    r: {
+      slot: ShipComponent["slot"] | null;
+    } | null,
+  ) => void;
   prepareUpgradeConfirm: (c: ShipComponent) => void;
   prepareReplaceConfirm: (c: ShipComponent, newKindId: string) => void;
-  confirmUpgrade: { slot: ShipComponent["slot"]; cost: number } | null;
+  confirmUpgrade: {
+    slot: ShipComponent["slot"];
+    cost: number;
+  } | null;
   setConfirmUpgrade: (
-    v: { slot: ShipComponent["slot"]; cost: number } | null
+    v: {
+      slot: ShipComponent["slot"];
+      cost: number;
+    } | null,
   ) => void;
   confirmReplace: {
     slot: ShipComponent["slot"];
@@ -57,7 +65,7 @@ export function ComponentsTab(props: {
       kindId: string;
       cost: number;
       deltas: Array<[string, number, number]>;
-    } | null
+    } | null,
   ) => void;
   doUpgrade: (slot: ShipComponent["slot"]) => Promise<void>;
   doReplace: (slot: ShipComponent["slot"], kindId: string) => Promise<void>;
@@ -83,7 +91,6 @@ export function ComponentsTab(props: {
     doUpgrade,
     doReplace,
   } = props;
-
   return (
     <section>
       <h2 className="text-sm font-medium text-muted-foreground mb-2">
@@ -162,7 +169,7 @@ export function ComponentsTab(props: {
                         className="rounded border p-2 text-left hover:bg-muted"
                         onClick={() => {
                           const cur = components.find(
-                            (x) => x.slot === replaceOpen.slot
+                            (x) => x.slot === replaceOpen.slot,
                           );
                           if (!cur) return;
                           prepareReplaceConfirm(cur, k.id);

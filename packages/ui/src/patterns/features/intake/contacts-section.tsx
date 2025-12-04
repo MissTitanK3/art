@@ -1,6 +1,4 @@
-import * as React from "react";
 import { type Control } from "react-hook-form";
-
 import { ContactArrayField } from "@workspace/ui/patterns/common/form-array-fields";
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import {
@@ -25,27 +23,22 @@ import type {
   ContactInfo,
   DetaineeIntake,
 } from "@workspace/ui/types/missing-person-intake";
-
 interface BaseProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   sectionName?: string;
 }
-
 interface EditProps extends BaseProps {
   mode?: "edit";
   control: Control<any>;
   onSave?: () => void;
 }
-
 interface ViewProps extends BaseProps {
   mode: "view";
   data: DetaineeIntake;
   dispatcherLabel?: string;
 }
-
 export type ContactsSectionProps = EditProps | ViewProps;
-
 function formatDispatcherContact(contact?: ContactInfo): React.ReactNode {
   if (!contact) {
     return <span className="text-muted-foreground">Not provided</span>;
@@ -64,13 +57,11 @@ function formatDispatcherContact(contact?: ContactInfo): React.ReactNode {
     </div>
   );
 }
-
 export function ContactsSection(props: ContactsSectionProps) {
   const title = props.title ?? "Contacts";
   const description =
     props.description ?? "Witnesses and dispatch point of contact.";
   const sectionName = props.sectionName ?? "Contacts";
-
   if (props.mode === "view") {
     const { data } = props;
     return (
@@ -92,9 +83,7 @@ export function ContactsSection(props: ContactsSectionProps) {
       </FormSectionCard>
     );
   }
-
   const { control, onSave } = props;
-
   return (
     <FormSectionCard
       title={title}

@@ -4,6 +4,9 @@
  * - Normalize internal links to `/academy/<slug>` (fix `/academy/courses/*` and `/courses/*`).
  * - Fix invalid Callout types: `warn` -> `warning`.
  * - Bump frontmatter `version` minor by +0.1 (i.e., 1.2 -> 1.3).
+ *
+ * Usage:
+ *   node scripts/academy-codemod.mjs
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -71,4 +74,3 @@ console.log(`Updated ${changed.length} files:`);
 for (const c of changed) {
   console.log(` - ${c.file}: ${c.from} -> ${c.to}`);
 }
-

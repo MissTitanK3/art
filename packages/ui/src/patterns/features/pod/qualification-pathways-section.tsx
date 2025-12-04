@@ -1,7 +1,5 @@
 "use client";
-
-import * as React from "react";
-
+import { useCallback, useMemo } from "react";
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -20,41 +18,37 @@ import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
 import { NavRole } from "@workspace/store/utils/permissions/types";
 import type { AcademyCourseGroup } from "@workspace/store/types/academy.ts";
-
 type QualificationPathwaysSectionProps = {
   courseGroups: AcademyCourseGroup[];
   onCreatePathwayClass?: (pathwayId: string) => void;
 };
-
 export function QualificationPathwaysSection({
   courseGroups,
   onCreatePathwayClass,
 }: QualificationPathwaysSectionProps) {
   const profileFromStore = useProfileStore((s) => s.profile);
-  const profileRoles = React.useMemo(
+  const profileRoles = useMemo(
     () =>
       profileFromStore?.access_role
         ? [String(profileFromStore.access_role)]
         : [],
-    [profileFromStore?.access_role]
+    [profileFromStore?.access_role],
   );
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: profileRoles[0] as NavRole }),
-    [profileRoles]
+    [profileRoles],
   );
   const { access: effectiveCanManage } = useUnifiedAccess(
     "manage_instructors",
-    ctx
+    ctx,
   );
-
-  const handleCreatePathwayClass = React.useCallback(
+  const handleCreatePathwayClass = useCallback(
     (pathwayId: string) => {
       if (!effectiveCanManage) return;
       (onCreatePathwayClass ?? (() => {}))(pathwayId);
     },
-    [effectiveCanManage, onCreatePathwayClass]
+    [effectiveCanManage, onCreatePathwayClass],
   );
-
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">

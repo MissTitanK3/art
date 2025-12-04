@@ -1,6 +1,4 @@
-import * as React from "react";
 import { type Control } from "react-hook-form";
-
 import {
   ContactArrayField,
   StringArrayField,
@@ -26,33 +24,27 @@ import {
   formatText,
 } from "@workspace/ui/patterns/features/intake/utils";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-
 interface BaseProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   sectionName?: string;
 }
-
 interface EditProps extends BaseProps {
   mode?: "edit";
   control: Control<any>;
   onSave?: () => void;
 }
-
 interface ViewProps extends BaseProps {
   mode: "view";
   data: DetaineeIntake;
 }
-
 export type LegalSupportSectionProps = EditProps | ViewProps;
-
 export function LegalSupportSection(props: LegalSupportSectionProps) {
   const title = props.title ?? "Legal & Support";
   const description =
     props.description ??
     "Family contacts, legal representation, and urgent needs.";
   const sectionName = props.sectionName ?? "Legal Details";
-
   if (props.mode === "view") {
     const { data } = props;
     return (
@@ -84,9 +76,7 @@ export function LegalSupportSection(props: LegalSupportSectionProps) {
       </FormSectionCard>
     );
   }
-
   const { control, onSave } = props;
-
   return (
     <FormSectionCard
       title={title}

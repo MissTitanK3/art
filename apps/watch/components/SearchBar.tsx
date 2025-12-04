@@ -1,13 +1,9 @@
 "use client";
-
-import React from "react";
-
 interface Props {
   query: string;
   onChange: (value: string) => void;
 }
-
-export const SearchBar: React.FC<Props> = ({ query, onChange }) => {
+export const SearchBar = ({ query, onChange }: Props) => {
   return (
     <input
       type="text"

@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@workspace/ui/components/dialog";
+} from "@workspace/ui/primitives/dialog";
 import { Button } from "@workspace/ui/primitives/button";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
@@ -18,7 +18,7 @@ export function AuthModalGate() {
   const { status } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const [mode, setMode] = React.useState<"signin" | "signup" | "forgot">(
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(
     "signin"
   );
 
@@ -28,7 +28,7 @@ export function AuthModalGate() {
   const open = status === "unauthenticated" && !onAuthRoute && !onPublicRoute;
 
   // Redirect to home when authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (status === "authenticated") {
       if (pathname !== "/" && !pathname?.startsWith("/ship-demo"))
         router.push("/");

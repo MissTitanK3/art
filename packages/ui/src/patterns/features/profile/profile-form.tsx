@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "@workspace/ui/primitives/input";
@@ -23,7 +22,6 @@ import {
 import RoleSelector from "@workspace/ui/patterns/features/roles/role-selector";
 import { RiskSheet } from "@workspace/ui/patterns/features/profile/risk-sheet";
 import { DumbField } from "@workspace/ui/patterns/common/dumb-field";
-
 import {
   Select,
   SelectContent,
@@ -32,7 +30,6 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { US_STATES } from "@workspace/ui/lib/constants/states";
-
 import { BasicImage } from "@workspace/ui/patterns/common/basic-image";
 import {
   DeleteResult,
@@ -41,7 +38,6 @@ import {
   ProfileFormOutput,
   SIGNAL_HANDLE_RE,
 } from "@workspace/store/types/profile.ts";
-
 import { ImageComponent } from "@workspace/store/utils/image";
 import {
   AccessRoleDescriptions,
@@ -53,21 +49,30 @@ import {
 import { useImage } from "@workspace/ui/providers/image-provider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@workspace/ui/primitives/label";
-
 export interface ProfileFormProps {
-  initial: Partial<ProfileFormInput> & { id?: string };
-  onSubmit: (
-    values: ProfileFormOutput
-  ) => Promise<{ ok: boolean; err?: string }> | { ok: boolean; err?: string };
+  initial: Partial<ProfileFormInput> & {
+    id?: string;
+  };
+  onSubmit: (values: ProfileFormOutput) =>
+    | Promise<{
+        ok: boolean;
+        err?: string;
+      }>
+    | {
+        ok: boolean;
+        err?: string;
+      };
   onDelete: () => Promise<DeleteResult> | DeleteResult;
   onDirtyChange?: (dirty: boolean) => void;
-  onGenerateKey?: () => Promise<{ publicPem: string; privatePem: string }>;
+  onGenerateKey?: () => Promise<{
+    publicPem: string;
+    privatePem: string;
+  }>;
   busy?: boolean;
   disableDelete?: boolean;
   ImageComponent?: ImageComponent;
   ImageUrl?: string;
 }
-
 export function ProfileForm({
   initial,
   onSubmit,
@@ -78,11 +83,10 @@ export function ProfileForm({
   ImageComponent: ImageProp,
   ImageUrl,
 }: ProfileFormProps) {
-  const [isDeleting, startDelete] = React.useTransition();
-  const [hasViewedSheet, setHasViewedSheet] = React.useState(false);
+  const [isDeleting, startDelete] = useTransition();
+  const [hasViewedSheet, setHasViewedSheet] = useState(false);
   const ImageFromContext = useImage();
   const Image = ImageProp ?? ImageFromContext ?? BasicImage;
-
   // RHF v8 instance
   const {
     register,
@@ -109,7 +113,6 @@ export function ProfileForm({
     },
     mode: "onChange",
   });
-
   const submit: SubmitHandler<ProfileFormOutput> = async (values) => {
     try {
       const res = await onSubmit(values);
@@ -124,7 +127,6 @@ export function ProfileForm({
       toast.error("Unexpected error saving profile");
     }
   };
-
   return (
     // <Form {...form}>
     <form
@@ -446,15 +448,13 @@ export function ProfileForm({
     // </Form>
   );
 }
-
 /* ------------------------------------------
    Helpers
 ------------------------------------------- */
-
 // If a previous schema used `state` as string[],
 // coerce `initial.state` into a single string for the UI.
 function coerceInitial(
-  initial: Partial<ProfileFormInput>
+  initial: Partial<ProfileFormInput>,
 ): Partial<ProfileFormInput> {
   const next = { ...initial };
   const raw = (initial as any)?.state;

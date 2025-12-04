@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useState } from "react";
 import { cn } from "@workspace/ui/lib/utils";
 import { Textarea } from "@workspace/ui/primitives/textarea";
 import { Button } from "@workspace/ui/primitives/button";
@@ -9,7 +9,6 @@ import {
   TabsTrigger,
 } from "@workspace/ui/primitives/tabs";
 import { MarkdownPreview } from "@workspace/ui/patterns/common/markdown-preview";
-
 interface MarkdownEditorProps {
   label: string;
   value?: string;
@@ -18,7 +17,6 @@ interface MarkdownEditorProps {
   description?: string;
   className?: string;
 }
-
 export function MarkdownEditor({
   label,
   value = "",
@@ -27,7 +25,7 @@ export function MarkdownEditor({
   description,
   className,
 }: MarkdownEditorProps) {
-  const [activeTab, setActiveTab] = React.useState("edit");
+  const [activeTab, setActiveTab] = useState("edit");
   return (
     <div className={cn("space-y-2", className)}>
       <div>
@@ -70,5 +68,4 @@ export function MarkdownEditor({
     </div>
   );
 }
-
 export default MarkdownEditor;

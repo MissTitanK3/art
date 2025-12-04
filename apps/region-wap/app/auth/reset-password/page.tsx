@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -13,20 +12,17 @@ import {
 import { Label } from "@workspace/ui/primitives/label";
 import { Input } from "@workspace/ui/primitives/input";
 import { Button } from "@workspace/ui/primitives/button";
-
 export default function ResetPasswordPage() {
   const { updatePassword } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const [password, setPassword] = React.useState("");
-  const [confirm, setConfirm] = React.useState("");
-  const [pending, setPending] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [info, setInfo] = React.useState<string | null>(null);
-
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   // Optional: show a hint when recovering
   const isRecovery = params?.get("type") === "recovery";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -46,13 +42,12 @@ export default function ResetPasswordPage() {
       setTimeout(() => router.push("/sign-in"), 1200);
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Failed to update password."
+        err instanceof Error ? err.message : "Failed to update password.",
       );
     } finally {
       setPending(false);
     }
   };
-
   return (
     <div className="mx-auto mt-12 w-full max-w-md">
       <Card>

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   MeetANeedDataProvider,
@@ -43,7 +42,6 @@ import {
   humanizeNeedCategory,
 } from "@workspace/ui/lib/constants/meet-a-need";
 import SubmitNeedDrawer from "@workspace/ui/patterns/features/meet-a-need/submit-need-drawer";
-
 export default function MeetANeedPage() {
   return (
     <MeetANeedDataProvider>
@@ -63,7 +61,6 @@ export default function MeetANeedPage() {
     </MeetANeedDataProvider>
   );
 }
-
 function NeedsListWrapper() {
   const needs = useMeetANeedStoreProvider((s) => s.needs);
   const update = useMeetANeedStoreProvider((s) => s.updateNeed);
@@ -71,25 +68,24 @@ function NeedsListWrapper() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { total } = useMeetANeedQueryMeta();
-
-  const [query, setQuery] = React.useState("");
-  const [debouncedQuery, setDebouncedQuery] = React.useState("");
-  React.useEffect(() => {
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  useEffect(() => {
     const h = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(h);
   }, [query]);
-  const [urgency, setUrgency] = React.useState<string>("all");
-  const [visibility, setVisibility] = React.useState<string>("all");
-  const [status, setStatus] = React.useState<string>("all");
-  const [dateRange, setDateRange] = React.useState<{ from?: Date; to?: Date }>(
-    {}
-  );
-  const [pageSize, setPageSize] = React.useState<number>(10);
-  const [page, setPage] = React.useState<number>(1);
-  const lastQueryRef = React.useRef<string | null>(null);
-  const [category, setCategory] = React.useState<string>("all");
-
-  React.useEffect(() => {
+  const [urgency, setUrgency] = useState<string>("all");
+  const [visibility, setVisibility] = useState<string>("all");
+  const [status, setStatus] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<{
+    from?: Date;
+    to?: Date;
+  }>({});
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [page, setPage] = useState<number>(1);
+  const lastQueryRef = useRef<string | null>(null);
+  const [category, setCategory] = useState<string>("all");
+  useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const raw = window.localStorage.getItem("meetANeed.filters");
@@ -110,9 +106,8 @@ function NeedsListWrapper() {
     } catch {
       /* no-op: ignore bad stored filters */
     }
-
     const params = Object.fromEntries(
-      (searchParams ?? new URLSearchParams()).entries()
+      (searchParams ?? new URLSearchParams()).entries(),
     );
     if (typeof params.q === "string") setQuery(params.q);
     if (typeof params.category === "string") setCategory(params.category);
@@ -136,8 +131,7 @@ function NeedsListWrapper() {
       if (!isNaN(n) && n > 0) setPage(n);
     }
   }, [searchParams]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       if (typeof window === "undefined") return;
       const payload = {
@@ -166,10 +160,8 @@ function NeedsListWrapper() {
     pageSize,
     page,
   ]);
-
-  const categories = React.useMemo(() => NEED_CATEGORIES, []);
-
-  const buildQueryString = React.useCallback(() => {
+  const categories = useMemo(() => NEED_CATEGORIES, []);
+  const buildQueryString = useCallback(() => {
     const params = new URLSearchParams();
     if (debouncedQuery) params.set("q", debouncedQuery);
     if (category !== "all") params.set("category", category);
@@ -191,15 +183,13 @@ function NeedsListWrapper() {
     pageSize,
     page,
   ]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const qs = buildQueryString();
     if (qs === lastQueryRef.current) return;
     lastQueryRef.current = qs;
     router.replace(`?${qs}`, { scroll: false });
   }, [buildQueryString, router]);
-
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const q = (debouncedQuery || "").toLowerCase();
     const match = (s?: string) => (s || "").toLowerCase().includes(q);
     const inRange = (d: string) => {
@@ -233,17 +223,15 @@ function NeedsListWrapper() {
       return true;
     });
   }, [needs, debouncedQuery, category, urgency, visibility, status, dateRange]);
-
   const totalPages = Math.max(
     1,
-    Math.ceil(Math.max(1, total || filtered.length) / pageSize)
+    Math.ceil(Math.max(1, total || filtered.length) / pageSize),
   );
   const currentPage = Math.min(page, totalPages);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, filtered.length);
   const pageItems = filtered.slice(startIndex, endIndex);
-
-  const onOfferHelp = React.useCallback(
+  const onOfferHelp = useCallback(
     async (id: string) => {
       const client = getSupabaseBrowserClient();
       await client
@@ -252,46 +240,40 @@ function NeedsListWrapper() {
         .eq("id", id);
       update(id, { status: "matched" });
     },
-    [update]
+    [update],
   );
-
-  const onUpdateStatus = React.useCallback(
+  const onUpdateStatus = useCallback(
     async (id: string, status: "open" | "matched" | "fulfilled" | "closed") => {
       const client = getSupabaseBrowserClient();
       await client.from("meet_a_need").update({ status }).eq("id", id);
       update(id, { status });
     },
-    [update]
+    [update],
   );
-
-  const onUpdateNeed = React.useCallback(
+  const onUpdateNeed = useCallback(
     async (id: string, patch: any) => {
       const client = getSupabaseBrowserClient();
       await client.from("meet_a_need").update(patch).eq("id", id);
       update(id, patch);
     },
-    [update]
+    [update],
   );
-
-  const onDeleteNeed = React.useCallback(
+  const onDeleteNeed = useCallback(
     async (id: string) => {
       const client = getSupabaseBrowserClient();
       await client.rpc("safe_delete_meet_a_need", { p_id: id });
       remove(id);
     },
-    [remove]
+    [remove],
   );
-
   const handleGoTo = (p: number) =>
     setPage(Math.max(1, Math.min(totalPages, p)));
-
   const renderPaginationNumbers = () => {
     const items: React.ReactNode[] = [];
     const maxToShow = 5;
     let start = Math.max(1, currentPage - Math.floor(maxToShow / 2));
     const end = Math.min(totalPages, start + maxToShow - 1);
     if (end - start + 1 < maxToShow) start = Math.max(1, end - maxToShow + 1);
-
     if (start > 1) {
       items.push(
         <PaginationItem key="start-1">
@@ -304,16 +286,15 @@ function NeedsListWrapper() {
           >
             1
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
       if (start > 2)
         items.push(
           <PaginationItem key="start-ellipsis">
             <PaginationEllipsis />
-          </PaginationItem>
+          </PaginationItem>,
         );
     }
-
     for (let i = start; i <= end; i++) {
       items.push(
         <PaginationItem key={i}>
@@ -327,16 +308,15 @@ function NeedsListWrapper() {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-
     if (end < totalPages) {
       if (end < totalPages - 1)
         items.push(
           <PaginationItem key="end-ellipsis">
             <PaginationEllipsis />
-          </PaginationItem>
+          </PaginationItem>,
         );
       items.push(
         <PaginationItem key={totalPages}>
@@ -349,12 +329,11 @@ function NeedsListWrapper() {
           >
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;
   };
-
   return (
     <>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -437,7 +416,7 @@ function NeedsListWrapper() {
                     onClick={() => {
                       const now = new Date();
                       const from = new Date(
-                        now.getTime() - 24 * 60 * 60 * 1000
+                        now.getTime() - 24 * 60 * 60 * 1000,
                       );
                       setDateRange({ from, to: now });
                     }}
@@ -450,7 +429,7 @@ function NeedsListWrapper() {
                     onClick={() => {
                       const now = new Date();
                       const from = new Date(
-                        now.getTime() - 7 * 24 * 60 * 60 * 1000
+                        now.getTime() - 7 * 24 * 60 * 60 * 1000,
                       );
                       setDateRange({ from, to: now });
                     }}
@@ -463,7 +442,7 @@ function NeedsListWrapper() {
                     onClick={() => {
                       const now = new Date();
                       const from = new Date(
-                        now.getTime() - 30 * 24 * 60 * 60 * 1000
+                        now.getTime() - 30 * 24 * 60 * 60 * 1000,
                       );
                       setDateRange({ from, to: now });
                     }}
@@ -579,12 +558,10 @@ function NeedsListWrapper() {
     </>
   );
 }
-
 function SubmitNeedDrawerWrapper() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const addNeed = useMeetANeedStoreProvider((s) => s.addNeed);
-
-  const handleSubmit = React.useCallback(
+  const handleSubmit = useCallback(
     async (data: {
       category: string;
       description: string;
@@ -611,7 +588,6 @@ function SubmitNeedDrawerWrapper() {
       const json = await resp.json();
       const res = { data: json?.need ?? null, error: null as any };
       if (!res.data) return;
-
       if (data.files?.length) {
         const bucket = client.storage.from("media");
         const needId = String(res.data.id);
@@ -631,10 +607,10 @@ function SubmitNeedDrawerWrapper() {
             } catch {
               return null;
             }
-          })
+          }),
         );
         const mediaUrls = uploads.filter(
-          (u): u is string => typeof u === "string"
+          (u): u is string => typeof u === "string",
         );
         if (mediaUrls.length > 0) {
           const nextLocation = {
@@ -653,7 +629,6 @@ function SubmitNeedDrawerWrapper() {
           }
         }
       }
-
       addNeed({
         id: String(res.data.id),
         created_by: res.data.created_by ?? null,
@@ -672,9 +647,8 @@ function SubmitNeedDrawerWrapper() {
         created_at: res.data.created_at,
       });
     },
-    [addNeed]
+    [addNeed],
   );
-
   return (
     <>
       <Button size="sm" onClick={() => setOpen(true)}>

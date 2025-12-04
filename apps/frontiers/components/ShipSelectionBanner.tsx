@@ -1,13 +1,11 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileStore } from "@/store/useProfileStore";
 import { useShipStore } from "@/store/useShipStore";
 import Link from "next/link";
 import { Button } from "@workspace/ui/primitives/button";
 import { fetchCurrentShipCached } from "@/lib/shipsApi";
-
 function MiniStat({
   label,
   value,
@@ -32,20 +30,17 @@ function MiniStat({
     </div>
   );
 }
-
 export function ShipSelectionBanner() {
   const { session } = useAuth();
   const storeProfileId = useProfileStore((s) => s.profile?.id ?? null);
   const profileId = storeProfileId || session?.user?.id || null;
-  const [hasShip, setHasShip] = React.useState<boolean | null>(null);
-  const [shipName, setShipName] = React.useState<string | null>(null);
-
+  const [hasShip, setHasShip] = useState<boolean | null>(null);
+  const [shipName, setShipName] = useState<string | null>(null);
   // Store stats
   const condition = useShipStore((s) => s.ship_condition);
   const morale = useShipStore((s) => s.crew_morale);
   const fatigue = useShipStore((s) => s.fatigue);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
     const check = async () => {
       if (!profileId) {
@@ -53,7 +48,7 @@ export function ShipSelectionBanner() {
         return;
       }
       try {
-        const json = await fetchCurrentShipCached(profileId, 60_000);
+        const json = await fetchCurrentShipCached(profileId, 60000);
         if (!active) return;
         setHasShip(!!json?.current);
         if (json?.current?.ship?.name) {
@@ -70,9 +65,7 @@ export function ShipSelectionBanner() {
       clearInterval(id);
     };
   }, [profileId]);
-
   if (hasShip === null) return null; // Loading
-
   if (!hasShip) {
     return (
       <div className="fixed bottom-3 inset-x-0 flex justify-center z-50 pointer-events-none">
@@ -87,7 +80,6 @@ export function ShipSelectionBanner() {
       </div>
     );
   }
-
   // Show stats if ship exists
   return (
     <div className="fixed bottom-3 inset-x-0 flex justify-center z-50 pointer-events-none">

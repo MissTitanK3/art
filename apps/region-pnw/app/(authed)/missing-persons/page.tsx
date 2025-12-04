@@ -1,14 +1,10 @@
 "use client";
-
-import * as React from "react";
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import { MissingPersonsDirectory } from "@workspace/ui/patterns/features/missing-persons/missing-persons-directory";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-
 export default function MissingPersonsPage() {
   const localRecords = useMissingPersonStore((state) => state.records);
   const localIntakes = localRecords as unknown as DetaineeIntake[];
-
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-16">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

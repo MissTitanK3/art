@@ -1,7 +1,4 @@
 "use client";
-
-import * as React from "react";
-
 type Fleet = {
   id: string;
   name: string;
@@ -9,14 +6,12 @@ type Fleet = {
   leader_id: string | null;
   members: string[] | null;
 };
-
 export function AllianceTab(props: {
   fleetsLoading: boolean;
   fleets: Fleet[];
   profileId: string | null;
 }) {
   const { fleetsLoading, fleets, profileId } = props;
-
   return (
     <section>
       <h2 className="text-sm font-medium text-muted-foreground mb-2">

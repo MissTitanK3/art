@@ -1,20 +1,16 @@
 "use client";
-
-import * as React from "react";
-
+import { useCallback, useEffect, useState } from "react";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import AdvocacyGroupsAdmin, {
   type AdvocacyGroup,
 } from "@workspace/ui/patterns/features/advocacy/advocacy-groups-admin";
-
 export default function AdvocacyGroupsPage() {
   const profile = useProfileStore((s) => s.profile);
-  const [groups, setGroups] = React.useState<AdvocacyGroup[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const reload = React.useCallback(async () => {
+  const [groups, setGroups] = useState<AdvocacyGroup[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const reload = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -30,13 +26,15 @@ export default function AdvocacyGroupsPage() {
       setLoading(false);
     }
   }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     reload();
   }, [reload]);
-
-  const addGroup = React.useCallback(
-    async (payload: Partial<AdvocacyGroup> & { contact_emails?: string[] }) => {
+  const addGroup = useCallback(
+    async (
+      payload: Partial<AdvocacyGroup> & {
+        contact_emails?: string[];
+      },
+    ) => {
       const res = await fetch("/api/admin/advocacy-groups", {
         method: "POST",
         credentials: "include",
@@ -46,26 +44,21 @@ export default function AdvocacyGroupsPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await reload();
     },
-    [reload]
+    [reload],
   );
-
-  const toggleActive = React.useCallback(
-    async (g: AdvocacyGroup, next: boolean) => {
-      setGroups((prev) =>
-        prev.map((x) => (x.id === g.id ? { ...x, active_status: next } : x))
-      );
-      const res = await fetch(`/api/admin/advocacy-groups/${g.id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active_status: next }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    },
-    []
-  );
-
-  const removeGroup = React.useCallback(async (g: AdvocacyGroup) => {
+  const toggleActive = useCallback(async (g: AdvocacyGroup, next: boolean) => {
+    setGroups((prev) =>
+      prev.map((x) => (x.id === g.id ? { ...x, active_status: next } : x)),
+    );
+    const res = await fetch(`/api/admin/advocacy-groups/${g.id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active_status: next }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  }, []);
+  const removeGroup = useCallback(async (g: AdvocacyGroup) => {
     const res = await fetch(`/api/admin/advocacy-groups/${g.id}`, {
       method: "DELETE",
       credentials: "include",
@@ -73,8 +66,7 @@ export default function AdvocacyGroupsPage() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     setGroups((prev) => prev.filter((x) => x.id !== g.id));
   }, []);
-
-  const loadRecords = React.useCallback(async (): Promise<DetaineeIntake[]> => {
+  const loadRecords = useCallback(async (): Promise<DetaineeIntake[]> => {
     const res = await fetch("/api/admin/missing-persons");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const { records } = await res.json();
@@ -94,19 +86,18 @@ export default function AdvocacyGroupsPage() {
               ? row.urgent_needs
               : undefined,
             lastUpdated: row.last_updated ?? undefined,
-          }) as DetaineeIntake
+          }) as DetaineeIntake,
       )
       .filter((r: DetaineeIntake) => !!r.caseId);
     return mapped;
   }, []);
-
   return (
     <AdvocacyGroupsAdmin
       groups={groups}
       loading={loading}
       error={error}
       canManage={["admin", "regional_admin", "national_admin"].includes(
-        (profile?.access_role ?? "") as string
+        (profile?.access_role ?? "") as string,
       )}
       profile={profile}
       onReload={reload}

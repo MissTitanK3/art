@@ -1,9 +1,6 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { humanizeKey, pct } from "@/lib/format";
-
 export function MissingSlotCard({
   slot,
   kind,

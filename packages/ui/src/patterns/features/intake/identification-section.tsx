@@ -1,6 +1,4 @@
-import * as React from "react";
 import { type Control } from "react-hook-form";
-
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import {
   FormControl,
@@ -21,32 +19,26 @@ import {
   formatText,
 } from "@workspace/ui/patterns/features/intake/utils";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-
 interface BaseProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   sectionName?: string;
 }
-
 interface EditProps extends BaseProps {
   mode?: "edit";
   control: Control<any>;
   onSave?: () => void;
 }
-
 interface ViewProps extends BaseProps {
   mode: "view";
   data: DetaineeIntake;
 }
-
 export type IdentificationSectionProps = EditProps | ViewProps;
-
 export function IdentificationSection(props: IdentificationSectionProps) {
   const title = props.title ?? "Identification";
   const description =
     props.description ?? "Subject identifiers and personal details.";
   const sectionName = props.sectionName ?? "Identification";
-
   if (props.mode === "view") {
     const { data } = props;
     return (
@@ -82,9 +74,7 @@ export function IdentificationSection(props: IdentificationSectionProps) {
       </FormSectionCard>
     );
   }
-
   const { control, onSave } = props;
-
   return (
     <FormSectionCard
       title={title}

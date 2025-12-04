@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useMemo, useState } from "react";
 import type { AcademyTrainingSession } from "@workspace/store/types/academy.ts";
 import {
   Card,
@@ -26,33 +25,28 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { Input } from "@workspace/ui/primitives/input";
-
 type Props = {
   initialSessions: AcademyTrainingSession[];
 };
-
 const STATUS_OPTIONS: AcademyTrainingSession["status"][] = [
   "scheduled",
   "in_progress",
   "completed",
   "archived",
 ];
-
 const MODALITY_OPTIONS: AcademyTrainingSession["modality"][] = [
   "online",
   "in_person",
   "hybrid",
 ];
-
 export default function TrainingClient({ initialSessions }: Props) {
-  const [query, setQuery] = React.useState("");
-  const [status, setStatus] = React.useState<string>("");
-  const [modality, setModality] = React.useState<string>("");
-  const [rows, setRows] = React.useState<AcademyTrainingSession[]>(
-    () => initialSessions
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<string>("");
+  const [modality, setModality] = useState<string>("");
+  const [rows, setRows] = useState<AcademyTrainingSession[]>(
+    () => initialSessions,
   );
-
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     return rows.filter((s) => {
       if (status && s.status !== status) return false;
       if (modality && s.modality !== modality) return false;
@@ -70,7 +64,6 @@ export default function TrainingClient({ initialSessions }: Props) {
       return true;
     });
   }, [rows, status, modality, query]);
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">

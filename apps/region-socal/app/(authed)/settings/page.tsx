@@ -1,28 +1,23 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import { toast } from "@workspace/ui/primitives/sonner";
 import NotificationPrefsForm from "@workspace/ui/patterns/features/settings/notification-prefs-form";
 import PreferencesSection from "@workspace/ui/patterns/features/settings/preferences-section";
 import { NOTIFICATION_CHANNELS } from "@workspace/store/types/notifications";
-
 type PrefsRow = {
   user_id: string;
   global_opt_out: boolean;
   muted_channels: string[];
 };
-
 const ALL_CHANNELS = NOTIFICATION_CHANNELS;
-
 export default function SettingsPage() {
-  const [loading, setLoading] = React.useState(true);
-  const [saving, setSaving] = React.useState(false);
-  const [userId, setUserId] = React.useState<string | null>(null);
-  const [globalOptOut, setGlobalOptOut] = React.useState(false);
-  const [muted, setMuted] = React.useState<Record<string, boolean>>({});
-
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [globalOptOut, setGlobalOptOut] = useState(false);
+  const [muted, setMuted] = useState<Record<string, boolean>>({});
+  useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     let mounted = true;
     (async () => {
@@ -47,7 +42,7 @@ export default function SettingsPage() {
             ? row!.muted_channels
             : [];
           (ALL_CHANNELS as readonly string[]).forEach(
-            (c) => (mset[c] = mutedChannels.includes(c as string))
+            (c) => (mset[c] = mutedChannels.includes(c as string)),
           );
           setMuted(mset);
         }
@@ -61,10 +56,8 @@ export default function SettingsPage() {
       mounted = false;
     };
   }, []);
-
   const toggledMuted = (channel: string) =>
     setMuted((prev) => ({ ...prev, [channel]: !prev[channel] }));
-
   const savePrefs = async () => {
     if (!userId) return;
     setSaving(true);
@@ -90,7 +83,6 @@ export default function SettingsPage() {
       setSaving(false);
     }
   };
-
   return (
     <section className="max-w-3xl space-y-6">
       <h1 className="text-2xl font-bold">Settings</h1>

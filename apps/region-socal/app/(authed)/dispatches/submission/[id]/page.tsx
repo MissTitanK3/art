@@ -1,23 +1,19 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/dispatch-submission-layout";
-
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
-
 import type {
   DispatchUpdate,
   LogisticsItem,
 } from "@workspace/store/types/dispatch";
 import { useCommsData } from "@/hooks/useCommsData";
 import { CommsDashboardView } from "@workspace/ui/patterns/features/dispatch/comms-dashboard-view";
-
 async function fetchDispatchSubmissionFromDatabase(
-  id: string
+  id: string,
 ): Promise<DispatchSubmission | null> {
   try {
     const res = await fetch(`/api/dispatches/${id}`);
@@ -32,14 +28,13 @@ async function fetchDispatchSubmissionFromDatabase(
     return null;
   }
 }
-
 async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
   try {
     const res = await fetch(`/api/dispatches/${id}/updates`);
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] fetch updates error",
-        res.status
+        res.status,
       );
       return [];
     }
@@ -50,14 +45,13 @@ async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
     return [];
   }
 }
-
 async function fetchSubmissionLogistics(id: string): Promise<LogisticsItem[]> {
   try {
     const res = await fetch(`/api/dispatches/${id}/logistics`);
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] fetch logistics error",
-        res.status
+        res.status,
       );
       return [];
     }
@@ -68,10 +62,9 @@ async function fetchSubmissionLogistics(id: string): Promise<LogisticsItem[]> {
     return [];
   }
 }
-
 async function persistSubmissionPatchToDatabase(
   id: string,
-  patch: Partial<DispatchSubmission>
+  patch: Partial<DispatchSubmission>,
 ): Promise<void> {
   // Send patch to API
   try {
@@ -87,10 +80,9 @@ async function persistSubmissionPatchToDatabase(
     console.warn("[DispatchSubmissionDataLayer] PATCH error", e);
   }
 }
-
 async function insertUpdateRow(
   dispatchId: string,
-  update: DispatchUpdate
+  update: DispatchUpdate,
 ): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/${dispatchId}/updates`, {
@@ -101,14 +93,13 @@ async function insertUpdateRow(
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] insert update error",
-        res.status
+        res.status,
       );
     }
   } catch (e) {
     console.warn("[DispatchSubmissionDataLayer] insert update error", e);
   }
 }
-
 async function updateUpdateRow(updateId: string, text: string): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/updates/${updateId}`, {
@@ -119,14 +110,13 @@ async function updateUpdateRow(updateId: string, text: string): Promise<void> {
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] update update error",
-        res.status
+        res.status,
       );
     }
   } catch (e) {
     console.warn("[DispatchSubmissionDataLayer] update update error", e);
   }
 }
-
 async function deleteUpdateRow(updateId: string): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/updates/${updateId}`, {
@@ -135,18 +125,17 @@ async function deleteUpdateRow(updateId: string): Promise<void> {
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] delete update error",
-        res.status
+        res.status,
       );
     }
   } catch (e) {
     console.warn("[DispatchSubmissionDataLayer] delete update error", e);
   }
 }
-
 async function persistLogisticsDiff(
   dispatchId: string,
   prevItems: LogisticsItem[],
-  nextItems: LogisticsItem[]
+  nextItems: LogisticsItem[],
 ): Promise<void> {
   try {
     const res = await fetch(`/api/dispatches/${dispatchId}/logistics`, {
@@ -157,33 +146,30 @@ async function persistLogisticsDiff(
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] logistics diff error",
-        res.status
+        res.status,
       );
     }
   } catch (e) {
     console.warn("[DispatchSubmissionDataLayer] logistics diff error", e);
   }
 }
-
 export default function DispatchSubmissionPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{
+    id: string;
+  }>();
   const id = params.id;
-
   // Comms data for the Radio Comms tab
   const commsData = useCommsData({ eventId: id });
-
   const storeSubmission = useDispatchStore((s) =>
-    s.submissions.find((sub) => sub.id === id)
+    s.submissions.find((sub) => sub.id === id),
   );
   const updateSubmission = useDispatchStore((s) => s.updateSubmission);
   const addSubmission = useDispatchStore((s) => s.addSubmission);
-  const fetchedRef = React.useRef<string | null>(null);
+  const fetchedRef = useRef<string | null>(null);
   const roster = usePodStore((s) => s.activeRoster);
-  const [loading, setLoading] = React.useState(false);
-
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
     let cancelled = false;
-
     async function hydrate() {
       // Prevent refetch loops when the local store updates
       if (fetchedRef.current === id) return;
@@ -191,7 +177,6 @@ export default function DispatchSubmissionPage() {
       if (!id) {
         return;
       }
-
       setLoading(true);
       try {
         const result = await fetchDispatchSubmissionFromDatabase(id);
@@ -218,7 +203,7 @@ export default function DispatchSubmissionPage() {
         if (!cancelled) {
           console.warn(
             "DispatchSubmissionDataLayer: failed to fetch submission",
-            error
+            error,
           );
         }
       } finally {
@@ -228,15 +213,12 @@ export default function DispatchSubmissionPage() {
       }
       setLoading(false);
     }
-
     hydrate();
     return () => {
       cancelled = true;
     };
   }, [id, updateSubmission, addSubmission, storeSubmission]);
-
   const submission = storeSubmission;
-
   if (!submission) {
     return (
       <div className="p-4">
@@ -244,7 +226,6 @@ export default function DispatchSubmissionPage() {
       </div>
     );
   }
-
   // Handlers: persist to DB then update local store
   const handleUpdateSubmission = async (patch: Partial<DispatchSubmission>) => {
     // Persist core submission fields
@@ -253,7 +234,6 @@ export default function DispatchSubmissionPage() {
     } catch (e) {
       // already logged
     }
-
     // Persist logistics if present by diffing
     if (patch.logistics) {
       const prev = submission.logistics ?? [];
@@ -264,12 +244,10 @@ export default function DispatchSubmissionPage() {
         // already logged
       }
     }
-
     updateSubmission(submission.id, patch);
   };
-
   const handleAddUpdate = async (
-    u: Omit<DispatchUpdate, "id" | "createdAt">
+    u: Omit<DispatchUpdate, "id" | "createdAt">,
   ) => {
     const newUpdate: DispatchUpdate = {
       id: crypto.randomUUID(),
@@ -287,7 +265,6 @@ export default function DispatchSubmissionPage() {
     const nextUpdates = [...(submission.updates ?? []), newUpdate];
     updateSubmission(submission.id, { updates: nextUpdates });
   };
-
   const handleEditUpdate = async (updateId: string, text: string) => {
     try {
       await updateUpdateRow(updateId, text);
@@ -295,11 +272,10 @@ export default function DispatchSubmissionPage() {
       // already logged
     }
     const nextUpdates = (submission.updates ?? []).map((u) =>
-      u.id === updateId ? { ...u, text } : u
+      u.id === updateId ? { ...u, text } : u,
     );
     updateSubmission(submission.id, { updates: nextUpdates });
   };
-
   const handleRemoveUpdate = async (updateId: string) => {
     try {
       await deleteUpdateRow(updateId);
@@ -307,11 +283,10 @@ export default function DispatchSubmissionPage() {
       // already logged
     }
     const nextUpdates = (submission.updates ?? []).filter(
-      (u) => u.id !== updateId
+      (u) => u.id !== updateId,
     );
     updateSubmission(submission.id, { updates: nextUpdates });
   };
-
   return (
     <div suppressHydrationWarning>
       <DispatchSubmissionLayout

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -36,14 +35,12 @@ import {
   type RosterEditorSection,
   ROSTER_EDITOR_SECTION_META,
 } from "./types.ts";
-
 type Props = {
   rows: RosterEntry[];
   podName: string;
   onRemoveMember: (memberId: string) => void;
   onEdit?: (id: string, section: RosterEditorSection) => void;
 };
-
 const CARD_SECTION_ACTIONS: Array<{
   key: RosterEditorSection;
   label: string;
@@ -53,9 +50,7 @@ const CARD_SECTION_ACTIONS: Array<{
   { key: "languages", label: ROSTER_EDITOR_SECTION_META.languages.title },
   { key: "pathways", label: ROSTER_EDITOR_SECTION_META.pathways.title },
 ];
-
 const CERT_PREVIEW_LIMIT = 8;
-
 export function RosterCardList({
   rows,
   podName,
@@ -63,30 +58,29 @@ export function RosterCardList({
   onEdit,
 }: Props) {
   const { getCourseLabel } = useCourseLabelLookup();
-  const resolveCourseLabel = React.useCallback(
+  const resolveCourseLabel = useCallback(
     (courseId: string) => getCourseLabel(courseId),
-    [getCourseLabel]
+    [getCourseLabel],
   );
-  const [expandedCertRows, setExpandedCertRows] = React.useState<
+  const [expandedCertRows, setExpandedCertRows] = useState<
     Record<string, boolean>
   >({});
-  const handleCertificationToggle = React.useCallback(
+  const handleCertificationToggle = useCallback(
     (memberId: string, open: boolean) => {
       setExpandedCertRows((prev) => ({ ...prev, [memberId]: open }));
     },
-    []
+    [],
   );
-
   return (
     <div className="grid gap-4 mt-3">
       {rows.map((r) => {
         // Treat as Registered when roster entry links to a profile row
         const registered = Boolean(
-          r.profile_id && String(r.profile_id).trim().length > 0
+          r.profile_id && String(r.profile_id).trim().length > 0,
         );
         const coverageStatuses = computeCoverageAreaStatuses(r.certs ?? []);
         const engagedAreas = coverageStatuses.filter(
-          (entry) => entry.status !== "missing"
+          (entry) => entry.status !== "missing",
         );
         const joinedAtDate = toDate(r.joinedAt);
         const joinedAt = formatDate(joinedAtDate ?? undefined);
@@ -105,13 +99,11 @@ export function RosterCardList({
           .map((lang) => lang.display_name)
           .join(", ");
         const languagesHelper = languagesCount
-          ? `${languagePreview}${
-              languagesCount > 2 ? ` +${languagesCount - 2}` : ""
-            }`
+          ? `${languagePreview}${languagesCount > 2 ? ` +${languagesCount - 2}` : ""}`
           : "No languages listed yet.";
         const skills = Array.isArray(r.skills)
           ? r.skills.filter(
-              (skill) => typeof skill === "string" && skill.trim().length > 0
+              (skill) => typeof skill === "string" && skill.trim().length > 0,
             )
           : [];
         const visibleSkills = skills.slice(0, 6);
@@ -124,7 +116,7 @@ export function RosterCardList({
         const certPreview = certs.slice(0, CERT_PREVIEW_LIMIT);
         const certOverflow = Math.max(
           certSummary.total - certPreview.length,
-          0
+          0,
         );
         const showCertCollapsible = certOverflow > 0;
         const isCertExpanded = showCertCollapsible
@@ -154,7 +146,6 @@ export function RosterCardList({
             </Badge>
           );
         };
-
         return (
           <Card
             key={r.id}
@@ -197,7 +188,7 @@ export function RosterCardList({
                   className={cn(
                     registered
                       ? "bg-emerald-500/15 text-emerald-800"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
                   {registered ? "Registered" : "Manual Entry"}
@@ -254,9 +245,7 @@ export function RosterCardList({
                   label="Languages"
                   value={
                     languagesCount
-                      ? `${languagesCount} ${
-                          languagesCount === 1 ? "language" : "languages"
-                        }`
+                      ? `${languagesCount} ${languagesCount === 1 ? "language" : "languages"}`
                       : "—"
                   }
                   helper={languagesHelper}
@@ -265,9 +254,7 @@ export function RosterCardList({
                   label="Certifications"
                   value={
                     certSummary.total
-                      ? `${certSummary.total} ${
-                          certSummary.total === 1 ? "cert" : "certs"
-                        }`
+                      ? `${certSummary.total} ${certSummary.total === 1 ? "cert" : "certs"}`
                       : "—"
                   }
                   helper={certSummaryHelper}
@@ -377,7 +364,7 @@ export function RosterCardList({
                               <ChevronDown
                                 className={cn(
                                   "ml-1 h-3 w-3 transition-transform",
-                                  isCertExpanded ? "rotate-180" : "rotate-0"
+                                  isCertExpanded ? "rotate-180" : "rotate-0",
                                 )}
                               />
                             </Button>
@@ -463,7 +450,6 @@ export function RosterCardList({
     </div>
   );
 }
-
 function InfoTile({
   label,
   value,
@@ -485,7 +471,6 @@ function InfoTile({
     </div>
   );
 }
-
 type CertificationSummary = {
   total: number;
   completed: number;
@@ -494,9 +479,8 @@ type CertificationSummary = {
   mentor: number;
   incomplete: number;
 };
-
 function summarizeCertifications(
-  certs: NormalizedCertification[]
+  certs: NormalizedCertification[],
 ): CertificationSummary {
   const summary: CertificationSummary = {
     total: certs.length,
@@ -506,7 +490,6 @@ function summarizeCertifications(
     mentor: 0,
     incomplete: 0,
   };
-
   for (const cert of certs) {
     const level = (cert.level ?? "incomplete").toLowerCase();
     switch (level) {
@@ -527,10 +510,8 @@ function summarizeCertifications(
         break;
     }
   }
-
   return summary;
 }
-
 function formatCertificationSummary(summary: CertificationSummary): string {
   const parts: string[] = [];
   if (summary.completed) {
@@ -552,14 +533,12 @@ function formatCertificationSummary(summary: CertificationSummary): string {
     ? parts.join(" • ")
     : "No certifications tracked yet.";
 }
-
 function toDate(value?: string | Date | null): Date | null {
   if (!value) return null;
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   return date;
 }
-
 function formatRelativeTimeFromNow(date: Date): string | null {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
   const divisions: Array<{
@@ -574,10 +553,8 @@ function formatRelativeTimeFromNow(date: Date): string | null {
     { amount: 12, unit: "month" },
     { amount: Infinity, unit: "year" },
   ];
-
   let duration = (date.getTime() - Date.now()) / 1000;
   let unit: Intl.RelativeTimeFormatUnit = "second";
-
   for (const division of divisions) {
     if (Math.abs(duration) < division.amount) {
       unit = division.unit;
@@ -585,11 +562,9 @@ function formatRelativeTimeFromNow(date: Date): string | null {
     }
     duration /= division.amount;
   }
-
   const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
   return rtf.format(Math.round(duration), unit);
 }
-
 function certificationVariant(level: string) {
   const normalized = level.toLowerCase();
   if (normalized === "completed" || normalized === "mentor") {
@@ -603,10 +578,9 @@ function certificationVariant(level: string) {
   }
   return "secondary" as const;
 }
-
 function formatDate(
   value?: string | Date | null,
-  includeTime = false
+  includeTime = false,
 ): string | null {
   if (!value) return null;
   const date = value instanceof Date ? value : new Date(value);
@@ -617,7 +591,6 @@ function formatDate(
   });
   return formatter.format(date);
 }
-
 function CoverageBadge({
   entry,
   resolveCourseLabel,
@@ -632,19 +605,16 @@ function CoverageBadge({
       : missingCourses.length > 0
         ? "warning"
         : "info";
-
   const helperLabel =
     status === "ready"
       ? "Ready"
       : missingCourses.length > 0
         ? `${missingCourses.length} course${missingCourses.length === 1 ? "" : "s"} missing`
         : "In progress";
-
   const courseList = area.requiredCourses.map((courseId) => ({
     id: courseId,
     label: resolveCourseLabel(courseId),
   }));
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>

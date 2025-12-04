@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -21,27 +20,36 @@ import {
   DrawerTitle,
 } from "@workspace/ui/primitives/drawer";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
-
 type Props = {
   onLog?: (entry: {
     message: string;
     message_type: "Routine" | "Priority" | "Emergency";
     importance: "Low" | "Normal" | "High";
   }) => void | Promise<void>;
-  alerts?: { id: string; direction: string; description: string }[];
+  alerts?: {
+    id: string;
+    direction: string;
+    description: string;
+  }[];
   onCreateAlert?: (input: {
     direction: string;
     description: string;
   }) => Promise<string> | string | void;
   onUpdateAlert?: (
     id: string,
-    patch: Partial<{ direction: string; description: string }>
+    patch: Partial<{
+      direction: string;
+      description: string;
+    }>,
   ) => Promise<void> | void;
   onDeleteAlert?: (id: string) => Promise<void> | void;
   storageKey?: string; // legacy localStorage fallback if CRUD not provided
 };
-
-type CustomAlert = { id: string; direction: string; description: string };
+type CustomAlert = {
+  id: string;
+  direction: string;
+  description: string;
+};
 type PresetAlert = {
   id: string;
   label: string;
@@ -49,7 +57,6 @@ type PresetAlert = {
   description: string;
   group: "basic" | "code";
 };
-
 const NOOP_STORAGE: Storage = {
   get length() {
     return 0;
@@ -70,7 +77,6 @@ const NOOP_STORAGE: Storage = {
     /* noop */
   },
 };
-
 const BASIC_PRESETS: readonly PresetAlert[] = [
   {
     id: "basic-consolidate",
@@ -97,7 +103,6 @@ const BASIC_PRESETS: readonly PresetAlert[] = [
       'Order "All stations, radio silence — traffic pending at {location}." Name who can break the silence, note the trigger that will lift it, and log the time it went into effect.',
   },
 ];
-
 const CODE_PRESETS: readonly PresetAlert[] = [
   {
     id: "code-black",
@@ -148,15 +153,12 @@ const CODE_PRESETS: readonly PresetAlert[] = [
       'Declare "Code Green — all clear." Direct teams to resume prior assignments, reset accountability, and note any zones that remain restricted before full reopening.',
   },
 ];
-
 const ALL_PRESETS: readonly PresetAlert[] = [...BASIC_PRESETS, ...CODE_PRESETS];
-
 const EXAMPLES: CustomAlert[] = BASIC_PRESETS.map((preset) => ({
   id: preset.id,
   direction: preset.direction,
   description: preset.description,
 }));
-
 export function CommsAlertsCard({
   alerts: extAlerts,
   onCreateAlert,
@@ -208,63 +210,52 @@ export function CommsAlertsCard({
         }
         return EXAMPLES.map((example) => ({ ...example }));
       },
-    }
+    },
   );
   const useExternal = Array.isArray(extAlerts);
   const alerts = useExternal ? (extAlerts ?? []) : localAlerts;
-
-  const generateId = React.useCallback(() => {
+  const generateId = useCallback(() => {
     return typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : `alert-${Math.random().toString(36).slice(2, 11)}`;
   }, []);
-
-  const [editorDrawerOpen, setEditorDrawerOpen] = React.useState(false);
-  const [presetDrawerOpen, setPresetDrawerOpen] = React.useState(false);
-  const [formState, setFormState] = React.useState<
+  const [editorDrawerOpen, setEditorDrawerOpen] = useState(false);
+  const [presetDrawerOpen, setPresetDrawerOpen] = useState(false);
+  const [formState, setFormState] = useState<
     Pick<CustomAlert, "direction" | "description">
   >({
     direction: "",
     description: "",
   });
-  const [editingAlertId, setEditingAlertId] = React.useState<string | null>(
-    null
-  );
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [selectedPresetIds, setSelectedPresetIds] = React.useState<string[]>(
-    []
-  );
-  const [isPresetAdding, setIsPresetAdding] = React.useState(false);
-  const presetSectionRefs = React.useRef<
+  const [editingAlertId, setEditingAlertId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedPresetIds, setSelectedPresetIds] = useState<string[]>([]);
+  const [isPresetAdding, setIsPresetAdding] = useState(false);
+  const presetSectionRefs = useRef<
     Record<PresetAlert["group"], HTMLElement | null>
   >({
     basic: null,
     code: null,
   });
-
   const togglePresetSelection = (presetId: string) => {
     setSelectedPresetIds((prev) =>
       prev.includes(presetId)
         ? prev.filter((id) => id !== presetId)
-        : [...prev, presetId]
+        : [...prev, presetId],
     );
   };
-
   const clearPresetSelection = () => setSelectedPresetIds([]);
-
-  const selectedPresetObjects = React.useMemo(
+  const selectedPresetObjects = useMemo(
     () => ALL_PRESETS.filter((preset) => selectedPresetIds.includes(preset.id)),
-    [selectedPresetIds]
+    [selectedPresetIds],
   );
   const selectedPresetCount = selectedPresetObjects.length;
-
   const scrollToPresetSection = (group: PresetAlert["group"]) => {
     const node = presetSectionRefs.current[group];
     if (node) {
       node.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
-
   const addPresets = async (presets: readonly PresetAlert[]) => {
     if (!presets.length) return;
     setIsPresetAdding(true);
@@ -281,15 +272,12 @@ export function CommsAlertsCard({
       setIsPresetAdding(false);
     }
   };
-
   const addSelectedPresets = async () => {
     await addPresets(selectedPresetObjects);
   };
-
   const addPresetGroup = async (group: PresetAlert["group"]) => {
     await addPresets(group === "basic" ? BASIC_PRESETS : CODE_PRESETS);
   };
-
   const removeAlert = async (id: string) => {
     if (useExternal && onDeleteAlert) {
       await onDeleteAlert(id);
@@ -297,19 +285,17 @@ export function CommsAlertsCard({
       setLocalAlerts((prev) => prev.filter((a) => a.id !== id));
     }
   };
-
   const updateAlert = async (id: string, patch: Partial<CustomAlert>) => {
     if (useExternal && onUpdateAlert) {
       await onUpdateAlert(id, patch);
     } else {
       setLocalAlerts((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, ...patch } : a))
+        prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
     }
   };
-
   const createAlert = async (
-    payload: Pick<CustomAlert, "direction" | "description">
+    payload: Pick<CustomAlert, "direction" | "description">,
   ) => {
     if (useExternal && onCreateAlert) {
       await onCreateAlert(payload);
@@ -317,18 +303,15 @@ export function CommsAlertsCard({
       setLocalAlerts((prev) => [...prev, { id: generateId(), ...payload }]);
     }
   };
-
   const handleEditorDrawerClose = () => {
     setEditorDrawerOpen(false);
     setEditingAlertId(null);
   };
-
   const openCreateDrawer = () => {
     setFormState({ direction: "", description: "" });
     setEditingAlertId(null);
     setEditorDrawerOpen(true);
   };
-
   const openEditDrawer = (alert: CustomAlert) => {
     setFormState({
       direction: alert.direction,
@@ -337,7 +320,6 @@ export function CommsAlertsCard({
     setEditingAlertId(alert.id);
     setEditorDrawerOpen(true);
   };
-
   const handleSaveAlert = async () => {
     const direction = formState.direction.trim();
     const description = formState.description.trim();
@@ -354,7 +336,6 @@ export function CommsAlertsCard({
       setIsSaving(false);
     }
   };
-
   const resetExamples = async () => {
     const exampleSet = EXAMPLES.map((e) => ({ ...e, id: generateId() }));
     if (
@@ -374,9 +355,8 @@ export function CommsAlertsCard({
       setLocalAlerts(exampleSet);
     }
   };
-
   const canSave = Boolean(
-    formState.direction.trim() && formState.description.trim()
+    formState.direction.trim() && formState.description.trim(),
   );
   const hasAlerts = alerts.length > 0;
   const presetSections: Array<{
@@ -398,7 +378,6 @@ export function CommsAlertsCard({
       presets: BASIC_PRESETS,
     },
   ];
-
   return (
     <>
       <Card>
@@ -750,5 +729,4 @@ export function CommsAlertsCard({
     </>
   );
 }
-
 export default CommsAlertsCard;

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useRegionAdapters } from "@/providers/RegionProvider";
@@ -9,22 +8,20 @@ import { FIELD_ROLE_OPTIONS } from "@workspace/store/types/roles.ts";
 import UiSignUpCard, {
   type SignUpValues,
 } from "@workspace/ui/patterns/features/auth/sign-up-card";
-
 const PENDING_PROFILE_KEY = "pending-profile";
-
-type Props = { redirectTo?: string };
-
+type Props = {
+  redirectTo?: string;
+};
 export function SignUpCard({ redirectTo }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { providerId, signUpWithPassword, refresh, setSession } = useAuth();
   const { profileAdapter } = useRegionAdapters();
-  const target = React.useMemo(
+  const target = useMemo(
     () => redirectTo ?? searchParams?.get("redirectTo") ?? "/",
-    [redirectTo, searchParams]
+    [redirectTo, searchParams],
   );
-
-  const onSubmit = React.useCallback(
+  const onSubmit = useCallback(
     async (values: SignUpValues) => {
       if (providerId !== "supabase")
         throw new Error("Sign-up is only available with Supabase");
@@ -55,7 +52,6 @@ export function SignUpCard({ redirectTo }: Props) {
         verified_by: "self",
         inserted_at: now,
       } as Partial<Profile>;
-
       if (session) {
         try {
           setSession(session);
@@ -129,12 +125,10 @@ export function SignUpCard({ redirectTo }: Props) {
       profileAdapter,
       router,
       target,
-    ]
+    ],
   );
-
   return (
     <UiSignUpCard onSubmit={onSubmit} roleOptions={[...FIELD_ROLE_OPTIONS]} />
   );
 }
-
 export default SignUpCard;

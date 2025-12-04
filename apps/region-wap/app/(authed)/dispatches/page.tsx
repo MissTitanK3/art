@@ -1,15 +1,12 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { DispatchListLayout } from "@workspace/ui/layout/dispatch/dispatch-list-layout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
-
 import { REGION_IDENTIFIER } from "@/app/brand_settings";
-
 type ListFilters = {
   q?: string;
   status?: string;
@@ -17,9 +14,8 @@ type ListFilters = {
   from?: string; // YYYY-MM-DD
   to?: string; // YYYY-MM-DD
 };
-
 async function fetchDispatchesFromDatabase(
-  filters?: ListFilters
+  filters?: ListFilters,
 ): Promise<DispatchSubmission[] | null> {
   try {
     const params = new URLSearchParams();
@@ -31,7 +27,6 @@ async function fetchDispatchesFromDatabase(
       if (to) params.set("to", to);
       if (q) params.set("q", q);
     }
-
     const response = await fetch(`/api/dispatches?${params.toString()}`);
     if (!response.ok) throw new Error("Failed to fetch dispatches");
     const data = await response.json();
@@ -42,25 +37,22 @@ async function fetchDispatchesFromDatabase(
     return null;
   }
 }
-
 export default function DispatchesPage() {
   const submissions = useDispatchStore((s) => s.submissions);
   const replaceSubmissions = useDispatchStore((s) => s.replaceSubmissions);
-  const [remoteSubmissions, setRemoteSubmissions] = React.useState<
+  const [remoteSubmissions, setRemoteSubmissions] = useState<
     typeof submissions | null
   >(null);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-
     async function hydrate() {
       setLoading(true);
       try {
         const paramsRecord = Object.fromEntries(
-          (searchParams ?? new URLSearchParams()).entries()
+          (searchParams ?? new URLSearchParams()).entries(),
         );
         const filters: ListFilters = {
           q: paramsRecord.q,
@@ -76,7 +68,6 @@ export default function DispatchesPage() {
           for (const r of result) map.set(r.id, r);
           const unique = Array.from(map.values());
           setRemoteSubmissions(unique);
-
           // Replace local persisted store with latest from DB
           replaceSubmissions(unique);
         } else if (!cancelled && Array.isArray(result) && result.length === 0) {
@@ -87,7 +78,7 @@ export default function DispatchesPage() {
         if (!cancelled) {
           console.warn(
             "DispatchListDataLayer: failed to fetch dispatches",
-            error
+            error,
           );
         }
       } finally {
@@ -96,14 +87,12 @@ export default function DispatchesPage() {
         }
       }
     }
-
     hydrate();
     return () => {
       cancelled = true;
     };
   }, [replaceSubmissions, searchParams]);
-
-  const data = React.useMemo(() => {
+  const data = useMemo(() => {
     const base = remoteSubmissions ?? submissions;
     // Dedupe by id on the client to prevent duplicate key warnings during initial render
     const map = new Map<string, DispatchSubmission>();
@@ -112,15 +101,14 @@ export default function DispatchesPage() {
     return unique.sort(
       (a, b) =>
         new Date(a.date_of_event ?? a.timestamp).getTime() -
-        new Date(b.date_of_event ?? b.timestamp).getTime()
+        new Date(b.date_of_event ?? b.timestamp).getTime(),
     );
   }, [remoteSubmissions, submissions]);
-
   return (
     <DispatchListLayout
       submissions={data}
       initialUrlParams={Object.fromEntries(
-        (searchParams ?? new URLSearchParams()).entries()
+        (searchParams ?? new URLSearchParams()).entries(),
       )}
       onUrlChange={(url) => router.replace(url)}
       persistKey={`dispatchList.filters:${REGION_IDENTIFIER}`}

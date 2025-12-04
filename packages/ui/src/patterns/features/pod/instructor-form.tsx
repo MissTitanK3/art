@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Input } from "@workspace/ui/primitives/input";
 import { Label } from "@workspace/ui/primitives/label";
 import {
@@ -23,7 +22,6 @@ import type {
 } from "@workspace/store/types/academy";
 import type { NormalizedCertification } from "@workspace/store/types/pod";
 import { UNIQUE_TIMEZONES } from "@workspace/ui/lib/constants/states";
-
 type InstructorFormValues = {
   name: string;
   type: AcademyInstructorProfile["type"] | AcademyInstructorDraft["type"];
@@ -34,42 +32,37 @@ type InstructorFormValues = {
   vettingStatus: AcademyInstructorVettingStatus;
   certifications: NormalizedCertification[];
 };
-
 export type InstructorFormHandle = {
   requestSubmit: () => void;
 };
-
 type Props = {
   initial?: Partial<InstructorFormValues>;
   onSubmit: (values: InstructorFormValues) => void;
   onRemove?: () => void;
 };
-
-export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
+export const InstructorForm = forwardRef<InstructorFormHandle, Props>(
   function InstructorForm({ initial = {}, onSubmit }, ref) {
-    const [name, setName] = React.useState(initial.name ?? "");
-    const [type, setType] = React.useState<InstructorFormValues["type"]>(
-      (initial.type as any) ?? "dispatcher"
+    const [name, setName] = useState(initial.name ?? "");
+    const [type, setType] = useState<InstructorFormValues["type"]>(
+      (initial.type as any) ?? "dispatcher",
     );
-    const [availability, setAvailability] = React.useState<
+    const [availability, setAvailability] = useState<
       InstructorFormValues["availability"]
     >((initial.availability as any) ?? "available");
-    const [focus, setFocus] = React.useState(initial.focus ?? "");
-    const [timezone, setTimezone] = React.useState(initial.timezone ?? "");
-    const [registrationStatus, setRegistrationStatus] = React.useState<
+    const [focus, setFocus] = useState(initial.focus ?? "");
+    const [timezone, setTimezone] = useState(initial.timezone ?? "");
+    const [registrationStatus, setRegistrationStatus] = useState<
       InstructorFormValues["registrationStatus"]
     >((initial.registrationStatus as any) ?? "registered");
-    const [vettingStatus, setVettingStatus] = React.useState<
+    const [vettingStatus, setVettingStatus] = useState<
       InstructorFormValues["vettingStatus"]
     >((initial.vettingStatus as any) ?? "awaiting_verification");
-    const [certifications, setCertifications] = React.useState<
+    const [certifications, setCertifications] = useState<
       NormalizedCertification[]
     >(initial.certifications ? [...initial.certifications] : []);
-    const [customSkill, setCustomSkill] = React.useState("");
-
-    const formRef = React.useRef<HTMLFormElement | null>(null);
-
-    React.useImperativeHandle(ref, () => ({
+    const [customSkill, setCustomSkill] = useState("");
+    const formRef = useRef<HTMLFormElement | null>(null);
+    useImperativeHandle(ref, () => ({
       requestSubmit: () => {
         if (formRef.current) {
           if (typeof formRef.current.requestSubmit === "function") {
@@ -85,23 +78,20 @@ export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
         }
       },
     }));
-
     function addCertification(cert: NormalizedCertification) {
       setCertifications((cur) => {
         if (
           cur.some(
-            (c) => c.id === cert.id || c.display_name === cert.display_name
+            (c) => c.id === cert.id || c.display_name === cert.display_name,
           )
         )
           return cur;
         return [...cur, cert];
       });
     }
-
     function removeCertification(id: string) {
       setCertifications((cur) => cur.filter((c) => c.id !== id));
     }
-
     function handleSubmit(e: React.FormEvent) {
       e.preventDefault();
       console.debug("InstructorForm: submit invoked", {
@@ -130,7 +120,6 @@ export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
       console.debug("InstructorForm: calling onSubmit", payload);
       onSubmit(payload);
     }
-
     return (
       <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -252,11 +241,11 @@ export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
             value={undefined}
             onValueChange={(value) => {
               const option = academyCertificationOptions.find(
-                (i) => i.id === value
+                (i) => i.id === value,
               );
               if (!option) return;
               addCertification(
-                createCertification(option.label, option.id, "academy")
+                createCertification(option.label, option.id, "academy"),
               );
             }}
           >
@@ -300,7 +289,6 @@ export const InstructorForm = React.forwardRef<InstructorFormHandle, Props>(
         </div>
       </form>
     );
-  }
+  },
 );
-
 export default InstructorForm;

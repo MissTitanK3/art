@@ -1,7 +1,6 @@
 // components/ShiftIntentionSection.tsx
 "use client";
-
-import * as React from "react";
+import { useCallback, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Card } from "@workspace/ui/primitives/card";
 import {
@@ -15,7 +14,6 @@ import { Button } from "@workspace/ui/primitives/button";
 import { BaseShiftIntentionFields } from "@workspace/store/types/pod.ts";
 import { DateTimePicker } from "@workspace/ui/patterns/common/date-time-picker";
 import { cn, combineLocalDateTime } from "@workspace/ui/lib";
-
 // Make the component generic so parent state can have extra fields like tz, dispatchLink, etc.
 type Props<T extends BaseShiftIntentionFields> = {
   title?: string;
@@ -26,28 +24,21 @@ type Props<T extends BaseShiftIntentionFields> = {
   className?: string;
   addButtonText?: string;
 };
-
 function isoToLocalParts(iso?: string) {
   if (!iso) {
     return { date: "", time: "" };
   }
-
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) {
     return { date: "", time: "" };
   }
-
-  const local = new Date(
-    parsed.getTime() - parsed.getTimezoneOffset() * 60_000
-  );
+  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
   const localIso = local.toISOString();
-
   return {
     date: localIso.slice(0, 10),
     time: localIso.slice(11, 16),
   };
 }
-
 export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
   title = "Shift intention",
   form,
@@ -57,27 +48,24 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
   className,
   addButtonText = "Add Shift",
 }: Props<T>) {
-  const [open, setOpen] = React.useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen);
   const startIso =
     combineLocalDateTime(form.startDate, form.startTime) || undefined;
   const endIso = combineLocalDateTime(form.endDate, form.endTime) || undefined;
-
-  const handleStartChange = React.useCallback(
+  const handleStartChange = useCallback(
     (iso: string) => {
       const { date, time } = isoToLocalParts(iso);
       setForm((prev) => ({ ...prev, startDate: date, startTime: time }));
     },
-    [setForm]
+    [setForm],
   );
-
-  const handleEndChange = React.useCallback(
+  const handleEndChange = useCallback(
     (iso: string) => {
       const { date, time } = isoToLocalParts(iso);
       setForm((prev) => ({ ...prev, endDate: date, endTime: time }));
     },
-    [setForm]
+    [setForm],
   );
-
   return (
     <Card className={cn("my-4 p-5", className)}>
       <Collapsible open={open} onOpenChange={setOpen}>
@@ -93,7 +81,7 @@ export function ShiftIntentionSection<T extends BaseShiftIntentionFields>({
               <ChevronDown
                 className={cn(
                   "h-4 w-4 transition-transform",
-                  open ? "rotate-180" : "rotate-0"
+                  open ? "rotate-180" : "rotate-0",
                 )}
               />
             </button>

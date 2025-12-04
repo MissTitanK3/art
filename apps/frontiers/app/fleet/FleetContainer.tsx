@@ -1,12 +1,11 @@
 "use client";
 
-import * as React from "react";
 import {
   Tabs,
   TabsList,
   TabsTrigger,
   TabsContent,
-} from "@workspace/ui/components/tabs";
+} from "@workspace/ui/primitives/tabs";
 import { toast } from "sonner";
 import type { ShipComponent } from "@/schemas/ship_components";
 import type { CrewCatalog } from "@/schemas/crew";
@@ -28,6 +27,7 @@ import { computeCrewFit } from "@/lib/crewScore";
 import { useDerivedBonuses } from "@/hooks/useDerivedBonuses";
 import { useStaffing } from "@/hooks/useStaffing";
 import { computeKindStats } from "@/lib/componentsCatalog";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Fleet = {
   id: string;
@@ -48,9 +48,9 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     "alliance",
   ] as const;
   type Tab = (typeof TABS)[number];
-  const [activeTab, setActiveTab] = React.useState<Tab>("current");
+  const [activeTab, setActiveTab] = useState<Tab>("current");
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
       const t = sp.get("tab") as Tab | null;
@@ -59,7 +59,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("tab", activeTab);
@@ -115,7 +115,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
   };
 
   // Expected/missing slots
-  const allSlotsForCurrent = React.useMemo(() => {
+  const allSlotsForCurrent = useMemo(() => {
     const set = new Set<string>();
     const baseSlots = (currentShip as any)?.ship?.base_slots as
       | Record<string, string>
@@ -128,16 +128,16 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     return Array.from(set) as Array<ShipComponent["slot"]>;
   }, [currentShip, catalogKinds]);
 
-  const installedSlots = React.useMemo(
+  const installedSlots = useMemo(
     () => new Set<ShipComponent["slot"]>(components.map((c) => c.slot)),
-    [components],
+    [components]
   );
-  const missingSlots = React.useMemo(
+  const missingSlots = useMemo(
     () => allSlotsForCurrent.filter((s) => !installedSlots.has(s)),
-    [allSlotsForCurrent, installedSlots],
+    [allSlotsForCurrent, installedSlots]
   );
 
-  const getDefaultKindForSlot = React.useCallback(
+  const getDefaultKindForSlot = useCallback(
     (slot: ShipComponent["slot"]) => {
       const baseSlots = (currentShip as any)?.ship?.base_slots as
         | Record<string, string>
@@ -147,11 +147,11 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
       const kinds = (catalogKinds as any)[slot] || [];
       if (kinds.length === 0) return null;
       const sorted = [...kinds].sort(
-        (a, b) => (a.tier ?? 999) - (b.tier ?? 999),
+        (a, b) => (a.tier ?? 999) - (b.tier ?? 999)
       );
       return sorted[0]?.id ?? kinds[0]?.id ?? null;
     },
-    [currentShip, catalogKinds],
+    [currentShip, catalogKinds]
   );
 
   const installComponentForSlot = async (slot: ShipComponent["slot"]) => {
@@ -163,17 +163,17 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     await doReplace(slot, kind);
   };
 
-  const [confirmUpgrade, setConfirmUpgrade] = React.useState<{
+  const [confirmUpgrade, setConfirmUpgrade] = useState<{
     slot: ShipComponent["slot"];
     cost: number;
   } | null>(null);
-  const [confirmReplace, setConfirmReplace] = React.useState<{
+  const [confirmReplace, setConfirmReplace] = useState<{
     slot: ShipComponent["slot"];
     kindId: string;
     cost: number;
     deltas: Array<[string, number, number]>;
   } | null>(null);
-  const [replaceOpen, setReplaceOpen] = React.useState<{
+  const [replaceOpen, setReplaceOpen] = useState<{
     slot: ShipComponent["slot"] | null;
   } | null>(null);
 
@@ -215,9 +215,9 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
   };
 
   // crew market and hired crew
-  const [marketFilter, setMarketFilter] = React.useState("");
-  const [marketBestFit, setMarketBestFit] = React.useState(false);
-  const [marketOnlyUncovered, setMarketOnlyUncovered] = React.useState(false);
+  const [marketFilter, setMarketFilter] = useState("");
+  const [marketBestFit, setMarketBestFit] = useState(false);
+  const [marketOnlyUncovered, setMarketOnlyUncovered] = useState(false);
   const { marketCrew, marketLoading } = useCrewMarket({
     position: marketFilter || null,
   });
@@ -225,7 +225,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     useHiredCrew(profileId);
 
   // staffing
-  const [autoStrategy, setAutoStrategy] = React.useState<
+  const [autoStrategy, setAutoStrategy] = useState<
     "balanced" | "max-repair" | "max-signal" | "max-morale"
   >("balanced");
   const {
@@ -238,7 +238,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
   const autoAssign = () => autoAssignApi(autoStrategy);
 
   // uncovered needs and grouped market
-  const uncoveredNeeds = React.useMemo(() => {
+  const uncoveredNeeds = useMemo(() => {
     const needs = new Set<string>();
     if (positionTemplates.length === 0) return needs;
     for (const p of positionTemplates) {
@@ -251,7 +251,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
             (x: Assignment) =>
               x.position_id === p.position_id &&
               x.slot_index === s &&
-              x.shift === sh,
+              x.shift === sh
           );
           if (a?.crew_id) assigned++;
         }
@@ -262,14 +262,14 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     return needs;
   }, [positionTemplates, assignments]);
 
-  const groupedMarket = React.useMemo(() => {
+  const groupedMarket = useMemo(() => {
     const m = new Map<string, CrewCatalog[]>();
     const source =
       marketOnlyUncovered && uncoveredNeeds.size > 0
         ? marketCrew.filter((c) =>
             (c.allowed_positions || []).some((p) =>
-              uncoveredNeeds.has(String(p)),
-            ),
+              uncoveredNeeds.has(String(p))
+            )
           )
         : marketCrew;
     for (const c of source) {
@@ -300,7 +300,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     autoStrategy,
   ]);
 
-  const orderedRoles = React.useMemo(() => {
+  const orderedRoles = useMemo(() => {
     const preferred = ["Engineering", "Navigation", "Support", "Ops"];
     const roles = Array.from(groupedMarket.keys());
     const rest = roles.filter((r) => !preferred.includes(r)).sort();
@@ -313,7 +313,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
   ]);
 
   // Aggregate component bonuses for Current tab context
-  const componentBreakdown = React.useMemo(() => {
+  const componentBreakdown = useMemo(() => {
     if (!components || !catalogKinds)
       return [] as Array<{
         slot: ShipComponent["slot"];
@@ -336,7 +336,7 @@ export function FleetContainer({ profileId }: { profileId: string | null }) {
     });
   }, [components, catalogKinds]);
 
-  const componentBonuses = React.useMemo(() => {
+  const componentBonuses = useMemo(() => {
     const acc: Record<string, number> = {};
     for (const it of componentBreakdown) {
       for (const [k, v] of Object.entries(it.contributions))

@@ -1,8 +1,6 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, X } from "lucide-react";
-
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -38,13 +36,11 @@ import { cn } from "@workspace/ui/lib/utils";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
 import { NavRole } from "@workspace/store/utils/permissions/types";
-
 import type {
   AcademyClass,
   AcademyClassMember,
   AcademyClassSession,
 } from "@workspace/store/usePodStore";
-
 export type InstructorOption = {
   id: string;
   name: string;
@@ -52,7 +48,6 @@ export type InstructorOption = {
   podName?: string;
   status?: "active" | "inactive" | "suspended";
 };
-
 type ClassAssignmentContentProps = {
   classId: string;
   academyClass?: AcademyClass;
@@ -70,34 +65,29 @@ type ClassAssignmentContentProps = {
   onGoBack?: () => void;
   onCreateNewClass?: () => void;
 };
-
 type SessionDraft = {
   label: string;
   startsAt: string;
   durationHours: string;
   notes: string;
 };
-
 const instructorTypeLabels = {
   dispatcher: "Dispatcher Instructor",
   mentor: "Mentor",
   expert: "Subject Expert",
 } as const;
-
 function memberId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
   return `mem_${Math.random().toString(36).slice(2, 10)}`;
 }
-
 function sessionId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
   return `ses_${Math.random().toString(36).slice(2, 10)}`;
 }
-
 function makeEmptySessionDraft(): SessionDraft {
   return {
     label: "",
@@ -106,11 +96,10 @@ function makeEmptySessionDraft(): SessionDraft {
     notes: "",
   };
 }
-
 function determineStatusAfterAssignment(
   cls: AcademyClass,
   instructorName: string,
-  nextSessionOverride?: string
+  nextSessionOverride?: string,
 ) {
   const trimmedInstructor = instructorName.trim();
   if (!trimmedInstructor) {
@@ -121,7 +110,6 @@ function determineStatusAfterAssignment(
   }
   return "draft" as const;
 }
-
 export function ClassAssignmentContent({
   classId,
   academyClass,
@@ -134,63 +122,60 @@ export function ClassAssignmentContent({
   onCreateNewClass,
 }: ClassAssignmentContentProps) {
   const profileFromStore = useProfileStore((s) => s.profile);
-  const profileRoles = React.useMemo(
+  const profileRoles = useMemo(
     () =>
       profileFromStore?.access_role
         ? [String(profileFromStore.access_role)]
         : [],
-    [profileFromStore?.access_role]
+    [profileFromStore?.access_role],
   );
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: profileRoles[0] as NavRole }),
-    [profileRoles]
+    [profileRoles],
   );
   const { access: effectiveCanManage } = useUnifiedAccess(
     "manage_instructors",
-    ctx
+    ctx,
   );
-  const [instructorName, setInstructorName] = React.useState<string>("");
+  const [instructorName, setInstructorName] = useState<string>("");
   const [selectedInstructorId, setSelectedInstructorId] =
-    React.useState<string>("manual");
-  const [memberName, setMemberName] = React.useState<string>("");
-  const [memberNotes, setMemberNotes] = React.useState<string>("");
-  const [members, setMembers] = React.useState<AcademyClassMember[]>([]);
-  const [membersDirty, setMembersDirty] = React.useState(false);
-  const [editingMember, setEditingMember] = React.useState<{
+    useState<string>("manual");
+  const [memberName, setMemberName] = useState<string>("");
+  const [memberNotes, setMemberNotes] = useState<string>("");
+  const [members, setMembers] = useState<AcademyClassMember[]>([]);
+  const [membersDirty, setMembersDirty] = useState(false);
+  const [editingMember, setEditingMember] = useState<{
     id: string;
     name: string;
     notes: string;
   } | null>(null);
-  const [sessions, setSessions] = React.useState<AcademyClassSession[]>([]);
-  const [sessionsDirty, setSessionsDirty] = React.useState(false);
-  const [newSession, setNewSession] = React.useState<SessionDraft>(() =>
-    makeEmptySessionDraft()
+  const [sessions, setSessions] = useState<AcademyClassSession[]>([]);
+  const [sessionsDirty, setSessionsDirty] = useState(false);
+  const [newSession, setNewSession] = useState<SessionDraft>(() =>
+    makeEmptySessionDraft(),
   );
-  const [saving, setSaving] = React.useState(false);
-  const [deleting, setDeleting] = React.useState(false);
-  const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [instructorDirty, setInstructorDirty] = React.useState(false);
-
-  const filteredInstructorOptions = React.useMemo(() => {
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [instructorDirty, setInstructorDirty] = useState(false);
+  const filteredInstructorOptions = useMemo(() => {
     if (!academyClass) return instructorOptions;
     const matches = instructorOptions.filter(
-      (option) => option.type === academyClass.instructorType
+      (option) => option.type === academyClass.instructorType,
     );
     return matches.length > 0 ? matches : instructorOptions;
   }, [academyClass, instructorOptions]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!instructorName) {
       setSelectedInstructorId("manual");
       return;
     }
     const match = instructorOptions.find(
-      (option) => option.name === instructorName
+      (option) => option.name === instructorName,
     );
     setSelectedInstructorId(match ? match.id : "manual");
   }, [instructorName, instructorOptions]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!academyClass) return;
     setInstructorName(academyClass.instructorName ?? "");
     setMembers(academyClass.members ?? []);
@@ -199,15 +184,13 @@ export function ClassAssignmentContent({
     }
     setEditingMember(null);
   }, [academyClass, sessionsDirty]);
-
   // Reset dirty status when switching classes
-  React.useEffect(() => {
+  useEffect(() => {
     setSessionsDirty(false);
     setMembersDirty(false);
     setInstructorDirty(false);
   }, [classId]);
-
-  const handleInstructorSelect = React.useCallback(
+  const handleInstructorSelect = useCallback(
     (value: string) => {
       if (value === "manual") {
         setSelectedInstructorId("manual");
@@ -220,10 +203,9 @@ export function ClassAssignmentContent({
         setInstructorDirty(true);
       }
     },
-    [instructorOptions]
+    [instructorOptions],
   );
-
-  const makeAcademyClassMember = React.useCallback(
+  const makeAcademyClassMember = useCallback(
     (name: string, notes?: string): AcademyClassMember => {
       return {
         id: memberId(),
@@ -232,10 +214,9 @@ export function ClassAssignmentContent({
         participationCount: 0,
       };
     },
-    []
+    [],
   );
-
-  const handleAddMember = React.useCallback(() => {
+  const handleAddMember = useCallback(() => {
     if (!memberName.trim()) return;
     setMembers((prev) => [
       ...prev,
@@ -245,51 +226,46 @@ export function ClassAssignmentContent({
     setMemberName("");
     setMemberNotes("");
   }, [makeAcademyClassMember, memberName, memberNotes]);
-
-  const handleUpdateMember = React.useCallback(
+  const handleUpdateMember = useCallback(
     (id: string, patch: Partial<AcademyClassMember>) => {
       setMembers((prev) =>
         prev.map((member) =>
-          member.id === id ? { ...member, ...patch } : member
-        )
+          member.id === id ? { ...member, ...patch } : member,
+        ),
       );
       setMembersDirty(true);
     },
-    []
+    [],
   );
-
-  const handleRemoveMember = React.useCallback((id: string) => {
+  const handleRemoveMember = useCallback((id: string) => {
     setMembers((prev) => prev.filter((member) => member.id !== id));
     setEditingMember((prev) => (prev?.id === id ? null : prev));
     setMembersDirty(true);
   }, []);
-
-  const beginEditMember = React.useCallback((member: AcademyClassMember) => {
+  const beginEditMember = useCallback((member: AcademyClassMember) => {
     setEditingMember({
       id: member.id,
       name: member.name,
       notes: member.notes ?? "",
     });
   }, []);
-
-  const updateEditingMember = React.useCallback(
-    (patch: Partial<{ name: string; notes: string }>) => {
+  const updateEditingMember = useCallback(
+    (
+      patch: Partial<{
+        name: string;
+        notes: string;
+      }>,
+    ) => {
       setEditingMember((prev) => (prev ? { ...prev, ...patch } : prev));
     },
-    []
+    [],
   );
-
-  const cancelEditingMember = React.useCallback(
-    () => setEditingMember(null),
-    []
-  );
-
-  const saveEditingMember = React.useCallback(() => {
+  const cancelEditingMember = useCallback(() => setEditingMember(null), []);
+  const saveEditingMember = useCallback(() => {
     if (!editingMember) return;
     const nextName = editingMember.name.trim();
     const nextNotes = editingMember.notes.trim();
     if (!nextName) return;
-
     handleUpdateMember(editingMember.id, {
       name: nextName,
       notes: nextNotes ? nextNotes : undefined,
@@ -297,22 +273,19 @@ export function ClassAssignmentContent({
     setEditingMember(null);
     setMembersDirty(true);
   }, [editingMember, handleUpdateMember]);
-
-  const handleUpdateSession = React.useCallback(
+  const handleUpdateSession = useCallback(
     (id: string, patch: Partial<AcademyClassSession>) => {
       setSessions((prev) =>
         prev.map((session) =>
-          session.id === id ? { ...session, ...patch } : session
-        )
+          session.id === id ? { ...session, ...patch } : session,
+        ),
       );
       setSessionsDirty(true);
     },
-    []
+    [],
   );
-
-  const handleSaveAssignments = React.useCallback(async () => {
+  const handleSaveAssignments = useCallback(async () => {
     if (!academyClass) return;
-
     const trimmedInstructor = instructorName.trim();
     const normalizedMembers = members
       .map((member) => ({
@@ -321,7 +294,6 @@ export function ClassAssignmentContent({
         notes: member.notes?.trim() ? member.notes.trim() : undefined,
       }))
       .filter((member) => member.name.length > 0);
-
     const normalizedSessions = sessions.map((session, index) => ({
       ...session,
       label: session.label?.trim()
@@ -335,16 +307,19 @@ export function ClassAssignmentContent({
           ? session.durationHours
           : undefined,
     }));
-
     const sessionsWithDate = normalizedSessions.filter((s) =>
-      Boolean(s.date)
-    ) as Array<AcademyClassSession & { date: string }>;
+      Boolean(s.date),
+    ) as Array<
+      AcademyClassSession & {
+        date: string;
+      }
+    >;
     const sortedSessions = [...sessionsWithDate].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
     const upcomingSession =
       sortedSessions.find(
-        (session) => new Date(session.date).getTime() >= Date.now()
+        (session) => new Date(session.date).getTime() >= Date.now(),
       ) ?? sortedSessions[0];
     const nextSessionForUpdate =
       upcomingSession?.date ?? academyClass.nextSession;
@@ -359,9 +334,8 @@ export function ClassAssignmentContent({
     const status = determineStatusAfterAssignment(
       academyClass,
       instructorName,
-      nextSessionForUpdate
+      nextSessionForUpdate,
     );
-
     const updatedClass: AcademyClass = {
       ...academyClass,
       instructorName: trimmedInstructor || undefined,
@@ -371,7 +345,6 @@ export function ClassAssignmentContent({
       nextSession: nextSessionForUpdate,
       status,
     };
-
     try {
       setSaving(true);
       await onSave(updatedClass);
@@ -382,9 +355,8 @@ export function ClassAssignmentContent({
       setSaving(false);
     }
   }, [academyClass, instructorName, members, onSave, sessions]);
-
   // Debounced autosave when any tracked section becomes dirty
-  React.useEffect(() => {
+  useEffect(() => {
     if (!academyClass) return;
     if (!effectiveCanManage) return;
     if (!(instructorDirty || membersDirty || sessionsDirty)) return;
@@ -403,8 +375,7 @@ export function ClassAssignmentContent({
     handleSaveAssignments,
     effectiveCanManage,
   ]);
-
-  const handleDeleteClass = React.useCallback(async () => {
+  const handleDeleteClass = useCallback(async () => {
     if (!academyClass) return;
     try {
       setDeleting(true);
@@ -414,9 +385,7 @@ export function ClassAssignmentContent({
       setDeleting(false);
     }
   }, [academyClass, onDelete]);
-
   const handleCreateClass = onCreateNewClass ?? onBackToAcademy;
-
   if (!academyClass) {
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 py-12">
@@ -440,7 +409,6 @@ export function ClassAssignmentContent({
       </div>
     );
   }
-
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 py-8">
       <div className="flex flex-col gap-3">
@@ -606,7 +574,6 @@ export function ClassAssignmentContent({
                 const canSave = isEditing
                   ? Boolean(editingMember?.name.trim())
                   : false;
-
                 return (
                   <li
                     key={member.id}
@@ -787,7 +754,7 @@ export function ClassAssignmentContent({
                 if (!newSession.startsAt) return;
                 const id = sessionId();
                 const parsedDuration = Number.parseFloat(
-                  newSession.durationHours
+                  newSession.durationHours,
                 );
                 const durationHours = Number.isNaN(parsedDuration)
                   ? undefined
@@ -829,7 +796,7 @@ export function ClassAssignmentContent({
                       size="sm"
                       onClick={() => {
                         setSessions((prev) =>
-                          prev.filter((s) => s.id !== session.id)
+                          prev.filter((s) => s.id !== session.id),
                         );
                         setSessionsDirty(true);
                       }}
@@ -918,7 +885,7 @@ export function ClassAssignmentContent({
                     </Label>
                     {members.map((member) => {
                       const existing = session.participants.find(
-                        (p) => p.memberId === member.id
+                        (p) => p.memberId === member.id,
                       ) ?? {
                         memberId: member.id,
                         present: false,
@@ -956,7 +923,7 @@ export function ClassAssignmentContent({
                                         "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
                                         isActive
                                           ? "bg-primary text-primary-foreground shadow-sm"
-                                          : "text-muted-foreground hover:bg-background/80"
+                                          : "text-muted-foreground hover:bg-background/80",
                                       )}
                                       onClick={() => {
                                         if (isActive) return;
@@ -967,14 +934,14 @@ export function ClassAssignmentContent({
                                                 participants: s.participants
                                                   .filter(
                                                     (p) =>
-                                                      p.memberId !== member.id
+                                                      p.memberId !== member.id,
                                                   )
                                                   .concat({
                                                     ...existing,
                                                     present: value,
                                                   }),
                                               }
-                                            : s
+                                            : s,
                                         );
                                         setSessions(updated);
                                         setSessionsDirty(true);
@@ -1000,7 +967,7 @@ export function ClassAssignmentContent({
                                           ...s,
                                           participants: s.participants
                                             .filter(
-                                              (p) => p.memberId !== member.id
+                                              (p) => p.memberId !== member.id,
                                             )
                                             .concat({
                                               ...existing,
@@ -1010,7 +977,7 @@ export function ClassAssignmentContent({
                                                 | "high",
                                             }),
                                         }
-                                      : s
+                                      : s,
                                   );
                                   setSessions(updated);
                                   setSessionsDirty(true);
@@ -1043,7 +1010,7 @@ export function ClassAssignmentContent({
                                           ...s,
                                           participants: s.participants
                                             .filter(
-                                              (p) => p.memberId !== member.id
+                                              (p) => p.memberId !== member.id,
                                             )
                                             .concat({
                                               ...existing,
@@ -1053,7 +1020,7 @@ export function ClassAssignmentContent({
                                                 | "confident",
                                             }),
                                         }
-                                      : s
+                                      : s,
                                   );
                                   setSessions(updated);
                                   setSessionsDirty(true);

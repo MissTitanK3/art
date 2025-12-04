@@ -1,9 +1,7 @@
-import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Search } from "lucide-react";
-
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
-
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -22,9 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
-
 type UrgencyFilter = "all" | "urgent" | "none";
-
 export interface MissingPersonsDirectoryProps {
   records?: DetaineeIntake[];
   fetchUrl?: string;
@@ -39,34 +35,29 @@ export interface MissingPersonsDirectoryProps {
   renderRecordLink?: (
     href: string,
     record: DetaineeIntake,
-    label: string
+    label: string,
   ) => React.ReactNode;
 }
-
 function formatDate(value?: string): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
 }
-
 function formatRelativeDate(value?: string): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
   if (diffDays <= 0) {
     return "Updated today";
   }
@@ -78,22 +69,18 @@ function formatRelativeDate(value?: string): string {
   }
   return `Updated ${Math.floor(diffDays / 7)} weeks ago`;
 }
-
 const defaultRecordHref = (record: DetaineeIntake) =>
   `/missing-persons/${getMissingPersonSlug(record)}`;
-
 const defaultRenderRecordLink = (
   href: string,
   _record: DetaineeIntake,
-  label: string
+  label: string,
 ) => <a href={href}>{label}</a>;
-
 function mergeRecords(
   remote: DetaineeIntake[],
-  local: DetaineeIntake[]
+  local: DetaineeIntake[],
 ): DetaineeIntake[] {
   const merged = new Map<string, DetaineeIntake>();
-
   const addRecord = (record: DetaineeIntake, index: number, origin: string) => {
     const key =
       record.caseId ??
@@ -105,32 +92,24 @@ function mergeRecords(
       merged.set(key, record);
     }
   };
-
   local.forEach((record, index) => addRecord(record, index, "local"));
   remote.forEach((record, index) => addRecord(record, index, "remote"));
-
   return Array.from(merged.values());
 }
-
 export function MissingPersonsDirectory({
   records = [],
   fetchUrl,
   getRecordHref = defaultRecordHref,
   renderRecordLink = defaultRenderRecordLink,
 }: MissingPersonsDirectoryProps) {
-  const [query, setQuery] = React.useState("");
-  const [urgencyFilter, setUrgencyFilter] =
-    React.useState<UrgencyFilter>("all");
-  const [remoteRecords, setRemoteRecords] = React.useState<DetaineeIntake[]>(
-    []
-  );
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
+  const [query, setQuery] = useState("");
+  const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>("all");
+  const [remoteRecords, setRemoteRecords] = useState<DetaineeIntake[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
     if (!fetchUrl) return;
     let active = true;
-
     async function load() {
       setLoading(true);
       setError(null);
@@ -152,37 +131,29 @@ export function MissingPersonsDirectory({
         }
       }
     }
-
     load();
     return () => {
       active = false;
     };
   }, [fetchUrl]);
-
-  const allRecords = React.useMemo(() => {
+  const allRecords = useMemo(() => {
     if (!fetchUrl && records.length === 0) return [];
     return mergeRecords(remoteRecords, records);
   }, [records, remoteRecords, fetchUrl]);
-
-  const searchableRecords = React.useMemo(() => allRecords ?? [], [allRecords]);
-
-  const filteredRecords = React.useMemo(() => {
+  const searchableRecords = useMemo(() => allRecords ?? [], [allRecords]);
+  const filteredRecords = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-
     return searchableRecords.filter((record) => {
       const urgentCount = record.urgentNeeds?.length ?? 0;
-
       if (urgencyFilter === "urgent" && urgentCount === 0) {
         return false;
       }
       if (urgencyFilter === "none" && urgentCount > 0) {
         return false;
       }
-
       if (!normalizedQuery) {
         return true;
       }
-
       const haystack = [
         record.caseId,
         record.fullName,
@@ -198,15 +169,13 @@ export function MissingPersonsDirectory({
       ]
         .filter(
           (value): value is string =>
-            typeof value === "string" && value.length > 0
+            typeof value === "string" && value.length > 0,
         )
         .join(" ")
         .toLowerCase();
-
       return haystack.includes(normalizedQuery);
     });
   }, [searchableRecords, query, urgencyFilter]);
-
   return (
     <div className="space-y-4">
       {loading ? (
@@ -269,7 +238,6 @@ export function MissingPersonsDirectory({
               record.lastKnownCity ||
               record.detentionLocation ||
               "Unknown";
-
             const confidence = record.confidenceRating ?? null;
             const interpreterBadge = record.interpreterNeeded ? (
               <Badge variant="outline">Interpreter needed</Badge>
@@ -313,7 +281,7 @@ export function MissingPersonsDirectory({
                         {formatDate(
                           record.knownTransfers[
                             record.knownTransfers.length - 1
-                          ]?.transferDate
+                          ]?.transferDate,
                         )}
                       </div>
                     ) : null}

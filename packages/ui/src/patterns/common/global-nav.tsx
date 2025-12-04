@@ -1,8 +1,6 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@workspace/ui/lib/utils";
-
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Sheet,
@@ -55,14 +53,12 @@ import {
   NavRole,
 } from "@workspace/store/utils/nav";
 import DistanceUnitToggle from "./distance-unit-toggle";
-
 // Keep the top bar compact on small screens
 const MOBILE_TOP_BAR_HEIGHT = 56;
-
 function filterNavTree(
   items: NavItem[],
   role?: NavRole,
-  isAuthenticated = false
+  isAuthenticated = false,
 ): NavItem[] {
   return items
     .map((item) => {
@@ -71,16 +67,13 @@ function filterNavTree(
         : undefined;
       const hasVisibleChildren = Boolean(nextChildren?.length);
       const selfVisible = canSee(item, role, isAuthenticated);
-
       if (!selfVisible && !hasVisibleChildren) return null;
       if (item.children && !hasVisibleChildren && (!selfVisible || !item.href))
         return null;
-
       return { ...item, children: nextChildren };
     })
     .filter((v): v is NonNullable<typeof v> => Boolean(v));
 }
-
 export interface GlobalNavCoreProps {
   config: GlobalNavConfig;
   role?: NavRole;
@@ -89,7 +82,6 @@ export interface GlobalNavCoreProps {
   rightSlot?: React.ReactNode;
   isAuthenticated: boolean;
 }
-
 export function GlobalNavCore({
   config,
   role,
@@ -98,27 +90,23 @@ export function GlobalNavCore({
   rightSlot,
   isAuthenticated,
 }: GlobalNavCoreProps) {
-  const [desktopCollapsed, setDesktopCollapsed] = React.useState(true);
-  const [primaryItems, setPrimaryItems] = React.useState<NavItem[]>([]);
-  const [secondaryItems, setSecondaryItems] = React.useState<NavItem[]>([]);
-
-  const handleAnyNavigate = React.useCallback(() => {
+  const [desktopCollapsed, setDesktopCollapsed] = useState(true);
+  const [primaryItems, setPrimaryItems] = useState<NavItem[]>([]);
+  const [secondaryItems, setSecondaryItems] = useState<NavItem[]>([]);
+  const handleAnyNavigate = useCallback(() => {
     // Reserved for future cross-device sync (matches previous API surface)
   }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const t = setTimeout(() => {
       setPrimaryItems(filterNavTree(config.primary, role, isAuthenticated));
       setSecondaryItems(
-        filterNavTree(config.secondary ?? [], role, isAuthenticated)
+        filterNavTree(config.secondary ?? [], role, isAuthenticated),
       );
     }, 50);
     return () => clearTimeout(t);
   }, [config.primary, config.secondary, role, isAuthenticated]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof window === "undefined") return;
-
     const applyOffsets = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (isDesktop) {
@@ -129,17 +117,14 @@ export function GlobalNavCore({
         document.body.style.paddingTop = `${MOBILE_TOP_BAR_HEIGHT}px`;
       }
     };
-
     applyOffsets();
     window.addEventListener("resize", applyOffsets);
-
     return () => {
       window.removeEventListener("resize", applyOffsets);
       document.body.style.paddingLeft = "";
       document.body.style.paddingTop = "";
     };
   }, [desktopCollapsed]);
-
   return (
     <>
       <MobileTopBar
@@ -166,7 +151,6 @@ export function GlobalNavCore({
     </>
   );
 }
-
 function MobileTopBar({
   config,
   LinkComponent,
@@ -221,7 +205,6 @@ function MobileTopBar({
     </div>
   );
 }
-
 function DesktopSideNav({
   config,
   pathname,
@@ -247,7 +230,7 @@ function DesktopSideNav({
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-[1100] hidden border-r border-sidebar-border bg-sidebar/90 text-sidebar-foreground backdrop-blur supports-[backdrop-filter]:bg-sidebar/70 transition-[width] duration-200 lg:flex lg:flex-col",
-        collapsed ? "w-28" : "w-72"
+        collapsed ? "w-28" : "w-72",
       )}
     >
       <div className="flex h-10 items-center gap-2 border-b border-sidebar-border px-2">
@@ -255,7 +238,7 @@ function DesktopSideNav({
           href={config.brand.href ?? "/"}
           className={cn(
             "flex flex-1 items-center gap-2 rounded-md py-1 transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            collapsed ? "justify-center" : "justify-start"
+            collapsed ? "justify-center" : "justify-start",
           )}
         >
           <BrandSymbol brand={config.brand} />
@@ -284,7 +267,7 @@ function DesktopSideNav({
         <div
           className={cn(
             "mt-3 flex items-center gap-2",
-            collapsed ? "justify-center flex-col" : "justify-evenly"
+            collapsed ? "justify-center flex-col" : "justify-evenly",
           )}
         >
           <ThemeToggle />
@@ -302,7 +285,7 @@ function DesktopSideNav({
         <div
           className={cn(
             "flex flex-col space-y-1 py-3",
-            collapsed ? "items-center px-0" : "px-2"
+            collapsed ? "items-center px-0" : "px-2",
           )}
         >
           {primaryItems.map((item) => (
@@ -338,7 +321,6 @@ function DesktopSideNav({
     </aside>
   );
 }
-
 function DesktopNavItem({
   item,
   collapsed,
@@ -355,10 +337,9 @@ function DesktopNavItem({
   const visibleChildren = item.children ?? [];
   const hasChildren = visibleChildren.length > 0;
   const active = navItemIsActive(item, pathname);
-  const [open, setOpen] = React.useState(() => active && !collapsed);
-  const [popoverOpen, setPopoverOpen] = React.useState(false);
-
-  React.useEffect(() => {
+  const [open, setOpen] = useState(() => active && !collapsed);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  useEffect(() => {
     if (collapsed) {
       setOpen(false);
       return;
@@ -367,17 +348,14 @@ function DesktopNavItem({
       setOpen(true);
     }
   }, [active, collapsed]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!collapsed) {
       setPopoverOpen(false);
     }
   }, [collapsed]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     setPopoverOpen(false);
   }, [pathname]);
-
   if (collapsed) {
     if (hasChildren) {
       return (
@@ -391,7 +369,7 @@ function DesktopNavItem({
                     "relative mx-auto flex h-14 w-14 items-center justify-center rounded-md transition-colors",
                     active
                       ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   )}
                   aria-label={item.label}
                 >
@@ -435,7 +413,7 @@ function DesktopNavItem({
                       "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       childActive
                         ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                        : "text-sidebar-foreground/70"
+                        : "text-sidebar-foreground/70",
                     )}
                   >
                     <NavItemIcon item={child} className="h-5 w-5" />
@@ -453,7 +431,6 @@ function DesktopNavItem({
         </Popover>
       );
     }
-
     return (
       <Tooltip>
         <TooltipTrigger asChild>
@@ -465,7 +442,7 @@ function DesktopNavItem({
               "relative mx-auto flex h-14 w-14 items-center justify-center rounded-md transition-colors",
               active
                 ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
             <NavItemIcon item={item} className="h-8 w-8" />
@@ -492,7 +469,6 @@ function DesktopNavItem({
       </Tooltip>
     );
   }
-
   if (hasChildren) {
     return (
       <Collapsible open={open} onOpenChange={setOpen}>
@@ -503,7 +479,7 @@ function DesktopNavItem({
               "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
             <span
@@ -511,7 +487,7 @@ function DesktopNavItem({
                 "flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-transparent",
                 active
                   ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                  : "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "bg-sidebar-accent text-sidebar-accent-foreground",
               )}
             >
               <NavItemIcon item={item} className="h-7 w-7" />
@@ -525,7 +501,7 @@ function DesktopNavItem({
             <ChevronDown
               className={cn(
                 "ml-1 h-4 w-4 shrink-0 transition-transform",
-                open ? "rotate-180" : "rotate-0"
+                open ? "rotate-180" : "rotate-0",
               )}
             />
           </button>
@@ -543,7 +519,7 @@ function DesktopNavItem({
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   childActive
                     ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground/70"
+                    : "text-sidebar-foreground/70",
                 )}
               >
                 <NavItemIcon item={child} className="h-5 w-5" />
@@ -560,7 +536,6 @@ function DesktopNavItem({
       </Collapsible>
     );
   }
-
   return (
     <NavLink
       LinkComponent={LinkComponent}
@@ -570,7 +545,7 @@ function DesktopNavItem({
         "flex w-full items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors",
         active
           ? "bg-sidebar-primary text-sidebar-primary-foreground"
-          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
       )}
     >
       <span
@@ -578,7 +553,7 @@ function DesktopNavItem({
           "flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-transparent",
           active
             ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-            : "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "bg-sidebar-accent text-sidebar-accent-foreground",
         )}
       >
         <NavItemIcon item={item} className="h-7 w-7" />
@@ -592,7 +567,6 @@ function DesktopNavItem({
     </NavLink>
   );
 }
-
 function MobileNav({
   config,
   LinkComponent,
@@ -608,13 +582,11 @@ function MobileNav({
   primaryItems: NavItem[];
   secondaryItems: NavItem[];
 }) {
-  const [open, setOpen] = React.useState(false);
-
-  const handleNavigate = React.useCallback(() => {
+  const [open, setOpen] = useState(false);
+  const handleNavigate = useCallback(() => {
     setOpen(false);
     onNavigate();
   }, [onNavigate]);
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -678,7 +650,6 @@ function MobileNav({
     </Sheet>
   );
 }
-
 function MobileNavItem({
   item,
   LinkComponent,
@@ -693,14 +664,13 @@ function MobileNavItem({
   const visibleChildren = item.children ?? [];
   const hasChildren = visibleChildren.length > 0;
   const active = navItemIsActive(item, pathname);
-
   const triggerContent = (
     <div
       className={cn(
         "flex items-center justify-between rounded-md px-2 py-2 text-sm transition-colors",
         active
           ? "bg-sidebar-primary text-sidebar-primary-foreground"
-          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
       )}
     >
       <div className="flex items-center gap-2">
@@ -715,7 +685,6 @@ function MobileNavItem({
       {hasChildren ? <ChevronRight className="h-5 w-5 opacity-70" /> : null}
     </div>
   );
-
   if (hasChildren) {
     return (
       <DropdownMenu>
@@ -742,7 +711,7 @@ function MobileNavItem({
                     "flex items-center gap-2",
                     childActive
                       ? "text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground/70"
+                      : "text-sidebar-foreground/70",
                   )}
                 >
                   <NavItemIcon item={child} className="h-5 w-5" />
@@ -760,7 +729,6 @@ function MobileNavItem({
       </DropdownMenu>
     );
   }
-
   return (
     <NavLink
       LinkComponent={LinkComponent}
@@ -772,7 +740,6 @@ function MobileNavItem({
     </NavLink>
   );
 }
-
 function BrandSymbol({
   brand,
   className,
@@ -789,7 +756,6 @@ function BrandSymbol({
       />
     );
   }
-
   const initials = brand.name
     .split(" ")
     .filter(Boolean)
@@ -797,19 +763,17 @@ function BrandSymbol({
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   return (
     <span
       className={cn(
         "flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground",
-        className
+        className,
       )}
     >
       {initials || "•"}
     </span>
   );
 }
-
 function NavItemIcon({
   item,
   className,
@@ -820,16 +784,14 @@ function NavItemIcon({
   const Icon = item.icon ?? Circle;
   return <Icon className={className} />;
 }
-
 function navItemIsActive(item: NavItem, pathname: string): boolean {
   if (isActive(item.href, pathname, item.match)) {
     return true;
   }
   return (item.children ?? []).some((child) =>
-    navItemIsActive(child, pathname)
+    navItemIsActive(child, pathname),
   );
 }
-
 /**
  * NavLink: wraps your LinkComponent to:
  *  - pass through external attrs

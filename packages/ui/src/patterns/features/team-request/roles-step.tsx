@@ -60,22 +60,24 @@ export function RolesStep({
         <CardTitle>Step 4: Roles Needed</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {FIELD_ROLE_DETAILS.map((r) => {
-          const isSuggested = suggestedRoles?.includes(r.role);
-          return (
-            <SelectableRoleCard
-              key={r.role}
-              role={r.role}
-              label={humanize(r.role)}
-              selected={roles.includes(r.role)}
-              suggested={isSuggested}
-              count={rolesByType[r.role]} // <-- no ?? 1
-              onToggle={() => toggleRole(r.role)}
-              onCountChange={(val) => updateCount(r.role, val)}
-              color={isSuggested ? "emerald" : "amber"}
-            />
-          );
-        })}
+        {FIELD_ROLE_DETAILS.sort((a, b) => a.role.localeCompare(b.role)).map(
+          (r) => {
+            const isSuggested = suggestedRoles?.includes(r.role);
+            return (
+              <SelectableRoleCard
+                key={r.role}
+                role={r.role}
+                label={humanize(r.role)}
+                selected={roles.includes(r.role)}
+                suggested={isSuggested}
+                count={rolesByType[r.role]} // <-- no ?? 1
+                onToggle={() => toggleRole(r.role)}
+                onCountChange={(val) => updateCount(r.role, val)}
+                color={isSuggested ? "emerald" : "amber"}
+              />
+            );
+          }
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={onBack}>

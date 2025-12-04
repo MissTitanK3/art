@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Card,
@@ -8,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-
 export type QuickActionSection = {
   title: string;
   actions: Array<{
@@ -17,14 +14,12 @@ export type QuickActionSection = {
     variant?: "default" | "outline" | "light" | "secondary";
   }>;
 };
-
 export type QuickActionsCardProps = {
   title?: string;
   sections: QuickActionSection[];
   className?: string;
   hiddenOnMobile?: boolean;
 };
-
 export default function QuickActionsCard({
   title = "Quick actions",
   sections,

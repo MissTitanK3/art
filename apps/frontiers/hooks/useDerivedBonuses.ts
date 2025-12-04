@@ -1,13 +1,11 @@
 "use client";
-
-import * as React from "react";
-
+import { useEffect, useState } from "react";
 export function useDerivedBonuses(profileId: string | null, deps: any[] = []) {
-  const [derivedBonuses, setDerivedBonuses] = React.useState<Record<
+  const [derivedBonuses, setDerivedBonuses] = useState<Record<
     string,
     number
   > | null>(null);
-  const [derivedBreakdown, setDerivedBreakdown] = React.useState<{
+  const [derivedBreakdown, setDerivedBreakdown] = useState<{
     items: Array<{
       type: "crew" | "position";
       id: string;
@@ -17,8 +15,7 @@ export function useDerivedBonuses(profileId: string | null, deps: any[] = []) {
     auras: string[];
     sets?: string[];
   } | null>(null);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const run = async () => {
       if (!profileId) {
         setDerivedBonuses(null);
@@ -41,6 +38,5 @@ export function useDerivedBonuses(profileId: string | null, deps: any[] = []) {
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId, ...deps]);
-
   return { derivedBonuses, derivedBreakdown };
 }

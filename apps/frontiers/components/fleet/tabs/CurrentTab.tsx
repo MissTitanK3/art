@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
@@ -15,11 +14,14 @@ import { humanizeKey, pct } from "@/lib/format";
 import { ShipCustomization } from "@/components/fleet/ShipCustomization";
 import { RepairInterface } from "@/components/fleet/RepairInterface";
 import { ResupplyInterface } from "@/components/fleet/ResupplyInterface";
-
 export function CurrentTab(props: {
   profileId: string | null;
   shipLoading: boolean;
-  ship: { ship_condition: number; morale: number; fatigue: number } | null;
+  ship: {
+    ship_condition: number;
+    morale: number;
+    fatigue: number;
+  } | null;
   currentShip: any | null;
   derivedBonuses: Record<string, number> | null;
   derivedBreakdown: {
@@ -67,11 +69,9 @@ export function CurrentTab(props: {
     setAbandonOpen,
     abandonShip,
   } = props;
-
-  const [componentsOpen, setComponentsOpen] = React.useState(false);
-  const [customizationOpen, setCustomizationOpen] = React.useState(false);
-
-  const keyExplanation = React.useCallback((key: string): string => {
+  const [componentsOpen, setComponentsOpen] = useState(false);
+  const [customizationOpen, setCustomizationOpen] = useState(false);
+  const keyExplanation = useCallback((key: string): string => {
     const k = key.toLowerCase();
     if (
       k.includes("signal_yield") ||
@@ -95,8 +95,7 @@ export function CurrentTab(props: {
       return "Morale Recovery: Crew morale bounces back faster after activities.";
     return `${humanizeKey(key)}: Contributes to overall ship performance.`;
   }, []);
-
-  const keyImpacts = React.useCallback((key: string): string[] => {
+  const keyImpacts = useCallback((key: string): string[] => {
     const k = key.toLowerCase();
     const impacts: string[] = [];
     if (k.includes("signal")) impacts.push("Signals/Scans");
@@ -112,11 +111,10 @@ export function CurrentTab(props: {
     if (impacts.length === 0) impacts.push("General Performance");
     return impacts;
   }, []);
-
   function ImpactChip({ k, v }: { k: string; v: number }) {
-    const [open, setOpen] = React.useState(false);
-    const ref = React.useRef<HTMLDivElement | null>(null);
-    React.useEffect(() => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement | null>(null);
+    useEffect(() => {
       if (!open) return;
       const onDocClick = (e: MouseEvent) => {
         if (!ref.current) return;
@@ -174,7 +172,6 @@ export function CurrentTab(props: {
       </div>
     );
   }
-
   return (
     <section>
       <div className="flex items-center justify-between mb-2">
@@ -241,7 +238,7 @@ export function CurrentTab(props: {
                             currentShip.ship.sector_bonus as Record<
                               string,
                               number
-                            >
+                            >,
                           ).map(([region, bonus]) => (
                             <span
                               key={region}
@@ -431,7 +428,7 @@ export function CurrentTab(props: {
                               {Object.entries(it.contributions).map(
                                 ([kk, vv]) => (
                                   <ImpactChip key={kk} k={kk} v={Number(vv)} />
-                                )
+                                ),
                               )}
                             </div>
                           ) : (

@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * Compare per-region app directories against a baseline template and write detailed diff output.
+ *
+ * Usage:
+ *   ts-node scripts/check-align-regions.ts [--baseline region-pnw] [--out-dir .check-unaligned-region] [--format json|diff] [--staged] [--git]
+ *
+ * Produces structured JSON reports that can be consumed by other automation or CI steps.
+ */
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';

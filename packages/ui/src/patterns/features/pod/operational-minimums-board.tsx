@@ -1,8 +1,6 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
-
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import { cn } from "@workspace/ui/lib/utils";
@@ -17,13 +15,11 @@ import type {
   RegionOperationalMinimumSnapshot,
   RegionReadinessChecklistItem,
 } from "@workspace/store/types/academy-readiness.ts";
-
 type OperationalMinimumsBoardProps = {
   minimums: RegionOperationalMinimumSnapshot[];
   checklist: RegionReadinessChecklistItem[];
   onManageMinimums?: () => void;
 };
-
 export function OperationalMinimumsBoard({
   minimums,
   checklist,
@@ -34,19 +30,15 @@ export function OperationalMinimumsBoard({
   const allMinimumsMet = hasMinimums
     ? minimums.every((item) => item.coverageStatus === "met")
     : true;
-
-  const [minimumsOpen, setMinimumsOpen] = React.useState(() => !allMinimumsMet);
-
-  React.useEffect(() => {
+  const [minimumsOpen, setMinimumsOpen] = useState(() => !allMinimumsMet);
+  useEffect(() => {
     if (!allMinimumsMet) {
       setMinimumsOpen(true);
     }
   }, [allMinimumsMet]);
-
   if (!hasMinimums && !hasChecklist) {
     return null;
   }
-
   return (
     <section className="rounded-2xl border bg-card/40 shadow-sm">
       <div className="flex flex-col gap-4 border-b border-border/70 p-3">
@@ -98,7 +90,7 @@ export function OperationalMinimumsBoard({
         <div
           className={cn(
             "p-6",
-            hasMinimums ? "border-b border-border/70" : undefined
+            hasMinimums ? "border-b border-border/70" : undefined,
           )}
         >
           <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -136,7 +128,7 @@ export function OperationalMinimumsBoard({
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform",
-                      minimumsOpen ? "rotate-180" : "rotate-0"
+                      minimumsOpen ? "rotate-180" : "rotate-0",
                     )}
                     aria-hidden
                   />

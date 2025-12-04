@@ -95,7 +95,6 @@ export function SelectableRoleCard({
       <div className="flex items-center gap-2">
         {selected && <Check className={cn("h-4 w-4", palette.check)} />}
         <span className="font-medium">{label}</span>
-        {suggested && <span className="ml-1 text-xs italic">(suggested)</span>}
       </div>
       {selected && (
         <Input

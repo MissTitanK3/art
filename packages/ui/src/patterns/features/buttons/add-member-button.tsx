@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Dialog,
@@ -18,44 +17,34 @@ import {
   SelectValue,
   SelectContent,
 } from "@workspace/ui/primitives/select";
-
 import {
   makeProfile,
   makeRosterEntry,
 } from "@workspace/store/utils/generator.ts";
 import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
-
 type AddMemberButtonProps = {
   pod: Pod;
   activeRoster: RosterEntry[];
   onAddMember: (entry: RosterEntry) => void;
 };
-
 export function AddMemberButton({
   pod,
   activeRoster,
   onAddMember,
 }: AddMemberButtonProps) {
-  const [open, setOpen] = React.useState(false);
-  const [mode, setMode] = React.useState<"registered" | "guest">("registered");
-
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"registered" | "guest">("registered");
   // form state
-  const [guestName, setGuestName] = React.useState("");
-  const [selectedRosterId, setSelectedRosterId] = React.useState<string | null>(
-    null
-  );
-  const [role, setRole] = React.useState<"lead" | "member" | "trainee">(
-    "member"
-  );
-
+  const [guestName, setGuestName] = useState("");
+  const [selectedRosterId, setSelectedRosterId] = useState<string | null>(null);
+  const [role, setRole] = useState<"lead" | "member" | "trainee">("member");
   // Load eligible profiles (pod_leader and higher) from server route when dialog opens
-  const [loadingOptions, setLoadingOptions] = React.useState(false);
-  const [rosterOptions, setRosterOptions] = React.useState<
-    RosterEntry[] | null
-  >(null);
-
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [rosterOptions, setRosterOptions] = useState<RosterEntry[] | null>(
+    null,
+  );
   // Convert a plain profile into a synthetic RosterEntry for selection
-  const profileToRosterEntry = React.useCallback(
+  const profileToRosterEntry = useCallback(
     (profile: any): RosterEntry => ({
       id: String(profile.id), // synthetic id for selection (we generate a new one on add)
       profile,
@@ -70,10 +59,9 @@ export function AddMemberButton({
       lastShiftAt: undefined,
       signal_handle: profile.contact_signal ?? undefined,
     }),
-    []
+    [],
   );
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     async function loadEligible() {
       if (!open || mode !== "registered") return;
@@ -101,8 +89,8 @@ export function AddMemberButton({
           }
           const merged = Array.from(mapByProfile.values()).sort((a, b) =>
             (a.profile?.display_name ?? "").localeCompare(
-              b.profile?.display_name ?? ""
-            )
+              b.profile?.display_name ?? "",
+            ),
           );
           if (!cancelled) setRosterOptions(merged);
           return;
@@ -112,7 +100,6 @@ export function AddMemberButton({
       } finally {
         if (!cancelled) setLoadingOptions(false);
       }
-
       // Fallback: use provided activeRoster
       if (!cancelled) setRosterOptions(activeRoster);
     }
@@ -121,12 +108,9 @@ export function AddMemberButton({
       cancelled = true;
     };
   }, [open, mode, activeRoster, rosterOptions, profileToRosterEntry]);
-
   if (!pod) return null;
-
   const handleAdd = () => {
     const newId = `r-${Date.now()}`;
-
     let entry: RosterEntry;
     if (mode === "guest") {
       // build guest profile + roster entry
@@ -135,7 +119,7 @@ export function AddMemberButton({
         guestName || "Guest Volunteer",
         [],
         "Unregistered",
-        { registered: false }
+        { registered: false },
       );
       entry = makeRosterEntry(newId, profile, role, "active", [], [], []);
     } else {
@@ -157,13 +141,11 @@ export function AddMemberButton({
           (found.profile?.id ? String(found.profile.id) : undefined),
       };
     }
-
     onAddMember(entry);
     setOpen(false);
     setGuestName("");
     setSelectedRosterId(null);
   };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

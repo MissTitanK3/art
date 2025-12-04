@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TrustEntry } from "@workspace/store/types/trust.ts";
 import {
   Card,
@@ -40,27 +39,24 @@ import { Plus, PauseCircle, PlayCircle, Download } from "lucide-react";
 import { humanize } from "@workspace/ui/lib/utils";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { Callout } from "@workspace/ui/patterns/features/academy/callout";
-
 type Props = {
   initialEntries: TrustEntry[];
   nameById: Record<string, string>;
 };
-
 const ROLE_OPTIONS: TrustEntry["signer_role"][] = [
   "regional_admin",
   "pod_leader",
   "trainer",
 ];
 const STATUS_OPTIONS: TrustEntry["status"][] = ["active", "inactive"];
-
 export default function TrustClient({ initialEntries, nameById }: Props) {
   const CHECKIN_DAYS = 90; // default check-in cadence for ROT
-  const [query, setQuery] = React.useState("");
-  const [role, setRole] = React.useState<string>("");
-  const [status, setStatus] = React.useState<string>("");
-  const [rows, setRows] = React.useState<TrustEntry[]>(() => initialEntries);
+  const [query, setQuery] = useState("");
+  const [role, setRole] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [rows, setRows] = useState<TrustEntry[]>(() => initialEntries);
   // SSR-stable date formatting and time reference
-  const dateFmt = React.useMemo(
+  const dateFmt = useMemo(
     () =>
       new Intl.DateTimeFormat("en-US", {
         year: "numeric",
@@ -72,19 +68,18 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
         hour12: true,
         timeZone: "UTC",
       }),
-    []
+    [],
   );
-  const [now, setNow] = React.useState<number | null>(null);
-  React.useEffect(() => {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
     setNow(Date.now());
   }, []);
-  const [addOpen, setAddOpen] = React.useState(false);
-  const [newSubjectId, setNewSubjectId] = React.useState<string>("");
-  const [newSignerId, setNewSignerId] = React.useState<string>("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [newSubjectId, setNewSubjectId] = useState<string>("");
+  const [newSignerId, setNewSignerId] = useState<string>("");
   const [newRole, setNewRole] =
-    React.useState<TrustEntry["signer_role"]>("pod_leader");
-
-  const filtered = React.useMemo(() => {
+    useState<TrustEntry["signer_role"]>("pod_leader");
+  const filtered = useMemo(() => {
     return rows.filter((e) => {
       if (role && e.signer_role !== role) return false;
       if (status && e.status !== status) return false;
@@ -99,7 +94,6 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       return true;
     });
   }, [rows, role, status, query, nameById]);
-
   async function addEntry() {
     if (!newSubjectId || !newSignerId) {
       toast.error("Select both Subject and Signer");
@@ -118,7 +112,9 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
         }),
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
-      const json = (await res.json()) as { entry?: TrustEntry };
+      const json = (await res.json()) as {
+        entry?: TrustEntry;
+      };
       const entry = json.entry as TrustEntry;
       setRows((prev) => [entry, ...prev]);
       toast.success("Entry added");
@@ -130,7 +126,6 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       toast.error(e?.message ?? "Add failed");
     }
   }
-
   async function toggleStatus(idx: number) {
     const e = rows[idx];
     if (!e) return;
@@ -148,8 +143,8 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                   ? new Date().toISOString()
                   : row.signed_at,
             }
-          : row
-      )
+          : row,
+      ),
     );
     try {
       const res = await fetch(
@@ -162,21 +157,19 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
             signed_at:
               nextStatus === "active" ? new Date().toISOString() : undefined,
           }),
-        }
+        },
       );
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       toast.success(
         nextStatus === "active"
           ? "Entry resumed — check-in reset"
-          : "Entry deactivated"
+          : "Entry deactivated",
       );
     } catch (err: any) {
       toast.error(err?.message ?? "Update failed");
     }
   }
-
   // re-verify disabled when ROT is not used
-
   function exportJSON() {
     const blob = new Blob([JSON.stringify(filtered, null, 2)], {
       type: "application/json",
@@ -188,7 +181,6 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
     a.click();
     URL.revokeObjectURL(url);
   }
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -427,7 +419,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
                           const dueAt =
                             signedAt + CHECKIN_DAYS * 24 * 60 * 60 * 1000;
                           const diffDays = Math.ceil(
-                            (dueAt - now) / (24 * 60 * 60 * 1000)
+                            (dueAt - now) / (24 * 60 * 60 * 1000),
                           );
                           if (diffDays < 0) {
                             return (

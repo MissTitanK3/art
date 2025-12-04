@@ -1,12 +1,10 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo } from "react";
 import type { ComTeam } from "@workspace/store/types/comms.ts";
 import { Button } from "@workspace/ui/primitives/button";
 import { CheckInTimerBadge } from "@workspace/ui/patterns/features/dispatch/check-in-timer-badge";
 import { EmptyText } from "@workspace/ui/patterns/common/status-text";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
-
 const NOOP_STORAGE: Storage = {
   get length() {
     return 0;
@@ -27,7 +25,6 @@ const NOOP_STORAGE: Storage = {
     /* noop */
   },
 };
-
 const coerceMinutes = (value: unknown): number | undefined => {
   if (typeof value === "number") {
     return Number.isFinite(value) && value > 0 ? Math.round(value) : undefined;
@@ -40,7 +37,6 @@ const coerceMinutes = (value: unknown): number | undefined => {
   }
   return undefined;
 };
-
 type Props = {
   teams: ComTeam[];
   defaultCheckInMinutes: number;
@@ -50,7 +46,6 @@ type Props = {
   setCheckInInput?: (s: string) => void;
   setGlobalCheckInMinutes?: (n: number) => void;
 };
-
 export function CommsTeamCheckInList({
   teams,
   defaultCheckInMinutes,
@@ -62,16 +57,13 @@ export function CommsTeamCheckInList({
   const isControlled =
     typeof setGlobalCheckInMinutes === "function" &&
     typeof setCheckInInput === "function";
-
   const storageKey = isControlled
     ? "comms.defaultCheckInMinutes:controlled"
     : "comms.defaultCheckInMinutes";
-
-  const fallbackDefault = React.useMemo(
+  const fallbackDefault = useMemo(
     () => coerceMinutes(defaultCheckInMinutes) ?? 60,
-    [defaultCheckInMinutes]
+    [defaultCheckInMinutes],
   );
-
   const [storedDefault, setStoredDefault] = useLocalStorage<number>(
     storageKey,
     fallbackDefault,
@@ -82,25 +74,21 @@ export function CommsTeamCheckInList({
       deserialize: (raw) => coerceMinutes(raw) ?? fallbackDefault,
       migrate: (payload) => coerceMinutes(payload) ?? fallbackDefault,
       storage: isControlled ? NOOP_STORAGE : undefined,
-    }
+    },
   );
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (isControlled) return;
     const nextDefault = coerceMinutes(defaultCheckInMinutes);
     if (!nextDefault) return;
     setStoredDefault((prev) => (coerceMinutes(prev) ? prev : nextDefault));
   }, [defaultCheckInMinutes, isControlled, setStoredDefault]);
-
   const setDefault = (mins: number) => {
     const next = coerceMinutes(mins);
     if (!next) return;
     setStoredDefault(next);
   };
-
   const choices = [10, 20, 30, 40, 50, 60];
   const selectedFromParent = coerceMinutes(checkInInput ?? undefined);
-
   return (
     <div className="space-y-2 text-sm">
       <div className="mb-2 flex justify-center w-full">
@@ -188,5 +176,4 @@ export function CommsTeamCheckInList({
     </div>
   );
 }
-
 export default CommsTeamCheckInList;

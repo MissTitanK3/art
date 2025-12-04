@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import HowToLayout from "@workspace/ui/patterns/features/how-to/how-to-layout";
 import {
@@ -32,34 +31,29 @@ import {
 } from "@workspace/ui/patterns/features/how-to";
 import { Button } from "@workspace/ui/primitives/button";
 import { BugReportForm } from "@workspace/ui/patterns/features/feedback/bug-report-form";
-
 export default function HowToUsePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const initial =
     (searchParams.get("section") as HowToSectionId) ||
     DEFAULT_HOW_TO_SECTION_ID;
-  const [active, setActive] = React.useState<HowToSectionId>(initial);
-
-  React.useEffect(() => {
+  const [active, setActive] = useState<HowToSectionId>(initial);
+  useEffect(() => {
     const fromUrl =
       (searchParams.get("section") as HowToSectionId) ||
       DEFAULT_HOW_TO_SECTION_ID;
     setActive(fromUrl);
   }, [searchParams]);
-
-  const select = React.useCallback(
+  const select = useCallback(
     (id: HowToSectionId) => {
       setActive(id);
       const params = new URLSearchParams(Array.from(searchParams.entries()));
       params.set("section", id);
       router.replace(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    [router, searchParams],
   );
-
-  const renderers = React.useMemo(
+  const renderers = useMemo(
     () =>
       ({
         "user-guide": <HowToUserGuide />,
@@ -97,9 +91,8 @@ export default function HowToUsePage() {
         "admin-training": <AdminTrainingGuide />,
         "admin-trust": <AdminTrustGuide />,
       }) as Record<string, React.ReactNode>,
-    []
+    [],
   );
-
   const quick = (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="border border-muted rounded-lg p-4">
@@ -115,7 +108,6 @@ export default function HowToUsePage() {
       </div>
     </div>
   );
-
   return (
     <HowToLayout
       active={active}

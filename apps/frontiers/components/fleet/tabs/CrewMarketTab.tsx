@@ -1,10 +1,7 @@
 "use client";
-
-import * as React from "react";
 import { MarketFilters } from "@/components/fleet/MarketFilters";
 import { RoleRow } from "@/components/fleet/RoleRow";
 import type { CrewCatalog } from "@/schemas/crew";
-
 export function CrewMarketTab(props: {
   positionTemplates: any[];
   marketFilter: string;
@@ -17,7 +14,10 @@ export function CrewMarketTab(props: {
   marketCrew: CrewCatalog[];
   orderedRoles: string[];
   groupedMarket: Map<string, CrewCatalog[]>;
-  hiredCrew: Array<{ crew_id: string; status: "active" | "inactive" }>;
+  hiredCrew: Array<{
+    crew_id: string;
+    status: "active" | "inactive";
+  }>;
   hireCrew: (id: string) => Promise<void>;
   profileId: string | null;
   uncoveredNeeds: Set<string>;
@@ -41,7 +41,6 @@ export function CrewMarketTab(props: {
     uncoveredNeeds,
     autoStrategy,
   } = props;
-
   return (
     <section>
       <MarketFilters

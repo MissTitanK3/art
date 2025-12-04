@@ -1,7 +1,5 @@
 "use client";
-
-import * as React from "react";
-
+import { useEffect } from "react";
 export type TeleprompterHotkeyHandlers = {
   togglePlay: () => void;
   next: () => void;
@@ -12,12 +10,11 @@ export type TeleprompterHotkeyHandlers = {
   toggleVMirror?: () => void;
   toggleFullscreen?: () => void;
 };
-
 export function useTeleprompterHotkeys(
   scopeRef: React.RefObject<HTMLElement | null>,
   handlers: TeleprompterHotkeyHandlers,
 ) {
-  React.useEffect(() => {
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target) {
@@ -41,7 +38,6 @@ export function useTeleprompterHotkeys(
         (activeEl === scope || scope.contains(activeEl))
       );
       if (!inScope) return;
-
       if (e.key === " ") {
         e.preventDefault();
         handlers.togglePlay();

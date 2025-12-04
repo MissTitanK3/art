@@ -1,7 +1,5 @@
 "use client";
-
-import * as React from "react";
-
+import { useMemo } from "react";
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -18,38 +16,36 @@ import {
   instructorTypeLabels,
 } from "./utils";
 import type { AcademyTrainingClass } from "@workspace/store/types/academy.ts";
-
 type ActiveClassesSectionProps = {
   classes: AcademyTrainingClass[];
   onScheduleClass?: (classId: string) => void;
 };
-
 const classStatusConfig: Record<
   AcademyTrainingClass["status"],
-  { label: string; badge: React.ComponentProps<typeof Badge>["variant"] }
+  {
+    label: string;
+    badge: React.ComponentProps<typeof Badge>["variant"];
+  }
 > = {
   draft: { label: "Draft", badge: "outline" },
   needs_instructor: { label: "Needs Instructor", badge: "warning" },
   scheduled: { label: "Scheduled", badge: "info" },
   completed: { label: "Completed", badge: "success" },
 };
-
 const classStatusOrder: Record<AcademyTrainingClass["status"], number> = {
   needs_instructor: 0,
   draft: 1,
   scheduled: 2,
   completed: 3,
 };
-
 export function ActiveClassesSection({
   classes,
   onScheduleClass,
 }: ActiveClassesSectionProps) {
   const handleScheduleClass = onScheduleClass ?? (() => {});
-
-  const activeClasses = React.useMemo(() => {
+  const activeClasses = useMemo(() => {
     const filtered = classes.filter(
-      (trainingClass) => trainingClass.status !== "completed"
+      (trainingClass) => trainingClass.status !== "completed",
     );
     return filtered.sort((a, b) => {
       const statusDiff =
@@ -66,7 +62,6 @@ export function ActiveClassesSection({
       return aTime - bTime;
     });
   }, [classes]);
-
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -91,13 +86,12 @@ export function ActiveClassesSection({
           {activeClasses.map((trainingClass) => {
             const statusDisplay = classStatusConfig[trainingClass.status];
             const nextSessionLabel = formatNextSessionLabel(
-              trainingClass.nextSession
+              trainingClass.nextSession,
             );
             const sessionsLabel =
               trainingClass.sessionsScheduled === 1
                 ? "1 session scheduled"
                 : `${trainingClass.sessionsScheduled} sessions scheduled`;
-
             return (
               <Card
                 key={trainingClass.id}

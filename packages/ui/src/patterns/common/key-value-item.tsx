@@ -1,13 +1,9 @@
 "use client";
-
-import * as React from "react";
-
 type Props = {
   label: React.ReactNode;
   value: React.ReactNode;
   className?: string;
 };
-
 export default function KeyValueItem({ label, value, className }: Props) {
   return (
     <div

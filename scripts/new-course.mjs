@@ -1,5 +1,12 @@
 #!/usr/bin/env node
-// Scaffold a new Academy course MDX from a template
+/**
+ * Scaffold a new Academy course MDX file using the `_course-template` blueprint.
+ *
+ * Usage:
+ *   node scripts/new-course.mjs <slug> [--title "Title"] [--dir "Folder Name"]
+ *
+ * Copies the template, substitutes slug/title placeholders, and reminds you to regenerate course metadata.
+ */
 import fs from 'node:fs'
 import path from 'node:path'
 

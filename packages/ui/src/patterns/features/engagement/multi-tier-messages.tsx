@@ -21,13 +21,18 @@ const URGENCY_OPTIONS = [
   "Within the Week",
 ];
 
-// --- Component ---
 export function MultiTierMessages({
   msgs,
   urgency,
   setUrgency,
 }: {
-  msgs: { callout: string; detailed: string; medium: string; tldr: string };
+  msgs: {
+    callout: string;
+    detailed: string;
+    medium: string;
+    tldr: string;
+    volunteerCallout: string;
+  };
   urgency: string;
   setUrgency: (u: string) => void;
 }) {
@@ -56,10 +61,16 @@ export function MultiTierMessages({
         </Select>
       </div>
 
-      {(["callout", "detailed", "medium", "tldr"] as const).map((tier) => (
+      {(
+        ["callout", "volunteerCallout", "detailed", "medium", "tldr"] as const
+      ).map((tier) => (
         <div key={tier} className="bg-muted p-4 rounded space-y-2">
           <div className="flex justify-between items-center">
-            <h3 className="capitalize font-semibold">{tier} message</h3>
+            <h3 className="capitalize font-semibold">
+              {tier === "volunteerCallout"
+                ? "Volunteer Callout"
+                : `${tier} message`}
+            </h3>
             <Button
               variant="secondary"
               size="sm"
@@ -68,7 +79,7 @@ export function MultiTierMessages({
               {copiedTier === tier ? "Copied" : "Copy"}
             </Button>
           </div>
-          <pre className="text-sm whitespace-pre-wrap">{msgs[tier]}</pre>
+          <pre className="text-xs whitespace-pre-wrap">{msgs[tier]}</pre>
         </div>
       ))}
     </div>

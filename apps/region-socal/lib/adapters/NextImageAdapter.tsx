@@ -1,8 +1,6 @@
 "use client";
-import * as React from "react";
 import NextImage from "next/image";
 import { ImageComponent } from "@workspace/store/utils/image";
-
 export const NextImageAdapter: ImageComponent = ({
   src,
   alt,
@@ -17,7 +15,6 @@ export const NextImageAdapter: ImageComponent = ({
 }) => {
   // Next/Image requires either fill OR numeric width+height
   const hasDims = typeof width === "number" && typeof height === "number";
-
   return (
     <NextImage
       src={src as any} // Next can accept StaticImport if you pass one

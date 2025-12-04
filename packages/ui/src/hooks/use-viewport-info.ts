@@ -1,16 +1,13 @@
 "use client";
-
-import * as React from "react";
-
+import { useEffect, useState } from "react";
 export function useViewportInfo(mdBreakpoint = 768) {
-  const [width, setWidth] = React.useState<number>(
+  const [width, setWidth] = useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 0,
   );
-  const [height, setHeight] = React.useState<number>(
+  const [height, setHeight] = useState<number>(
     typeof window !== "undefined" ? window.innerHeight : 0,
   );
-
-  React.useEffect(() => {
+  useEffect(() => {
     const onResize = () => {
       setWidth(window.innerWidth);
       setHeight(window.innerHeight);
@@ -23,7 +20,6 @@ export function useViewportInfo(mdBreakpoint = 768) {
       window.removeEventListener("orientationchange", onResize);
     };
   }, []);
-
   return {
     width,
     height,

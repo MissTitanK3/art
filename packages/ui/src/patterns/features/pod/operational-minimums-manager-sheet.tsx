@@ -1,8 +1,6 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PlusIcon, XIcon } from "lucide-react";
-
 import { Button } from "@workspace/ui/primitives/button";
 import { Input } from "@workspace/ui/primitives/input";
 import { Label } from "@workspace/ui/primitives/label";
@@ -21,7 +19,6 @@ import type {
   RegionOperationalMinimumKey,
 } from "@workspace/store/types/academy-readiness.ts";
 import { humanize, splitCommaSeparatedList } from "@workspace/ui/lib/utils";
-
 type DraftMinimum = {
   key: string;
   label: string;
@@ -34,20 +31,20 @@ type DraftMinimum = {
   emphasis: string;
   customCourse: string;
 };
-
 type OperationalMinimumsManagerSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   definitions: RegionOperationalMinimumDefinition[];
-  courseOptions: { id: string; title: string }[];
+  courseOptions: {
+    id: string;
+    title: string;
+  }[];
   onSubmit?: (
-    next: RegionOperationalMinimumDefinition[]
+    next: RegionOperationalMinimumDefinition[],
   ) => Promise<void> | void;
   isSaving?: boolean;
 };
-
 const HUMANIZE_REGEX = /[_-]+/g;
-
 function toDraft(definition: RegionOperationalMinimumDefinition): DraftMinimum {
   const [min, max] = definition.staffingRange ?? [];
   return {
@@ -55,7 +52,7 @@ function toDraft(definition: RegionOperationalMinimumDefinition): DraftMinimum {
     label: definition.label ?? humanize(definition.key),
     description: definition.description ?? "",
     requiredCount: String(
-      Number.isFinite(definition.requiredCount) ? definition.requiredCount : 0
+      Number.isFinite(definition.requiredCount) ? definition.requiredCount : 0,
     ),
     staffingMin:
       typeof min === "number" && !Number.isNaN(min) ? String(min) : "",
@@ -69,16 +66,14 @@ function toDraft(definition: RegionOperationalMinimumDefinition): DraftMinimum {
     customCourse: "",
   };
 }
-
 function parseNumber(value: string): number | undefined {
   if (!value && value !== "0") return undefined;
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return undefined;
   return Math.max(0, Math.floor(parsed));
 }
-
 function draftToDefinition(
-  draft: DraftMinimum
+  draft: DraftMinimum,
 ): RegionOperationalMinimumDefinition {
   const requiredCount = parseNumber(draft.requiredCount) ?? 0;
   const staffingMin = parseNumber(draft.staffingMin);
@@ -92,7 +87,6 @@ function draftToDefinition(
   } else if (typeof staffingMax === "number") {
     staffingRange = [staffingMax];
   }
-
   const label =
     draft.label.trim().length > 0 ? draft.label.trim() : humanize(draft.key);
   const description =
@@ -104,10 +98,9 @@ function draftToDefinition(
     new Set(
       draft.requiredCourses
         .map((course) => course.trim())
-        .filter((course) => course.length > 0)
-    )
+        .filter((course) => course.length > 0),
+    ),
   );
-
   return {
     key: draft.key as RegionOperationalMinimumKey,
     label,
@@ -119,7 +112,6 @@ function draftToDefinition(
     emphasis,
   };
 }
-
 function canonicalize(definitions: RegionOperationalMinimumDefinition[]) {
   return definitions
     .map((definition) => ({
@@ -136,7 +128,6 @@ function canonicalize(definitions: RegionOperationalMinimumDefinition[]) {
     }))
     .sort((a, b) => a.key.localeCompare(b.key));
 }
-
 export function OperationalMinimumsManagerSheet({
   open,
   onOpenChange,
@@ -145,44 +136,46 @@ export function OperationalMinimumsManagerSheet({
   onSubmit,
   isSaving = false,
 }: OperationalMinimumsManagerSheetProps) {
-  const [drafts, setDrafts] = React.useState<DraftMinimum[]>(() =>
-    definitions.map(toDraft)
+  const [drafts, setDrafts] = useState<DraftMinimum[]>(() =>
+    definitions.map(toDraft),
   );
-  const stableDefinitions = React.useMemo(
+  const stableDefinitions = useMemo(
     () => canonicalize(definitions),
-    [definitions]
+    [definitions],
   );
-  const courseOptionMap = React.useMemo(() => {
-    const map = new Map<string, { id: string; title: string }>();
+  const courseOptionMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        id: string;
+        title: string;
+      }
+    >();
     for (const option of courseOptions) {
       if (!option?.id) continue;
       map.set(option.id, option);
     }
     return map;
   }, [courseOptions]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) return;
     setDrafts(definitions.map(toDraft));
   }, [definitions, open]);
-
-  const convertedDrafts = React.useMemo(
+  const convertedDrafts = useMemo(
     () => drafts.map(draftToDefinition),
-    [drafts]
+    [drafts],
   );
-
-  const isDirty = React.useMemo(() => {
+  const isDirty = useMemo(() => {
     const canonicalDrafts = canonicalize(convertedDrafts);
     return (
       JSON.stringify(canonicalDrafts) !== JSON.stringify(stableDefinitions)
     );
   }, [convertedDrafts, stableDefinitions]);
-
-  const handleFieldChange = React.useCallback(
+  const handleFieldChange = useCallback(
     (
       index: number,
       field: Exclude<keyof DraftMinimum, "requiredCourses">,
-      value: string
+      value: string,
     ) => {
       setDrafts((prev) => {
         const next = [...prev];
@@ -192,51 +185,41 @@ export function OperationalMinimumsManagerSheet({
         return next;
       });
     },
-    []
+    [],
   );
-
-  const handleReset = React.useCallback(() => {
+  const handleReset = useCallback(() => {
     setDrafts(definitions.map(toDraft));
   }, [definitions]);
-
-  const handleCourseToggle = React.useCallback(
-    (index: number, courseId: string) => {
-      setDrafts((prev) => {
-        const next = [...prev];
-        const current = next[index];
-        if (!current) return prev;
-        const normalized = courseId.trim();
-        if (normalized.length === 0) return prev;
-        const exists = current.requiredCourses.includes(normalized);
-        const updated = exists
-          ? current.requiredCourses.filter((course) => course !== normalized)
-          : [...current.requiredCourses, normalized];
-        next[index] = { ...current, requiredCourses: updated };
-        return next;
-      });
-    },
-    []
-  );
-
-  const handleRemoveCourse = React.useCallback(
-    (index: number, courseId: string) => {
-      setDrafts((prev) => {
-        const next = [...prev];
-        const current = next[index];
-        if (!current) return prev;
-        next[index] = {
-          ...current,
-          requiredCourses: current.requiredCourses.filter(
-            (course) => course !== courseId
-          ),
-        };
-        return next;
-      });
-    },
-    []
-  );
-
-  const handleAddCustomCourse = React.useCallback((index: number) => {
+  const handleCourseToggle = useCallback((index: number, courseId: string) => {
+    setDrafts((prev) => {
+      const next = [...prev];
+      const current = next[index];
+      if (!current) return prev;
+      const normalized = courseId.trim();
+      if (normalized.length === 0) return prev;
+      const exists = current.requiredCourses.includes(normalized);
+      const updated = exists
+        ? current.requiredCourses.filter((course) => course !== normalized)
+        : [...current.requiredCourses, normalized];
+      next[index] = { ...current, requiredCourses: updated };
+      return next;
+    });
+  }, []);
+  const handleRemoveCourse = useCallback((index: number, courseId: string) => {
+    setDrafts((prev) => {
+      const next = [...prev];
+      const current = next[index];
+      if (!current) return prev;
+      next[index] = {
+        ...current,
+        requiredCourses: current.requiredCourses.filter(
+          (course) => course !== courseId,
+        ),
+      };
+      return next;
+    });
+  }, []);
+  const handleAddCustomCourse = useCallback((index: number) => {
     setDrafts((prev) => {
       const next = [...prev];
       const current = next[index];
@@ -244,7 +227,7 @@ export function OperationalMinimumsManagerSheet({
       const candidate = current.customCourse.trim();
       if (candidate.length === 0) return prev;
       const exists = current.requiredCourses.some(
-        (course) => course.toLowerCase() === candidate.toLowerCase()
+        (course) => course.toLowerCase() === candidate.toLowerCase(),
       );
       if (exists) {
         next[index] = { ...current, customCourse: "" };
@@ -258,8 +241,7 @@ export function OperationalMinimumsManagerSheet({
       return next;
     });
   }, []);
-
-  const handleSubmit = React.useCallback(async () => {
+  const handleSubmit = useCallback(async () => {
     if (!onSubmit) {
       onOpenChange(false);
       return;
@@ -271,7 +253,6 @@ export function OperationalMinimumsManagerSheet({
       console.warn("[OperationalMinimumsManagerSheet] submit failed", error);
     }
   }, [convertedDrafts, onOpenChange, onSubmit]);
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -320,7 +301,7 @@ export function OperationalMinimumsManagerSheet({
                         handleFieldChange(
                           index,
                           "requiredCount",
-                          event.target.value
+                          event.target.value,
                         )
                       }
                     />
@@ -339,7 +320,7 @@ export function OperationalMinimumsManagerSheet({
                           handleFieldChange(
                             index,
                             "staffingMin",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                       />
@@ -357,7 +338,7 @@ export function OperationalMinimumsManagerSheet({
                           handleFieldChange(
                             index,
                             "staffingMax",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                       />
@@ -405,7 +386,7 @@ export function OperationalMinimumsManagerSheet({
                       <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto pr-1">
                         {courseOptions.map((option) => {
                           const selected = draft.requiredCourses.includes(
-                            option.id
+                            option.id,
                           );
                           return (
                             <Button
@@ -443,7 +424,7 @@ export function OperationalMinimumsManagerSheet({
                         handleFieldChange(
                           index,
                           "customCourse",
-                          event.target.value
+                          event.target.value,
                         )
                       }
                       onKeyDown={(event) => {
@@ -495,7 +476,7 @@ export function OperationalMinimumsManagerSheet({
                       handleFieldChange(
                         index,
                         "description",
-                        event.target.value
+                        event.target.value,
                       )
                     }
                     placeholder="Describe the capability this minimum covers"

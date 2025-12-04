@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Sheet,
@@ -15,7 +14,6 @@ import {
   type RosterEditorSection,
 } from "@workspace/ui/patterns/features/roster/types";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
-
 export type PodRosterLayoutProps = {
   podSlug: string;
   podId?: string;
@@ -32,7 +30,6 @@ export type PodRosterLayoutProps = {
   notFoundMessage?: React.ReactNode;
   emptyState?: React.ReactNode;
 };
-
 export function PodRosterLayout({
   podSlug,
   podId,
@@ -54,7 +51,6 @@ export function PodRosterLayout({
       <section className="mx-auto w-full max-w-4xl">{notFoundMessage}</section>
     );
   }
-
   const rosterList =
     rows.length > 0 ? (
       <RosterCardList
@@ -70,12 +66,10 @@ export function PodRosterLayout({
         </p>
       ))
     );
-
   const sheetOpen = Boolean(editingEntry && editingSection);
   const activeSection: RosterEditorSection = editingSection ?? "details";
   const sectionMeta = ROSTER_EDITOR_SECTION_META[activeSection];
   const formId = `edit-roster-entry-${activeSection}-form`;
-
   return (
     <section className="mx-auto w-full max-w-4xl">
       <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
@@ -127,5 +121,4 @@ export function PodRosterLayout({
     </section>
   );
 }
-
 export default PodRosterLayout;

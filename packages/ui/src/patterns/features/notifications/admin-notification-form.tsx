@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Input } from "@workspace/ui/primitives/input";
 import { Textarea } from "@workspace/ui/primitives/textarea";
 import { Button } from "@workspace/ui/primitives/button";
@@ -40,7 +39,6 @@ import {
   type NotificationLevel,
 } from "@workspace/store/types/notifications";
 import { type AdminNotificationTemplateKey } from "@workspace/store/admin/notifications/templates";
-
 export type SendArgs = {
   template?: AdminNotificationTemplateKey;
   title?: string;
@@ -54,65 +52,59 @@ export type SendArgs = {
   roles?: string[];
   groups?: ("dispatchers" | "admins" | "leaders")[];
 };
-
 export function AdminNotificationForm({
   onSend,
 }: {
   onSend: (args: SendArgs) => void;
 }) {
-  const [title, setTitle] = React.useState("");
-  const [body, setBody] = React.useState("");
-  const [level, setLevel] = React.useState<NotificationLevel>("info");
-  const [channel, setChannel] = React.useState<NotificationChannel>("dispatch");
-  const [link, setLink] = React.useState("");
-  const [sticky, setSticky] = React.useState(false);
-  const [ttlMinutes, setTtlMinutes] = React.useState<number | "">("");
-  const [selectedProfiles, setSelectedProfiles] = React.useState<
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [level, setLevel] = useState<NotificationLevel>("info");
+  const [channel, setChannel] = useState<NotificationChannel>("dispatch");
+  const [link, setLink] = useState("");
+  const [sticky, setSticky] = useState(false);
+  const [ttlMinutes, setTtlMinutes] = useState<number | "">("");
+  const [selectedProfiles, setSelectedProfiles] = useState<
     Pick<Profile, "id" | "user_id" | "display_name" | "access_role">[]
   >([]);
   const profileFromStore = useProfileStore((s) => s.profile);
-  const [profilesLoading, setProfilesLoading] = React.useState(false);
-  const profileRoles = React.useMemo(
+  const [profilesLoading, setProfilesLoading] = useState(false);
+  const profileRoles = useMemo(
     () =>
       profileFromStore?.access_role
         ? [String(profileFromStore.access_role)]
         : [],
-    [profileFromStore?.access_role]
+    [profileFromStore?.access_role],
   );
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: profileRoles[0] as NavRole }),
-    [profileRoles]
+    [profileRoles],
   );
   const { access: effectiveCanManage } = useUnifiedAccess(
     "manage_notifications",
-    ctx
+    ctx,
   );
-  const [profilesError, setProfilesError] = React.useState<string | null>(null);
-  const [selectedUsers, setSelectedUsers] = React.useState<
+  const [profilesError, setProfilesError] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<
     Pick<Profile, "user_id" | "display_name">[]
   >([]);
-  const [roleGroups, setRoleGroups] = React.useState<{
+  const [roleGroups, setRoleGroups] = useState<{
     dispatchers: boolean;
     admins: boolean;
     leaders: boolean;
   }>({ dispatchers: false, admins: false, leaders: false });
-  const [roleChecks, setRoleChecks] = React.useState<Record<string, boolean>>(
-    {}
-  );
-
-  const selectedRoles = React.useMemo(
+  const [roleChecks, setRoleChecks] = useState<Record<string, boolean>>({});
+  const selectedRoles = useMemo(
     () => AccessRoles.filter((r) => roleChecks[r]),
-    [roleChecks]
+    [roleChecks],
   );
-
-  const setChecksFor = React.useCallback((roles: string[]) => {
+  const setChecksFor = useCallback((roles: string[]) => {
     const map: Record<string, boolean> = {};
     AccessRoles.forEach((r) => {
       map[r] = roles.includes(r);
     });
     setRoleChecks(map);
   }, []);
-
   const applyPreset = (
     preset:
       | "verified_dispatchers"
@@ -120,7 +112,7 @@ export function AdminNotificationForm({
       | "admins_only"
       | "leaders_trainers"
       | "trainers_only"
-      | "clear"
+      | "clear",
   ) => {
     switch (preset) {
       case "verified_dispatchers": {
@@ -160,9 +152,8 @@ export function AdminNotificationForm({
       }
     }
   };
-
   // Load profiles for user selection (authorized admins only)
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
     (async () => {
@@ -174,7 +165,9 @@ export function AdminNotificationForm({
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = (await res.json()) as { profiles?: Profile[] };
+        const json = (await res.json()) as {
+          profiles?: Profile[];
+        };
         const list = Array.isArray(json.profiles) ? json.profiles : [];
         if (!cancelled) {
           setSelectedProfiles(
@@ -185,7 +178,7 @@ export function AdminNotificationForm({
                 user_id: p.user_id,
                 display_name: p.display_name,
                 access_role: p.access_role,
-              }))
+              })),
           );
         }
       } catch (e: any) {
@@ -200,7 +193,6 @@ export function AdminNotificationForm({
       controller.abort();
     };
   }, []);
-
   const toggleUser = (u: Pick<Profile, "user_id" | "display_name">) => {
     setSelectedUsers((prev) => {
       const exists = prev.find((x) => x.user_id === u.user_id);
@@ -208,7 +200,6 @@ export function AdminNotificationForm({
       return [...prev, u];
     });
   };
-
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const ids = selectedUsers.map((u) => u.user_id).filter(Boolean);
@@ -229,7 +220,6 @@ export function AdminNotificationForm({
       groups: groups.length ? groups : undefined,
     });
   };
-
   if (!effectiveCanManage) {
     // UI-level gate: only show this form to users allowed to manage instructor/admin tasks.
     return (
@@ -238,7 +228,6 @@ export function AdminNotificationForm({
       </p>
     );
   }
-
   return (
     <form onSubmit={submit} className="space-y-3">
       <div className="flex gap-4">
@@ -374,7 +363,7 @@ export function AdminNotificationForm({
                       <CommandGroup>
                         {selectedProfiles.map((p) => {
                           const checked = !!selectedUsers.find(
-                            (u) => u.user_id === p.user_id
+                            (u) => u.user_id === p.user_id,
                           );
                           const value =
                             `${p.display_name ?? ""} ${p.user_id ?? ""} ${p.access_role ?? ""}`.trim();
@@ -570,5 +559,4 @@ export function AdminNotificationForm({
     </form>
   );
 }
-
 export default AdminNotificationForm;

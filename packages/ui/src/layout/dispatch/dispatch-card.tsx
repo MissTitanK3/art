@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Card,
   CardContent,
@@ -11,6 +10,7 @@ import { Badge } from "@workspace/ui/primitives/badge";
 import { humanize } from "@workspace/ui/lib/utils";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { DispatchTypeBadge } from "@workspace/ui/patterns/common/dispatch-type-badge";
+import { bucketFor, bucketEmoji } from "./dispatch-buckets";
 
 type LinkWrapperProps = {
   href: string;
@@ -28,6 +28,9 @@ export function DispatchCard({
   LinkComponent,
   href,
 }: DispatchCardProps) {
+  const urgency = bucketFor(submission);
+  const urgencyIcon = bucketEmoji(urgency);
+
   return (
     <LinkComponent href={href}>
       <Card
@@ -58,11 +61,11 @@ export function DispatchCard({
           Object.keys(submission.required_roles_by_type).length > 0 ? (
             <div>
               <p className="mb-1 text-xs font-medium uppercase">Roles Needed</p>
-              <div className="flex flex-wrap gap-1">
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                 {Object.entries(submission.required_roles_by_type).map(
                   ([role, count]) => (
                     <Badge key={role} variant="outline" className="text-xs">
-                      {role} ({count})
+                      {humanize(role)} ({count})
                     </Badge>
                   )
                 )}
@@ -89,10 +92,13 @@ export function DispatchCard({
           ) : null}
         </CardContent>
         <CardFooter
-          className="text-xs text-muted-foreground"
+          className="text-xs text-muted-foreground flex-col items-start gap-2"
           suppressHydrationWarning
         >
-          <div className="flex flex-col gap-0.5">
+          <Badge variant="outline" className="text-xs font-normal">
+            {urgencyIcon} {urgency}
+          </Badge>
+          <div className="flex flex-col gap-0.5 w-full">
             {submission.date_of_event ? (
               <span>
                 <span className="font-medium">Date of event:</span>{" "}

@@ -1,29 +1,39 @@
 "use client";
-
-import * as React from "react";
+import {
+  forwardRef,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import {
   TELEPROMPTER_PRESETS,
   PresetId,
   parseCues,
   CueChunk,
 } from "@workspace/ui/lib/teleprompter";
-
 export type TeleprompterTheme =
-  | { cls?: string; highlightCls?: string; nextCls?: string }
+  | {
+      cls?: string;
+      highlightCls?: string;
+      nextCls?: string;
+    }
   | PresetId;
-
 type FontFace = "sans" | "serif" | "mono" | "dyslexic";
-
 type CountdownSegment = {
   name: "base" | "pause" | "breathe" | "lookup" | "custom";
   durationMs: number;
 };
-
 type CueName = "pause" | "breathe" | "lookup" | "custom";
-
 const CUE_STYLE_MAP: Record<
   CueName,
-  { label: string; chipBg: string; chipText: string; segmentBg: string }
+  {
+    label: string;
+    chipBg: string;
+    chipText: string;
+    segmentBg: string;
+  }
 > = {
   pause: {
     label: "pause",
@@ -50,21 +60,20 @@ const CUE_STYLE_MAP: Record<
     segmentBg: "bg-fuchsia-500/70",
   },
 };
-
 const CUE_CHIP_BASE = "inline-flex items-center gap-1 rounded";
 const CUE_CHIP_VARIANTS = {
   default: "px-2 py-0.5 text-xs",
   compact: "px-1.5 py-0.5 text-[10px]",
   legend: "px-2 py-0.5",
 } as const;
-
 type CueChipVariant = keyof typeof CUE_CHIP_VARIANTS;
-
 const cueLabel = (cue: CueName) => CUE_STYLE_MAP[cue].label;
-
 const cueChipClasses = (
   cue: CueName,
-  opts: { variant?: CueChipVariant; className?: string } = {},
+  opts: {
+    variant?: CueChipVariant;
+    className?: string;
+  } = {},
 ) => {
   const variant = opts.variant ?? "default";
   return [
@@ -77,24 +86,34 @@ const cueChipClasses = (
     .filter(Boolean)
     .join(" ");
 };
-
 const cueSegmentClass = (name: CountdownSegment["name"]) => {
   if (name === "base") return "bg-muted-foreground/40";
   return CUE_STYLE_MAP[name as CueName]?.segmentBg ?? "bg-muted-foreground/40";
 };
-
 const isCueName = (value: string): value is CueName =>
-  value === "pause" || value === "breathe" || value === "lookup" || value === "custom";
-
+  value === "pause" ||
+  value === "breathe" ||
+  value === "lookup" ||
+  value === "custom";
 export type TeleprompterViewerProps = {
   text: string;
   index: number;
   onIndexRef?: (ref: React.RefObject<HTMLDivElement | null>) => void;
   onScrollRef?: (ref: React.RefObject<HTMLDivElement | null>) => void;
   theme?: TeleprompterTheme;
-  font?: { sizeClass: string; lineHeightClass: string; face?: FontFace };
-  mirror?: { h?: boolean; v?: boolean };
-  overlay?: { color: string; opacity: number };
+  font?: {
+    sizeClass: string;
+    lineHeightClass: string;
+    face?: FontFace;
+  };
+  mirror?: {
+    h?: boolean;
+    v?: boolean;
+  };
+  overlay?: {
+    color: string;
+    opacity: number;
+  };
   showLegend?: boolean;
   countdown?: {
     enabled: boolean;
@@ -103,12 +122,19 @@ export type TeleprompterViewerProps = {
     dotMs?: number;
     segments?: CountdownSegment[];
   };
-  custom?: { textColor?: string; bgColor?: string; highlightColor?: string };
+  custom?: {
+    textColor?: string;
+    bgColor?: string;
+    highlightColor?: string;
+  };
   className?: string;
-  legendDurations?: { pauseMs: number; breatheMs: number; lookupMs: number };
+  legendDurations?: {
+    pauseMs: number;
+    breatheMs: number;
+    lookupMs: number;
+  };
   showSegmentBar?: boolean;
 };
-
 const fontFamilyFor = (face?: FontFace): React.CSSProperties => {
   if (face === "serif") return { fontFamily: "serif" };
   if (face === "mono")
@@ -126,17 +152,16 @@ const fontFamilyFor = (face?: FontFace): React.CSSProperties => {
       "system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'",
   } as React.CSSProperties;
 };
-
 const useCountdownDots = (
   enabled: boolean,
   totalMs?: number,
   startedAt?: number,
   dotMs = 1000,
 ) => {
-  const [, force] = React.useReducer((x) => x + 1, 0);
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-  React.useEffect(() => {
+  const [, force] = useReducer((x) => x + 1, 0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  useEffect(() => {
     if (!mounted || !enabled || !startedAt || !totalMs) return;
     const id = window.setInterval(() => force(), 250);
     return () => window.clearInterval(id);
@@ -153,7 +178,6 @@ const useCountdownDots = (
   const count = Math.max(0, Math.ceil((left / totalMs) * totalDots));
   return "\u2022".repeat(count);
 };
-
 // Determine active segment color based on elapsed time and provided segments
 const useActiveCountdownColor = (
   enabled: boolean,
@@ -161,9 +185,9 @@ const useActiveCountdownColor = (
   totalMs?: number,
   segments?: CountdownSegment[],
 ) => {
-  const [tick, setTick] = React.useState(0);
+  const [tick, setTick] = useState(0);
   const segLen = Array.isArray(segments) ? segments.length : 0;
-  React.useEffect(() => {
+  useEffect(() => {
     if (!enabled || !startedAt || !totalMs || !segLen) return;
     const id = window.setInterval(() => setTick((t) => t + 1), 250);
     return () => window.clearInterval(id);
@@ -182,8 +206,7 @@ const useActiveCountdownColor = (
   }
   return undefined;
 };
-
-export const TeleprompterViewer = React.forwardRef<
+export const TeleprompterViewer = forwardRef<
   HTMLDivElement,
   TeleprompterViewerProps
 >(function TeleprompterViewer(
@@ -205,14 +228,12 @@ export const TeleprompterViewer = React.forwardRef<
   }: TeleprompterViewerProps,
   ref,
 ) {
-  const currentRef = React.useRef<HTMLDivElement | null>(null);
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
+  const currentRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
     onIndexRef?.(currentRef);
     onScrollRef?.(scrollRef);
   }, [onIndexRef, onScrollRef]);
-
   const dots = useCountdownDots(
     !!countdown?.enabled,
     countdown?.totalMs,
@@ -225,8 +246,7 @@ export const TeleprompterViewer = React.forwardRef<
     countdown?.totalMs,
     countdown?.segments,
   );
-
-  const lines = React.useMemo(() => (text ?? "").split(/\r?\n/), [text]);
+  const lines = useMemo(() => (text ?? "").split(/\r?\n/), [text]);
   const preset =
     typeof theme === "string" ? TELEPROMPTER_PRESETS[theme] : theme;
   const clsBase =
@@ -237,9 +257,8 @@ export const TeleprompterViewer = React.forwardRef<
     typeof theme === "string" && theme !== "custom"
       ? preset.nextCls
       : "opacity-80";
-
   // Auto-scroll current line into view
-  React.useEffect(() => {
+  useEffect(() => {
     const container = scrollRef.current;
     const el = currentRef.current;
     if (!container || !el) return;
@@ -253,7 +272,6 @@ export const TeleprompterViewer = React.forwardRef<
       el.clientHeight / 2;
     container.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
   }, [index, text]);
-
   return (
     <div
       ref={ref}
@@ -271,9 +289,7 @@ export const TeleprompterViewer = React.forwardRef<
         />
       ) : null}
       <div
-        className={`relative z-0 mx-auto flex max-w-full flex-col gap-6 text-center p-4 md:p-10 ${font?.sizeClass ?? "text-xl"
-          } ${font?.lineHeightClass ?? "leading-8"} ${mirror?.h ? "scale-x-[-1]" : ""} ${mirror?.v ? "scale-y-[-1]" : ""
-          } max-h-[70vh] md:max-h-[75vh] overflow-y-auto pb-16 break-words`}
+        className={`relative z-0 mx-auto flex max-w-full flex-col gap-6 text-center p-4 md:p-10 ${font?.sizeClass ?? "text-xl"} ${font?.lineHeightClass ?? "leading-8"} ${mirror?.h ? "scale-x-[-1]" : ""} ${mirror?.v ? "scale-y-[-1]" : ""} max-h-[70vh] md:max-h-[75vh] overflow-y-auto pb-16 break-words`}
         ref={scrollRef}
         style={{
           ...fontFamilyFor(font?.face),
@@ -288,11 +304,15 @@ export const TeleprompterViewer = React.forwardRef<
               <span className={cueChipClasses("pause", { variant: "legend" })}>
                 [{cueLabel("pause")}] adds ~{legendDurations?.pauseMs ?? 600}ms
               </span>
-              <span className={cueChipClasses("breathe", { variant: "legend" })}>
-                [{cueLabel("breathe")}] adds ~{legendDurations?.breatheMs ?? 300}ms
+              <span
+                className={cueChipClasses("breathe", { variant: "legend" })}
+              >
+                [{cueLabel("breathe")}] adds ~
+                {legendDurations?.breatheMs ?? 300}ms
               </span>
               <span className={cueChipClasses("lookup", { variant: "legend" })}>
-                [{cueLabel("lookup")}] adds ~{legendDurations?.lookupMs ?? 1200}ms
+                [{cueLabel("lookup")}] adds ~{legendDurations?.lookupMs ?? 1200}
+                ms
               </span>
               <span className={cueChipClasses("custom", { variant: "legend" })}>
                 [{cueLabel("custom")}] adds ~250ms
@@ -339,16 +359,22 @@ export const TeleprompterViewer = React.forwardRef<
                           {(() => {
                             const cueChunks = parsedCues.filter(
                               (chunk) => chunk.t !== "text",
-                            ) as Array<{ t: Exclude<CueChunk["t"], "text">; v: string }>;
+                            ) as Array<{
+                              t: Exclude<CueChunk["t"], "text">;
+                              v: string;
+                            }>;
                             if (!cueChunks.length) return null;
                             return (
                               <span className="inline-flex items-center gap-1">
                                 {cueChunks.map((chunk, cueIdx) => (
                                   <span
                                     key={cueIdx}
-                                    className={cueChipClasses(chunk.t as CueName, {
-                                      variant: "compact",
-                                    })}
+                                    className={cueChipClasses(
+                                      chunk.t as CueName,
+                                      {
+                                        variant: "compact",
+                                      },
+                                    )}
                                   >
                                     {cueLabel(chunk.t as CueName)}
                                   </span>
@@ -370,7 +396,7 @@ export const TeleprompterViewer = React.forwardRef<
                                   Math.round(
                                     ((seg.durationMs || 0) /
                                       Math.max(1, countdown.totalMs || 1)) *
-                                    100,
+                                      100,
                                   ),
                                 ),
                               );
@@ -415,5 +441,4 @@ export const TeleprompterViewer = React.forwardRef<
     </div>
   );
 });
-
 export default TeleprompterViewer;

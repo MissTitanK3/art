@@ -1,9 +1,7 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { CrewCatalog } from "@/schemas/crew";
-
 export type HiredItem = {
   profile_id: string;
   crew_id: string;
@@ -11,12 +9,10 @@ export type HiredItem = {
   status: "active" | "inactive";
   crew: CrewCatalog;
 };
-
 export function useHiredCrew(profileId: string | null) {
-  const [hiredCrew, setHiredCrew] = React.useState<HiredItem[]>([]);
-  const [hiredLoading, setHiredLoading] = React.useState(false);
-
-  const loadHiredCrew = React.useCallback(async () => {
+  const [hiredCrew, setHiredCrew] = useState<HiredItem[]>([]);
+  const [hiredLoading, setHiredLoading] = useState(false);
+  const loadHiredCrew = useCallback(async () => {
     if (!profileId) {
       setHiredCrew([]);
       return;
@@ -37,12 +33,10 @@ export function useHiredCrew(profileId: string | null) {
       setHiredLoading(false);
     }
   }, [profileId]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     loadHiredCrew();
   }, [loadHiredCrew]);
-
-  const hireCrew = React.useCallback(
+  const hireCrew = useCallback(
     async (crewId: string) => {
       if (!profileId) {
         toast("Sign in to hire crew");
@@ -64,8 +58,7 @@ export function useHiredCrew(profileId: string | null) {
     },
     [profileId, loadHiredCrew],
   );
-
-  const fireCrew = React.useCallback(
+  const fireCrew = useCallback(
     async (crewId: string) => {
       if (!profileId) {
         toast("Sign in to manage crew");
@@ -87,7 +80,6 @@ export function useHiredCrew(profileId: string | null) {
     },
     [profileId, loadHiredCrew],
   );
-
   return {
     hiredCrew,
     hiredLoading,

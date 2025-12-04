@@ -1,16 +1,14 @@
 "use client";
-
-import * as React from "react";
+import { useCallback } from "react";
 import { useAuthContext } from "@/providers/AuthProvider";
 import {
   ConfirmedWatchForm as UIConfirmedWatchForm,
   type ConfirmedWatchPayload,
 } from "@workspace/ui/patterns/features/watch/confirmed-watch-form";
 import { toast } from "@workspace/ui/primitives/sonner";
-
 export default function ConfirmedWatchForm() {
   const { user } = useAuthContext();
-  const onSubmit = React.useCallback(async (payload: ConfirmedWatchPayload) => {
+  const onSubmit = useCallback(async (payload: ConfirmedWatchPayload) => {
     const res = await fetch("/api/confirmed-watch", {
       method: "POST",
       headers: { "content-type": "application/json" },

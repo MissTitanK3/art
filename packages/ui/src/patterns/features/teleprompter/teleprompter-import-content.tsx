@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Select,
@@ -13,9 +12,11 @@ import {
 import { Textarea } from "@workspace/ui/primitives/textarea";
 import { Input } from "@workspace/ui/primitives/input";
 import { Switch } from "@workspace/ui/primitives/switch";
-
-export type BuiltinScript = { id: string; label: string; content: string };
-
+export type BuiltinScript = {
+  id: string;
+  label: string;
+  content: string;
+};
 export type TeleprompterImportContentProps = {
   onApplyText: (text: string) => void;
   cacheEnabled: boolean;
@@ -24,14 +25,17 @@ export type TeleprompterImportContentProps = {
   // Optional sections
   builtinScripts?: BuiltinScript[];
   onApplyBuiltin?: (id: string, text: string) => void;
-  onFetchDispatch?: (
-    dispatchId: string
-  ) => Promise<{ text?: string; title?: string }>;
-  onFetchAcademy?: (slug: string) => Promise<{ text?: string; title?: string }>;
+  onFetchDispatch?: (dispatchId: string) => Promise<{
+    text?: string;
+    title?: string;
+  }>;
+  onFetchAcademy?: (slug: string) => Promise<{
+    text?: string;
+    title?: string;
+  }>;
   // Optional: namespace used by the script builder for localStorage
   storageNamespace?: string;
 };
-
 export default function TeleprompterImportContent({
   onApplyText,
   cacheEnabled,
@@ -43,30 +47,32 @@ export default function TeleprompterImportContent({
   // onFetchAcademy,
   storageNamespace = "teleprompter.builder",
 }: TeleprompterImportContentProps) {
-  const [builtinId, setBuiltinId] = React.useState<string>(
-    builtinScripts?.[0]?.id ?? ""
+  const [builtinId, setBuiltinId] = useState<string>(
+    builtinScripts?.[0]?.id ?? "",
   );
-  const [builtinDraft, setBuiltinDraft] = React.useState<string>(
-    builtinScripts?.[0]?.content ?? ""
+  const [builtinDraft, setBuiltinDraft] = useState<string>(
+    builtinScripts?.[0]?.content ?? "",
   );
-  const [builtinQuery, setBuiltinQuery] = React.useState<string>("");
-  const [pasteText, setPasteText] = React.useState<string>("");
+  const [builtinQuery, setBuiltinQuery] = useState<string>("");
+  const [pasteText, setPasteText] = useState<string>("");
   // const [dispatchId, setDispatchId] = React.useState<string>("");
   // const [academySlug, setAcademySlug] = React.useState<string>("");
-  const [importStatus, setImportStatus] = React.useState<string>("");
-
+  const [importStatus, setImportStatus] = useState<string>("");
   // --- User-created scripts from the Script Builder (localStorage) ---
-  type BuilderLine = { id?: string; text: string; cues?: string[] };
-  const ns = React.useCallback(
+  type BuilderLine = {
+    id?: string;
+    text: string;
+    cues?: string[];
+  };
+  const ns = useCallback(
     (k: string) => `${storageNamespace}.${k}`,
-    [storageNamespace]
+    [storageNamespace],
   );
-  const [userScripts, setUserScripts] = React.useState<BuiltinScript[]>([]);
-  const [userId, setUserId] = React.useState<string>("");
-  const [userDraft, setUserDraft] = React.useState<string>("");
-  const [userQuery, setUserQuery] = React.useState<string>("");
-
-  const compileLines = React.useCallback((lines: any[]): string[] => {
+  const [userScripts, setUserScripts] = useState<BuiltinScript[]>([]);
+  const [userId, setUserId] = useState<string>("");
+  const [userDraft, setUserDraft] = useState<string>("");
+  const [userQuery, setUserQuery] = useState<string>("");
+  const compileLines = useCallback((lines: any[]): string[] => {
     try {
       return (lines || [])
         .map((item: any) => {
@@ -84,8 +90,7 @@ export default function TeleprompterImportContent({
       return [];
     }
   }, []);
-
-  const loadUserScripts = React.useCallback(() => {
+  const loadUserScripts = useCallback(() => {
     const collected: BuiltinScript[] = [];
     try {
       const draftNameRaw = window.localStorage.getItem(ns("name")) || "";
@@ -113,7 +118,6 @@ export default function TeleprompterImportContent({
     } catch {
       /* ignore */
     }
-
     try {
       const savedRaw = window.localStorage.getItem(ns("saved")) || "[]";
       const savedParsed = JSON.parse(savedRaw);
@@ -138,7 +142,6 @@ export default function TeleprompterImportContent({
     } catch {
       /* ignore */
     }
-
     setUserScripts(collected);
     // sync selection to available list
     const first = collected[0];
@@ -150,16 +153,14 @@ export default function TeleprompterImportContent({
     const selected = collected.find((s) => s.id === nextId) || first;
     setUserDraft(selected?.content || "");
   }, [compileLines, ns, userId]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       loadUserScripts();
     } catch {
       void 0;
     }
   }, [loadUserScripts]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = (e: StorageEvent) => {
       if (!e.key) return;
       const watched = [ns("name"), ns("lines"), ns("saved")];
@@ -208,7 +209,6 @@ export default function TeleprompterImportContent({
       }
     };
   }, [loadUserScripts, ns]);
-
   return (
     <div className="grid gap-3 p-4 max-h-[70vh] overflow-y-auto">
       {Array.isArray(userScripts) && userScripts.length > 0 && (
@@ -331,7 +331,7 @@ export default function TeleprompterImportContent({
                     );
                   })
                   .sort((a, b) =>
-                    String(a.label ?? "").localeCompare(String(b.label ?? ""))
+                    String(a.label ?? "").localeCompare(String(b.label ?? "")),
                   )
                   .map((s) => (
                     <SelectItem key={s.id} value={s.id}>
@@ -447,54 +447,54 @@ export default function TeleprompterImportContent({
       </div>
 
       {/* {onFetchDispatch && (
-        <div className="grid gap-3 rounded-md border p-3">
-          <p className="text-sm font-medium">Open from Dispatch</p>
-          <div className="flex items-center gap-2">
-            <Input placeholder="Enter dispatch ID" value={dispatchId} onChange={(e) => setDispatchId(e.target.value)} />
-            <Button variant="light" onClick={async () => {
-              try {
-                setImportStatus("Fetching dispatch…");
-                const res = await onFetchDispatch(dispatchId);
-                const candidate = res?.text;
-                if (candidate && typeof candidate === 'string') {
-                  onApplyText(candidate);
-                  setImportStatus("Loaded dispatch briefing.");
-                } else {
-                  setImportStatus("No suitable text fields found on this dispatch.");
+          <div className="grid gap-3 rounded-md border p-3">
+            <p className="text-sm font-medium">Open from Dispatch</p>
+            <div className="flex items-center gap-2">
+              <Input placeholder="Enter dispatch ID" value={dispatchId} onChange={(e) => setDispatchId(e.target.value)} />
+              <Button variant="light" onClick={async () => {
+                try {
+                  setImportStatus("Fetching dispatch…");
+                  const res = await onFetchDispatch(dispatchId);
+                  const candidate = res?.text;
+                  if (candidate && typeof candidate === 'string') {
+                    onApplyText(candidate);
+                    setImportStatus("Loaded dispatch briefing.");
+                  } else {
+                    setImportStatus("No suitable text fields found on this dispatch.");
+                  }
+                } catch (err: any) {
+                  setImportStatus(err?.message || "Failed to fetch from Dispatch.");
                 }
-              } catch (err: any) {
-                setImportStatus(err?.message || "Failed to fetch from Dispatch.");
-              }
-            }}>Fetch</Button>
+              }}>Fetch</Button>
+            </div>
+            {importStatus ? <div className="text-xs text-muted-foreground">{importStatus}</div> : null}
           </div>
-          {importStatus ? <div className="text-xs text-muted-foreground">{importStatus}</div> : null}
-        </div>
-      )} */}
+        )} */}
 
       {/* {onFetchAcademy && (
-        <div className="grid gap-3 rounded-md border p-3">
-          <p className="text-sm font-medium">Open from Academy</p>
-          <div className="flex items-center gap-2">
-            <Input placeholder="Enter lesson slug (e.g., crisis-debrief-care)" value={academySlug} onChange={(e) => setAcademySlug(e.target.value)} />
-            <Button variant="light" onClick={async () => {
-              try {
-                setImportStatus("Fetching lesson…");
-                const res = await onFetchAcademy(academySlug);
-                const candidate = res?.text;
-                if (candidate && typeof candidate === 'string') {
-                  onApplyText(candidate);
-                  setImportStatus("Loaded lesson.");
-                } else {
-                  setImportStatus("No suitable fields found on this lesson.");
+          <div className="grid gap-3 rounded-md border p-3">
+            <p className="text-sm font-medium">Open from Academy</p>
+            <div className="flex items-center gap-2">
+              <Input placeholder="Enter lesson slug (e.g., crisis-debrief-care)" value={academySlug} onChange={(e) => setAcademySlug(e.target.value)} />
+              <Button variant="light" onClick={async () => {
+                try {
+                  setImportStatus("Fetching lesson…");
+                  const res = await onFetchAcademy(academySlug);
+                  const candidate = res?.text;
+                  if (candidate && typeof candidate === 'string') {
+                    onApplyText(candidate);
+                    setImportStatus("Loaded lesson.");
+                  } else {
+                    setImportStatus("No suitable fields found on this lesson.");
+                  }
+                } catch (err: any) {
+                  setImportStatus(err?.message || "Failed to fetch from Academy.");
                 }
-              } catch (err: any) {
-                setImportStatus(err?.message || "Failed to fetch from Academy.");
-              }
-            }}>Fetch</Button>
+              }}>Fetch</Button>
+            </div>
+            {importStatus ? <div className="text-xs text-muted-foreground">{importStatus}</div> : null}
           </div>
-          {importStatus ? <div className="text-xs text-muted-foreground">{importStatus}</div> : null}
-        </div>
-      )} */}
+        )} */}
 
       <div className="flex items-center justify-between rounded-md border p-3 text-sm">
         <div className="flex items-center gap-2">

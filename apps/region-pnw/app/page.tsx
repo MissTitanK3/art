@@ -89,7 +89,7 @@ export default function Page() {
         quickStartContent={<QuickStartDrawerContent />}
       />
 
-      <section className="w-full px-4">
+      <section className="w-full">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 rounded-3xl border bg-background/80 p-6 shadow-sm">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">

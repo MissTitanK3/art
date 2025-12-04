@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,36 +8,52 @@ import {
 } from "@workspace/ui/primitives/card";
 import { cn } from "@workspace/ui/lib/utils";
 import { Loader2, Sparkles, Users } from "lucide-react";
-
 export type PublicImpactSummaryProps = {
   regionId: string;
   className?: string;
 };
-
 type SummaryResponse =
-  | { hidden: true }
-  | { hours: number; people: number; message: string; dispatchCount: number };
-
+  | {
+      hidden: true;
+    }
+  | {
+      hours: number;
+      people: number;
+      message: string;
+      dispatchCount: number;
+    };
 type State =
-  | { status: "loading" }
-  | { status: "ready"; payload: Exclude<SummaryResponse, { hidden: true }> }
-  | { status: "hidden" }
-  | { status: "error" };
-
+  | {
+      status: "loading";
+    }
+  | {
+      status: "ready";
+      payload: Exclude<
+        SummaryResponse,
+        {
+          hidden: true;
+        }
+      >;
+    }
+  | {
+      status: "hidden";
+    }
+  | {
+      status: "error";
+    };
 export function PublicImpactSummary({
   regionId,
   className,
 }: PublicImpactSummaryProps) {
-  const [state, setState] = React.useState<State>({ status: "loading" });
-
-  React.useEffect(() => {
+  const [state, setState] = useState<State>({ status: "loading" });
+  useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         setState({ status: "loading" });
         const res = await fetch(
           `/api/public/impact/summary?regionId=${encodeURIComponent(regionId)}`,
-          { cache: "no-store" }
+          { cache: "no-store" },
         );
         const json = (await res.json()) as SummaryResponse;
         if (cancelled) return;
@@ -58,7 +73,6 @@ export function PublicImpactSummary({
       cancelled = true;
     };
   }, [regionId]);
-
   const content = (() => {
     if (state.status === "loading") {
       return (
@@ -113,7 +127,6 @@ export function PublicImpactSummary({
       </div>
     );
   })();
-
   return (
     <Card className={cn("shadow-sm", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import {
   Card,
   CardContent,
@@ -8,7 +6,6 @@ import {
   CardHeader,
 } from "@workspace/ui/primitives/card";
 import { Loader2 } from "lucide-react";
-
 type Props = {
   label: string;
   value: React.ReactNode;
@@ -16,7 +13,6 @@ type Props = {
   className?: string;
   loading?: boolean;
 };
-
 export default function StatCard({
   label,
   value,

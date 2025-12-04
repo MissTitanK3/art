@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useMemo } from "react";
 import * as Recharts from "recharts";
 import {
   ChartContainer,
@@ -8,13 +7,11 @@ import {
   ChartLegendContent,
 } from "@workspace/ui/patterns/common";
 import type { ChartConfig } from "@workspace/store/types/charts.ts";
-
 export type DonutSlice = {
   name: string;
   value: number;
   fill?: string;
 };
-
 type DonutChartProps = {
   id?: string;
   className?: string;
@@ -26,7 +23,6 @@ type DonutChartProps = {
   showLabels?: boolean;
   showLegend?: boolean;
 };
-
 export default function DonutChart({
   id = "donut",
   className,
@@ -38,13 +34,13 @@ export default function DonutChart({
   showLabels = true,
   showLegend = true,
 }: DonutChartProps) {
-  const slug = React.useCallback(
+  const slug = useCallback(
     (key: string) => key.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-    []
+    [],
   );
-  const total = React.useMemo(
+  const total = useMemo(
     () => data.reduce((acc, d) => acc + (Number(d.value) || 0), 0),
-    [data]
+    [data],
   );
   const hasData = total > 0;
   const plotData = hasData

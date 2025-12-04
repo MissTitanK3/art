@@ -1,11 +1,9 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/primitives/button";
 import { Separator } from "@workspace/ui/primitives/separator";
 import { ArrowLeft } from "lucide-react";
-
 import { usePodStore } from "@/providers/PodStoreProvider";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
 import { AddMemberButton } from "@workspace/ui/patterns/features/buttons/add-member-button";
@@ -14,7 +12,6 @@ import {
   PodRosterLayoutProps,
 } from "@workspace/ui/layout/pods/pod-roster-layout";
 import type { RosterEditorSection } from "@workspace/ui/patterns/features/roster/types";
-
 function mapRowToRosterEntry(row: any): RosterEntry {
   return {
     id: String(row.id),
@@ -33,20 +30,17 @@ function mapRowToRosterEntry(row: any): RosterEntry {
     signal_handle: row.signal_handle ?? undefined,
   };
 }
-
 async function fetchPodRosterFromDatabase(
-  slug: string
+  slug: string,
 ): Promise<RosterEntry[] | null> {
   try {
     const response = await fetch(
-      `/api/pods/${encodeURIComponent(slug)}/roster`
+      `/api/pods/${encodeURIComponent(slug)}/roster`,
     );
-
     if (!response.ok) {
       if (response.status === 404) return null;
       throw new Error("Failed to fetch roster");
     }
-
     const { roster } = await response.json();
     return (Array.isArray(roster) ? roster : []).map(mapRowToRosterEntry);
   } catch (e) {
@@ -54,10 +48,9 @@ async function fetchPodRosterFromDatabase(
     return null;
   }
 }
-
 async function persistRosterEntryToDatabase(
   podSlug: string,
-  entry: RosterEntry
+  entry: RosterEntry,
 ): Promise<void> {
   try {
     const response = await fetch(
@@ -66,9 +59,8 @@ async function persistRosterEntryToDatabase(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entry }),
-      }
+      },
     );
-
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || "Failed to save roster entry");
@@ -77,17 +69,15 @@ async function persistRosterEntryToDatabase(
     throw new Error(e?.message ?? "Failed to save roster entry");
   }
 }
-
 async function deleteRosterEntryFromDatabase(
   podSlug: string,
-  rosterId: string
+  rosterId: string,
 ): Promise<void> {
   try {
     const response = await fetch(
       `/api/pods/${encodeURIComponent(podSlug)}/roster/${encodeURIComponent(rosterId)}`,
-      { method: "DELETE" }
+      { method: "DELETE" },
     );
-
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.error || "Failed to delete roster entry");
@@ -96,30 +86,25 @@ async function deleteRosterEntryFromDatabase(
     throw new Error(e?.message ?? "Failed to delete roster entry");
   }
 }
-
 export default function PodRosterPage() {
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{
+    id: string;
+  }>();
   const podId = decodeURIComponent(id ?? "");
-
   const pods = usePodStore((state) => state.pods);
   const updatePod = usePodStore((state) => state.updatePod);
   const activeRoster = usePodStore((state) => state.activeRoster);
   const pod = pods.find((p) => p.slug === podId);
   const storePodId = pod?.id;
-
-  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] =
-    React.useState<RosterEditorSection | null>(null);
-  const [remoteRoster, setRemoteRoster] = React.useState<RosterEntry[] | null>(
-    null
-  );
+    useState<RosterEditorSection | null>(null);
+  const [remoteRoster, setRemoteRoster] = useState<RosterEntry[] | null>(null);
   const [loadingRemoteRoster, setLoadingRemoteRoster] =
-    React.useState<boolean>(false);
-
-  React.useEffect(() => {
+    useState<boolean>(false);
+  useEffect(() => {
     let cancelled = false;
-
     async function loadRemoteRoster() {
       if (!podId) return;
       setLoadingRemoteRoster(true);
@@ -141,25 +126,20 @@ export default function PodRosterPage() {
         }
       }
     }
-
     loadRemoteRoster();
     return () => {
       cancelled = true;
     };
   }, [podId, storePodId, updatePod]);
-
   const rows = remoteRoster ?? pod?.team ?? [];
   const editing = rows.find((r) => r.id === selectedId) ?? null;
-
   const handleSave = async (entry: RosterEntry) => {
     if (!pod) return;
-
     try {
       await persistRosterEntryToDatabase(podId, entry);
     } catch (error) {
       console.warn("PodRosterDataLayer: failed to persist roster entry", error);
     }
-
     const patched: RosterEntry = {
       ...entry,
       profile_id:
@@ -169,24 +149,19 @@ export default function PodRosterPage() {
     updatePod(pod.id, {
       team: pod.team.map((r) => (r.id === entry.id ? patched : r)),
     });
-
     setRemoteRoster((prev) =>
-      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev
+      prev ? prev.map((r) => (r.id === entry.id ? patched : r)) : prev,
     );
-
     setSelectedId(null); // close sheet after save
     setSelectedSection(null);
   };
-
   const handleAddMember = async (entry: RosterEntry) => {
     if (!pod) return;
-
     try {
       await persistRosterEntryToDatabase(podId, entry);
     } catch (error) {
       console.warn("PodRosterDataLayer: failed to add roster entry", error);
     }
-
     const patched: RosterEntry = {
       ...entry,
       profile_id:
@@ -196,24 +171,20 @@ export default function PodRosterPage() {
     updatePod(pod.id, { team: [...pod.team, patched] });
     setRemoteRoster((prev) => (prev ? [...prev, patched] : prev));
   };
-
   const handleRemoveMember = async (memberId: string) => {
     if (!pod) return;
-
     try {
       await deleteRosterEntryFromDatabase(podId, memberId);
     } catch (error) {
       console.warn("PodRosterDataLayer: failed to remove roster entry", error);
     }
-
     updatePod(pod.id, {
       team: pod.team.filter((r) => r.id !== memberId),
     });
     setRemoteRoster((prev) =>
-      prev ? prev.filter((r) => r.id !== memberId) : prev
+      prev ? prev.filter((r) => r.id !== memberId) : prev,
     );
   };
-
   const addMemberAction = pod ? (
     <AddMemberButton
       pod={pod}
@@ -221,7 +192,6 @@ export default function PodRosterPage() {
       onAddMember={handleAddMember}
     />
   ) : null;
-
   const layoutProps: PodRosterLayoutProps = {
     podSlug: podId,
     podId: pod?.id,
@@ -251,7 +221,6 @@ export default function PodRosterPage() {
       </div>
     ),
   };
-
   return (
     <section className="mx-auto w-full max-w-4xl">
       <div className="flex items-center gap-2">

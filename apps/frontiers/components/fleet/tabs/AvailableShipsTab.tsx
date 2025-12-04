@@ -1,12 +1,11 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import type { ShipCatalog } from "@/schemas/ships";
-
 export function AvailableShipsTab(props: {
   catalogLoading: boolean;
-  catalog: (ShipCatalog & { eligible?: boolean })[];
+  catalog: (ShipCatalog & {
+    eligible?: boolean;
+  })[];
   currentShip: any | null;
   selectShip: (shipId: string) => Promise<void>;
 }) {

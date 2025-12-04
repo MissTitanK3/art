@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +6,6 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { humanizeKey, pct } from "@/lib/format";
-
 export function StaffingEffectsPanel({
   derivedBonuses,
   derivedBreakdown,

@@ -1,12 +1,9 @@
 "use client";
-
-import * as React from "react";
 import TeleprompterViewer from "@workspace/ui/patterns/features/teleprompter/teleprompter-viewer";
 import {
   TransportControls,
   SpeedControl,
 } from "@workspace/ui/patterns/features/teleprompter/teleprompter-controls";
-
 export type TeleprompterShellProps = {
   // wiring
   containerRef?: (el: HTMLDivElement | null) => void;
@@ -18,7 +15,6 @@ export type TeleprompterShellProps = {
   fullscreen: boolean;
   showFsControls: boolean;
   onToggleFullscreen: () => void;
-
   // playback
   playing: boolean;
   onPlayToggle: () => void;
@@ -28,28 +24,47 @@ export type TeleprompterShellProps = {
   progressPct?: number;
   speed: number;
   onSpeedChange: (v: number) => void;
-
   // viewer props
   text: string;
   index: number;
   onIndexRef?: (r: React.RefObject<HTMLDivElement | null>) => void; // passthrough if needed
   theme: any;
-  custom?: { textColor: string; bgColor: string; highlightColor: string };
-  font: { sizeClass: string; lineHeightClass: string; face: any };
-  mirror: { h: boolean; v: boolean };
-  overlay: { color: string; opacity: number };
+  custom?: {
+    textColor: string;
+    bgColor: string;
+    highlightColor: string;
+  };
+  font: {
+    sizeClass: string;
+    lineHeightClass: string;
+    face: any;
+  };
+  mirror: {
+    h: boolean;
+    v: boolean;
+  };
+  overlay: {
+    color: string;
+    opacity: number;
+  };
   showLegend: boolean;
   countdown?: {
     enabled: boolean;
     totalMs: number;
     startedAt?: number;
-    segments: { name: string; durationMs: number }[];
+    segments: {
+      name: string;
+      durationMs: number;
+    }[];
   };
-  legendDurations?: { pauseMs: number; breatheMs: number; lookupMs: number };
+  legendDurations?: {
+    pauseMs: number;
+    breatheMs: number;
+    lookupMs: number;
+  };
   showSegmentBar?: boolean;
   overlays?: React.ReactNode;
 };
-
 export default function TeleprompterShell(props: TeleprompterShellProps) {
   const {
     containerRef,
@@ -79,7 +94,6 @@ export default function TeleprompterShell(props: TeleprompterShellProps) {
     legendDurations,
     showSegmentBar,
   } = props;
-
   return (
     <div
       role="region"

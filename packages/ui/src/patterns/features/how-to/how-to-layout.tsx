@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Drawer,
@@ -9,7 +8,6 @@ import {
   DrawerTitle,
 } from "@workspace/ui/primitives/drawer";
 import { HOW_TO_SECTIONS, type HowToSectionId } from "./index";
-
 export interface HowToLayoutProps {
   title?: string;
   subtitle?: string;
@@ -18,7 +16,6 @@ export interface HowToLayoutProps {
   renderers: Record<string, React.ReactNode>;
   quick?: React.ReactNode; // optional quick-access area rendered at top
 }
-
 export function HowToLayout({
   title = "How To Use Platform",
   subtitle = "Learn how to navigate the platform and report issues effectively.",
@@ -27,21 +24,20 @@ export function HowToLayout({
   renderers,
   quick,
 }: HowToLayoutProps) {
-  const sections = React.useMemo(
+  const sections = useMemo(
     () =>
       [...HOW_TO_SECTIONS].sort((a, b) =>
-        String(a.label ?? "").localeCompare(String(b.label ?? ""))
+        String(a.label ?? "").localeCompare(String(b.label ?? "")),
       ),
-    []
+    [],
   );
-
-  const grouped = React.useMemo(() => {
+  const grouped = useMemo(() => {
     const byId = new Map(sections.map((s) => [s.id, s] as const));
     const parentIds = new Set(Array.from(byId.keys()));
     const childrenOf = new Map<string, Array<(typeof sections)[number]>>();
     for (const s of sections) {
       const maybeParentId = Array.from(parentIds).find(
-        (pid) => s.id !== pid && s.id.startsWith(`${pid}-`)
+        (pid) => s.id !== pid && s.id.startsWith(`${pid}-`),
       );
       if (maybeParentId) {
         if (!childrenOf.has(maybeParentId)) childrenOf.set(maybeParentId, []);
@@ -51,15 +47,15 @@ export function HowToLayout({
     const childIds = new Set(
       Array.from(childrenOf.values())
         .flat()
-        .map((c) => c.id)
+        .map((c) => c.id),
     );
     const parents = sections.filter((s) => !childIds.has(s.id));
     parents.sort((a, b) =>
-      String(a.label ?? "").localeCompare(String(b.label ?? ""))
+      String(a.label ?? "").localeCompare(String(b.label ?? "")),
     );
     for (const [pid, list] of childrenOf.entries()) {
       list.sort((a, b) =>
-        String(a.label ?? "").localeCompare(String(b.label ?? ""))
+        String(a.label ?? "").localeCompare(String(b.label ?? "")),
       );
       childrenOf.set(pid, list);
     }
@@ -68,11 +64,8 @@ export function HowToLayout({
       children: childrenOf.get(p.id) ?? [],
     }));
   }, [sections]);
-
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-
+  const [mobileOpen, setMobileOpen] = useState(false);
   const content = renderers[active] ?? null;
-
   return (
     <div className="flex w-full min-h-screen bg-background">
       <aside className="hidden lg:block w-fit max-w-full border-r border-muted py-6">
@@ -203,5 +196,4 @@ export function HowToLayout({
     </div>
   );
 }
-
 export default HowToLayout;

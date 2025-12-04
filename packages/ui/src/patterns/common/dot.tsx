@@ -1,8 +1,5 @@
 "use client";
-
-import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
-
 /**
  * A small circular dot used for role/status/cert indicators.
  *
@@ -24,7 +21,6 @@ export function Dot({
     md: "h-2.5 w-2.5",
     lg: "h-3 w-3",
   };
-
   return (
     <span
       className={cn(

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
 import { useForm, useController } from "react-hook-form";
@@ -13,7 +12,6 @@ import {
   PodManagementLayout,
   PodManagementLayoutErrors,
 } from "@workspace/ui/layout/pods/pod-management-layout";
-
 // Schema uses new channels model
 const schema = z.object({
   name: z.string().min(2).max(60),
@@ -29,10 +27,8 @@ const schema = z.object({
     .optional()
     .or(z.literal("").transform(() => undefined)),
 });
-
 type FormValues = z.infer<typeof schema>;
 const channelTypes: Channel["type"][] = ["Signal", "Matrix", "LoRa"];
-
 function mapRowToPod(row: any): Pod {
   return {
     id: String(row.id),
@@ -43,26 +39,21 @@ function mapRowToPod(row: any): Pod {
     team: Array.isArray(row.team) ? row.team : [],
   };
 }
-
 async function fetchPodFromDatabase(slug: string): Promise<Pod | null> {
   try {
     const response = await fetch(`/api/pods/${encodeURIComponent(slug)}`);
-
     if (!response.ok) {
       if (response.status === 404) return null;
       throw new Error("Failed to fetch pod");
     }
-
     const { pod } = await response.json();
     if (!pod) return null;
-
     return mapRowToPod(pod);
   } catch (e) {
     console.warn("[PodManagementDataLayer] fetch error", e);
     return null;
   }
 }
-
 // Save via Next.js API so requests show in app logs
 async function savePodViaApi(pod: Pod, isExisting: boolean): Promise<Pod> {
   const payload = {
@@ -70,7 +61,6 @@ async function savePodViaApi(pod: Pod, isExisting: boolean): Promise<Pod> {
     area: pod.area,
     channels: pod.channels,
   };
-
   const url = isExisting
     ? `/api/admin/pods/${encodeURIComponent(pod.id)}`
     : `/api/admin/pods`;
@@ -92,7 +82,6 @@ async function savePodViaApi(pod: Pod, isExisting: boolean): Promise<Pod> {
   if (!row) throw new Error("Server did not return a pod row");
   return row;
 }
-
 async function archivePodViaApi(podId: string): Promise<void> {
   const res = await fetch(`/api/admin/pods/${encodeURIComponent(podId)}`, {
     method: "DELETE",
@@ -104,19 +93,18 @@ async function archivePodViaApi(podId: string): Promise<void> {
     throw new Error(message);
   }
 }
-
 export default function PodManagementPage() {
   const router = useRouter();
-  const params = useParams<{ id: string }>();
+  const params = useParams<{
+    id: string;
+  }>();
   const id = decodeURIComponent(params.id ?? "");
-
   const pods = usePodStore((state) => state.pods);
   const addPod = usePodStore((state) => state.addPod);
   const updatePod = usePodStore((state) => state.updatePod);
   const removePod = usePodStore((state) => state.removePod);
   const storePod = pods.find((p) => p.slug === id);
-
-  const fallbackPod = React.useMemo<Pod>(
+  const fallbackPod = useMemo<Pod>(
     () => ({
       id: crypto.randomUUID(),
       slug: id.startsWith("pod-") ? id : `pod-${id}`,
@@ -125,12 +113,10 @@ export default function PodManagementPage() {
       channels: [{ type: "Signal" as Channel["type"], link: "" }],
       team: [],
     }),
-    [id]
+    [id],
   );
-
   const initialPod = storePod ?? fallbackPod;
   const initialPrimaryChannel = initialPod.channels[0];
-
   const {
     register,
     handleSubmit,
@@ -150,14 +136,12 @@ export default function PodManagementPage() {
     },
     mode: "onChange",
   });
-
-  const [remotePod, setRemotePod] = React.useState<Pod | null>(null);
-  const [loadingRemotePod, setLoadingRemotePod] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = React.useState<string | null>(null);
-
+  const [remotePod, setRemotePod] = useState<Pod | null>(null);
+  const [loadingRemotePod, setLoadingRemotePod] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const slug = watch("slug");
-  React.useEffect(() => {
+  useEffect(() => {
     if (!slug.startsWith("pod-")) {
       setValue("slug", `pod-${slug.replace(/^pod-/, "")}`, {
         shouldDirty: true,
@@ -165,13 +149,10 @@ export default function PodManagementPage() {
       });
     }
   }, [slug, setValue]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-
     async function loadRemotePod() {
       if (!id) return;
-
       setLoadingRemotePod(true);
       try {
         const result = await fetchPodFromDatabase(id);
@@ -186,7 +167,7 @@ export default function PodManagementPage() {
               channelType: channel?.type ?? "Signal",
               channelLink: channel?.link ?? "",
             },
-            { keepDirty: false }
+            { keepDirty: false },
           );
         }
       } catch (error) {
@@ -199,15 +180,12 @@ export default function PodManagementPage() {
         }
       }
     }
-
     loadRemotePod();
     return () => {
       cancelled = true;
     };
   }, [id, reset]);
-
   const activePod = remotePod ?? storePod ?? fallbackPod;
-
   // RHF valid-submit handler (runs after values are captured)
   const onValidSubmit = async (data: FormValues) => {
     const updatedChannels: Channel[] = [
@@ -216,7 +194,6 @@ export default function PodManagementPage() {
         link: data.channelLink,
       },
     ];
-
     const patch = {
       ...data,
       area: data.area?.trim(),
@@ -224,24 +201,20 @@ export default function PodManagementPage() {
     };
     delete (patch as any).channelType;
     delete (patch as any).channelLink;
-
     const nextPod = { ...activePod, ...patch };
     const isExisting = Boolean(remotePod);
-
     try {
       const savedRow = await savePodViaApi(nextPod, isExisting);
       // Clear any previous error state and toast success
       setErrorMessage(null);
       setErrorDetails(null);
       toast.success("Pod saved");
-
       // Sync local store with saved row
       if (pods.find((p) => p.id === savedRow.id)) {
         updatePod(savedRow.id, savedRow);
       } else {
         addPod(savedRow);
       }
-
       // If slug changed server-side (e.g., name changed), navigate to new URL
       if (savedRow.slug && savedRow.slug !== slug) {
         router.push(`/pods/${encodeURIComponent(savedRow.slug)}`);
@@ -266,13 +239,12 @@ export default function PodManagementPage() {
             message: msg,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       toast.error(msg);
     }
   };
-
   // Wrapper that blurs the active element BEFORE RHF captures values
   const submitWithBlur: React.FormEventHandler<HTMLFormElement> = (e) => {
     try {
@@ -285,7 +257,6 @@ export default function PodManagementPage() {
     }
     return handleSubmit(onValidSubmit)(e);
   };
-
   const archive = async () => {
     try {
       await archivePodViaApi(activePod.id);
@@ -298,22 +269,20 @@ export default function PodManagementPage() {
         JSON.stringify(
           { context: "archivePodViaApi", podId: activePod.id, message: msg },
           null,
-          2
-        )
+          2,
+        ),
       );
       toast.error(msg);
     }
     removePod(activePod.id);
     router.push("/pods");
   };
-
   const channelLink = watch("channelLink");
   const channelTypeValue = watch("channelType");
   const currentValues = watch();
-
   // Some environments reported isDirty not toggling when only updating the
   // recruiting/vetting link. As a fallback, detect deltas against the active pod.
-  const hasFormChanges = React.useMemo(() => {
+  const hasFormChanges = useMemo(() => {
     const primary = activePod.channels?.[0];
     const cleanLink = (v?: string) => (v === "" ? undefined : v);
     return (
@@ -324,7 +293,6 @@ export default function PodManagementPage() {
       cleanLink(currentValues?.channelLink) !== cleanLink(primary?.link)
     );
   }, [activePod, currentValues]);
-
   const nameField = register("name");
   const slugField = register("slug");
   const channelLinkField = register("channelLink");
@@ -335,7 +303,6 @@ export default function PodManagementPage() {
     slug: slugField,
     channelLink: channelLinkField,
   } as const;
-
   const formErrors: PodManagementLayoutErrors = {
     name: errors.name?.message,
     area: errors.area?.message,
@@ -343,10 +310,8 @@ export default function PodManagementPage() {
     channelType: errors.channelType?.message,
     channelLink: errors.channelLink?.message,
   };
-
   const rosterHref = `/pods/${slug}/roster`;
   const shiftsHref = `/pods/${slug}/shifts`;
-
   return (
     <div>
       <PodManagementLayout

@@ -1,6 +1,5 @@
-import * as React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { type Control } from "react-hook-form";
-
 import { Button, type ButtonProps } from "@workspace/ui/primitives/button";
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import {
@@ -16,19 +15,16 @@ import { DateTimePicker } from "@workspace/ui/patterns/common/date-time-picker";
 import { DetailGrid, DetailItem } from "./detail-grid";
 import { formatDateTime, formatText } from "./utils";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
-
 interface BaseProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   sectionName?: string;
   region?: string;
 }
-
 interface CaseIdExamples {
   primary: string;
   secondary?: string;
 }
-
 interface EditProps extends BaseProps {
   mode?: "edit";
   control: Control<any>;
@@ -41,21 +37,17 @@ interface EditProps extends BaseProps {
   caseIdExamples?: CaseIdExamples;
   existingCaseIds?: string[]; // Deprecated: old suggest logic; retained for compatibility
 }
-
 interface ViewProps extends BaseProps {
   mode: "view";
   data: DetaineeIntake;
 }
-
 export type CaseMetadataSectionProps = EditProps | ViewProps;
-
 export function CaseMetadataSection(props: CaseMetadataSectionProps) {
   if (props.mode === "view") {
     return <CaseMetadataSectionView {...props} />;
   }
   return <CaseMetadataSectionEdit {...props} />;
 }
-
 function CaseMetadataSectionView({
   title = "Case Metadata",
   description = "Basic identifying details about this detention.",
@@ -81,7 +73,6 @@ function CaseMetadataSectionView({
     </FormSectionCard>
   );
 }
-
 function CaseMetadataSectionEdit({
   title = "Case Metadata",
   description = "Basic identifying details about this detention.",
@@ -95,16 +86,13 @@ function CaseMetadataSectionEdit({
   region,
   existingCaseIds,
 }: EditProps) {
-  const [zoneInput, setZoneInput] = React.useState("");
-  const [generating, setGenerating] = React.useState(false);
-
-  const now = React.useMemo(() => new Date(), []);
+  const [zoneInput, setZoneInput] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const now = useMemo(() => new Date(), []);
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
-
   const normalise = (s: string) => s.trim().replace(/\s+/g, "-").toUpperCase();
-
-  const parseSequenceFromCaseId = React.useCallback(
+  const parseSequenceFromCaseId = useCallback(
     (caseId: string | null | undefined) => {
       if (!caseId) return 0;
       const text = normalise(caseId);
@@ -113,19 +101,17 @@ function CaseMetadataSectionEdit({
       const n = Number.parseInt(m[1], 10);
       return Number.isFinite(n) && n >= 0 ? n : 0;
     },
-    []
+    [],
   );
-
-  const buildCaseId = React.useCallback(
+  const buildCaseId = useCallback(
     (seq: number) => {
       const padded = String(Math.max(1, seq)).padStart(4, "0");
       const r = normalise(region ?? "REGION");
       const z = normalise(zoneInput || "ZONE");
       return `${r}-${z}-${year}-${month}-${padded}`;
     },
-    [region, zoneInput, year, month]
+    [region, zoneInput, year, month],
   );
-
   return (
     <FormSectionCard
       title={title}

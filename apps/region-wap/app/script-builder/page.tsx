@@ -1,12 +1,9 @@
 "use client";
-
-import React from "react";
 import {
   TELEPROMPTER_SCRIPTS,
   TELEPROMPTER_SCRIPT_META,
 } from "@workspace/ui/data/teleprompter-scripts";
 import TeleprompterScriptBuilder from "@workspace/ui/patterns/features/teleprompter/teleprompter-script-builder";
-
 export default function ScriptBuilderPage() {
   return (
     <TeleprompterScriptBuilder

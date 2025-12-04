@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -46,7 +45,6 @@ import { roleLabel } from "@workspace/store/types/roles.ts";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
 import { NavRole } from "@workspace/store/utils/permissions/types";
-
 export type AdvocacyGroup = {
   id: string;
   name: string;
@@ -58,7 +56,6 @@ export type AdvocacyGroup = {
   active_status: boolean;
   notes: string | null;
 };
-
 const TYPES = [
   { value: "legal_aid", label: "Legal Aid" },
   { value: "civil_rights", label: "Civil Rights" },
@@ -67,13 +64,11 @@ const TYPES = [
   { value: "public_defender", label: "Public Defender" },
   { value: "other", label: "Other" },
 ] as const;
-
 const FORMATS = [
   { value: "pdf", label: "PDF" },
   { value: "web", label: "Web link" },
   { value: "feed", label: "Data feed" },
 ] as const;
-
 export interface AdvocacyGroupsAdminProps {
   groups: AdvocacyGroup[];
   loading?: boolean;
@@ -82,13 +77,14 @@ export interface AdvocacyGroupsAdminProps {
   profile: Profile | null;
   onReload: () => void;
   onAddGroup: (
-    payload: Partial<AdvocacyGroup> & { contact_emails?: string[] }
+    payload: Partial<AdvocacyGroup> & {
+      contact_emails?: string[];
+    },
   ) => Promise<void>;
   onToggleActive: (group: AdvocacyGroup, next: boolean) => Promise<void>;
   onRemoveGroup: (group: AdvocacyGroup) => Promise<void>;
   loadRecords: () => Promise<DetaineeIntake[]>;
 }
-
 export function AdvocacyGroupsAdmin({
   groups,
   loading,
@@ -102,47 +98,40 @@ export function AdvocacyGroupsAdmin({
   loadRecords,
 }: AdvocacyGroupsAdminProps) {
   const profileFromStore = useProfileStore((s) => s.profile);
-  const profileRoles = React.useMemo(
+  const profileRoles = useMemo(
     () =>
       profileFromStore?.access_role
         ? [String(profileFromStore.access_role)]
         : [],
-    [profileFromStore?.access_role]
+    [profileFromStore?.access_role],
   );
-
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: profileRoles[0] as NavRole }),
-    [profileRoles]
+    [profileRoles],
   );
   const { access: canManageAdvocacy } = useUnifiedAccess(
     "manage_advocacy",
-    ctx
+    ctx,
   );
-
-  const effectiveCanManage = React.useMemo(
+  const effectiveCanManage = useMemo(
     () => canManage ?? canManageAdvocacy ?? false,
-    [canManage, canManageAdvocacy]
+    [canManage, canManageAdvocacy],
   );
-  const [query, setQuery] = React.useState("");
-  const [openAdd, setOpenAdd] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
-  const [contactEmailsText, setContactEmailsText] = React.useState("");
-  const [emailOpen, setEmailOpen] = React.useState(false);
-  const [emailTarget, setEmailTarget] = React.useState<AdvocacyGroup | null>(
-    null
-  );
-  const [records, setRecords] = React.useState<DetaineeIntake[]>([]);
-  const [loadingRecords, setLoadingRecords] = React.useState(false);
-  const [selectedCaseId, setSelectedCaseId] = React.useState<string>("");
-  const [emailSubject, setEmailSubject] = React.useState<string>("");
-  const [emailBody, setEmailBody] = React.useState<string>("");
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
-  const [deleteTarget, setDeleteTarget] = React.useState<AdvocacyGroup | null>(
-    null
-  );
-  const [deleting, setDeleting] = React.useState(false);
-
-  const [draft, setDraft] = React.useState<Partial<AdvocacyGroup>>({
+  const [query, setQuery] = useState("");
+  const [openAdd, setOpenAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [contactEmailsText, setContactEmailsText] = useState("");
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTarget, setEmailTarget] = useState<AdvocacyGroup | null>(null);
+  const [records, setRecords] = useState<DetaineeIntake[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(false);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState<string>("");
+  const [emailBody, setEmailBody] = useState<string>("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdvocacyGroup | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [draft, setDraft] = useState<Partial<AdvocacyGroup>>({
     name: "",
     type: null,
     jurisdiction: "",
@@ -152,8 +141,7 @@ export function AdvocacyGroupsAdmin({
     active_status: true,
     notes: "",
   });
-
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return groups;
     return groups.filter((g) => {
@@ -168,8 +156,7 @@ export function AdvocacyGroupsAdmin({
       return hay.includes(q);
     });
   }, [groups, query]);
-
-  const openEmailForGroup = React.useCallback(
+  const openEmailForGroup = useCallback(
     async (g: AdvocacyGroup) => {
       setEmailTarget(g);
       setEmailOpen(true);
@@ -185,17 +172,15 @@ export function AdvocacyGroupsAdmin({
         }
       }
     },
-    [records.length, loadingRecords, loadRecords]
+    [records.length, loadingRecords, loadRecords],
   );
-
-  const buildEmailContent = React.useCallback(
+  const buildEmailContent = useCallback(
     (group: AdvocacyGroup, record: DetaineeIntake) => {
       const subject = `Missing Person Report: ${record.fullName || record.caseId}`;
       let origin = "";
       if (typeof window !== "undefined") origin = window.location.origin;
       const slug = getMissingPersonSlug(record);
       const link = `${origin}/missing-persons/${encodeURIComponent(slug)}`;
-
       const signerName = (
         profile?.display_name || "Regional Dispatcher"
       ).trim();
@@ -205,7 +190,7 @@ export function AdvocacyGroupsAdmin({
         credentials.push(roleLabel(profile.access_role as any));
       if (profile?.city || profile?.state)
         credentials.push(
-          [profile?.city, profile?.state].filter(Boolean).join(", ")
+          [profile?.city, profile?.state].filter(Boolean).join(", "),
         );
       const credentialLine = credentials.length
         ? credentials.join(" • ")
@@ -213,13 +198,12 @@ export function AdvocacyGroupsAdmin({
       const signalLine = profile?.contact_signal
         ? `Signal: ${profile.contact_signal}`
         : null;
-
       const sections: string[] = [];
       sections.push([`Hello ${group.name},`].join("\n"));
       sections.push(
         [
           "We're contacting you via the Regional Advocacy Network regarding a newly finalized missing person report.",
-        ].join("\n")
+        ].join("\n"),
       );
       sections.push(
         [
@@ -245,27 +229,25 @@ export function AdvocacyGroupsAdmin({
             : null,
         ]
           .filter(Boolean)
-          .join("\n")
+          .join("\n"),
       );
       sections.push([`View full report: ${link}`].join("\n"));
       sections.push(
         [
           "If your team is able to support, please reply to coordinate next steps. Thank you for your rapid assistance.",
-        ].join("\n")
+        ].join("\n"),
       );
       sections.push(
         [`— ${signerName}`, credentialLine, signalLine]
           .filter(Boolean)
-          .join("\n")
+          .join("\n"),
       );
-
       const body = sections.filter(Boolean).join("\n\n");
       return { subject, body };
     },
-    [profile]
+    [profile],
   );
-
-  const handleCaseSelect = React.useCallback(
+  const handleCaseSelect = useCallback(
     (caseId: string) => {
       setSelectedCaseId(caseId);
       if (!emailTarget) return;
@@ -276,10 +258,9 @@ export function AdvocacyGroupsAdmin({
         setEmailBody(body);
       }
     },
-    [records, emailTarget, buildEmailContent]
+    [records, emailTarget, buildEmailContent],
   );
-
-  const copyText = React.useCallback(async (text: string, msg: string) => {
+  const copyText = useCallback(async (text: string, msg: string) => {
     try {
       await navigator.clipboard?.writeText(text);
       toast.success(msg);
@@ -287,8 +268,7 @@ export function AdvocacyGroupsAdmin({
       toast.error("Failed to copy");
     }
   }, []);
-
-  const openMailClient = React.useCallback(() => {
+  const openMailClient = useCallback(() => {
     if (!emailTarget) return;
     const emails = (emailTarget.contact_emails ?? []).join(",");
     const mailBody = emailBody.replace(/\n/g, "\r\n");
@@ -299,7 +279,6 @@ export function AdvocacyGroupsAdmin({
       // ignore
     }
   }, [emailTarget, emailSubject, emailBody]);
-
   const submitNew = async () => {
     const payload = {
       ...draft,
@@ -336,7 +315,6 @@ export function AdvocacyGroupsAdmin({
       setSaving(false);
     }
   };
-
   const toggleActive = async (g: AdvocacyGroup, next: boolean) => {
     if (!effectiveCanManage) return;
     try {
@@ -347,13 +325,11 @@ export function AdvocacyGroupsAdmin({
       onReload();
     }
   };
-
   const openRemoveModal = (g: AdvocacyGroup) => {
     if (!effectiveCanManage) return;
     setDeleteTarget(g);
     setDeleteOpen(true);
   };
-
   const handleRemoveConfirmed = async () => {
     if (!effectiveCanManage || !deleteTarget) return;
     setDeleting(true);
@@ -369,7 +345,6 @@ export function AdvocacyGroupsAdmin({
       setDeleting(false);
     }
   };
-
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
@@ -551,7 +526,7 @@ export function AdvocacyGroupsAdmin({
                     onClick={() =>
                       copyText(
                         (g.contact_emails ?? []).join(", "),
-                        "Emails copied"
+                        "Emails copied",
                       )
                     }
                     disabled={
@@ -730,5 +705,4 @@ export function AdvocacyGroupsAdmin({
     </section>
   );
 }
-
 export default AdvocacyGroupsAdmin;

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
   Select,
@@ -13,7 +12,6 @@ import {
   SPEED_PRESETS,
   closestSpeedPresetId,
 } from "@workspace/ui/lib/teleprompter";
-
 export type TransportControlsProps = {
   playing: boolean;
   onPlayToggle: () => void;
@@ -23,7 +21,6 @@ export type TransportControlsProps = {
   compact?: boolean;
   className?: string;
 };
-
 export function TransportControls({
   playing,
   onPlayToggle,
@@ -59,22 +56,20 @@ export function TransportControls({
     </div>
   );
 }
-
 export type SpeedControlProps = {
   value: number;
   onChange: (v: number) => void;
   layout?: "auto" | "chips" | "select";
   className?: string;
 };
-
 export function SpeedControl({
   value,
   onChange,
   layout = "auto",
   className,
 }: SpeedControlProps) {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const label = (
     <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
       <span>Speed</span>
@@ -83,7 +78,6 @@ export function SpeedControl({
       </span>
     </div>
   );
-
   const selectMenu = (
     <Select
       value={closestSpeedPresetId(value)}
@@ -103,7 +97,6 @@ export function SpeedControl({
       </SelectContent>
     </Select>
   );
-
   if (layout === "select") {
     return (
       <div className={className}>
@@ -112,7 +105,6 @@ export function SpeedControl({
       </div>
     );
   }
-
   return (
     <div className={className}>
       {label}
@@ -134,5 +126,4 @@ export function SpeedControl({
     </div>
   );
 }
-
 export default TransportControls;

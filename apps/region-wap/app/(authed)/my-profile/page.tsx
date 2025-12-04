@@ -1,9 +1,7 @@
 "use client";
-
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import * as React from "react";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { ProfileLayout } from "@workspace/ui/layout/profile/profile-layout";
 import { NextImageAdapter } from "@/lib/adapters/NextImageAdapter";
@@ -11,11 +9,9 @@ import { useRegionAdapters } from "@/providers/RegionProvider";
 import { Profile } from "@workspace/store/types/global.ts";
 import { UiCoverage } from "@workspace/store/types/profile";
 import { useAuth } from "@/hooks/useAuth";
-
 function toUiCoverage(input: string[] | undefined): UiCoverage[] {
   return (input ?? []).map((id) => ({ id, label: id }));
 }
-
 function toStoreCoverage(input: unknown): string[] {
   if (!input) return [];
   if (Array.isArray(input)) {
@@ -27,52 +23,47 @@ function toStoreCoverage(input: unknown): string[] {
   }
   return [];
 }
-
 // Adapter bridges (Supabase in production via RegionProvider)
 async function fetchProfileByUserId(
   userId: string,
-  profileAdapter: { loadProfile: (userId: string) => Promise<Profile | null> }
+  profileAdapter: {
+    loadProfile: (userId: string) => Promise<Profile | null>;
+  }
 ): Promise<Profile | null> {
   return profileAdapter.loadProfile(userId);
 }
-
 async function saveProfileToDatabase(
   profile: Profile,
-  profileAdapter: { saveProfile: (profile: Profile) => Promise<void> }
+  profileAdapter: {
+    saveProfile: (profile: Profile) => Promise<void>;
+  }
 ): Promise<void> {
   await profileAdapter.saveProfile(profile);
 }
-
 async function deleteProfileFromDatabase(
   idOrUserId: string,
-  profileAdapter: { deleteProfile: (idOrUserId: string) => Promise<void> }
+  profileAdapter: {
+    deleteProfile: (idOrUserId: string) => Promise<void>;
+  }
 ): Promise<void> {
   await profileAdapter.deleteProfile(idOrUserId);
 }
-
 function ProfileDataLayerComponent() {
   const profile = useProfileStore((s) => s.profile);
   const setProfile = useProfileStore((s) => s.setProfile);
   const clearProfile = useProfileStore((s) => s.clearProfile);
   const { profileAdapter } = useRegionAdapters();
   const { session } = useAuth();
-
-  const [remoteProfile, setRemoteProfile] = React.useState<Profile | null>(
-    null
-  );
-  const [loadingRemoteProfile, setLoadingRemoteProfile] = React.useState(false);
-
+  const [remoteProfile, setRemoteProfile] = useState<Profile | null>(null);
+  const [loadingRemoteProfile, setLoadingRemoteProfile] = useState(false);
   const profileId = profile?.id;
   const userId = session?.user?.id ?? profile?.user_id;
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-
     async function hydrate() {
       // Prefer loading by authenticated user id when available
       const key = userId ?? profileId;
       if (!key) return;
-
       setLoadingRemoteProfile(true);
       try {
         const result = await fetchProfileByUserId(key, profileAdapter);
@@ -90,22 +81,17 @@ function ProfileDataLayerComponent() {
         }
       }
     }
-
     hydrate();
     return () => {
       cancelled = true;
     };
   }, [userId, profileId, setProfile, profileAdapter]);
-
   const activeProfile = remoteProfile ?? profile;
-
   if (!activeProfile) return null;
-
   const initial = {
     ...activeProfile,
     coverage_zones: toUiCoverage(activeProfile.coverage_zones),
   };
-
   return (
     <>
       {loadingRemoteProfile ? (
@@ -123,7 +109,6 @@ function ProfileDataLayerComponent() {
           try {
             const nz = (v: unknown) => (v === null ? undefined : (v as any));
             const coverage_ids = toStoreCoverage(values.coverage_zones);
-
             const next: Profile = {
               id: activeProfile.id,
               user_id:
@@ -171,7 +156,6 @@ function ProfileDataLayerComponent() {
                 activeProfile.self_status_flags ??
                 [],
             };
-
             // Persist using region-selected adapter (Supabase in production)
             await saveProfileToDatabase(next, profileAdapter);
             setProfile(next);
@@ -194,15 +178,12 @@ function ProfileDataLayerComponent() {
     </>
   );
 }
-
 function ReasonBanner() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const [hidden, setHidden] = useState(false);
-
   const reason = searchParams.get("reason");
-
   const message = useMemo(() => {
     switch (reason) {
       case "profile-required":
@@ -249,13 +230,10 @@ function ReasonBanner() {
           : null;
     }
   }, [reason]);
-
   useEffect(() => {
     setHidden(false);
   }, [reason]);
-
   if (!message || hidden) return null;
-
   return (
     <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">
       <div className="flex items-start justify-between gap-3">
@@ -282,17 +260,14 @@ function ReasonBanner() {
     </div>
   );
 }
-
 function ProfilePageContent() {
   const profile = useProfileStore((s) => s.profile);
-
   const needsVerificationHint = useMemo(() => {
     if (!profile) return false;
     const unverified = !profile.verified_by || profile.verified_by === "self";
     const riskNotAck = !profile.self_risk_acknowledged;
     return unverified || riskNotAck;
   }, [profile]);
-
   return (
     <div className="max-w-5xl mx-auto p-0 md:p-8">
       {/* Always mount the data layer so it can hydrate from Supabase */}
@@ -336,7 +311,6 @@ function ProfilePageContent() {
     </div>
   );
 }
-
 export default function ProfilePage() {
   return <ProfilePageContent />;
 }

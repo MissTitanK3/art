@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import {
   Card,
@@ -32,16 +31,13 @@ import { Map, Table2, Archive, Flag, FlagOff } from "lucide-react";
 import type { WizardReport } from "@workspace/store/types/watch.ts";
 import { DISPATCH_TYPE_LABELS } from "@workspace/store/types/dispatch.ts";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
-
-const WatchMap = React.lazy(
+const WatchMap = lazy(
   () => import("@workspace/ui/patterns/features/watch/watch-map")
 );
-
 type Props = {
   initialItems: DispatchSubmission[];
   onToggleFlag?: (id: string, flagged: boolean) => void;
 };
-
 const STATUS_OPTIONS: DispatchSubmission["status"][] = [
   "preplanning",
   "unconfirmed",
@@ -54,7 +50,6 @@ const STATUS_OPTIONS: DispatchSubmission["status"][] = [
   "expired",
   "archived",
 ];
-
 const TYPE_OPTIONS = [
   "rapid_response",
   "planned_event",
@@ -63,22 +58,17 @@ const TYPE_OPTIONS = [
   "technical_aid",
   "other",
 ] as const;
-
 export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
-  const [query, setQuery] = React.useState("");
-  const [status, setStatus] = React.useState<string>("");
-  const [type, setType] = React.useState<string>("");
-  const [mapView, setMapView] = React.useState(false);
-  const [rows, setRows] = React.useState<DispatchSubmission[]>(
-    () => initialItems
-  );
-
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<string>("");
+  const [type, setType] = useState<string>("");
+  const [mapView, setMapView] = useState(false);
+  const [rows, setRows] = useState<DispatchSubmission[]>(() => initialItems);
   // Keep local rows in sync when new data arrives from the data layer
-  React.useEffect(() => {
+  useEffect(() => {
     setRows(initialItems);
   }, [initialItems]);
-
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     return rows.filter((d) => {
       if (status && d.status !== status) return false;
       if (type && d.type !== type) return false;
@@ -96,7 +86,6 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
       return true;
     });
   }, [rows, status, type, query]);
-
   async function toggleFlag(id: string) {
     let nextFlag = false;
     setRows((prev) =>
@@ -125,7 +114,6 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
       toast.error(e?.message ?? "Update failed");
     }
   }
-
   async function archive(id: string) {
     setRows((prev) =>
       prev.map((d) => (d.id === id ? { ...d, status: "archived" } : d))
@@ -145,10 +133,8 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
       toast.error(e?.message ?? "Archive failed");
     }
   }
-
   // AAR export hidden/back-burner
-
-  const { reports, idMap } = React.useMemo(() => {
+  const { reports, idMap } = useMemo(() => {
     const map: Record<number, string> = {};
     const reps: WizardReport[] = filtered.map((d, i) => ({
       id: i + 1,
@@ -169,14 +155,12 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
     });
     return { reports: reps, idMap: map };
   }, [filtered]);
-
   const handleView = (r: WizardReport) => {
     const dispatchId = idMap[r.id];
     if (dispatchId && typeof window !== "undefined") {
       window.location.href = `/dispatches/submission/${dispatchId}`;
     }
   };
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -252,7 +236,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
 
           {mapView ? (
             <div className="h-[500px] overflow-hidden rounded-md border">
-              <React.Suspense
+              <Suspense
                 fallback={
                   <div className="p-4 text-sm text-muted-foreground">
                     Loading map…
@@ -265,7 +249,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
                   actionMode="view"
                   onViewDispatch={handleView}
                 />
-              </React.Suspense>
+              </Suspense>
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">

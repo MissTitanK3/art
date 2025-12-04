@@ -1,14 +1,10 @@
-import * as React from "react";
-
 import { FormSectionCard } from "@workspace/ui/patterns/common/form-section-card";
 import { ScrollArea } from "@workspace/ui/primitives/scroll-area";
-
 interface LatestOutputSectionProps {
   json?: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
 }
-
 export function LatestOutputSection({
   json,
   title = "Latest Structured Output",

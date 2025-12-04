@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import {
   Tabs,
   TabsContent,
@@ -13,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
+import { Badge } from "@workspace/ui/primitives/badge";
 import DispatchStatusUpdater from "@workspace/ui/patterns/features/status/dispatch-status-updater";
 import DispatchIntendedActionsUpdater from "@workspace/ui/patterns/features/actions/dispatch-intended-actions-updater";
 import DispatchSignalLinkUpdater from "@workspace/ui/patterns/features/external-link/dispatch-signal-link-updater";
@@ -39,6 +38,8 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/primitives/alert";
+import { bucketFor, bucketEmoji } from "./dispatch-buckets";
+import { humanize } from "@workspace/ui/lib/utils";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
@@ -59,6 +60,14 @@ export type DispatchSubmissionLayoutProps = {
   commsTabLabel?: string;
 };
 
+const RISK_LEVEL_COLORS: Record<string, string> = {
+  unknown: "bg-gray-100 text-gray-800 border-gray-200",
+  low: "bg-green-100 text-green-800 border-green-200",
+  medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  high: "bg-orange-100 text-orange-800 border-orange-200",
+  critical: "bg-red-100 text-red-800 border-red-200",
+};
+
 export function DispatchSubmissionLayout({
   submission,
   defaultTab = "overview",
@@ -76,6 +85,10 @@ export function DispatchSubmissionLayout({
   const eventDate = submission.date_of_event
     ? new Date(submission.date_of_event).toLocaleString()
     : undefined;
+
+  const urgency = bucketFor(submission);
+  const urgencyIcon = bucketEmoji(urgency);
+  const riskLevel = submission.risk_level ?? "unknown";
 
   const handleShare = () => {
     if (
@@ -102,6 +115,8 @@ export function DispatchSubmissionLayout({
       `📍 Location: ${submission.location_label ?? "Unknown"}${submission.state ? `, ${submission.state}` : ""}`,
       `📅 Time: ${submission.date_of_event ? new Date(submission.date_of_event).toLocaleString() : new Date(submission.timestamp).toLocaleString()}`,
       `⚡ Status: ${submission.status}`,
+      `🚨 Urgency: ${urgency}`,
+      `🛡️ Risk: ${humanize(riskLevel)}`,
       submission.intended_action_preset
         ? `🎯 Action: ${submission.intended_action_preset}`
         : null,
@@ -151,6 +166,14 @@ export function DispatchSubmissionLayout({
             onUpdate={onUpdateSubmission}
           />
         </div>
+      ),
+    },
+    {
+      id: "logistics",
+      title: "Logistics",
+      description: "Manage transport, supplies, and other resources.",
+      content: (
+        <LogisticsPanel submission={submission} onUpdate={onUpdateSubmission} />
       ),
     },
     {
@@ -222,19 +245,32 @@ export function DispatchSubmissionLayout({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-3 flex flex-col items-center justify-between border-b bg-background px-4 py-3 md:flex-row">
-        <div>
-          {locationLabel ? (
-            <h2 className="text-lg font-bold">{locationLabel}</h2>
-          ) : null}
-          {timestamp ? (
-            <p
-              className="text-xs text-muted-foreground"
-              suppressHydrationWarning
-            >
-              {eventDate ? `Event: ${eventDate}` : timestamp}
-            </p>
-          ) : null}
+      <div className="mb-3 flex flex-col justify-between border-b bg-background py-3 md:flex-row">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2">
+            {locationLabel ? (
+              <h2 className="text-lg font-bold">{locationLabel}</h2>
+            ) : null}
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs font-normal">
+                {urgencyIcon} {urgency}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={`text-xs font-normal capitalize ${RISK_LEVEL_COLORS[riskLevel] ?? ""}`}
+              >
+                Risk: {humanize(riskLevel)}
+              </Badge>
+            </div>
+            {timestamp ? (
+              <p
+                className="text-xs text-muted-foreground"
+                suppressHydrationWarning
+              >
+                {eventDate ? `Event: ${eventDate}` : timestamp}
+              </p>
+            ) : null}
+          </div>
           {submission.flagged ? (
             <div className="mt-2 inline-flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900">
               <Flag className="h-3.5 w-3.5" />
@@ -292,16 +328,13 @@ export function DispatchSubmissionLayout({
       <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
         <TabsList className="mb-3 flex h-full w-full flex-wrap md:flex-nowrap">
           <TabsTrigger value="overview" className="flex-1 basis-1/2">
-            Overview
+            Details
           </TabsTrigger>
           <TabsTrigger value="roles" className="flex-1 basis-1/2">
             Roles
           </TabsTrigger>
           <TabsTrigger value="updates" className="flex-1 basis-1/2">
             Updates
-          </TabsTrigger>
-          <TabsTrigger value="logistics" className="flex-1 basis-1/2">
-            Logistics
           </TabsTrigger>
           <TabsTrigger value="public_engagement" className="flex-1 basis-1/2">
             Public Engagement
@@ -365,13 +398,6 @@ export function DispatchSubmissionLayout({
           </Card>
         </TabsContent>
 
-        <TabsContent value="logistics" className="flex-1">
-          <LogisticsPanel
-            submission={submission}
-            onUpdate={onUpdateSubmission}
-          />
-        </TabsContent>
-
         <TabsContent value="public_engagement" className="flex-1">
           <PublicEngagementPanel submission={submission} />
         </TabsContent>
@@ -385,5 +411,4 @@ export function DispatchSubmissionLayout({
     </div>
   );
 }
-
 export default DispatchSubmissionLayout;

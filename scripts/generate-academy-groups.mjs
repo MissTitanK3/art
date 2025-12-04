@@ -1,5 +1,12 @@
 #!/usr/bin/env node
-// Generate course groups from directory names using safe-token decoding
+/**
+ * Generate Academy course group metadata by scanning the `/courses` directory and decoding safe folder names.
+ *
+ * Usage:
+ *   node scripts/generate-academy-groups.mjs
+ *
+ * Produces `course-groups.generated.ts`, which is used at runtime for grouping courses in the UI.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';

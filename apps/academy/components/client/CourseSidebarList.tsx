@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { Input } from "@workspace/ui/primitives/input";
 import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
+import { useState, useMemo } from "react";
 
 export type CourseSidebarGroup = {
   label: string;
@@ -21,11 +21,11 @@ export default function CourseSidebarList({
 }: {
   groups: CourseSidebarGroup[];
 }) {
-  const [query, setQuery] = React.useState("");
+  const [query, setQuery] = useState("");
 
   const norm = (s: string) => s.toLowerCase();
 
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const q = norm(query);
     if (!q) return groups;
     return groups

@@ -1,6 +1,5 @@
 "use client";
-
-import React from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { Calendar } from "@workspace/ui/primitives/calendar";
 import { Input } from "@workspace/ui/primitives/input";
@@ -29,14 +28,14 @@ import {
   DrawerTrigger,
 } from "@workspace/ui/primitives/drawer";
 import { Switch } from "@workspace/ui/primitives/switch";
-
-type DateRange = { from?: Date; to?: Date };
-
+type DateRange = {
+  from?: Date;
+  to?: Date;
+};
 type FilterOptions = {
   statuses: string[];
   types: string[];
 };
-
 type DispatchFiltersProps = {
   query: string;
   status: string;
@@ -54,7 +53,6 @@ type DispatchFiltersProps = {
   calendarMonths: number;
   showClear: boolean;
 };
-
 export function DispatchFilters({
   query,
   status,
@@ -72,9 +70,8 @@ export function DispatchFilters({
   calendarMonths,
   showClear,
 }: DispatchFiltersProps) {
-  const [open, setOpen] = React.useState(false);
-
-  const activeChips = React.useMemo(
+  const [open, setOpen] = useState(false);
+  const activeChips = useMemo(
     () =>
       buildActiveChips({
         query,
@@ -99,9 +96,8 @@ export function DispatchFilters({
       showTraining,
       status,
       type,
-    ]
+    ],
   );
-
   return (
     <div className="mt-4 space-y-3">
       <Drawer open={open} onOpenChange={setOpen}>
@@ -217,7 +213,6 @@ export function DispatchFilters({
     </div>
   );
 }
-
 function FilterFields({
   layout,
   query,
@@ -242,7 +237,6 @@ function FilterFields({
     layout === "inline"
       ? "flex w-full flex-wrap items-stretch gap-2"
       : "flex flex-col gap-3";
-
   return (
     <div className={containerClass}>
       <Input
@@ -370,25 +364,21 @@ function FilterFields({
     </div>
   );
 }
-
 function startOfToday() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   return d;
 }
-
 function endOfToday() {
   const d = new Date();
   d.setHours(23, 59, 59, 999);
   return d;
 }
-
 function endOfRange(days: number) {
   const d = endOfToday();
   d.setDate(d.getDate() + days);
   return d;
 }
-
 function formatDateRange(dateRange: DateRange) {
   if (!dateRange.from && !dateRange.to) return null;
   const from = dateRange.from?.toLocaleDateString();
@@ -398,7 +388,6 @@ function formatDateRange(dateRange: DateRange) {
   if (to) return `… – ${to}`;
   return null;
 }
-
 function buildActiveChips({
   query,
   status,
@@ -422,7 +411,10 @@ function buildActiveChips({
   showTraining: boolean;
   onToggleTraining: (value: boolean) => void;
 }) {
-  const chips: { label: string; onClear: () => void }[] = [];
+  const chips: {
+    label: string;
+    onClear: () => void;
+  }[] = [];
   if (query.trim().length > 0) {
     chips.push({
       label: `Search: "${query.trim()}"`,

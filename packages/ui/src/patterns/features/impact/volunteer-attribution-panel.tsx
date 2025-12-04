@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RosterEntry } from "@workspace/store/types/pod.ts";
 import type {
@@ -38,12 +37,10 @@ import {
   Undo2,
   Users,
 } from "lucide-react";
-
 type Props = {
   dispatchId: string;
   roster?: RosterEntry[];
 };
-
 const ACTIVITY_OPTIONS = [
   { value: "ops", label: "Operations" },
   { value: "logistics", label: "Logistics" },
@@ -53,7 +50,6 @@ const ACTIVITY_OPTIONS = [
   { value: "training", label: "Training" },
   { value: "other", label: "Other" },
 ];
-
 function formatDuration(minutes: number) {
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;
@@ -61,33 +57,30 @@ function formatDuration(minutes: number) {
   if (hours) return `${hours}h`;
   return `${remainder}m`;
 }
-
 export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
-  const [data, setData] = React.useState<DispatchVolunteerHoursResponse | null>(
-    null
+  const [data, setData] = useState<DispatchVolunteerHoursResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [activityType, setActivityType] = useState("ops");
+  const [customMinutes, setCustomMinutes] = useState(60);
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [revertTarget, setRevertTarget] = useState<VolunteerAttribution | null>(
+    null,
   );
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [selectedProfileId, setSelectedProfileId] = React.useState("");
-  const [activityType, setActivityType] = React.useState("ops");
-  const [customMinutes, setCustomMinutes] = React.useState(60);
-  const [notes, setNotes] = React.useState("");
-  const [submitting, setSubmitting] = React.useState(false);
-  const [revertTarget, setRevertTarget] =
-    React.useState<VolunteerAttribution | null>(null);
-  const [revertReason, setRevertReason] = React.useState("");
-  const [reverting, setReverting] = React.useState(false);
-  const volunteerSelectId = React.useId();
-  const activitySelectId = React.useId();
-  const notesFieldId = React.useId();
-  const customMinutesId = React.useId();
-
-  const loadData = React.useCallback(async () => {
+  const [revertReason, setRevertReason] = useState("");
+  const [reverting, setReverting] = useState(false);
+  const volunteerSelectId = useId();
+  const activitySelectId = useId();
+  const notesFieldId = useId();
+  const customMinutesId = useId();
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const res = await fetch(
-        `/api/impact/dispatches/${dispatchId}/volunteer-attributions`
+        `/api/impact/dispatches/${dispatchId}/volunteer-attributions`,
       );
       if (!res.ok) {
         throw new Error("Unable to load volunteer hours");
@@ -98,18 +91,16 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to refresh volunteer attribution data"
+          : "Unable to refresh volunteer attribution data",
       );
     } finally {
       setLoading(false);
     }
   }, [dispatchId]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     loadData();
   }, [loadData]);
-
-  const rosterOptions = React.useMemo(() => {
+  const rosterOptions = useMemo(() => {
     const seen = new Set<string>();
     return roster
       .map((entry) => {
@@ -122,16 +113,22 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
           profileId;
         return { value: profileId, label };
       })
-      .filter((option): option is { value: string; label: string } => {
-        if (!option) return false;
-        if (seen.has(option.value)) return false;
-        seen.add(option.value);
-        return true;
-      })
+      .filter(
+        (
+          option,
+        ): option is {
+          value: string;
+          label: string;
+        } => {
+          if (!option) return false;
+          if (seen.has(option.value)) return false;
+          seen.add(option.value);
+          return true;
+        },
+      )
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [roster]);
-
-  const recentVolunteers = React.useMemo(() => {
+  const recentVolunteers = useMemo(() => {
     if (!data?.attributions?.length) return [];
     const unique: VolunteerAttribution[] = [];
     const seen = new Set<string>();
@@ -144,7 +141,6 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
     }
     return unique;
   }, [data?.attributions]);
-
   const handleSubmit = async (rawMinutes: number) => {
     const minutes = Math.min(Math.max(Math.floor(rawMinutes || 0), 15), 480);
     try {
@@ -161,7 +157,7 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
             activityType,
             notes: notes || undefined,
           }),
-        }
+        },
       );
       if (!res.ok) {
         const message = (await res.json())?.error;
@@ -173,16 +169,15 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
       toast.success("Hours added");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Unable to add volunteer hours"
+        err instanceof Error ? err.message : "Unable to add volunteer hours",
       );
       toast.error(
-        err instanceof Error ? err.message : "Unable to add volunteer hours"
+        err instanceof Error ? err.message : "Unable to add volunteer hours",
       );
     } finally {
       setSubmitting(false);
     }
   };
-
   const handleRevert = async () => {
     if (!revertTarget) return;
     try {
@@ -193,7 +188,7 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reason: revertReason }),
-        }
+        },
       );
       if (!res.ok) {
         const message = (await res.json())?.error;
@@ -206,18 +201,16 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
       setRevertReason("");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Unable to revert attribution"
+        err instanceof Error ? err.message : "Unable to revert attribution",
       );
     } finally {
       setReverting(false);
     }
   };
-
   const summary = data?.summary;
   const progressPercent = summary
     ? Math.min(Math.round(summary.progressRatio * 100), 100)
     : 0;
-
   return (
     <section className="rounded-lg border bg-card/40 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -248,7 +241,7 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
             className={cn(
               "h-2 rounded-full bg-primary transition-all",
               progressPercent >= 90 && "bg-amber-500",
-              progressPercent >= 110 && "bg-red-500"
+              progressPercent >= 110 && "bg-red-500",
             )}
             style={{ width: `${progressPercent}%` }}
           />
@@ -393,7 +386,7 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
                     "rounded-full border px-3 py-1 text-xs transition-colors",
                     selectedProfileId === entry.profile_id
                       ? "border-primary bg-primary/10 text-primary"
-                      : "hover:border-primary/70"
+                      : "hover:border-primary/70",
                   )}
                   onClick={() => {
                     if (entry.profile_id) {
@@ -441,7 +434,7 @@ export function VolunteerAttributionPanel({ dispatchId, roster = [] }: Props) {
                   </Badge>
                   <Badge variant="secondary">
                     {ACTIVITY_OPTIONS.find(
-                      (opt) => opt.value === entry.activity_type
+                      (opt) => opt.value === entry.activity_type,
                     )?.label ?? entry.activity_type}
                   </Badge>
                   {entry.anomaly_flag ? (

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Input } from "@workspace/ui/primitives/input";
 import { Textarea } from "@workspace/ui/primitives/textarea";
 import { Label } from "@workspace/ui/primitives/label";
@@ -13,7 +12,6 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { Switch } from "@workspace/ui/primitives/switch";
-
 export type VetMethod =
   | "photo"
   | "video"
@@ -29,7 +27,6 @@ export type Direction =
   | "SouthWest"
   | "West"
   | "NorthWest";
-
 export const DIRECTIONS: Direction[] = [
   "North",
   "NorthEast",
@@ -40,7 +37,6 @@ export const DIRECTIONS: Direction[] = [
   "West",
   "NorthWest",
 ];
-
 export const AGENCY_OPTIONS: string[] = [
   "ICE",
   "Police",
@@ -52,7 +48,6 @@ export const AGENCY_OPTIONS: string[] = [
   "Unmarked",
   "Military",
 ];
-
 const agencyColors: Record<string, string> = {
   ICE: "bg-cyan-700",
   Police: "bg-green-700",
@@ -65,12 +60,14 @@ const agencyColors: Record<string, string> = {
   Military: "bg-amber-700",
   Other: "bg-slate-600",
 };
-
 export type ConfirmedWatchPayload = {
   timestamp: string;
   agency_type: string[] | null;
   agency_other: string | null;
-  location: { lat: number; lng: number };
+  location: {
+    lat: number;
+    lng: number;
+  };
   media_url: string | null;
   officer_moving: boolean | null;
   officer_direction: Direction | null;
@@ -81,7 +78,6 @@ export type ConfirmedWatchPayload = {
   submitted_by?: string | null;
   test: boolean;
 };
-
 type Props = {
   onSubmit?: (payload: ConfirmedWatchPayload) => void | Promise<unknown>;
   submittedBy?: string | null; // optional id to record
@@ -89,7 +85,6 @@ type Props = {
   supabaseAnonKey?: string; // optional; used if onSubmit is not provided
   className?: string;
 };
-
 export function ConfirmedWatchForm({
   onSubmit,
   submittedBy,
@@ -98,31 +93,30 @@ export function ConfirmedWatchForm({
   className,
 }: Props) {
   // Helpers for date input formatting (for type="datetime-local")
-  const toLocalInputValue = React.useCallback((d: Date) => {
+  const toLocalInputValue = useCallback((d: Date) => {
     const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }, []);
-
-  const [agencyType, setAgencyType] = React.useState<string[]>([]);
-  const [agencyOther, setAgencyOther] = React.useState("");
-  const [mediaUrl, setMediaUrl] = React.useState("");
-  const [lat, setLat] = React.useState<number | null>(null);
-  const [lng, setLng] = React.useState<number | null>(null);
-  const [reportedAt, setReportedAt] = React.useState<string>(() =>
-    toLocalInputValue(new Date())
+  const [agencyType, setAgencyType] = useState<string[]>([]);
+  const [agencyOther, setAgencyOther] = useState("");
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [reportedAt, setReportedAt] = useState<string>(() =>
+    toLocalInputValue(new Date()),
   );
-  const [lightsOn, setLightsOn] = React.useState(false);
-  const [sirensOn, setSirensOn] = React.useState(false);
-  const [selectedDirection, setSelectedDirection] =
-    React.useState<Direction | null>(null);
-  const [stationary, setStationary] = React.useState(false);
-  const [vetMethod, setVetMethod] = React.useState<VetMethod | "">("");
-  const [vetNotes, setVetNotes] = React.useState("");
-  const [test, setTest] = React.useState(false);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState<string | null>(null);
-
+  const [lightsOn, setLightsOn] = useState(false);
+  const [sirensOn, setSirensOn] = useState(false);
+  const [selectedDirection, setSelectedDirection] = useState<Direction | null>(
+    null,
+  );
+  const [stationary, setStationary] = useState(false);
+  const [vetMethod, setVetMethod] = useState<VetMethod | "">("");
+  const [vetNotes, setVetNotes] = useState("");
+  const [test, setTest] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   type LeafletPinMapProps = {
     center: [number, number];
     zoom: number;
@@ -132,8 +126,8 @@ export function ConfirmedWatchForm({
     onSelect: (lat: number, lng: number) => void;
   };
   const [PinMap, setPinMap] =
-    React.useState<React.ComponentType<LeafletPinMapProps> | null>(null);
-  React.useEffect(() => {
+    useState<React.ComponentType<LeafletPinMapProps> | null>(null);
+  useEffect(() => {
     let mounted = true;
     (async () => {
       if (typeof window === "undefined") return;
@@ -150,8 +144,7 @@ export function ConfirmedWatchForm({
       mounted = false;
     };
   }, [toLocalInputValue]);
-
-  const resetForm = React.useCallback(() => {
+  const resetForm = useCallback(() => {
     setAgencyType([]);
     setAgencyOther("");
     setMediaUrl("");
@@ -166,24 +159,19 @@ export function ConfirmedWatchForm({
     setTest(false);
     setReportedAt(toLocalInputValue(new Date()));
   }, [toLocalInputValue]);
-
   const addAgencyType = (value: string) =>
     setAgencyType((prev) => (prev.includes(value) ? prev : [...prev, value]));
   const removeAgencyType = (value: string) =>
     setAgencyType((prev) => prev.filter((v) => v !== value));
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-
     if (typeof lat !== "number" || typeof lng !== "number") {
       setError("Latitude and longitude must be numbers.");
       return;
     }
-
     const moving = stationary ? false : selectedDirection ? true : null;
-
     let timestampIso = new Date().toISOString();
     try {
       if (reportedAt) {
@@ -193,7 +181,6 @@ export function ConfirmedWatchForm({
     } catch {
       /* ignore */
     }
-
     const payload: ConfirmedWatchPayload = {
       timestamp: timestampIso,
       agency_type: agencyType.length ? agencyType : null,
@@ -209,7 +196,6 @@ export function ConfirmedWatchForm({
       submitted_by: submittedBy ?? undefined,
       test: !!test,
     };
-
     setSubmitting(true);
     try {
       if (onSubmit) {
@@ -227,7 +213,6 @@ export function ConfirmedWatchForm({
             },
             body: JSON.stringify([body]),
           });
-
         // Build DB payload with only columns that exist on public.wizard
         const dbPayload = {
           timestamp: payload.timestamp,
@@ -243,7 +228,6 @@ export function ConfirmedWatchForm({
           submitted_by: payload.submitted_by,
           test: payload.test,
         } as const;
-
         // Try insert including submitted_by; fallback to omitting if FK fails
         let res = await ins(dbPayload);
         if (!res.ok && payload.submitted_by) {
@@ -278,7 +262,6 @@ export function ConfirmedWatchForm({
       setSubmitting(false);
     }
   }
-
   return (
     <section className={className ? className : "max-w-2xl space-y-4"}>
       <h1 className="text-xl font-semibold">Confirmed Watch</h1>
@@ -590,5 +573,4 @@ export function ConfirmedWatchForm({
     </section>
   );
 }
-
 export default ConfirmedWatchForm;

@@ -13,6 +13,9 @@ import { Eye, AlertTriangle, MapPin } from "lucide-react";
 import type { WizardReport } from "@workspace/store/types/watch";
 import { formatDistanceToNow } from "date-fns";
 
+// Cache for reverse geocode results to avoid redundant API calls
+const geocodeCache = new Map<string, string>();
+
 export function WatchCard() {
   const [reports, setReports] = useState<WizardReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,25 +35,38 @@ export function WatchCard() {
                 report.location?.lng
               ) {
                 try {
-                  const geoRes = await fetch(
-                    `/api/reverse-geocode?lat=${report.location.lat}&lng=${report.location.lng}`
-                  );
-                  const geoData = await geoRes.json();
-                  if (geoData.address) {
-                    // Format address object to string
-                    const addr = geoData.address;
-                    const formattedAddress = [addr.city, addr.state]
-                      .filter(Boolean)
-                      .join(", ");
+                  // Create a cache key from lat,lng
+                  const cacheKey = `${report.location.lat},${report.location.lng}`;
 
+                  // Check if we have a cached result
+                  let formattedAddress = geocodeCache.get(cacheKey);
+
+                  if (!formattedAddress) {
+                    // No cached result, fetch from API
+                    const geoRes = await fetch(
+                      `/api/reverse-geocode?lat=${report.location.lat}&lng=${report.location.lng}`
+                    );
+                    const geoData = await geoRes.json();
+                    if (geoData.address) {
+                      // Format address object to string
+                      const addr = geoData.address;
+                      const addressString: string =
+                        [addr.city, addr.state].filter(Boolean).join(", ") ||
+                        addr.country ||
+                        "Unknown Location";
+
+                      // Store in cache for future use
+                      geocodeCache.set(cacheKey, addressString);
+                      formattedAddress = addressString;
+                    }
+                  }
+
+                  if (formattedAddress) {
                     return {
                       ...report,
                       location: {
                         ...report.location,
-                        address:
-                          formattedAddress ||
-                          addr.country ||
-                          "Unknown Location",
+                        address: formattedAddress,
                       },
                     };
                   }

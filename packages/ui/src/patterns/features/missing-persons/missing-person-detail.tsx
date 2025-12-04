@@ -1,13 +1,10 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Download, FileJson, Pencil, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
-
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -41,15 +38,11 @@ import type {
   DetaineeIntakeFormValues,
 } from "@workspace/ui/types/missing-person-intake";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
-
 type ExportFormat = "pdf" | "json";
-
 const DEFAULT_DIRECTORY_HREF = "/missing-persons";
-
 const defaultRenderDirectoryLink = (href: string, label: React.ReactNode) => (
   <a href={href}>{label}</a>
 );
-
 const navigateToHref = (href: string) => {
   if (typeof window === "undefined") return;
   try {
@@ -58,7 +51,6 @@ const navigateToHref = (href: string) => {
     console.warn("MissingPersonDetail: failed to navigate", error);
   }
 };
-
 const sanitizeCaseIdList = (payload: unknown): string[] => {
   if (Array.isArray(payload)) {
     return payload.filter((id): id is string => typeof id === "string");
@@ -68,19 +60,18 @@ const sanitizeCaseIdList = (payload: unknown): string[] => {
   }
   return [];
 };
-
 export interface MissingPersonDetailProps {
   record: DetaineeIntake;
   slug: string;
   onExportRecord?: (
     record: DetaineeIntake,
-    format: ExportFormat
+    format: ExportFormat,
   ) => Promise<Blob | string | void>;
   onFinalizeRecord?: (record: DetaineeIntake) => Promise<void> | void;
   directoryHref?: string;
   renderDirectoryLink?: (
     href: string,
-    label: React.ReactNode
+    label: React.ReactNode,
   ) => React.ReactNode;
   onDeleteSuccess?: (details: {
     caseId: string;
@@ -90,10 +81,9 @@ export interface MissingPersonDetailProps {
   onSaveRecord?: (record: DetaineeIntake) => Promise<void> | void;
   onDeleteRecord?: (
     caseId: string,
-    record: DetaineeIntake
+    record: DetaineeIntake,
   ) => Promise<void> | void;
 }
-
 export function MissingPersonDetail({
   record,
   slug,
@@ -107,20 +97,17 @@ export function MissingPersonDetail({
 }: MissingPersonDetailProps): React.ReactElement {
   const addRecordToStore = useMissingPersonStore((state) => state.addRecord);
   const updateRecordInStore = useMissingPersonStore(
-    (state) => state.updateRecord
+    (state) => state.updateRecord,
   );
   const removeRecordFromStore = useMissingPersonStore(
-    (state) => state.removeRecord
+    (state) => state.removeRecord,
   );
   const hasRecordInStore = useMissingPersonStore((state) => state.hasRecord);
-
-  const [currentRecord, setCurrentRecord] =
-    React.useState<DetaineeIntake>(record);
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [exporting, setExporting] = React.useState<ExportFormat | null>(null);
-  const [deleting, setDeleting] = React.useState(false);
-  const [finalizing, setFinalizing] = React.useState(false);
-
+  const [currentRecord, setCurrentRecord] = useState<DetaineeIntake>(record);
+  const [isEditing, setIsEditing] = useState(false);
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
   const [, setStoredCaseIds] = useLocalStorage<string[]>(
     CASE_ID_STORAGE_KEY,
     [],
@@ -136,30 +123,25 @@ export function MissingPersonDetail({
         }
       },
       migrate: (payload) => sanitizeCaseIdList(payload),
-    }
+    },
   );
-
   const form = useForm<DetaineeIntakeFormValues>({
     defaultValues: toFormValues(record),
     mode: "onBlur",
   });
-
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentRecord(record);
     form.reset(toFormValues(record));
   }, [record, form]);
-
-  const normalizedCaseId = React.useMemo(
+  const normalizedCaseId = useMemo(
     () => (currentRecord.caseId ? normaliseCaseId(currentRecord.caseId) : null),
-    [currentRecord.caseId]
+    [currentRecord.caseId],
   );
-
-  const isDeletable = React.useMemo(
+  const isDeletable = useMemo(
     () => (normalizedCaseId ? hasRecordInStore(normalizedCaseId) : false),
-    [normalizedCaseId, hasRecordInStore]
+    [normalizedCaseId, hasRecordInStore],
   );
-
-  const rememberCaseId = React.useCallback(
+  const rememberCaseId = useCallback(
     (caseId: string) => {
       const normalisedTarget = normaliseCaseId(caseId);
       setStoredCaseIds((prev) => {
@@ -170,28 +152,25 @@ export function MissingPersonDetail({
         return [...existing, caseId];
       });
     },
-    [setStoredCaseIds]
+    [setStoredCaseIds],
   );
-
-  const removeCaseIdFromStorage = React.useCallback(
+  const removeCaseIdFromStorage = useCallback(
     (caseId: string) => {
       const normalisedTarget = normaliseCaseId(caseId);
       setStoredCaseIds((prev) => {
         const existing = Array.isArray(prev) ? prev : [];
         return existing.filter(
-          (id) => normaliseCaseId(id) !== normalisedTarget
+          (id) => normaliseCaseId(id) !== normalisedTarget,
         );
       });
     },
-    [setStoredCaseIds]
+    [setStoredCaseIds],
   );
-
-  const handleDelete = React.useCallback(async () => {
+  const handleDelete = useCallback(async () => {
     if (!normalizedCaseId) {
       toast.error("This record cannot be deleted because it has no case ID.");
       return;
     }
-
     try {
       setDeleting(true);
       try {
@@ -228,8 +207,7 @@ export function MissingPersonDetail({
     directoryHref,
     onDeleteRecord,
   ]);
-
-  const handleExport = React.useCallback(
+  const handleExport = useCallback(
     async (format: ExportFormat) => {
       if (!onExportRecord) {
         toast.error("Export is not available for this record.");
@@ -238,13 +216,11 @@ export function MissingPersonDetail({
       try {
         setExporting(format);
         const result = await onExportRecord(currentRecord, format);
-
         if (format === "json" && typeof result === "string") {
           await navigator.clipboard?.writeText(result);
           toast.success("JSON copied to clipboard");
           return;
         }
-
         if (format === "pdf" && result instanceof Blob) {
           const url = URL.createObjectURL(result);
           const anchor = document.createElement("a");
@@ -257,30 +233,26 @@ export function MissingPersonDetail({
       } catch (error) {
         console.error(error);
         toast.error(
-          "Failed to export report. Try again after checking the record."
+          "Failed to export report. Try again after checking the record.",
         );
       } finally {
         setExporting(null);
       }
     },
-    [currentRecord, onExportRecord, slug]
+    [currentRecord, onExportRecord, slug],
   );
-
-  const handleSubmit = React.useCallback(
+  const handleSubmit = useCallback(
     async (values: DetaineeIntakeFormValues) => {
       if (!values.caseId?.trim()) {
         toast.error("Case ID is required.");
         return;
       }
-
       const nextCaseId = normaliseCaseId(values.caseId);
       const timestamp = new Date().toISOString();
-
       const compacted = deepCompact({
         ...values,
         caseId: nextCaseId,
       }) as DetaineeIntake;
-
       const nextRecord: MissingPersonRecord = {
         ...currentRecord,
         ...compacted,
@@ -288,11 +260,9 @@ export function MissingPersonDetail({
         lastUpdated: timestamp,
         createdAt: compacted.createdAt ?? currentRecord.createdAt ?? timestamp,
       };
-
       const previousCaseId = currentRecord.caseId
         ? normaliseCaseId(currentRecord.caseId)
         : nextCaseId;
-
       if (previousCaseId && previousCaseId !== nextCaseId) {
         removeRecordFromStore(previousCaseId);
         addRecordToStore(nextRecord);
@@ -300,7 +270,6 @@ export function MissingPersonDetail({
       } else if (nextCaseId) {
         updateRecordInStore(nextCaseId, nextRecord);
       }
-
       rememberCaseId(nextCaseId);
       setCurrentRecord(nextRecord);
       form.reset(toFormValues(nextRecord));
@@ -323,24 +292,20 @@ export function MissingPersonDetail({
       removeRecordFromStore,
       updateRecordInStore,
       onSaveRecord,
-    ]
+    ],
   );
-
-  const submit = React.useMemo(
+  const submit = useMemo(
     () => form.handleSubmit(handleSubmit),
-    [form, handleSubmit]
+    [form, handleSubmit],
   );
-
-  const startEditing = React.useCallback(() => {
+  const startEditing = useCallback(() => {
     form.reset(toFormValues(currentRecord));
     setIsEditing(true);
   }, [form, currentRecord]);
-
-  const cancelEditing = React.useCallback(() => {
+  const cancelEditing = useCallback(() => {
     form.reset(toFormValues(currentRecord));
     setIsEditing(false);
   }, [form, currentRecord]);
-
   const headerBadges = [
     currentRecord.pronouns ? (
       <Badge key="pronouns" variant="outline">
@@ -363,12 +328,10 @@ export function MissingPersonDetail({
       </Badge>
     ) : null,
   ].filter(Boolean);
-
-  const latestJson = React.useMemo(
+  const latestJson = useMemo(
     () => JSON.stringify(deepCompact(currentRecord), null, 2),
-    [currentRecord]
+    [currentRecord],
   );
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
@@ -380,13 +343,13 @@ export function MissingPersonDetail({
                   directoryHref,
                   <span className="inline-flex items-center gap-1">
                     <ArrowLeft className="h-4 w-4" /> Back to directory
-                  </span>
+                  </span>,
                 )}
               </Button>
               <span>
                 Last updated{" "}
                 {formatRelativeDate(
-                  currentRecord.lastUpdated ?? currentRecord.createdAt
+                  currentRecord.lastUpdated ?? currentRecord.createdAt,
                 )}
               </span>
             </div>
@@ -553,7 +516,6 @@ export function MissingPersonDetail({
     </div>
   );
 }
-
 function toFormValues(record: DetaineeIntake): DetaineeIntakeFormValues {
   return {
     caseId: record.caseId ?? "",
@@ -597,7 +559,6 @@ function toFormValues(record: DetaineeIntake): DetaineeIntakeFormValues {
     version: record.version,
   };
 }
-
 function formatDate(value?: string): string {
   if (!value) return "—";
   const date = new Date(value);
@@ -609,7 +570,6 @@ function formatDate(value?: string): string {
     timeStyle: "short",
   }).format(date);
 }
-
 function formatRelativeDate(value?: string): string {
   if (!value) return "—";
   const date = new Date(value);

@@ -1,15 +1,12 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { CrewCatalog } from "@/schemas/crew";
-
 export function useCrewMarket(filters: { position?: string | null }) {
   const { position } = filters;
-  const [marketCrew, setMarketCrew] = React.useState<CrewCatalog[]>([]);
-  const [marketLoading, setMarketLoading] = React.useState(false);
-
-  const loadMarket = React.useCallback(async () => {
+  const [marketCrew, setMarketCrew] = useState<CrewCatalog[]>([]);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const loadMarket = useCallback(async () => {
     setMarketLoading(true);
     try {
       const u = new URL(window.location.href);
@@ -26,10 +23,8 @@ export function useCrewMarket(filters: { position?: string | null }) {
       setMarketLoading(false);
     }
   }, [position]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     loadMarket();
   }, [loadMarket]);
-
   return { marketCrew, marketLoading, reloadMarket: loadMarket };
 }

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Card,
@@ -34,34 +33,29 @@ import AdminNotificationForm, {
 } from "@workspace/ui/patterns/features/notifications/admin-notification-form";
 import { AdminNotificationTemplatePanel } from "@workspace/ui/patterns/features/notifications/admin-notification-template-panel";
 import { ADMIN_NOTIFICATION_TEMPLATES } from "@workspace/store/admin/notifications/templates";
-
 import type { WizardReport } from "@workspace/store/types/watch.ts";
 import { useRouter } from "next/navigation";
 import { DispatchSubmission } from "@workspace/store/types/global";
 import { Pod } from "@workspace/store/types/pod";
 import type { Profile } from "@workspace/store/types/global.ts";
 import { useProfileStore } from "@workspace/store/useProfileStore";
-
 // Map component (client-only)
 const WatchMap = dynamic(
   () => import("@workspace/ui/patterns/features/watch/watch-map"),
-  { ssr: false }
+  { ssr: false },
 );
-
 export default function AdminPage() {
   const router = useRouter();
   const profile = useProfileStore((s) => s.profile);
   const isNationalAdmin = profile?.access_role === "national_admin";
   // Aggregated metrics from demo data
-  const [uniqueProfiles, setUniqueProfiles] = React.useState<number>(0);
-  const [uniquePods, setUniquePods] = React.useState<number>(0);
-  const [dispatches, setDispatches] = React.useState<DispatchSubmission[]>([]);
-
-  const [loadingProfiles, setLoadingProfiles] = React.useState(true);
-  const [loadingPods, setLoadingPods] = React.useState(true);
-  const [loadingDispatches, setLoadingDispatches] = React.useState(true);
-
-  React.useEffect(() => {
+  const [uniqueProfiles, setUniqueProfiles] = useState<number>(0);
+  const [uniquePods, setUniquePods] = useState<number>(0);
+  const [dispatches, setDispatches] = useState<DispatchSubmission[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(true);
+  const [loadingPods, setLoadingPods] = useState(true);
+  const [loadingDispatches, setLoadingDispatches] = useState(true);
+  useEffect(() => {
     const controller = new AbortController();
     const load = async () => {
       try {
@@ -70,7 +64,9 @@ export default function AdminPage() {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { profiles } = (await res.json()) as { profiles?: Profile[] };
+        const { profiles } = (await res.json()) as {
+          profiles?: Profile[];
+        };
         const size = Array.isArray(profiles)
           ? new Set(profiles.map((p) => p.id)).size
           : 0;
@@ -80,14 +76,15 @@ export default function AdminPage() {
       } finally {
         setLoadingProfiles(false);
       }
-
       try {
         const podsRes = await fetch("/api/admin/pods", {
           credentials: "include",
           signal: controller.signal,
         });
         if (!podsRes.ok) throw new Error(`HTTP ${podsRes.status}`);
-        const { pods } = (await podsRes.json()) as { pods?: Pod[] };
+        const { pods } = (await podsRes.json()) as {
+          pods?: Pod[];
+        };
         const podSize = Array.isArray(pods)
           ? new Set(pods.map((p) => p.id)).size
           : 0;
@@ -97,7 +94,6 @@ export default function AdminPage() {
       } finally {
         setLoadingPods(false);
       }
-
       try {
         const dispatchesRes = await fetch("/api/admin/dispatches", {
           credentials: "include",
@@ -119,17 +115,15 @@ export default function AdminPage() {
       controller.abort();
     };
   }, []);
-
-  const activeDispatches = React.useMemo(
+  const activeDispatches = useMemo(
     () =>
       dispatches.filter(
         (d) =>
-          !["archived", "completed", "cancelled", "expired"].includes(d.status)
+          !["archived", "completed", "cancelled", "expired"].includes(d.status),
       ).length,
-    [dispatches]
+    [dispatches],
   );
-
-  const [trainingStats, setTrainingStats] = React.useState<{
+  const [trainingStats, setTrainingStats] = useState<{
     totalActive: number;
     completed: number;
     inProgress: number;
@@ -142,8 +136,7 @@ export default function AdminPage() {
     scheduled: 0,
     completionPct: 0,
   });
-
-  React.useEffect(() => {
+  useEffect(() => {
     const controller = new AbortController();
     (async () => {
       try {
@@ -160,18 +153,15 @@ export default function AdminPage() {
     })();
     return () => controller.abort();
   }, []);
-
   const trainingPct = trainingStats.completionPct;
-
-  const [iceoutSyncing, setIceoutSyncing] = React.useState(false);
-  const [iceoutLastSyncedAt, setIceoutLastSyncedAt] = React.useState<
-    string | null
-  >(null);
-  const [iceoutStatusMessage, setIceoutStatusMessage] = React.useState<
-    string | null
-  >(null);
-
-  const fetchIceoutStatus = React.useCallback(async () => {
+  const [iceoutSyncing, setIceoutSyncing] = useState(false);
+  const [iceoutLastSyncedAt, setIceoutLastSyncedAt] = useState<string | null>(
+    null,
+  );
+  const [iceoutStatusMessage, setIceoutStatusMessage] = useState<string | null>(
+    null,
+  );
+  const fetchIceoutStatus = useCallback(async () => {
     if (!isNationalAdmin) return;
     try {
       const res = await fetch("/api/admin/iceout", {
@@ -185,13 +175,11 @@ export default function AdminPage() {
       console.warn("[AdminPage] failed to load Iceout status", error);
     }
   }, [isNationalAdmin]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isNationalAdmin) return;
     fetchIceoutStatus();
   }, [fetchIceoutStatus, isNationalAdmin]);
-
-  const syncIceoutReports = React.useCallback(async () => {
+  const syncIceoutReports = useCallback(async () => {
     if (!isNationalAdmin) return;
     setIceoutSyncing(true);
     try {
@@ -206,10 +194,10 @@ export default function AdminPage() {
         setIceoutLastSyncedAt(data?.lastSyncedAt ?? new Date().toISOString());
         setIceoutStatusMessage(
           data?.message ??
-            `Imported ${data?.inserted ?? 0} new reports (checked ${data?.checked ?? 0})`
+            `Imported ${data?.inserted ?? 0} new reports (checked ${data?.checked ?? 0})`,
         );
         toast.success(
-          data?.message ?? `Imported ${data?.inserted ?? 0} Iceout reports`
+          data?.message ?? `Imported ${data?.inserted ?? 0} Iceout reports`,
         );
       }
     } catch (error) {
@@ -219,27 +207,23 @@ export default function AdminPage() {
       setIceoutSyncing(false);
     }
   }, [isNationalAdmin]);
-
   // Adapt dispatch submissions to WatchMap's WizardReport for the map view
-  const { reports, idMap } = React.useMemo(
+  const { reports, idMap } = useMemo(
     () => toWatchReports(dispatches),
-    [dispatches]
+    [dispatches],
   );
-
   const handleView = (r: WizardReport) => {
     const id = idMap[r.id];
     if (id) router.push(`/dispatches/submission/${id}`);
   };
-
   const remaining = Math.max(
     0,
-    trainingStats.totalActive - trainingStats.completed
+    trainingStats.totalActive - trainingStats.completed,
   );
   const chartData = [
     { name: "Completed", value: trainingStats.completed },
     { name: "Remaining", value: remaining },
   ];
-
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
@@ -446,7 +430,6 @@ export default function AdminPage() {
     </section>
   );
 }
-
 async function sendNotification(args: SendArgs) {
   const res = await fetch("/api/admin/notifications/send", {
     method: "POST",
@@ -455,11 +438,13 @@ async function sendNotification(args: SendArgs) {
     body: JSON.stringify(args),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<{ id?: string; recipientsCount?: number }>;
+  return res.json() as Promise<{
+    id?: string;
+    recipientsCount?: number;
+  }>;
 }
-
 function AdminNotifications() {
-  const handleCustom = React.useCallback(async (args: SendArgs) => {
+  const handleCustom = useCallback(async (args: SendArgs) => {
     try {
       const { id, recipientsCount } = await sendNotification(args);
       const suffix =
@@ -477,7 +462,6 @@ function AdminNotifications() {
       return false;
     }
   }, []);
-
   return (
     <Card>
       <CardHeader>

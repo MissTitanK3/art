@@ -1,8 +1,5 @@
 "use client";
-
-import * as React from "react";
 import * as L from "lucide-react";
-
 export const navIconMap = {
   radio: L.Radio,
   "map-pin": L.MapPin,
@@ -21,9 +18,7 @@ export const navIconMap = {
   "hand-heart": L.HandHeart,
   // add more as needed
 } as const;
-
 export type NavIconId = keyof typeof navIconMap;
-
 export type LucideIcon = React.ForwardRefExoticComponent<
   React.SVGProps<SVGSVGElement> & React.RefAttributes<SVGSVGElement>
 >;

@@ -1,11 +1,8 @@
-import * as React from "react";
-
 interface DetailGridProps {
   columns?: 1 | 2;
   children: React.ReactNode;
   className?: string;
 }
-
 export function DetailGrid({
   columns = 2,
   children,
@@ -18,12 +15,10 @@ export function DetailGrid({
     </div>
   );
 }
-
 interface DetailItemProps {
   label: React.ReactNode;
   value: React.ReactNode;
 }
-
 export function DetailItem({ label, value }: DetailItemProps) {
   return (
     <div className="space-y-1">

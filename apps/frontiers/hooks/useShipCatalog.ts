@@ -1,22 +1,21 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { ShipCatalog } from "@/schemas/ships";
 import {
   fetchCurrentShipCached,
   invalidateCurrentShipCache,
 } from "@/lib/shipsApi";
-
 export function useShipCatalog(profileId: string | null) {
-  const [catalog, setCatalog] = React.useState<
-    (ShipCatalog & { eligible?: boolean })[]
+  const [catalog, setCatalog] = useState<
+    (ShipCatalog & {
+      eligible?: boolean;
+    })[]
   >([]);
-  const [catalogLoading, setCatalogLoading] = React.useState(false);
-  const [currentShip, setCurrentShip] = React.useState<any | null>(null);
-
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [currentShip, setCurrentShip] = useState<any | null>(null);
   // catalog
-  React.useEffect(() => {
+  useEffect(() => {
     const load = async () => {
       setCatalogLoading(true);
       try {
@@ -35,23 +34,21 @@ export function useShipCatalog(profileId: string | null) {
     };
     load();
   }, [profileId]);
-
   // current ship
-  React.useEffect(() => {
+  useEffect(() => {
     const load = async () => {
       if (!profileId) {
         setCurrentShip(null);
         return;
       }
       try {
-        const json = await fetchCurrentShipCached(profileId, 60_000);
+        const json = await fetchCurrentShipCached(profileId, 60000);
         setCurrentShip(json?.current || null);
       } catch {}
     };
     load();
   }, [profileId]);
-
-  const selectShip = React.useCallback(
+  const selectShip = useCallback(
     async (shipId: string) => {
       if (!profileId) return;
       try {
@@ -75,8 +72,7 @@ export function useShipCatalog(profileId: string | null) {
     },
     [profileId],
   );
-
-  const abandonShip = React.useCallback(async () => {
+  const abandonShip = useCallback(async () => {
     if (!profileId) return;
     try {
       const res = await fetch("/api/ships/abandon", {
@@ -94,7 +90,6 @@ export function useShipCatalog(profileId: string | null) {
       toast.error(e?.message || "Failed to abandon ship");
     }
   }, [profileId]);
-
   return {
     catalog,
     catalogLoading,

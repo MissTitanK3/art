@@ -1,18 +1,15 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/primitives/alert";
-
 import { exportLegalAidReport } from "@/lib/pipelines/exportLegalAidReport";
 import { MissingPersonIntakeForm } from "@workspace/ui/patterns/features/missing-persons/missing-person-intake-form";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
-
 function toRow(record: DetaineeIntake) {
   return {
     case_id: record.caseId,
@@ -51,30 +48,23 @@ function toRow(record: DetaineeIntake) {
     version: record.version ?? null,
   } as const;
 }
-
 function MissingPersonIntakeDataLayer() {
-  const handleExport = React.useCallback(exportLegalAidReport, []);
-  const handlePersistRemote = React.useCallback(
-    async (record: DetaineeIntake) => {
-      try {
-        const client = getSupabaseBrowserClient();
-        const row = toRow(record);
-        const { error } = await client
-          .from("missing_person_records")
-          .upsert(row);
-        if (error) throw error;
-      } catch (err) {
-        console.warn("[MissingPersonIntakePage] supabase upsert failed", err);
-      }
-    },
-    []
-  );
-
+  const handleExport = useCallback(exportLegalAidReport, []);
+  const handlePersistRemote = useCallback(async (record: DetaineeIntake) => {
+    try {
+      const client = getSupabaseBrowserClient();
+      const row = toRow(record);
+      const { error } = await client.from("missing_person_records").upsert(row);
+      if (error) throw error;
+    } catch (err) {
+      console.warn("[MissingPersonIntakePage] supabase upsert failed", err);
+    }
+  }, []);
   // Load existing case IDs from Supabase to help suggest next sequence
-  const [remoteSeedRecords, setRemoteSeedRecords] = React.useState<
+  const [remoteSeedRecords, setRemoteSeedRecords] = useState<
     DetaineeIntake[] | undefined
   >(undefined);
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
     (async () => {
       try {
@@ -88,13 +78,13 @@ function MissingPersonIntakeDataLayer() {
           .map((row: any) => ({ caseId: row?.case_id }))
           .filter(
             (r: DetaineeIntake) =>
-              typeof r.caseId === "string" && r.caseId.length > 0
+              typeof r.caseId === "string" && r.caseId.length > 0,
           );
         setRemoteSeedRecords(mapped);
       } catch (err) {
         console.warn(
           "[MissingPersonIntakePage] failed to load existing case IDs",
-          err
+          err,
         );
         setRemoteSeedRecords(undefined);
       }
@@ -103,8 +93,7 @@ function MissingPersonIntakeDataLayer() {
       active = false;
     };
   }, []);
-
-  const loadLastCaseId = React.useCallback(async (): Promise<string | null> => {
+  const loadLastCaseId = useCallback(async (): Promise<string | null> => {
     try {
       const client = getSupabaseBrowserClient();
       const { data, error } = await client
@@ -120,7 +109,6 @@ function MissingPersonIntakeDataLayer() {
       return null;
     }
   }, []);
-
   return (
     <MissingPersonIntakeForm
       region={"PNW"}
@@ -131,7 +119,6 @@ function MissingPersonIntakeDataLayer() {
     />
   );
 }
-
 export default function MissingPersonsIntakePage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-16">

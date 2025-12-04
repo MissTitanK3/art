@@ -109,6 +109,49 @@ function getCounts(dispatch: DispatchSubmission) {
   return { requiredCount, assignedCount };
 }
 
+// Helper to format roles in CDC-style with required and ideal roles separated
+function formatRolesCDCStyle(dispatch: DispatchSubmission): {
+  required: string[];
+  ideal: string[];
+} {
+  const required: string[] = [];
+  const ideal: string[] = [];
+
+  if (
+    dispatch.required_roles_by_type &&
+    Object.keys(dispatch.required_roles_by_type).length > 0
+  ) {
+    const assignedCounts: Record<string, number> = {};
+    for (const v of dispatch.assigned_volunteers ?? []) {
+      const key = (v as any)?.role as string | undefined;
+      if (!key) continue;
+      assignedCounts[key] = (assignedCounts[key] ?? 0) + 1;
+    }
+
+    // Categorize roles based on count or other criteria
+    Object.entries(dispatch.required_roles_by_type)
+      .filter(([, count]) => count > 0)
+      .forEach(([role, count]) => {
+        const assigned = assignedCounts[role] ?? 0;
+        const remaining = Math.max(0, count - assigned);
+        if (remaining === 0) return;
+
+        const label =
+          FIELD_ROLE_LABELS[role as keyof typeof FIELD_ROLE_LABELS] ||
+          humanize(role);
+        
+        // Roles with higher counts are "required", single counts are "ideal"
+        if (count >= 3 || role.toLowerCase().includes("crew") || role.toLowerCase().includes("distributor")) {
+          required.push(`• ${label} (${count}+)`);
+        } else {
+          ideal.push(`• ${label} (${assigned}/${count})`);
+        }
+      });
+  }
+
+  return { required, ideal };
+}
+
 export function generateMessages(
   dispatch: DispatchSubmission,
   urgency: string,
@@ -157,7 +200,7 @@ export function generateMessages(
     },
     {
       title: "👥 Volunteers",
-      body: `${volunteerLine}\n\n✅ After Volunteering:\n– When assigned, you’ll be added to a temporary Signal group\n– Groups are created per dispatch for coordination and safety\n\n📲 How to Join:\nReply in this group if available.`,
+      body: `${volunteerLine}\n\n✅ After Volunteering:\n– When assigned, you'll be added to a temporary Signal group\n– Groups are created per dispatch for coordination and safety\n\n📲 How to Join:\nReply in this group if available.`,
     },
   ];
 
@@ -187,12 +230,60 @@ export function generateMessages(
     },
   ];
 
+  // --- CDC-style volunteer callout ---
+  const cdcRoles = formatRolesCDCStyle(dispatch);
+  const actionSignalLink = payload.public_signal_link || payload.action_signal_link;
+  
+  const volunteerCalloutSections = [
+    {
+      title: "🧡 CALL FOR VOLUNTEERS 🧡",
+      body: `🕓 Timing: ${urgency}, time TBD based on volunteer availability${
+        actionSignalLink
+          ? `\nIf you are available, please join the temporary action chat here: ${actionSignalLink}`
+          : ""
+      }\n\n📍 Location: ${cityState}`,
+    },
+    {
+      title: "📨 Event Details",
+      body:
+        payload.message ||
+        "Join us for a Community Defense Center to distribute resources and safety information to individuals and families.",
+    },
+    {
+      title: "📋 Intended Actions",
+      body: actionsWithOptionalNotes(),
+    },
+    {
+      title: "💡 Roles Needed",
+      body:
+        (cdcRoles.required.length > 0 ? cdcRoles.required.join("\n") : "") +
+        (cdcRoles.ideal.length > 0
+          ? `\n\nIdeally volunteers would also include:\n${cdcRoles.ideal.join("\n")}`
+          : ""),
+    },
+    {
+      title: "👥 Volunteers",
+      body: `${volunteerLine}\n\n📲 How to Join:\n${
+        actionSignalLink
+          ? "Join the Signal group linked above if available"
+          : "Reply in this group if available"
+      }`,
+    },
+  ];
+
+  const volunteerCallout = volunteerCalloutSections
+    .map((s) => `${s.title}\n${s.body}`)
+    .join("\n\n");
+
   return {
     callout: calloutSections.map((s) => `${s.title}\n${s.body}`).join("\n\n"),
     calloutSections,
 
     detailed: detailedSections.map((s) => `${s.title}\n${s.body}`).join("\n\n"),
     detailedSections,
+
+    volunteerCallout,
+    volunteerCalloutSections,
 
     medium: `
 ${emoji} Community support needed in ${cityState}!
@@ -205,11 +296,31 @@ ${dispatch.intended_action_notes ? `\n📝 Notes: ${dispatch.intended_action_not
 \n📲 Reply in this group if available.
 `.trim(),
 
+    // --- Medium sections for social cards ---
+    mediumSections: [
+      {
+        title: `${emoji} COMMUNITY SUPPORT NEEDED`,
+        body: `📍 ${cityState}\n🕓 ${urgency}`,
+      },
+      {
+        title: "💡 Roles & Volunteers",
+        body: `${formatRoles(dispatch).split("\n").slice(0, 3).join("\n")}${
+          formatRoles(dispatch).split("\n").length > 3 ? "\n..." : ""
+        }\n\n👥 ${volunteerLine}`,
+      },
+    ],
+
     tldr: `${emoji} ${cityState}: ${volunteerLine}. Roles: ${formatRoles(
       dispatch,
     ).replace(
       /\n/g,
       ", ",
     )}. ${dispatch.intended_action_notes ? `Notes: ${dispatch.intended_action_notes}. ` : ""}📲 Reply in this group if available.`,
+
+    // --- TL;DR section for social cards ---
+    tldrSection: {
+      title: `${emoji} ${cityState.toUpperCase()}`,
+      body: `🕓 ${urgency}\n\n👥 ${volunteerLine}\n\n📲 Join our public chat`,
+    },
   };
 }

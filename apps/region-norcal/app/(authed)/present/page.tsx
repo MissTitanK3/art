@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TeleprompterHeader } from "@workspace/ui/patterns/features/teleprompter/teleprompter-header";
 import { TeleprompterImportDrawer } from "@workspace/ui/patterns/features/teleprompter/teleprompter-import-drawer";
@@ -26,7 +25,6 @@ import {
   TELEPROMPTER_SCRIPT_META,
   TeleprompterScriptId as ScriptId,
 } from "@/data/teleprompter-scripts";
-
 export default function TeleprompterDataLayer() {
   const router = useRouter();
   const storeText = useTeleprompterStore((s) => s.text);
@@ -42,7 +40,7 @@ export default function TeleprompterDataLayer() {
   const storeCustomTextColor = useTeleprompterStore((s) => s.customTextColor);
   const storeCustomBgColor = useTeleprompterStore((s) => s.customBgColor);
   const storeCustomHighlightColor = useTeleprompterStore(
-    (s) => s.customHighlightColor
+    (s) => s.customHighlightColor,
   );
   const storeOverlayColor = useTeleprompterStore((s) => s.overlayColor);
   const storeOverlayOpacity = useTeleprompterStore((s) => s.overlayOpacity);
@@ -59,38 +57,36 @@ export default function TeleprompterDataLayer() {
   const s_setDefaultSpeed = useTeleprompterStore((s) => s.setDefaultSpeed);
   const s_setFontFace = useTeleprompterStore((s) => s.setFontFace);
   const s_setCustomTextColor = useTeleprompterStore(
-    (s) => s.setCustomTextColor
+    (s) => s.setCustomTextColor,
   );
   const s_setCustomBgColor = useTeleprompterStore((s) => s.setCustomBgColor);
   const s_setCustomHighlightColor = useTeleprompterStore(
-    (s) => s.setCustomHighlightColor
+    (s) => s.setCustomHighlightColor,
   );
   const s_setOverlayColor = useTeleprompterStore((s) => s.setOverlayColor);
   const s_setOverlayOpacity = useTeleprompterStore((s) => s.setOverlayOpacity);
   const s_setCacheEnabled = useTeleprompterStore((s) => s.setCacheEnabled);
-
   // Local UI defaults (stable for SSR); rehydrate from store after mount to avoid hydration mismatches
-  const [scriptId, setScriptId] = React.useState<ScriptId>("full_narrative");
-  const [text, setText] = React.useState<string>(SCRIPTS["full_narrative"]);
-  const [fontSize, setFontSize] = React.useState<string>("text-xl");
-  const [lineHeight, setLineHeight] = React.useState<string>("leading-8");
-  const [mirrorH, setMirrorH] = React.useState<boolean>(false);
-  const [mirrorV, setMirrorV] = React.useState<boolean>(false);
-  const [preset, setPreset] = React.useState<PresetId>("briefing");
-  const [speed, setSpeed] = React.useState<number>(1); // 0.25..2
-  const [importOpen, setImportOpen] = React.useState<boolean>(false);
-  const [fullscreen, setFullscreen] = React.useState<boolean>(false);
-  const [showLegend, setShowLegend] = React.useState<boolean>(false);
-  const [settingsOpen, setSettingsOpen] = React.useState<boolean>(false);
-  const [fontFace, setFontFace] = React.useState<string>("sans"); // sans|serif|mono|dyslexic
-  const [customTextColor, setCustomTextColor] =
-    React.useState<string>("#e5e7eb");
-  const [customBgColor, setCustomBgColor] = React.useState<string>("#0b0f18");
+  const [scriptId, setScriptId] = useState<ScriptId>("full_narrative");
+  const [text, setText] = useState<string>(SCRIPTS["full_narrative"]);
+  const [fontSize, setFontSize] = useState<string>("text-xl");
+  const [lineHeight, setLineHeight] = useState<string>("leading-8");
+  const [mirrorH, setMirrorH] = useState<boolean>(false);
+  const [mirrorV, setMirrorV] = useState<boolean>(false);
+  const [preset, setPreset] = useState<PresetId>("briefing");
+  const [speed, setSpeed] = useState<number>(1); // 0.25..2
+  const [importOpen, setImportOpen] = useState<boolean>(false);
+  const [fullscreen, setFullscreen] = useState<boolean>(false);
+  const [showLegend, setShowLegend] = useState<boolean>(false);
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
+  const [fontFace, setFontFace] = useState<string>("sans"); // sans|serif|mono|dyslexic
+  const [customTextColor, setCustomTextColor] = useState<string>("#e5e7eb");
+  const [customBgColor, setCustomBgColor] = useState<string>("#0b0f18");
   const [customHighlightColor, setCustomHighlightColor] =
-    React.useState<string>("#22d3ee");
-  const [overlayColor, setOverlayColor] = React.useState<string>("#000000");
-  const [overlayOpacity, setOverlayOpacity] = React.useState<number>(0);
-  const [defaultSpeed, setDefaultSpeed] = React.useState<number>(1);
+    useState<string>("#22d3ee");
+  const [overlayColor, setOverlayColor] = useState<string>("#000000");
+  const [overlayOpacity, setOverlayOpacity] = useState<number>(0);
+  const [defaultSpeed, setDefaultSpeed] = useState<number>(1);
   // Cue durations (configurable; static for now, no UI to change)
   // Tuned from field notes:
   // - Breath: ~0.5–1.5s -> default 1.0s
@@ -101,74 +97,72 @@ export default function TeleprompterDataLayer() {
   const cueLookupMs = 3000;
   const showSegmentBar = true;
   // timers now handled by engine
-  const currentRef = React.useRef<HTMLDivElement | null>(null);
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const viewportRef = React.useRef<HTMLDivElement | null>(null);
-  const [viewportHasFocus, setViewportHasFocus] =
-    React.useState<boolean>(false);
+  const currentRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [viewportHasFocus, setViewportHasFocus] = useState<boolean>(false);
   const [viewportHintDismissed, setViewportHintDismissed] =
-    React.useState<boolean>(false);
-  const [cacheEnabled, setCacheEnabled] = React.useState<boolean>(true);
+    useState<boolean>(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(true);
   // line countdown handled by engine
   const [mobileControlsVisible, setMobileControlsVisible] =
-    React.useState<boolean>(true);
-  const [showFsControls, setShowFsControls] = React.useState<boolean>(true);
+    useState<boolean>(true);
+  const [showFsControls, setShowFsControls] = useState<boolean>(true);
   const [orientationHintDismissed, setOrientationHintDismissed] =
-    React.useState<boolean>(false);
+    useState<boolean>(false);
   // Defer store syncing until after we rehydrate from persisted values
-  const canSyncRef = React.useRef(false);
+  const canSyncRef = useRef(false);
   // Sync local state to persisted store (only after rehydration completes)
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setText(text);
   }, [text, s_setText]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setScriptId(scriptId);
   }, [scriptId, s_setScriptId]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setFontSize(fontSize);
   }, [fontSize, s_setFontSize]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setLineHeight(lineHeight);
   }, [lineHeight, s_setLineHeight]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setMirrorH(mirrorH);
   }, [mirrorH, s_setMirrorH]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setMirrorV(mirrorV);
   }, [mirrorV, s_setMirrorV]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setPreset(preset);
   }, [preset, s_setPreset]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setSpeed(speed);
   }, [speed, s_setSpeed]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setDefaultSpeed(defaultSpeed);
   }, [defaultSpeed, s_setDefaultSpeed]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setFontFace(fontFace);
   }, [fontFace, s_setFontFace]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setCustomTextColor(customTextColor);
   }, [customTextColor, s_setCustomTextColor]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setCustomBgColor(customBgColor);
   }, [customBgColor, s_setCustomBgColor]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setCustomHighlightColor(customHighlightColor);
   }, [customHighlightColor, s_setCustomHighlightColor]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setOverlayColor(overlayColor);
   }, [overlayColor, s_setOverlayColor]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setOverlayOpacity(overlayOpacity);
   }, [overlayOpacity, s_setOverlayOpacity]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (canSyncRef.current) s_setCacheEnabled(cacheEnabled);
   }, [cacheEnabled, s_setCacheEnabled]);
   // Built-in import content is now handled by shared UI component; no local sync needed
-
-  const computeLineMsFn = React.useCallback(
+  const computeLineMsFn = useCallback(
     (ln: string, spd: number) =>
       computeLineMsOrdered(ln, spd, {
         baseMsPerChar: BASE_MS_PER_CHAR,
@@ -177,9 +171,8 @@ export default function TeleprompterDataLayer() {
         lookupMs: cueLookupMs,
         minLineMs: 300,
       }),
-    [cuePauseMs, cueBreatheMs, cueLookupMs]
+    [cuePauseMs, cueBreatheMs, cueLookupMs],
   );
-
   const engine = useTeleprompterEngine(text, speed, computeLineMsFn);
   const {
     index,
@@ -194,12 +187,9 @@ export default function TeleprompterDataLayer() {
     plannedMsForCurrentLine,
     lineStartedAt,
   } = engine;
-
   const open = (href: string) => router.push(href);
-
-  const lines = React.useMemo(() => text.split(/\r?\n/), [text]);
-
-  const totalMs = React.useMemo(
+  const lines = useMemo(() => text.split(/\r?\n/), [text]);
+  const totalMs = useMemo(
     () =>
       estimateTotalMsOrdered(text, speed, {
         baseMsPerChar: BASE_MS_PER_CHAR,
@@ -208,17 +198,15 @@ export default function TeleprompterDataLayer() {
         lookupMs: cueLookupMs,
         minLineMs: 300,
       }),
-    [text, speed, cuePauseMs, cueBreatheMs, cueLookupMs]
+    [text, speed, cuePauseMs, cueBreatheMs, cueLookupMs],
   );
-
   const humanTime = (ms: number) => {
     const s = Math.max(0, Math.round(ms / 1000));
     const m = Math.floor(s / 60);
     const ss = s % 60;
     return `${m.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
   };
-
-  const countdownSegments = React.useMemo(
+  const countdownSegments = useMemo(
     () =>
       segmentsForLineShared(lines[index] ?? "", speed, {
         baseMsPerChar: BASE_MS_PER_CHAR,
@@ -227,33 +215,29 @@ export default function TeleprompterDataLayer() {
         lookupMs: cueLookupMs,
         minLineMs: 300,
       }),
-    [lines, index, speed, cuePauseMs, cueBreatheMs, cueLookupMs]
+    [lines, index, speed, cuePauseMs, cueBreatheMs, cueLookupMs],
   );
-
   const {
     ref: fsRef,
     isFullscreen,
     toggle: toggleFs,
   } = useFullscreenElement<HTMLDivElement>();
-  React.useEffect(() => {
+  useEffect(() => {
     setFullscreen(isFullscreen);
   }, [isFullscreen]);
-  const toggleFullscreen = React.useCallback(async () => {
+  const toggleFullscreen = useCallback(async () => {
     try {
       await toggleFs();
     } catch (error) {
       console.warn("[teleprompter] toggle fullscreen failed", error);
     }
   }, [toggleFs]);
-
   const { isMobile, isPortrait } = useViewportInfo(768);
-
   const { visible: fsVisible, containerRef: autoHideRef } = useAutoHide(3000);
-  React.useEffect(() => {
+  useEffect(() => {
     setShowFsControls(fullscreen ? fsVisible : false);
   }, [fullscreen, fsVisible]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!fullscreen) return;
     const t = window.setTimeout(() => {
       try {
@@ -280,7 +264,6 @@ export default function TeleprompterDataLayer() {
     }, 100);
     return () => window.clearTimeout(t);
   }, [fullscreen]);
-
   useTeleprompterHotkeys(viewportRef as React.RefObject<HTMLElement>, {
     togglePlay,
     next,
@@ -291,11 +274,9 @@ export default function TeleprompterDataLayer() {
     toggleVMirror: () => setMirrorV((v) => !v),
     toggleFullscreen,
   });
-
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-
-  React.useEffect(() => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  useEffect(() => {
     try {
       const v = localStorage.getItem("teleprompter.viewportHintDismissed");
       if (v === "1") setViewportHintDismissed(true);
@@ -303,8 +284,7 @@ export default function TeleprompterDataLayer() {
       console.warn("[teleprompter] failed to read viewport hint", error);
     }
   }, []);
-
-  const focusViewport = React.useCallback(() => {
+  const focusViewport = useCallback(() => {
     try {
       const el = viewportRef.current;
       if (!el) return;
@@ -327,16 +307,14 @@ export default function TeleprompterDataLayer() {
       console.warn("[teleprompter] focusViewport failed", error);
     }
   }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!mounted) return;
     if (importOpen || settingsOpen) return;
     focusViewport();
     const t = window.setTimeout(() => focusViewport(), 120);
     return () => window.clearTimeout(t);
   }, [importOpen, settingsOpen, mounted, focusViewport]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!mounted || canSyncRef.current) return;
     try {
       if (storeScriptId) setScriptId(storeScriptId as ScriptId);
@@ -381,7 +359,6 @@ export default function TeleprompterDataLayer() {
     storeOverlayOpacity,
     storeCacheEnabled,
   ]);
-
   const shellProps = {
     containerRef: (el: HTMLDivElement | null) => {
       (fsRef as any).current = el;
@@ -426,7 +403,6 @@ export default function TeleprompterDataLayer() {
     },
     showSegmentBar,
   };
-
   return (
     <div className="mx-auto grid max-w-6xl gap-4 px-2 md:px-0">
       <TeleprompterHeader
@@ -488,7 +464,7 @@ export default function TeleprompterDataLayer() {
           } catch (error) {
             console.warn(
               "[teleprompter] failed to persist viewport hint",
-              error
+              error,
             );
           }
         }}
@@ -509,14 +485,14 @@ export default function TeleprompterDataLayer() {
         cacheEnabled={cacheEnabled}
         onCacheEnabledChange={(v) => setCacheEnabled(v)}
         onSaveNow={() => bumpRev()}
-        builtinScripts={React.useMemo(
+        builtinScripts={useMemo(
           () =>
             TELEPROMPTER_SCRIPT_META.map((m) => ({
               id: m.id,
               label: m.label,
               content: SCRIPTS[m.id],
             })),
-          []
+          [],
         )}
         onApplyBuiltin={(id, text) => {
           setScriptId(id as ScriptId);

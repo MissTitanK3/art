@@ -1,9 +1,7 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { exportLegalAidReport } from "@/lib/pipelines/exportLegalAidReport";
 import { MissingPersonDetail } from "@workspace/ui/patterns/features/missing-persons/missing-person-detail";
 import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
@@ -12,7 +10,6 @@ import { useMissingPersonStore } from "@workspace/store/useMissingPersonStore";
 import type { MissingPersonRecord } from "@workspace/store/types/missing-person";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import { toast } from "@workspace/ui/primitives/sonner";
-
 function mapRowToDetaineeIntake(row: any): DetaineeIntake {
   return {
     caseId: row.case_id,
@@ -68,7 +65,6 @@ function mapRowToDetaineeIntake(row: any): DetaineeIntake {
     version: typeof row.version === "number" ? row.version : undefined,
   } as DetaineeIntake;
 }
-
 async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
   try {
     const client = getSupabaseBrowserClient();
@@ -110,7 +106,7 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
           "created_at",
           "created_by",
           "version",
-        ].join(", ")
+        ].join(", "),
       )
       .order("last_updated", { ascending: false, nullsFirst: false });
     if (error) throw error;
@@ -119,17 +115,16 @@ async function fetchMissingPersonsFromDatabase(): Promise<DetaineeIntake[]> {
       .map(mapRowToDetaineeIntake)
       .filter(
         (r): r is DetaineeIntake =>
-          typeof r.caseId === "string" && r.caseId.length > 0
+          typeof r.caseId === "string" && r.caseId.length > 0,
       );
   } catch (e) {
     console.warn("[MissingPersonDetailPage] supabase fetch error", e);
     return [];
   }
 }
-
 function findRecordBySlug(
   slug: string,
-  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>
+  collections: Array<Iterable<Partial<DetaineeIntake> | MissingPersonRecord>>,
 ): DetaineeIntake | null {
   for (const collection of collections) {
     for (const item of collection) {
@@ -142,24 +137,23 @@ function findRecordBySlug(
   }
   return null;
 }
-
 function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
   const localRecords = useMissingPersonStore((state) => state.records);
   const router = useRouter();
-  const [remoteRecords, setRemoteRecords] = React.useState<
-    DetaineeIntake[] | null
-  >(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const renderDirectoryLink = React.useCallback(
+  const [remoteRecords, setRemoteRecords] = useState<DetaineeIntake[] | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const renderDirectoryLink = useCallback(
     (href: string, label: React.ReactNode) => (
       <Link href={href} className="inline-flex items-center gap-1">
         {label}
       </Link>
     ),
-    []
+    [],
   );
-  const handleDeleteSuccess = React.useCallback(
+  const handleDeleteSuccess = useCallback(
     ({
       directoryHref,
     }: {
@@ -169,9 +163,9 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
     }) => {
       router.push(directoryHref);
     },
-    [router]
+    [router],
   );
-  const handleSaveRemote = React.useCallback(async (record: DetaineeIntake) => {
+  const handleSaveRemote = useCallback(async (record: DetaineeIntake) => {
     try {
       const client = getSupabaseBrowserClient();
       const row = {
@@ -216,7 +210,7 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
       console.warn("[MissingPersonDetailPage] supabase upsert failed", err);
     }
   }, []);
-  const handleDeleteRemote = React.useCallback(async (caseId: string) => {
+  const handleDeleteRemote = useCallback(async (caseId: string) => {
     try {
       const client = getSupabaseBrowserClient();
       const { error } = await client.rpc("safe_delete_missing_person_record", {
@@ -227,10 +221,8 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
       console.warn("[MissingPersonDetailPage] supabase delete failed", err);
     }
   }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
-
     async function load() {
       setLoading(true);
       setError(null);
@@ -250,19 +242,15 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
         }
       }
     }
-
     load();
-
     return () => {
       active = false;
     };
   }, []);
-
-  const record = React.useMemo(
+  const record = useMemo(
     () => findRecordBySlug(slug, [localRecords, remoteRecords ?? []]),
-    [slug, localRecords, remoteRecords]
+    [slug, localRecords, remoteRecords],
   );
-
   if (!record) {
     return (
       <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-3 py-24 text-center text-muted-foreground">
@@ -274,7 +262,6 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
       </div>
     );
   }
-
   return (
     <div className="space-y-4">
       {error ? <p className="text-sm text-amber-600">{error}</p> : null}
@@ -313,19 +300,16 @@ function MissingPersonDetailDataLayer({ slug }: { slug: string }) {
     </div>
   );
 }
-
-type Params = { id: string };
-
+type Params = {
+  id: string;
+};
 export default function MissingPersonDetailPage({
   params,
 }: {
   params?: Promise<Params>;
 }) {
-  const [resolvedParams, setResolvedParams] = React.useState<Params | null>(
-    null
-  );
-
-  React.useEffect(() => {
+  const [resolvedParams, setResolvedParams] = useState<Params | null>(null);
+  useEffect(() => {
     let active = true;
     if (params) {
       Promise.resolve(params as Promise<Params>)
@@ -342,11 +326,8 @@ export default function MissingPersonDetailPage({
       active = false;
     };
   }, [params]);
-
   if (!resolvedParams) return null;
-
   const { id } = resolvedParams;
-
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 pb-16">
       <MissingPersonDetailDataLayer slug={id} />

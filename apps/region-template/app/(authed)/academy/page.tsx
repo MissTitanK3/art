@@ -1,10 +1,7 @@
 "use client";
-
-import * as React from "react";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@workspace/ui/primitives/sonner";
-
 import { usePodStore } from "@/providers/PodStoreProvider";
 import { Button } from "@workspace/ui/primitives/button";
 import { PodAcademyDashboardLayout } from "@workspace/ui/layout/pods/pod-academy-dashboard-layout";
@@ -41,12 +38,10 @@ import {
   deriveRegionOperationalMinimumOverrides,
   parseRegionOperationalMinimumOverrides,
 } from "@/lib/academy/region-minimums";
-
 const REGION_SETTINGS_SLUG =
   process.env.NEXT_PUBLIC_REGION_ID ||
   process.env.NEXT_PUBLIC_BRAND_SLUG ||
   "default";
-
 type RegionSettingsRow = {
   id?: string;
   region_slug?: string;
@@ -54,20 +49,16 @@ type RegionSettingsRow = {
   operational_minimums?: unknown;
   updated_at?: string;
 };
-
 export default function AcademyDashboardPage() {
   const router = useRouter();
   const pods = usePodStore((state) => state.pods);
   // Using Supabase-backed classes; do not pull from local pod store
-
   const members = useMemo(() => convertPodsToMemberProgress(pods), [pods]);
   const stats = useMemo(() => deriveStats(pods, members, []), [pods, members]);
-
   const courseGroups: AcademyCourseGroup[] = useMemo(
     () => attachCourseStatusToGroups(COURSE_BLUEPRINT, members),
     [members]
   );
-
   const headingCta = (
     <Button asChild variant="outline">
       <a
@@ -79,14 +70,12 @@ export default function AcademyDashboardPage() {
       </a>
     </Button>
   );
-
   const heading = {
     title: "Dispatch Academy Hub",
     subtitle:
       "Coordinate live classes with mentors and dispatchers while tracking qualification progress in every pod.",
     cta: headingCta,
   };
-
   return (
     <PodAcademyDashboardStoreProvider
       initialStats={stats}
@@ -111,7 +100,6 @@ export default function AcademyDashboardPage() {
     </PodAcademyDashboardStoreProvider>
   );
 }
-
 type AcademyDashboardContentProps = {
   heading: {
     title: string;
@@ -124,7 +112,6 @@ type AcademyDashboardContentProps = {
   onScheduleClass: (classId: string) => void;
   onCreatePathwayClass: (pathwayId: string) => void;
 };
-
 function AcademyDashboardContent({
   heading,
   stats,
@@ -160,24 +147,21 @@ function AcademyDashboardContent({
     (state) => state.removeTrainingSession
   );
   const [operationalMinimumDefinitions, setOperationalMinimumDefinitions] =
-    React.useState(() =>
+    useState(() =>
       DEFAULT_REGION_OPERATIONAL_MINIMUMS.map((definition) => ({
         ...definition,
       }))
     );
   const [regionSettingsRecord, setRegionSettingsRecord] =
-    React.useState<RegionSettingsRow | null>(null);
-  const [isSavingMinimums, setIsSavingMinimums] = React.useState(false);
-
+    useState<RegionSettingsRow | null>(null);
+  const [isSavingMinimums, setIsSavingMinimums] = useState(false);
   useEffect(() => {
     setStats(stats);
     setCourseGroups(courseGroups);
     setMembers(members);
   }, [courseGroups, members, setCourseGroups, setMembers, setStats, stats]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-
     async function loadOperationalMinimumOverrides() {
       try {
         const client = getSupabaseBrowserClient();
@@ -188,13 +172,11 @@ function AcademyDashboardContent({
           .limit(1)
           .maybeSingle();
         if (error) throw error;
-
         const row = (data ?? null) as RegionSettingsRow | null;
         const overridesPayload =
           row?.operational_minimums ??
           row?.settings?.operational_minimums ??
           row?.settings?.academy?.operational_minimums;
-
         const overrides = parseRegionOperationalMinimumOverrides(
           overridesPayload as RegionOperationalMinimumsOverridesPayload
         );
@@ -213,14 +195,11 @@ function AcademyDashboardContent({
         );
       }
     }
-
     loadOperationalMinimumOverrides();
-
     return () => {
       cancelled = true;
     };
   }, []);
-
   // Supabase: hydrate sessions + participants and persist changes
   const supabaseSetSessions = usePodAcademyDashboardStore(
     (state) => state.setSessions
@@ -231,7 +210,6 @@ function AcademyDashboardContent({
   const supabaseSetClasses = usePodAcademyDashboardStore(
     (state) => state.setTrainingClasses
   );
-
   function mapRowToSession(
     row: Record<string, unknown>,
     participantsBySession: Record<string, AcademyTrainingSessionParticipant[]>
@@ -259,7 +237,6 @@ function AcademyDashboardContent({
         ? Number(seatsFromDb?.waitlist)
         : derivedWaitlist,
     } as const;
-
     return {
       id: String(r.id),
       classId: r.class_id ? String(r.class_id) : "",
@@ -281,52 +258,46 @@ function AcademyDashboardContent({
       participants,
     } as AcademyTrainingSession;
   }
-
-  const fetchSessionsFromDatabase =
-    React.useCallback(async (): Promise<void> => {
-      try {
-        const client = getSupabaseBrowserClient();
-        const [
-          { data: sessions, error: sErr },
-          { data: participants, error: pErr },
-        ] = await Promise.all([
-          client
-            .from("academy_sessions")
-            .select("*")
-            .order("start", { ascending: true }),
-          client.from("academy_participants").select("*"),
-        ]);
-        if (sErr) throw sErr;
-        if (pErr) throw pErr;
-
-        const partsBySession: Record<
-          string,
-          AcademyTrainingSessionParticipant[]
-        > = {};
-        for (const p of participants ?? []) {
-          const sid = String(p.session_id);
-          if (!partsBySession[sid]) partsBySession[sid] = [];
-          partsBySession[sid]!.push({
-            id: String(p.id),
-            name: String(p.name ?? ""),
-            signalHandle: p.signal_handle ?? undefined,
-            understanding: p.understanding ?? "building",
-            status: p.status ?? "confirmed",
-          });
-        }
-
-        const mapped = (sessions ?? []).map((row) =>
-          mapRowToSession(row as Record<string, unknown>, partsBySession)
-        );
-        supabaseSetSessions(mapped);
-      } catch (e) {
-        console.warn("[AcademyDashboard] supabase fetch sessions error", e);
+  const fetchSessionsFromDatabase = useCallback(async (): Promise<void> => {
+    try {
+      const client = getSupabaseBrowserClient();
+      const [
+        { data: sessions, error: sErr },
+        { data: participants, error: pErr },
+      ] = await Promise.all([
+        client
+          .from("academy_sessions")
+          .select("*")
+          .order("start", { ascending: true }),
+        client.from("academy_participants").select("*"),
+      ]);
+      if (sErr) throw sErr;
+      if (pErr) throw pErr;
+      const partsBySession: Record<
+        string,
+        AcademyTrainingSessionParticipant[]
+      > = {};
+      for (const p of participants ?? []) {
+        const sid = String(p.session_id);
+        if (!partsBySession[sid]) partsBySession[sid] = [];
+        partsBySession[sid]!.push({
+          id: String(p.id),
+          name: String(p.name ?? ""),
+          signalHandle: p.signal_handle ?? undefined,
+          understanding: p.understanding ?? "building",
+          status: p.status ?? "confirmed",
+        });
       }
-    }, [supabaseSetSessions]);
-
+      const mapped = (sessions ?? []).map((row) =>
+        mapRowToSession(row as Record<string, unknown>, partsBySession)
+      );
+      supabaseSetSessions(mapped);
+    } catch (e) {
+      console.warn("[AcademyDashboard] supabase fetch sessions error", e);
+    }
+  }, [supabaseSetSessions]);
   // moved after callback declarations for init order
-
-  const persistSessionToDatabase = React.useCallback(
+  const persistSessionToDatabase = useCallback(
     async (session: AcademyTrainingSession): Promise<void> => {
       try {
         const client = getSupabaseBrowserClient();
@@ -357,8 +328,7 @@ function AcademyDashboardContent({
     },
     []
   );
-
-  const persistParticipantsForSession = React.useCallback(
+  const persistParticipantsForSession = useCallback(
     async (
       sessionId: string,
       participantsList: AcademyTrainingSessionParticipant[]
@@ -391,9 +361,8 @@ function AcademyDashboardContent({
     },
     []
   );
-
   // Instructors
-  const mapRowToInstructor = React.useCallback(
+  const mapRowToInstructor = useCallback(
     (row: Record<string, unknown>): AcademyInstructorProfile => {
       const r = row as Record<string, any>;
       const rawCerts = Array.isArray(r.certifications) ? r.certifications : [];
@@ -417,7 +386,6 @@ function AcademyDashboardContent({
           return null;
         })
         .filter(Boolean) as AcademyInstructorProfile["certifications"];
-
       const reg =
         typeof r.registration_status === "string"
           ? r.registration_status
@@ -443,24 +411,21 @@ function AcademyDashboardContent({
     },
     []
   );
-
-  const fetchInstructorsFromDatabase =
-    React.useCallback(async (): Promise<void> => {
-      try {
-        const client = getSupabaseBrowserClient();
-        const { data, error } = await client
-          .from("academy_instructors")
-          .select("*");
-        if (error) throw error;
-        const mapped = (data ?? []).map(mapRowToInstructor);
-        supabaseSetInstructors(mapped);
-      } catch (e) {
-        console.warn("[AcademyDashboard] supabase fetch instructors error", e);
-      }
-    }, [mapRowToInstructor, supabaseSetInstructors]);
-
+  const fetchInstructorsFromDatabase = useCallback(async (): Promise<void> => {
+    try {
+      const client = getSupabaseBrowserClient();
+      const { data, error } = await client
+        .from("academy_instructors")
+        .select("*");
+      if (error) throw error;
+      const mapped = (data ?? []).map(mapRowToInstructor);
+      supabaseSetInstructors(mapped);
+    } catch (e) {
+      console.warn("[AcademyDashboard] supabase fetch instructors error", e);
+    }
+  }, [mapRowToInstructor, supabaseSetInstructors]);
   // Classes
-  const mapRowToClass = React.useCallback(
+  const mapRowToClass = useCallback(
     (row: Record<string, unknown>): AcademyTrainingClass => {
       const r = row as Record<string, any>;
       return {
@@ -481,23 +446,20 @@ function AcademyDashboardContent({
     },
     []
   );
-
-  const fetchClassesFromDatabase =
-    React.useCallback(async (): Promise<void> => {
-      try {
-        const client = getSupabaseBrowserClient();
-        const { data, error } = await client
-          .from("academy_classes")
-          .select("*")
-          .order("updated_at", { ascending: false });
-        if (error) throw error;
-        const mapped = (data ?? []).map(mapRowToClass);
-        supabaseSetClasses(mapped);
-      } catch (e) {
-        console.warn("[AcademyDashboard] supabase fetch classes error", e);
-      }
-    }, [mapRowToClass, supabaseSetClasses]);
-
+  const fetchClassesFromDatabase = useCallback(async (): Promise<void> => {
+    try {
+      const client = getSupabaseBrowserClient();
+      const { data, error } = await client
+        .from("academy_classes")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      const mapped = (data ?? []).map(mapRowToClass);
+      supabaseSetClasses(mapped);
+    } catch (e) {
+      console.warn("[AcademyDashboard] supabase fetch classes error", e);
+    }
+  }, [mapRowToClass, supabaseSetClasses]);
   // Hydrate from Supabase once callbacks are ready
   useEffect(() => {
     fetchSessionsFromDatabase();
@@ -508,7 +470,6 @@ function AcademyDashboardContent({
     fetchInstructorsFromDatabase,
     fetchClassesFromDatabase,
   ]);
-
   const storeStats = usePodAcademyDashboardStore((state) => state.stats);
   const storeCourseGroups = usePodAcademyDashboardStore(
     (state) => state.courseGroups
@@ -521,12 +482,12 @@ function AcademyDashboardContent({
     (state) => state.trainingClasses
   );
   const storeSessions = usePodAcademyDashboardStore((state) => state.sessions);
-  const operationalMinimumSnapshots = React.useMemo(
+  const operationalMinimumSnapshots = useMemo(
     () =>
       evaluateOperationalMinimums(operationalMinimumDefinitions, storeMembers),
     [operationalMinimumDefinitions, storeMembers]
   );
-  const readinessChecklist = React.useMemo(
+  const readinessChecklist = useMemo(
     () =>
       createRegionReadinessChecklist(
         operationalMinimumSnapshots,
@@ -534,7 +495,7 @@ function AcademyDashboardContent({
       ),
     [operationalMinimumSnapshots, storeSessions]
   );
-  const notifyAcademyChange = React.useCallback(
+  const notifyAcademyChange = useCallback(
     async (payload: {
       id: string;
       type: "class" | "session";
@@ -565,7 +526,7 @@ function AcademyDashboardContent({
     },
     []
   );
-  const refreshReadinessCache = React.useCallback(async () => {
+  const refreshReadinessCache = useCallback(async () => {
     try {
       await fetch("/api/academy/readiness?refresh=true", {
         method: "GET",
@@ -578,8 +539,7 @@ function AcademyDashboardContent({
   }, []);
   const profile = useProfileStore((s) => s.profile);
   const roles = profile?.access_role ? [String(profile.access_role)] : [];
-
-  const handleSaveOperationalMinimums = React.useCallback(
+  const handleSaveOperationalMinimums = useCallback(
     async (definitions: RegionOperationalMinimumDefinition[]) => {
       setIsSavingMinimums(true);
       try {
@@ -588,7 +548,6 @@ function AcademyDashboardContent({
           definitions,
           DEFAULT_REGION_OPERATIONAL_MINIMUMS
         );
-
         const existingSettings = (regionSettingsRecord?.settings ??
           {}) as Record<string, any>;
         const nextSettings = {
@@ -598,7 +557,6 @@ function AcademyDashboardContent({
             operational_minimums: overrides,
           },
         };
-
         const payload: RegionSettingsRow = {
           id: regionSettingsRecord?.id,
           region_slug:
@@ -607,14 +565,12 @@ function AcademyDashboardContent({
           settings: nextSettings,
           updated_at: new Date().toISOString(),
         };
-
         const { data, error } = await client
           .from("region_settings")
           .upsert(payload, { onConflict: "region_slug" })
           .select("id, region_slug, operational_minimums, settings, updated_at")
           .single();
         if (error) throw error;
-
         const nextRecord = (data as RegionSettingsRow) ?? payload;
         setRegionSettingsRecord(nextRecord);
         setOperationalMinimumDefinitions(
@@ -634,7 +590,6 @@ function AcademyDashboardContent({
     },
     [regionSettingsRecord]
   );
-
   return (
     <PodAcademyDashboardLayout
       roles={roles}

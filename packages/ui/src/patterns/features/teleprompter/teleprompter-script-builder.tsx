@@ -1,6 +1,5 @@
 "use client";
-
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
 import {
   Select,
@@ -9,19 +8,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
-
 export type TeleprompterScriptBuilderProps = {
   builtinScripts: Record<string, string>;
-  builtinMeta: Array<{ id: string; label: string }>;
+  builtinMeta: Array<{
+    id: string;
+    label: string;
+  }>;
   storageNamespace?: string; // prefix for localStorage keys
 };
-
 type BuilderLine = {
   id: string;
   text: string;
   cues: string[];
 };
-
 const DEFAULT_CUES = ["[pause]", "[look up]", "[breathe]", "[slow]", "[smile]"];
 const PLACEHOLDERS = [
   "[ORG]",
@@ -49,30 +48,24 @@ const PLACEHOLDERS = [
   "[WEATHER]",
   "[SHELTER_LOCATIONS]",
 ];
-
 function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
-
 function wordCount(s: string) {
   return (s.trim().match(/\S+/g) || []).length;
 }
-
 function charCount(s: string) {
   return s.length;
 }
-
 function estimateSeconds(words: number, wpm = 140) {
   return Math.max(2, Math.round((words / wpm) * 60));
 }
-
 const LENGTH_HINT = {
   idealMaxChars: 180,
   warnChars: 220,
   idealMaxWords: 30,
   warnWords: 40,
 };
-
 function LengthMeter({ text }: { text: string }) {
   const wc = wordCount(text);
   const cc = charCount(text);
@@ -115,7 +108,6 @@ function LengthMeter({ text }: { text: string }) {
     </div>
   );
 }
-
 function download(filename: string, text: string) {
   const blob = new Blob([text], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -125,19 +117,23 @@ function download(filename: string, text: string) {
   a.click();
   URL.revokeObjectURL(url);
 }
-
 export default function TeleprompterScriptBuilder({
   builtinScripts,
   builtinMeta,
   storageNamespace = "teleprompter.builder",
 }: TeleprompterScriptBuilderProps) {
   const ns = (k: string) => `${storageNamespace}.${k}`;
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-  const emptyLines = React.useMemo<BuilderLine[]>(() => [], []);
-  const emptySaved = React.useMemo(
-    () => [] as { id: string; name: string; lines: BuilderLine[] }[],
-    []
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const emptyLines = useMemo<BuilderLine[]>(() => [], []);
+  const emptySaved = useMemo(
+    () =>
+      [] as {
+        id: string;
+        name: string;
+        lines: BuilderLine[];
+      }[],
+    [],
   );
   const [name, setName] = useLocalStorage<string>(ns("name"), "My Script", {
     sync: true,
@@ -148,23 +144,26 @@ export default function TeleprompterScriptBuilder({
     {
       sync: true,
       debounceMs: 200,
-    }
+    },
   );
-  const [currentText, setCurrentText] = React.useState("");
-  const [currentCues, setCurrentCues] = React.useState<string[]>([]);
-  const [customCue, setCustomCue] = React.useState("");
+  const [currentText, setCurrentText] = useState("");
+  const [currentCues, setCurrentCues] = useState<string[]>([]);
+  const [customCue, setCustomCue] = useState("");
   const [saved, setSaved] = useLocalStorage<
-    { id: string; name: string; lines: BuilderLine[] }[]
+    {
+      id: string;
+      name: string;
+      lines: BuilderLine[];
+    }[]
   >(ns("saved"), emptySaved, {
     sync: true,
   });
-  const [placeholderMap, setPlaceholderMap] = React.useState<
-    Record<string, string>
-  >({});
-  const [coreId, setCoreId] = React.useState<string>("");
-  const [coreLabel, setCoreLabel] = React.useState<string>("");
-  const [presetId, setPresetId] = React.useState<string>("");
-
+  const [placeholderMap, setPlaceholderMap] = useState<Record<string, string>>(
+    {},
+  );
+  const [coreId, setCoreId] = useState<string>("");
+  const [coreLabel, setCoreLabel] = useState<string>("");
+  const [presetId, setPresetId] = useState<string>("");
   const handleKeyReorder = (idx: number, e: React.KeyboardEvent) => {
     if (e.key === "ArrowUp" && (e.altKey || e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -175,7 +174,6 @@ export default function TeleprompterScriptBuilder({
       if (idx < lines.length - 1) moveLine(idx, idx + 1);
     }
   };
-
   const addLine = () => {
     if (!currentText.trim()) return;
     setLines((prev) => [
@@ -185,23 +183,20 @@ export default function TeleprompterScriptBuilder({
     setCurrentText("");
     setCurrentCues([]);
   };
-
   const toggleCue = (cue: string) => {
     setCurrentCues((prev) =>
-      prev.includes(cue) ? prev.filter((c) => c !== cue) : [...prev, cue]
+      prev.includes(cue) ? prev.filter((c) => c !== cue) : [...prev, cue],
     );
   };
-
   const addCustomCue = () => {
     const c = customCue.trim();
     if (!c) return;
     const normalized = c.startsWith("[") ? c : `[${c}]`;
     setCurrentCues((prev) =>
-      prev.includes(normalized) ? prev : [...prev, normalized]
+      prev.includes(normalized) ? prev : [...prev, normalized],
     );
     setCustomCue("");
   };
-
   const removeLine = (id: string) =>
     setLines((prev) => prev.filter((l) => l.id !== id));
   const moveLine = (from: number, to: number) => {
@@ -222,16 +217,15 @@ export default function TeleprompterScriptBuilder({
       return next;
     });
   };
-
   const onDragStart = (index: number, e: React.DragEvent) => {
     e.dataTransfer.setData("text/plain", String(index));
     e.dataTransfer.effectAllowed = "move";
   };
-  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
-  const [dragOverPos, setDragOverPos] = React.useState<
-    "above" | "below" | null
-  >(null);
-  const [liveMessage, setLiveMessage] = React.useState<string>("");
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dragOverPos, setDragOverPos] = useState<"above" | "below" | null>(
+    null,
+  );
+  const [liveMessage, setLiveMessage] = useState<string>("");
   const onDrop = (index: number, e: React.DragEvent) => {
     e.preventDefault();
     const from = Number(e.dataTransfer.getData("text/plain"));
@@ -249,15 +243,13 @@ export default function TeleprompterScriptBuilder({
     const midY = rect.top + rect.height / 2;
     setDragOverPos(e.clientY < midY ? "above" : "below");
   };
-
   const compiledLines = lines.map((l) =>
-    l.cues.length ? `${l.text} ${l.cues.join(" ")}` : l.text
+    l.cues.length ? `${l.text} ${l.cues.join(" ")}` : l.text,
   );
-
   const moveLineAtPosition = (
     from: number,
     index: number,
-    pos: "above" | "below"
+    pos: "above" | "below",
   ) => {
     const destPre = pos === "above" ? index : index + 1;
     const dest = from < index ? destPre - 1 : destPre;
@@ -265,7 +257,6 @@ export default function TeleprompterScriptBuilder({
     const finalPos = Math.max(0, Math.min(lines.length - 1, dest)) + 1;
     setLiveMessage(`Moved to position ${finalPos} of ${lines.length}.`);
   };
-
   const jsonExport = JSON.stringify({ name, lines: compiledLines }, null, 2);
   const tsExport = `// Add this to TELEPROMPTER_SCRIPTS and TELEPROMPTER_SCRIPT_META\n// id suggestion: '${name
     .toLowerCase()
@@ -273,41 +264,37 @@ export default function TeleprompterScriptBuilder({
     .replace(/^_|_$/g, "")}'\n[\n${compiledLines
     .map((l) => `  ${JSON.stringify(l)}`)
     .join(",\n")}\n].join("\\n\\n")`;
-
-  const suggestedId = React.useMemo(
+  const suggestedId = useMemo(
     () =>
       name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "_")
         .replace(/^_|_$/g, ""),
-    [name]
+    [name],
   );
-  const coreScriptsSnippet = React.useMemo(() => {
+  const coreScriptsSnippet = useMemo(() => {
     const id = coreId || suggestedId || "custom_script";
     const label = coreLabel || name || "Custom Script";
     const body = `  ${id}: [\n${compiledLines.map((l) => `    ${JSON.stringify(l)},`).join("\n")}\n  ].join('\\n\\n'),`;
     const meta = `  { id: '${id}', label: '${label}' },`;
     return `// 1) Add to TELEPROMPTER_SCRIPTS\n${body}\n\n// 2) Add to TELEPROMPTER_SCRIPT_META\n${meta}`;
   }, [compiledLines, coreId, coreLabel, name, suggestedId]);
-
-  const placeholdersInUse = React.useMemo(() => {
+  const placeholdersInUse = useMemo(() => {
     const text = compiledLines.join("\n\n");
     const m = text.match(/\[([A-Z_]+)\]/g) || [];
     const uniq = Array.from(
-      new Set(m.map((x) => x.replace(/\[/g, "").replace(/\]/g, "")))
+      new Set(m.map((x) => x.replace(/\[/g, "").replace(/\]/g, ""))),
     );
     return uniq;
   }, [compiledLines]);
-
-  const filledPreview = React.useMemo(() => {
+  const filledPreview = useMemo(() => {
     const all = compiledLines.join("\n\n");
     const replaced = Object.entries(placeholderMap).reduce(
       (acc, [k, v]) => acc.replaceAll(`[${k}]`, v || `[${k}]`),
-      all
+      all,
     );
     return replaced;
   }, [compiledLines, placeholderMap]);
-
   const saveLocally = () => {
     const id = uid();
     const entry = { id, name, lines };
@@ -321,12 +308,10 @@ export default function TeleprompterScriptBuilder({
   };
   const deleteSaved = (id: string) =>
     setSaved((prev) => prev.filter((s) => s.id !== id));
-
   const insertPlaceholder = (ph: string) => {
     setCurrentText((t) => `${t}${t && !t.endsWith(" ") ? " " : ""}${ph}`);
   };
-
-  const QUICK_TEMPLATES = React.useMemo(() => {
+  const QUICK_TEMPLATES = useMemo(() => {
     // try to pick three useful defaults from builtinMeta
     const candidates = ["media_protocol_60", "arrival_brief", "team_intros"];
     const picks = candidates
@@ -334,7 +319,10 @@ export default function TeleprompterScriptBuilder({
       .filter((x) => !!x.meta)
       .slice(0, 3) as Array<{
       id: string;
-      meta: { id: string; label: string };
+      meta: {
+        id: string;
+        label: string;
+      };
     }>;
     return picks.map((p) => ({
       id: p.meta.id,
@@ -342,7 +330,6 @@ export default function TeleprompterScriptBuilder({
       blurb: "Quick-start template",
     }));
   }, [builtinMeta]);
-
   return (
     <div className="space-y-8">
       <section className="rounded-lg border bg-card p-4 shadow-sm">
@@ -373,7 +360,8 @@ export default function TeleprompterScriptBuilder({
                   });
                   setLines(asLines);
                   setName(
-                    builtinMeta.find((m) => m.id === tpl.id)?.label || tpl.title
+                    builtinMeta.find((m) => m.id === tpl.id)?.label ||
+                      tpl.title,
                   );
                 }}
                 className="flex flex-col items-start rounded-md border bg-background p-3 text-left hover:bg-accent"
@@ -419,7 +407,7 @@ export default function TeleprompterScriptBuilder({
                 if (!name || name === "My Script")
                   setName(
                     builtinMeta.find((m) => m.id === presetId)?.label ||
-                      "Preset"
+                      "Preset",
                   );
               }}
               className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
@@ -610,7 +598,7 @@ export default function TeleprompterScriptBuilder({
                       if (idx !== 0) {
                         moveLine(idx, 0);
                         setLiveMessage(
-                          `Moved to position 1 of ${lines.length}.`
+                          `Moved to position 1 of ${lines.length}.`,
                         );
                       }
                     }}
@@ -625,7 +613,7 @@ export default function TeleprompterScriptBuilder({
                       if (idx !== lines.length - 1) {
                         moveLine(idx, lines.length - 1);
                         setLiveMessage(
-                          `Moved to position ${lines.length} of ${lines.length}.`
+                          `Moved to position ${lines.length} of ${lines.length}.`,
                         );
                       }
                     }}
@@ -781,7 +769,7 @@ export default function TeleprompterScriptBuilder({
                       };
                     }
                     throw new Error("Invalid line item");
-                  }
+                  },
                 );
                 if (importedName) setName(importedName);
                 setLines(toLines);
@@ -838,7 +826,7 @@ export default function TeleprompterScriptBuilder({
                         };
                       }
                       throw new Error("Invalid line item");
-                    }
+                    },
                   );
                   if (importedName) setName(importedName);
                   setLines(toLines);
@@ -905,7 +893,7 @@ export default function TeleprompterScriptBuilder({
               onClick={() =>
                 download(
                   `${coreId || suggestedId || "custom_script"}.core.ts.txt`,
-                  coreScriptsSnippet
+                  coreScriptsSnippet,
                 )
               }
               className="w-full sm:w-auto rounded-md border px-3 py-2 text-base sm:text-sm hover:bg-accent"
@@ -943,12 +931,12 @@ export default function TeleprompterScriptBuilder({
                               lines: s.lines.map((l) =>
                                 l.cues.length
                                   ? `${l.text} ${l.cues.join(" ")}`
-                                  : l.text
+                                  : l.text,
                               ),
                             },
                             null,
-                            2
-                          )
+                            2,
+                          ),
                         )
                       }
                       className="w-full sm:w-auto rounded-md border px-3 py-2 text-sm sm:px-2 sm:py-1 sm:text-xs hover:bg-accent"

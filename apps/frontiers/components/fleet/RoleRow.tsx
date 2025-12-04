@@ -1,10 +1,8 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useRef } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import type { CrewCatalog } from "@/schemas/crew";
 import { CrewCard } from "./CrewCard";
-
 export function RoleRow({
   role,
   items,
@@ -22,9 +20,8 @@ export function RoleRow({
   uncoveredNeeds?: Set<string>;
   autoStrategy: "balanced" | "max-repair" | "max-signal" | "max-morale";
 }) {
-  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
-
-  const scrollByCard = React.useCallback((dir: -1 | 1) => {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const scrollByCard = useCallback((dir: -1 | 1) => {
     const el = scrollerRef.current;
     if (!el) return;
     const firstChild = el.firstElementChild as HTMLElement | null;
@@ -41,7 +38,6 @@ export function RoleRow({
     const delta = dir * (cardWidth + gap);
     el.scrollBy({ left: delta, behavior: "smooth" });
   }, []);
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">

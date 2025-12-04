@@ -1,11 +1,10 @@
 "use client";
 
-import * as React from "react";
+import { useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileStore } from "@/store/useProfileStore";
 import type { Profile } from "@/schemas/profiles";
-
 // Debounce helper
 function debounce<T extends (...args: any[]) => void>(fn: T, wait = 500) {
   let t: any;
@@ -14,21 +13,17 @@ function debounce<T extends (...args: any[]) => void>(fn: T, wait = 500) {
     t = setTimeout(() => fn(...args), wait);
   };
 }
-
 export function ProfileSyncAgent() {
   const { status, session } = useAuth();
   const setProfile = useProfileStore((s) => s.setProfile);
   const regionId = useProfileStore((s) => s.region_id);
   const sectorCode = useProfileStore((s) => s.sector_code);
-
   // Load or create profile on auth
-  React.useEffect(() => {
+  useEffect(() => {
     if (status !== "authenticated" || !session?.user?.id) return;
     let active = true;
-
     const user = session.user;
     const userId = user.id;
-
     async function ensureProfile() {
       // Try to fetch existing
       const { data, error } = await supabase
@@ -40,7 +35,6 @@ export function ProfileSyncAgent() {
       if (error) {
         console.warn("profiles select error", error);
       }
-
       if (!data) {
         // Create minimal profile row
         const display_name =
@@ -65,7 +59,6 @@ export function ProfileSyncAgent() {
         setProfile(created ?? insert);
         return;
       }
-
       // Sync store
       setProfile(data as any);
       try {
@@ -76,26 +69,21 @@ export function ProfileSyncAgent() {
             .setDock(
               dock_lat,
               dock_lng,
-              typeof dock_radius_km === "number" ? dock_radius_km : undefined,
+              typeof dock_radius_km === "number" ? dock_radius_km : undefined
             );
         }
       } catch {}
     }
-
     ensureProfile();
-
     return () => {
       active = false;
     };
   }, [status, session?.user?.id]);
-
   // Push local profile changes to Supabase when authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (status !== "authenticated" || !session?.user?.id) return;
-
     const userId = session.user.id;
     const getState = useProfileStore.getState;
-
     const push = debounce(async () => {
       const s = getState();
       const p = s.profile;
@@ -116,7 +104,6 @@ export function ProfileSyncAgent() {
         .upsert(patch, { onConflict: "id" });
       if (error) console.warn("profiles upsert error", error);
     }, 600);
-
     // Subscribe to store changes; trigger when profile OR dock fields change
     const unsub = useProfileStore.subscribe((state, prevState) => {
       if (
@@ -130,6 +117,5 @@ export function ProfileSyncAgent() {
     });
     return () => unsub();
   }, [status, session?.user?.id]);
-
   return null;
 }

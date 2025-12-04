@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import {
   Tabs,
   TabsContent,
@@ -13,7 +11,6 @@ import ShiftCard from "@workspace/ui/patterns/features/shifts/shift-card";
 import type { DispatchShift } from "@workspace/store/useDispatchStore";
 import type { Pod, RosterEntry } from "@workspace/store/types/pod.ts";
 import { Plus } from "lucide-react";
-
 export type DispatchShiftsLayoutProps = {
   shifts: DispatchShift[];
   activeShifts: DispatchShift[];
@@ -30,10 +27,9 @@ export type DispatchShiftsLayoutProps = {
   loadingMessage?: React.ReactNode;
   // Optional: fetch members for the selected pod from the app's data layer
   getVolunteersForPod?: (
-    podId: string
+    podId: string,
   ) => Promise<import("@workspace/store/types/pod.ts").RosterEntry[]>;
 };
-
 export function DispatchShiftsLayout({
   shifts,
   activeShifts,
@@ -177,5 +173,4 @@ export function DispatchShiftsLayout({
     </div>
   );
 }
-
 export default DispatchShiftsLayout;

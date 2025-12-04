@@ -1,9 +1,7 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
-
 export type Fleet = {
   id: string;
   name: string;
@@ -11,12 +9,10 @@ export type Fleet = {
   leader_id: string | null;
   members: string[] | null;
 };
-
 export function useFleetAlliance(profileId: string | null) {
-  const [fleetsLoading, setFleetsLoading] = React.useState(false);
-  const [fleets, setFleets] = React.useState<Fleet[]>([]);
-
-  const loadFleets = React.useCallback(async () => {
+  const [fleetsLoading, setFleetsLoading] = useState(false);
+  const [fleets, setFleets] = useState<Fleet[]>([]);
+  const loadFleets = useCallback(async () => {
     if (!profileId) {
       setFleets([]);
       return;
@@ -48,10 +44,8 @@ export function useFleetAlliance(profileId: string | null) {
       setFleetsLoading(false);
     }
   }, [profileId]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     loadFleets();
   }, [loadFleets]);
-
   return { fleetsLoading, fleets, reloadFleets: loadFleets };
 }

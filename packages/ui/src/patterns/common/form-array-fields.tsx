@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   type Control,
   type FieldArrayPath,
@@ -7,7 +6,6 @@ import {
   type Path,
   useFieldArray,
 } from "react-hook-form";
-
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Button } from "@workspace/ui/primitives/button";
 import { FormArrayCard } from "./form-array-card";
@@ -28,12 +26,10 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { Textarea } from "@workspace/ui/primitives/textarea";
-
 type SourceTypeOption = {
   value: string;
   label: string;
 };
-
 interface BaseArrayFieldProps<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues>,
@@ -46,14 +42,12 @@ interface BaseArrayFieldProps<
   addLabel?: React.ReactNode;
   removeLabel?: React.ReactNode;
 }
-
 export interface StringArrayFieldProps<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
 > extends BaseArrayFieldProps<TFieldValues, TName> {
   placeholder?: string;
 }
-
 export function StringArrayField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -75,7 +69,6 @@ export function StringArrayField<
     control,
     name: fieldArrayName,
   });
-
   return (
     <FormArrayCard
       label={label}
@@ -123,7 +116,6 @@ export function StringArrayField<
     </FormArrayCard>
   );
 }
-
 export interface ContactArrayFieldProps<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -138,7 +130,6 @@ export interface ContactArrayFieldProps<
   emailLabel?: React.ReactNode;
   badgeLabel?: (index: number) => React.ReactNode;
 }
-
 export function ContactArrayField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -168,7 +159,6 @@ export function ContactArrayField<
     control,
     name: fieldArrayName,
   });
-
   return (
     <FormArrayCard
       label={label}
@@ -264,7 +254,6 @@ export function ContactArrayField<
     </FormArrayCard>
   );
 }
-
 export interface TransferArrayFieldProps<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -279,7 +268,6 @@ export interface TransferArrayFieldProps<
   methodPlaceholder?: string;
   badgeLabel?: (index: number) => React.ReactNode;
 }
-
 export function TransferArrayField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -309,7 +297,6 @@ export function TransferArrayField<
     control,
     name: fieldArrayName,
   });
-
   return (
     <FormArrayCard
       label={label}
@@ -401,7 +388,6 @@ export function TransferArrayField<
     </FormArrayCard>
   );
 }
-
 export interface InfoSourceArrayFieldProps<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -422,14 +408,12 @@ export interface InfoSourceArrayFieldProps<
   minConfidence?: number;
   maxConfidence?: number;
 }
-
 const defaultSourceTypes: SourceTypeOption[] = [
   { value: "witness", label: "Witness" },
   { value: "document", label: "Document" },
   { value: "phone", label: "Phone" },
   { value: "other", label: "Other" },
 ];
-
 export function InfoSourceArrayField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
@@ -465,12 +449,10 @@ export function InfoSourceArrayField<
     control,
     name: fieldArrayName,
   });
-
   const defaultSourceTypeValue =
     sourceTypeOptions.find((option) => option.value === "other")?.value ??
     sourceTypeOptions[0]?.value ??
     "other";
-
   return (
     <FormArrayCard
       label={label}

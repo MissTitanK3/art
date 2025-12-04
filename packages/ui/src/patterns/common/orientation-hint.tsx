@@ -1,14 +1,10 @@
 "use client";
-
-import * as React from "react";
 import { Button } from "@workspace/ui/primitives/button";
-
 export type OrientationHintProps = {
   show: boolean;
   onDismiss: () => void;
   message?: string;
 };
-
 export default function OrientationHint({
   show,
   onDismiss,

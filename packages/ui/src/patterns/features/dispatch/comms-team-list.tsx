@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import type { ComTeam, ComChannel } from "@workspace/store/types/comms.ts";
 import { Button } from "@workspace/ui/primitives/button";
 import { Input } from "@workspace/ui/primitives/input";
@@ -13,7 +12,6 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { EmptyText } from "@workspace/ui/patterns/common/status-text";
-
 type Props = {
   teams: ComTeam[];
   channels: ComChannel[];
@@ -21,7 +19,6 @@ type Props = {
   onUpdateTeam?: (id: string, patch: Partial<ComTeam>) => void | Promise<void>;
   onDeleteTeam?: (id: string) => void | Promise<void>;
 };
-
 export function CommsTeamList({
   teams,
   channels,
@@ -29,15 +26,13 @@ export function CommsTeamList({
   onUpdateTeam,
   onDeleteTeam,
 }: Props) {
-  const [creating, setCreating] = React.useState(false);
-  const [createForm, setCreateForm] = React.useState<Partial<ComTeam>>({
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState<Partial<ComTeam>>({
     name: "",
     encryption_mode: undefined,
   });
-
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [editForm, setEditForm] = React.useState<Partial<ComTeam>>({});
-
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<ComTeam>>({});
   const startEdit = (t: ComTeam) => {
     setEditingId(t.id);
     setEditForm({ ...t });
@@ -46,7 +41,6 @@ export function CommsTeamList({
     setEditingId(null);
     setEditForm({});
   };
-
   const submitCreate = async () => {
     if (!createForm.name?.trim()) return;
     await onCreateTeam?.({
@@ -64,14 +58,12 @@ export function CommsTeamList({
     setCreateForm({ name: "", encryption_mode: undefined });
     setCreating(false);
   };
-
   const submitEdit = async () => {
     if (!editingId) return;
     await onUpdateTeam?.(editingId, editForm as any);
     setEditingId(null);
     setEditForm({});
   };
-
   return (
     <div className="space-y-2 text-sm">
       <div className="rounded-md border p-2">
@@ -314,5 +306,4 @@ export function CommsTeamList({
     </div>
   );
 }
-
 export default CommsTeamList;

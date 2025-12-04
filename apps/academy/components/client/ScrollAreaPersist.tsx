@@ -1,14 +1,11 @@
 "use client";
-
-import React from "react";
-
+import { useEffect, useLayoutEffect, useRef } from "react";
 type Props = {
   storageKey: string;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
 };
-
 /**
  * Preserves scroll position for its own scrollable container across route changes.
  * Uses sessionStorage(key) to store/restore scrollTop.
@@ -19,10 +16,9 @@ export default function ScrollAreaPersist({
   style,
   children,
 }: Props) {
-  const ref = React.useRef<HTMLDivElement | null>(null);
-
+  const ref = useRef<HTMLDivElement | null>(null);
   // Restore on mount
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     try {
@@ -35,9 +31,8 @@ export default function ScrollAreaPersist({
       /* ignore storage errors */
     }
   }, [storageKey]);
-
   // Save on scroll and on unload
-  React.useEffect(() => {
+  useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const onScroll = () => {
@@ -57,7 +52,6 @@ export default function ScrollAreaPersist({
       window.removeEventListener("beforeunload", onPageHide);
     };
   }, [storageKey]);
-
   return (
     <div ref={ref} className={className} style={style}>
       {children}

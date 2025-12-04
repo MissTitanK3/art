@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useMemo, useState } from "react";
 import type { Profile } from "@workspace/store/types/global.ts";
 import {
   AccessRoles,
@@ -53,7 +52,6 @@ import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { useUnifiedAccess } from "@workspace/store/utils/permissions/useUnifiedAccess";
 import { NavRole } from "@workspace/store/utils/permissions/types";
-
 function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
   // Dynamically assign distinct badge colors across all roles, including any newly added ones
   const palette = [
@@ -85,7 +83,6 @@ function AccessRoleBadge({ role }: { role: Profile["access_role"] }) {
     </Badge>
   );
 }
-
 function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
   const color =
     who === "admin"
@@ -102,7 +99,6 @@ function VerifiedBadge({ who }: { who: Profile["verified_by"] }) {
     </Badge>
   );
 }
-
 function lastCheckInBadge(lastCheckIn?: string | null) {
   if (!lastCheckIn) {
     return {
@@ -146,32 +142,29 @@ function lastCheckInBadge(lastCheckIn?: string | null) {
       "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
   };
 }
-
 type Props = {
   initialProfiles: Profile[];
 };
-
 export default function ProfilesClient({ initialProfiles }: Props) {
   const profileFromStore = useProfileStore((s) => s.profile);
-  const profileRoles = React.useMemo(
+  const profileRoles = useMemo(
     () =>
       profileFromStore?.access_role
         ? [String(profileFromStore.access_role)]
         : [],
-    [profileFromStore?.access_role]
+    [profileFromStore?.access_role],
   );
-  const ctx = React.useMemo(
+  const ctx = useMemo(
     () => ({ navRole: profileRoles[0] as NavRole }),
-    [profileRoles]
+    [profileRoles],
   );
   const { access: effectiveCanManage } = useUnifiedAccess("manage_users", ctx);
-  const [query, setQuery] = React.useState("");
-  const [roleFilter, setRoleFilter] = React.useState<string>("");
-  const [verifierFilter, setVerifierFilter] = React.useState<string>("");
-  const [availabilityOnly, setAvailabilityOnly] = React.useState(false);
-  const [rows, setRows] = React.useState<Profile[]>(() => initialProfiles);
-
-  const filtered = React.useMemo(() => {
+  const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("");
+  const [verifierFilter, setVerifierFilter] = useState<string>("");
+  const [availabilityOnly, setAvailabilityOnly] = useState(false);
+  const [rows, setRows] = useState<Profile[]>(() => initialProfiles);
+  const filtered = useMemo(() => {
     return rows.filter((p) => {
       if (roleFilter && p.access_role !== roleFilter) return false;
       if (verifierFilter && p.verified_by !== verifierFilter) return false;
@@ -195,11 +188,10 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       return true;
     });
   }, [rows, query, roleFilter, verifierFilter, availabilityOnly]);
-
   async function apiUpdate(
     id: string,
     patch: Partial<Profile>,
-    successLabel: string
+    successLabel: string,
   ) {
     try {
       const res = await fetch(`/api/admin/profiles/${id}`, {
@@ -211,15 +203,17 @@ export default function ProfilesClient({ initialProfiles }: Props) {
         const msg = await safeErrorMessage(res);
         throw new Error(msg);
       }
-      const json = (await res.json()) as { profile?: Profile | null };
+      const json = (await res.json()) as {
+        profile?: Profile | null;
+      };
       const updated = json.profile ?? null;
       if (updated) {
         setRows((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, ...updated } : r))
+          prev.map((r) => (r.id === id ? { ...r, ...updated } : r)),
         );
       } else {
         setRows((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, ...patch } : r))
+          prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
         );
       }
       toast.success(successLabel);
@@ -227,7 +221,6 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       toast.error(e?.message ?? "Update failed");
     }
   }
-
   function exportJSON() {
     const data = filtered.map(redactSensitive);
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -236,7 +229,6 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     const url = URL.createObjectURL(blob);
     triggerDownload(url, `profiles-export.json`);
   }
-
   function exportCSV() {
     const fields = [
       "id",
@@ -251,14 +243,13 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     ] as const;
     const header = fields.join(",");
     const lines = filtered.map((p) =>
-      fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(",")
+      fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(","),
     );
     const csv = [header, ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     triggerDownload(url, `profiles-export.csv`);
   }
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -352,7 +343,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                 {filtered.map((p) => {
                   const isUnregistered = !p.user_id;
                   const lastCheckInMeta = lastCheckInBadge(
-                    p.last_profile_check_in ?? p.updated_at ?? p.inserted_at
+                    p.last_profile_check_in ?? p.updated_at ?? p.inserted_at,
                   );
                   return (
                     <TableRow key={p.id}>
@@ -381,7 +372,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     apiUpdate(
                                       p.id,
                                       { access_role: val as any },
-                                      "Role updated"
+                                      "Role updated",
                                     );
                                   }}
                                 >
@@ -424,12 +415,12 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     if (isUnregistered) return;
                                     const fd = new FormData(e.currentTarget);
                                     const value = String(
-                                      fd.get("coordination_zone") ?? ""
+                                      fd.get("coordination_zone") ?? "",
                                     ).trim();
                                     apiUpdate(
                                       p.id,
                                       { coordination_zone: value } as any,
-                                      value ? "Zone updated" : "Zone cleared"
+                                      value ? "Zone updated" : "Zone cleared",
                                     );
                                   }}
                                 >
@@ -477,7 +468,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                         apiUpdate(
                                           p.id,
                                           { coordination_zone: "" } as any,
-                                          "Zone cleared"
+                                          "Zone cleared",
                                         )
                                       }
                                     >
@@ -506,7 +497,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     apiUpdate(
                                       p.id,
                                       { verified_by: "admin" } as any,
-                                      "Verified by admin"
+                                      "Verified by admin",
                                     )
                                   }
                                 >
@@ -532,7 +523,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                     apiUpdate(
                                       p.id,
                                       { verified_by: "partner_org" } as any,
-                                      "Verified by partner org"
+                                      "Verified by partner org",
                                     )
                                   }
                                 >
@@ -566,7 +557,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                       { verified_by: next as any },
                                       next === "suspended"
                                         ? "Suspended"
-                                        : "Reactivated"
+                                        : "Reactivated",
                                     );
                                   }}
                                 >
@@ -611,7 +602,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
                                       { verified_by: next as any },
                                       next === "suspended"
                                         ? "Marked suspended"
-                                        : "Marked self-verified"
+                                        : "Marked self-verified",
                                     );
                                   }}
                                 >
@@ -699,7 +690,6 @@ export default function ProfilesClient({ initialProfiles }: Props) {
     </section>
   );
 }
-
 function triggerDownload(url: string, filename: string) {
   const a = document.createElement("a");
   a.href = url;
@@ -710,14 +700,12 @@ function triggerDownload(url: string, filename: string) {
   a.remove();
   URL.revokeObjectURL(url);
 }
-
 function csvEscape(value: string) {
   if (/[",\n]/.test(value)) {
     return '"' + value.replace(/"/g, '""') + '"';
   }
   return value;
 }
-
 function redactSensitive<T extends object>(obj: T): T {
   // No sensitive fields on Profile right now, but keep hook for future additions.
   const clone: any = { ...(obj as any) };
@@ -725,5 +713,3 @@ function redactSensitive<T extends object>(obj: T): T {
   delete clone.encrypted_payload;
   return clone as T;
 }
-
-// moved to @workspace/ui/lib/http

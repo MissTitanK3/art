@@ -105,7 +105,7 @@ export function ReviewStep({
               {data.rolesNeeded.required_roles.map((r: string) => (
                 <li key={r}>
                   {humanize(r)} (
-                  {data.rolesNeeded.required_roles_by_type?.[r] ?? 1})
+                  {humanize(data.rolesNeeded.required_roles_by_type?.[r] ?? 1)})
                 </li>
               ))}
             </ul>

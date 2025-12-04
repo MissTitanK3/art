@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   ColumnDef,
@@ -8,6 +7,7 @@ import {
   useReactTable,
   flexRender,
 } from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
 
 type Donation = {
   id: string;
@@ -23,18 +23,18 @@ type RecipientCount = Record<string, number>;
 type Summary = { region_id: string | null; total: number; donors: number };
 
 export default function LedgerPage() {
-  const [rows, setRows] = React.useState<Donation[]>([]);
-  const [counts, setCounts] = React.useState<RecipientCount>({});
-  const [summary, setSummary] = React.useState<Summary[]>([]);
+  const [rows, setRows] = useState<Donation[]>([]);
+  const [counts, setCounts] = useState<RecipientCount>({});
+  const [summary, setSummary] = useState<Summary[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
     const load = async () => {
       // Recent donations
       const { data: donations } = await supabase
         .from("donations")
         .select(
-          "id, donor_alias, profile_email, amount, message, message_id, created_at",
+          "id, donor_alias, profile_email, amount, message, message_id, created_at"
         )
         .order("created_at", { ascending: false })
         .limit(50);
@@ -71,7 +71,7 @@ export default function LedgerPage() {
     };
   }, []);
 
-  const columns = React.useMemo<ColumnDef<Donation>[]>(
+  const columns = useMemo<ColumnDef<Donation>[]>(
     () => [
       {
         header: "Donor",
@@ -100,7 +100,7 @@ export default function LedgerPage() {
         cell: (info) => new Date(info.getValue() as string).toLocaleString(),
       },
     ],
-    [counts],
+    [counts]
   );
 
   const table = useReactTable({
@@ -171,7 +171,7 @@ export default function LedgerPage() {
                     <td key={cell.id} className="p-2">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </td>
                   ))}

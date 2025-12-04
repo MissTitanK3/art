@@ -1,11 +1,7 @@
 "use client";
-
 import { useTranslations } from "@/lib/il8n/useTranslations";
-import React from "react";
-
 export const DataAccessExplainer = () => {
   const { t } = useTranslations();
-
   return (
     <div className="max-w-4xl mx-auto space-y-6 p-6 bg-background text-foreground">
       <h1 className="text-2xl font-bold">{t("dataSeizureTitle")}</h1>

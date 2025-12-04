@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * Produce a prioritized list of files that differ across regions using the latest check-align report.
+ *
+ * Usage:
+ *   node scripts/prioritize-diffs.mjs
+ *
+ * Outputs `.check-unaligned-region/prioritized-diffs.json` with heuristic action suggestions.
+ */
 import fs from 'fs';
 import path from 'path';
 

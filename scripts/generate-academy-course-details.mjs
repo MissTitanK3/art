@@ -1,3 +1,11 @@
+/**
+ * Reads every Academy course MDX file and produces `course-details.generated.ts` with curated metadata.
+ *
+ * Usage:
+ *   node scripts/generate-academy-course-details.mjs
+ *
+ * Typically invoked via `pnpm -w run generate:academy-course-details` inside CI/local flows.
+ */
 import fsp from 'fs/promises'
 import fs from 'fs'
 import path from 'path'

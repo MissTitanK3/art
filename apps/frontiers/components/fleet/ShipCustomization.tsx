@@ -1,24 +1,20 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@workspace/ui/primitives/button";
 import { Input } from "@workspace/ui/primitives/input";
 import { Label } from "@workspace/ui/primitives/label";
 import { useShipStore } from "@/store/useShipStore";
 import { toast } from "sonner";
-
 export function ShipCustomization() {
   const customization = useShipStore((s) => s.customization);
   const setCustomization = useShipStore((s) => s.setCustomization);
-  const [name, setName] = React.useState(customization.name || "");
-  const [color, setColor] = React.useState(customization.color || "#ffffff");
-
+  const [name, setName] = useState(customization.name || "");
+  const [color, setColor] = useState(customization.color || "#ffffff");
   const handleSave = () => {
     setCustomization({ ...customization, name, color });
     // In a real app, we would also save to the server here
     toast.success("Ship customization saved");
   };
-
   return (
     <div className="space-y-4 p-4 border rounded-md bg-card">
       <h3 className="text-lg font-medium">Ship Customization</h3>

@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { type NormalizedLanguage } from "@workspace/store/types/language.ts";
 import {
@@ -19,7 +18,6 @@ type Props = {
   disabled?: boolean;
   className?: string;
 };
-
 export default function LanguagePicker({
   value = [],
   onChange,
@@ -29,18 +27,15 @@ export default function LanguagePicker({
   disabled = false,
   className = "",
 }: Props) {
-  const [items, setItems] = React.useState<NormalizedLanguage[]>(value);
-  const [query, setQuery] = React.useState("");
-  const [openList, setOpenList] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => setItems(value), [value]);
-
+  const [items, setItems] = useState<NormalizedLanguage[]>(value);
+  const [query, setQuery] = useState("");
+  const [openList, setOpenList] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => setItems(value), [value]);
   function emit(next: NormalizedLanguage[]) {
     setItems(next);
     onChange?.(next);
   }
-
   function addOne(n: NormalizedLanguage) {
     if (items.some((x) => x.tag === n.tag)) return;
     emit([...items, n]);
@@ -48,17 +43,14 @@ export default function LanguagePicker({
     setOpenList(false);
     inputRef.current?.focus();
   }
-
   function removeTag(tag: string) {
     emit(items.filter((x) => x.tag !== tag));
   }
-
   function setProf(tag: string, prof: NormalizedLanguage["proficiency"]) {
     emit(
-      items.map((it) => (it.tag === tag ? { ...it, proficiency: prof } : it))
+      items.map((it) => (it.tag === tag ? { ...it, proficiency: prof } : it)),
     );
   }
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && query.trim()) {
       const tokens = tokenize(query);
@@ -80,8 +72,7 @@ export default function LanguagePicker({
       removeTag(items[items.length - 1]!.tag);
     }
   }
-
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q)
       return SUGGESTIONS.filter((s) => !items.some((x) => x.tag === s.tag));
@@ -89,7 +80,7 @@ export default function LanguagePicker({
       (a, idx, arr) =>
         arr.findIndex((z) => z.tag === a.tag) === idx && // unique by tag
         (a.display_name.toLowerCase().includes(q) ||
-          a.tag.toLowerCase().includes(q))
+          a.tag.toLowerCase().includes(q)),
     );
     const base = [...SUGGESTIONS, ...inAliases];
     // unique by tag & not already chosen
@@ -100,7 +91,6 @@ export default function LanguagePicker({
     });
     return Array.from(uniq.values()).slice(0, 20);
   }, [query, items]);
-
   return (
     <div
       className={`w-full ${className}`}

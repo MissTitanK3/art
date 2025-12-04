@@ -1,28 +1,22 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import {
   BugReportList,
   type BugReportRow,
 } from "@workspace/ui/patterns/features/bug-reports";
-import type {
-  BugArea,
-  BugStatus,
-} from "@workspace/ui/patterns/features/admin";
-
+import type { BugArea, BugStatus } from "@workspace/ui/patterns/features/admin";
 export default function AdminBugReportsPage() {
-  const [rows, setRows] = React.useState<BugReportRow[]>([]);
-  const [status, setStatus] = React.useState<BugStatus | undefined>(undefined);
-  const [area, setArea] = React.useState<BugArea | undefined>(undefined);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [sortBy, setSortBy] = React.useState<
+  const [rows, setRows] = useState<BugReportRow[]>([]);
+  const [status, setStatus] = useState<BugStatus | undefined>(undefined);
+  const [area, setArea] = useState<BugArea | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<
     "created_at" | "priority" | "status" | "title"
   >("created_at");
-  const [sortDir, setSortDir] = React.useState<"asc" | "desc">("desc");
-
-  const load = React.useCallback(
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const load = useCallback(
     async (signal?: AbortSignal) => {
       setLoading(true);
       setError(null);
@@ -37,7 +31,9 @@ export default function AdminBugReportsPage() {
           signal,
         });
         if (!res.ok) throw new Error(await safeErrorMessage(res));
-        const j = (await res.json()) as { reports?: BugReportRow[] };
+        const j = (await res.json()) as {
+          reports?: BugReportRow[];
+        };
         const arr = Array.isArray(j.reports) ? j.reports : [];
         // client-side sort fallback
         const sorted = [...arr].sort((a, b) => {
@@ -90,13 +86,11 @@ export default function AdminBugReportsPage() {
     },
     [status, area, sortBy, sortDir],
   );
-
-  React.useEffect(() => {
+  useEffect(() => {
     const controller = new AbortController();
     load(controller.signal);
     return () => controller.abort();
   }, [status, area, sortBy, sortDir, load]);
-
   return (
     <BugReportList
       rows={rows}

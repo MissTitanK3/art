@@ -15,7 +15,7 @@ import {
 } from "@workspace/ui/primitives/tabs";
 import { Button } from "@workspace/ui/primitives/button";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
+import { Copy, Download, Share2 } from "lucide-react";
 import { MultiTierMessages } from "@workspace/ui/patterns/features/engagement/multi-tier-messages";
 import { generateMessages } from "@workspace/ui/lib/message-formatter";
 import {
@@ -41,6 +41,33 @@ async function downloadCardAsPng(node: HTMLElement, filename: string) {
     link.click();
   } catch (err) {
     console.error("Failed to download image:", err);
+  }
+}
+
+async function shareCard(node: HTMLElement, filename: string) {
+  try {
+    const dataUrl = await htmlToImage.toPng(node, {
+      cacheBust: true,
+      filter: (el) => !el.classList?.contains("no-export"),
+    });
+
+    // Convert data URL → Blob
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], filename, { type: "image/png" });
+
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        title: "Community Call",
+        text: "Join our community support effort!",
+        files: [file],
+      });
+    } else {
+      toast.error("Sharing not supported on this device");
+    }
+  } catch (err) {
+    console.error("Failed to share:", err);
+    toast.error("Failed to share card");
   }
 }
 
@@ -195,6 +222,9 @@ export default function PublicEngagementPanel({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="callout">Community Callout 🧡</SelectItem>
+                <SelectItem value="volunteerCallout">
+                  Volunteer Callout 🧡
+                </SelectItem>
                 <SelectItem value="detailed">Detailed</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="tldr">TL;DR</SelectItem>
@@ -202,7 +232,10 @@ export default function PublicEngagementPanel({
             </Select>
 
             {/* Download All Button */}
-            {(selectedTier === "callout" || selectedTier === "detailed") && (
+            {(selectedTier === "callout" ||
+              selectedTier === "volunteerCallout" ||
+              selectedTier === "detailed" ||
+              selectedTier === "medium") && (
               <Button
                 onClick={async () => {
                   const nodes = document.querySelectorAll(".share-card");
@@ -218,22 +251,26 @@ export default function PublicEngagementPanel({
               </Button>
             )}
 
-            {/* Multi-card for callout & detailed */}
-            {(selectedTier === "callout" || selectedTier === "detailed") &&
+            {/* Multi-card for callout, volunteerCallout & detailed */}
+            {(selectedTier === "callout" ||
+              selectedTier === "volunteerCallout" ||
+              selectedTier === "detailed") &&
               (selectedTier === "callout"
                 ? msgs.calloutSections
-                : msgs.detailedSections
+                : selectedTier === "volunteerCallout"
+                  ? msgs.volunteerCalloutSections
+                  : msgs.detailedSections
               ).map((section, idx, arr) => (
                 <div
                   key={idx}
                   className="
                       share-card
-                      w-full max-w-[500px]   /* responsive: shrink to screen, cap at 500px */
-                      aspect-square          /* keep square ratio */
+                      w-full max-w-[500px]
+                      aspect-square
                       flex flex-col justify-between
                       bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
                       rounded-2xl shadow-2xl
-                      p-6 text-center text-white
+                      p-8 text-center text-white
                     "
                 >
                   <div className="flex-1 flex flex-col justify-center items-center">
@@ -244,7 +281,7 @@ export default function PublicEngagementPanel({
                       {section.body}
                     </p>
                   </div>
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-2">
                     <QRCode
                       value={publicChatUrl}
                       size={60}
@@ -254,70 +291,177 @@ export default function PublicEngagementPanel({
                     <span className="text-xs opacity-80">
                       Scan to join public chat
                     </span>
-                    <span className="text-xs mt-2 opacity-70">
+                    <span className="text-xs opacity-70">
                       Card {idx + 1} of {arr.length}
                     </span>
-                    {/* 🚫 excluded from export */}
-                    <Button
-                      size="sm"
-                      className="mt-2 no-export"
-                      onClick={() =>
-                        downloadOrShareCard(
-                          document.querySelectorAll(".share-card")[
-                            idx
-                          ] as HTMLElement,
-                          `${selectedTier}-card-${idx + 1}.png`
-                        )
-                      }
-                    >
-                      📲 Download / Share
-                    </Button>
+                    <div className="flex gap-2 mt-6 no-export">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          downloadCardAsPng(
+                            document.querySelectorAll(".share-card")[
+                              idx
+                            ] as HTMLElement,
+                            `${selectedTier}-card-${idx + 1}.png`
+                          )
+                        }
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          shareCard(
+                            document.querySelectorAll(".share-card")[
+                              idx
+                            ] as HTMLElement,
+                            `${selectedTier}-card-${idx + 1}.png`
+                          )
+                        }
+                      >
+                        <Share2 className="w-4 h-4 mr-1" />
+                        Share
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
 
-            {/* Single-card for medium & tldr */}
-            {(selectedTier === "medium" || selectedTier === "tldr") && (
+            {/* Multi-card for medium */}
+            {selectedTier === "medium" &&
+              msgs.mediumSections.map((section, idx, arr) => (
+                <div
+                  key={idx}
+                  className="
+                      share-card
+                      w-full max-w-[500px]
+                      aspect-square
+                      flex flex-col justify-between
+                      bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
+                      rounded-2xl shadow-2xl
+                      p-8 text-center text-white
+                    "
+                >
+                  <div className="flex-1 flex flex-col justify-center items-center gap-4">
+                    <h2 className="text-2xl font-extrabold drop-shadow-md uppercase tracking-wide">
+                      {section.title}
+                    </h2>
+                    <p className="text-base leading-relaxed font-semibold whitespace-pre-wrap max-w-[90%]">
+                      {section.body}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <QRCode
+                      value={publicChatUrl}
+                      size={70}
+                      bgColor="transparent"
+                      fgColor="#ffffff"
+                    />
+                    <span className="text-xs opacity-80">
+                      Scan to join public chat
+                    </span>
+                    <span className="text-xs opacity-70">
+                      Card {idx + 1} of {arr.length}
+                    </span>
+                    <div className="flex gap-2 mt-6 no-export">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          downloadCardAsPng(
+                            document.querySelectorAll(".share-card")[
+                              idx
+                            ] as HTMLElement,
+                            `medium-card-${idx + 1}.png`
+                          )
+                        }
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          shareCard(
+                            document.querySelectorAll(".share-card")[
+                              idx
+                            ] as HTMLElement,
+                            `medium-card-${idx + 1}.png`
+                          )
+                        }
+                      >
+                        <Share2 className="w-4 h-4 mr-1" />
+                        Share
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+            {/* Single large-text card for tldr */}
+            {selectedTier === "tldr" && (
               <div
                 className="
                   share-card
-                  w-full max-w-[500px]   /* responsive: shrink to screen, cap at 500px */
-                  aspect-square          /* keep square ratio */
+                  w-full max-w-[500px]
+                  aspect-square
                   flex flex-col justify-between
                   bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
                   rounded-2xl shadow-2xl
-                  p-6 text-center text-white
+                  p-8 text-center text-white
                 "
               >
-                <div className="flex-1 flex flex-col justify-center items-center">
-                  <p className="text-lg leading-snug font-semibold whitespace-pre-wrap max-w-[90%]">
-                    {selectedTier === "medium" ? msgs.medium : msgs.tldr}
+                <div className="flex-1 flex flex-col justify-center items-center gap-6">
+                  <h2 className="text-3xl font-extrabold drop-shadow-md uppercase tracking-wide leading-tight">
+                    {msgs.tldrSection.title}
+                  </h2>
+                  <p className="text-xl leading-relaxed font-bold whitespace-pre-wrap">
+                    {msgs.tldrSection.body}
                   </p>
                 </div>
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-2">
                   <QRCode
                     value={publicChatUrl}
-                    size={80}
+                    size={100}
                     bgColor="transparent"
                     fgColor="#ffffff"
                   />
-                  <span className="text-xs opacity-80">
-                    Scan to join public chat
+                  <span className="text-sm opacity-90 font-semibold">
+                    Scan to join
                   </span>
-                  <span className="text-xs mt-2 opacity-70">1 of 1</span>
-                  {/* 🚫 excluded from export */}
-                  <Button
-                    size="sm"
-                    className="mt-2 no-export"
-                    onClick={() =>
-                      downloadOrShareCard(
-                        document.querySelector(".share-card") as HTMLElement,
-                        `${selectedTier}-card.png`
-                      )
-                    }
-                  >
-                    📲 Download / Share
-                  </Button>
+                  <span className="text-xs opacity-70">1 of 1</span>
+                  <div className="flex gap-2 mt-6 no-export">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        downloadCardAsPng(
+                          document.querySelector(".share-card") as HTMLElement,
+                          `tldr-card.png`
+                        )
+                      }
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      Download
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        shareCard(
+                          document.querySelector(".share-card") as HTMLElement,
+                          `tldr-card.png`
+                        )
+                      }
+                    >
+                      <Share2 className="w-4 h-4 mr-1" />
+                      Share
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

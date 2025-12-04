@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { Button } from "@workspace/ui/primitives/button";
 import {
@@ -16,28 +15,23 @@ import {
   SelectItem,
 } from "@workspace/ui/primitives/select";
 import { cn } from "@workspace/ui/lib/utils";
-
 type Props = {
   value?: Date;
   onChange: (date: Date) => void;
 };
-
 export function TimePickerSelect({ value, onChange }: Props) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const date = value ? new Date(value) : new Date();
-
   const h24 = date.getHours();
   const selectedHour = h24 % 12 || 12;
   const selectedMinute = date.getMinutes();
   const selectedPeriod = h24 < 12 ? "AM" : "PM";
-
-  const [hour, setHour] = React.useState(selectedHour.toString());
-  const [minute, setMinute] = React.useState(
-    selectedMinute.toString().padStart(2, "0")
+  const [hour, setHour] = useState(selectedHour.toString());
+  const [minute, setMinute] = useState(
+    selectedMinute.toString().padStart(2, "0"),
   );
-  const [period, setPeriod] = React.useState(selectedPeriod);
-
-  React.useEffect(() => {
+  const [period, setPeriod] = useState(selectedPeriod);
+  useEffect(() => {
     if (open) {
       const d = value ? new Date(value) : new Date();
       const h24 = d.getHours();
@@ -46,11 +40,9 @@ export function TimePickerSelect({ value, onChange }: Props) {
       setPeriod(h24 < 12 ? "AM" : "PM");
     }
   }, [open, value]);
-
   const label = value
     ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : "Pick a time";
-
   const handleConfirm = () => {
     const updated = new Date(date);
     let h24 = parseInt(hour, 10) % 12;
@@ -59,7 +51,6 @@ export function TimePickerSelect({ value, onChange }: Props) {
     onChange(updated);
     setOpen(false);
   };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -67,7 +58,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
           variant="outline"
           className={cn(
             "justify-start text-left font-normal w-[160px]",
-            !value && "text-muted-foreground"
+            !value && "text-muted-foreground",
           )}
         >
           <Clock className="mr-2 h-4 w-4" />
@@ -87,7 +78,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
                   <SelectItem key={h} value={h}>
                     {h}
                   </SelectItem>
-                )
+                ),
               )}
             </SelectContent>
           </Select>
@@ -99,7 +90,7 @@ export function TimePickerSelect({ value, onChange }: Props) {
             </SelectTrigger>
             <SelectContent className="max-h-60 overflow-y-auto">
               {Array.from({ length: 60 }, (_, i) =>
-                i.toString().padStart(2, "0")
+                i.toString().padStart(2, "0"),
               ).map((m) => (
                 <SelectItem key={m} value={m}>
                   {m}

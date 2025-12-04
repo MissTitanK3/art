@@ -1,10 +1,9 @@
 "use client";
-import * as React from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Input } from "@workspace/ui/primitives/input";
-
 export function TagsInput({
   value,
   onChange,
@@ -20,8 +19,7 @@ export function TagsInput({
   description?: string;
   max?: number;
 }) {
-  const [draft, setDraft] = React.useState("");
-
+  const [draft, setDraft] = useState("");
   const handleAdd = (raw: string) => {
     const tag = raw.trim().toLowerCase().replace(/\s+/g, "-");
     if (!tag) return;
@@ -30,7 +28,6 @@ export function TagsInput({
     onChange([...value, tag]);
     setDraft("");
   };
-
   return (
     <div className="space-y-1">
       <div

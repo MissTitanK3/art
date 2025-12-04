@@ -1,6 +1,5 @@
 "use client";
-
-import * as React from "react";
+import { useState } from "react";
 import { Input } from "@workspace/ui/primitives/input";
 import { Textarea } from "@workspace/ui/primitives/textarea";
 import { Label } from "@workspace/ui/primitives/label";
@@ -11,7 +10,6 @@ import {
 } from "@workspace/ui/patterns/features/admin/bug-report-selects";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { cn } from "@workspace/ui/lib/utils";
-
 export type BugReportPayload = {
   title: string;
   area: BugArea;
@@ -19,7 +17,6 @@ export type BugReportPayload = {
   expected?: string;
   actual?: string;
 };
-
 type Props = {
   onSubmit?: (payload: BugReportPayload) => void | Promise<unknown>;
   endpoint?: string; // if provided (or defaults), performs fetch when onSubmit is not passed
@@ -27,7 +24,6 @@ type Props = {
   className?: string;
   initialArea?: BugArea;
 };
-
 export function BugReportForm({
   onSubmit,
   endpoint = "/api/bug-reports",
@@ -35,17 +31,16 @@ export function BugReportForm({
   className,
   initialArea = "general",
 }: Props) {
-  const [title, setTitle] = React.useState("");
-  const [area, setArea] = React.useState<BugArea>(initialArea);
-  const [expected, setExpected] = React.useState("");
-  const [actual, setActual] = React.useState("");
-  const [steps, setSteps] = React.useState("");
-  const [submitting, setSubmitting] = React.useState(false);
-  const [result, setResult] = React.useState<{
+  const [title, setTitle] = useState("");
+  const [area, setArea] = useState<BugArea>(initialArea);
+  const [expected, setExpected] = useState("");
+  const [actual, setActual] = useState("");
+  const [steps, setSteps] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{
     ok: boolean;
     message: string;
   } | null>(null);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -78,7 +73,6 @@ export function BugReportForm({
       setSubmitting(false);
     }
   };
-
   return (
     <form
       className={cn("space-y-4 border rounded-md p-4 bg-card", className)}
@@ -154,5 +148,4 @@ export function BugReportForm({
     </form>
   );
 }
-
 export default BugReportForm;

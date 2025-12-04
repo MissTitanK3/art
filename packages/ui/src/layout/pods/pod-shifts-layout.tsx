@@ -1,4 +1,3 @@
-import React from "react";
 import { Separator } from "@workspace/ui/primitives/separator";
 import { Card } from "@workspace/ui/primitives/card";
 import { Button } from "@workspace/ui/primitives/button";
@@ -7,9 +6,7 @@ import { Shift } from "@workspace/store/types/pod.ts";
 import { formatDateRange } from "@workspace/ui/lib/utils";
 import { ShiftIntentionSection } from "@workspace/ui/patterns/features/shifts/shift-intention-section";
 import type { BaseShiftIntentionFields } from "@workspace/store/types/pod.ts";
-
 export type PodShiftsLayoutForm<T extends BaseShiftIntentionFields> = T;
-
 export type PodShiftsLayoutProps<TForm extends BaseShiftIntentionFields> = {
   podSlug: string;
   podId?: string;
@@ -24,7 +21,6 @@ export type PodShiftsLayoutProps<TForm extends BaseShiftIntentionFields> = {
   notFoundMessage?: React.ReactNode;
   emptyState?: React.ReactNode;
 };
-
 export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
   podSlug,
   podId,
@@ -48,7 +44,6 @@ export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
       <section className="mx-auto w-full max-w-4xl">{notFoundMessage}</section>
     );
   }
-
   const hasShifts = shifts.length > 0;
   const shiftsList = hasShifts ? (
     <div className="grid gap-2">
@@ -80,7 +75,6 @@ export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
       <p className="text-sm text-muted-foreground">No shifts added yet.</p>
     ))
   );
-
   return (
     <section className="mx-auto w-full max-w-4xl sm:px-4">
       {description}
@@ -103,5 +97,4 @@ export function PodShiftsLayout<TForm extends BaseShiftIntentionFields>({
     </section>
   );
 }
-
 export default PodShiftsLayout;

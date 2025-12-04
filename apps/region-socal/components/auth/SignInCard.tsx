@@ -1,24 +1,21 @@
 "use client";
-
-import * as React from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import UiSignInCard from "@workspace/ui/patterns/features/auth/sign-in-card";
 import { useAuth } from "@/hooks/useAuth";
-
-type SignInCardProps = { redirectTo?: string };
+type SignInCardProps = {
+  redirectTo?: string;
+};
 const FALLBACK_REDIRECT = "/";
-
 export function SignInCard({ redirectTo }: SignInCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signInWithPassword, setSession, refresh } = useAuth();
-
-  const target = React.useMemo(
+  const target = useMemo(
     () => redirectTo ?? searchParams?.get("redirectTo") ?? FALLBACK_REDIRECT,
-    [redirectTo, searchParams]
+    [redirectTo, searchParams],
   );
-
-  const onSubmit = React.useCallback(
+  const onSubmit = useCallback(
     async (email: string, password: string) => {
       const session = await signInWithPassword({ email, password });
       setSession(session);
@@ -41,9 +38,8 @@ export function SignInCard({ redirectTo }: SignInCardProps) {
       await refresh();
       router.push(target);
     },
-    [signInWithPassword, setSession, refresh, router, target]
+    [signInWithPassword, setSession, refresh, router, target],
   );
-
   return (
     <UiSignInCard
       onSubmit={onSubmit}
