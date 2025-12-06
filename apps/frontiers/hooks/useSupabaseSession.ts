@@ -8,10 +8,28 @@ export function useSupabaseSession() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth
-      .getSession()
-      .then(({ data }) => mounted && setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+
+    async function hydrate() {
+      const [{ data: sessionData }, { data: userData }] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.auth.getUser()
+      ]);
+
+      if (!mounted) return;
+
+      if (sessionData.session) {
+        if (userData.user) {
+          sessionData.session.user = userData.user;
+        }
+        setSession(sessionData.session);
+      } else {
+        setSession(null);
+      }
+    }
+
+    hydrate();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_e: any, s: any) => {
       if (mounted) setSession(s);
     });
     return () => {

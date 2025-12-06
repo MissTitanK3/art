@@ -29,7 +29,7 @@ type AuthContextValue = {
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
   signUpWithPassword: (
-    payload: PasswordSignUpPayload,
+    payload: PasswordSignUpPayload
   ) => Promise<AuthSession | null>;
   /** Send a password reset email. */
   requestPasswordReset: (email: string, redirectTo?: string) => Promise<void>;
@@ -60,9 +60,17 @@ export function AuthProvider({
     }
     return supabaseRef.current;
   }, []);
-  function mapSupabaseSession(s: SupabaseSession | null): AuthSession | null {
+  function mapSupabaseSession(
+    s: SupabaseSession | null,
+    uInput?: {
+      id: string;
+      email?: string;
+      app_metadata: any;
+      user_metadata: any;
+    } | null
+  ): AuthSession | null {
     if (!s) return null;
-    const u = s.user;
+    const u = uInput ?? s.user;
     return {
       user: {
         id: u.id,
@@ -108,17 +116,23 @@ export function AuthProvider({
     let active = true;
     const supabase = ensureClient();
     async function hydrate() {
-      if (initialSession) return; // already hydrated from server
+      if (initialSession) return;
       setStatus("loading");
-      const { data, error } = await supabase.auth.getSession();
+
+      const [{ data: sessionData, error: sessionError }, { data: userData }] =
+        await Promise.all([
+          supabase.auth.getSession(),
+          supabase.auth.getUser(),
+        ]);
+
       if (!active) return;
-      if (error) {
-        console.warn("[AuthProvider] Failed to hydrate session", error);
+      if (sessionError) {
+        console.warn("[AuthProvider] Failed to hydrate session", sessionError);
         setSession(null);
         setStatus("unauthenticated");
         return;
       }
-      const next = mapSupabaseSession(data.session);
+      const next = mapSupabaseSession(sessionData.session, userData.user);
       setSession(next);
       setStatus(toStatus(next));
     }
@@ -143,13 +157,14 @@ export function AuthProvider({
   const refresh = useCallback(async () => {
     setStatus("loading");
     const supabase = ensureClient();
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
+    const [{ data: sessionData, error: sessionError }, { data: userData }] =
+      await Promise.all([supabase.auth.getSession(), supabase.auth.getUser()]);
+    if (sessionError) {
       setSession(null);
       setStatus("unauthenticated");
-      throw error;
+      throw sessionError;
     }
-    const next = mapSupabaseSession(data.session);
+    const next = mapSupabaseSession(sessionData.session, userData.user);
     setSession(next);
     setStatus(toStatus(next));
     return next;
@@ -163,13 +178,13 @@ export function AuthProvider({
         password: payload.password,
       });
       if (error) throw error;
-      const next = mapSupabaseSession(data.session);
+      const next = mapSupabaseSession(data.session, data.user);
       setSession(next);
       setStatus(toStatus(next));
       // onAuthStateChange will also fire, but we return immediately
       return next as AuthSession;
     },
-    [ensureClient],
+    [ensureClient]
   );
   const signInWithOtp = useCallback(
     async (payload: OtpSignInPayload) => {
@@ -179,7 +194,7 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient],
+    [ensureClient]
   );
   const signUpWithPassword = useCallback(
     async (payload: PasswordSignUpPayload) => {
@@ -195,14 +210,14 @@ export function AuthProvider({
         },
       });
       if (error) throw error;
-      const next = mapSupabaseSession(data.session);
+      const next = mapSupabaseSession(data.session, data.user);
       if (next) {
         setSession(next);
         setStatus(toStatus(next));
       }
       return next;
     },
-    [ensureClient],
+    [ensureClient]
   );
   const requestPasswordReset = useCallback(
     async (email: string, redirectTo?: string) => {
@@ -220,7 +235,7 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient],
+    [ensureClient]
   );
   const updatePassword = useCallback(
     async (newPassword: string) => {
@@ -230,20 +245,22 @@ export function AuthProvider({
       });
       if (error) throw error;
       try {
-        // Keep local state and SSR cookies in sync after password change
-        const refreshed = await supabase.auth.getSession();
+        const [{ data: sessionData }, { data: userData }] = await Promise.all([
+          supabase.auth.getSession(),
+          supabase.auth.getUser(),
+        ]);
         await postAuthCallback(
           "USER_UPDATED",
-          refreshed.data.session as unknown as SupabaseSession,
+          sessionData.session as unknown as SupabaseSession
         );
-        const next = mapSupabaseSession(refreshed.data.session);
+        const next = mapSupabaseSession(sessionData.session, userData.user);
         setSession(next);
         setStatus(toStatus(next));
       } catch {
         // ignore
       }
     },
-    [ensureClient],
+    [ensureClient]
   );
   const signOut = useCallback(async () => {
     const supabase = ensureClient();
@@ -276,7 +293,7 @@ export function AuthProvider({
       signUpWithPassword,
       requestPasswordReset,
       updatePassword,
-    ],
+    ]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

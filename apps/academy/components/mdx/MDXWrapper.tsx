@@ -105,7 +105,7 @@ const baseComponents: MDXComponents = {
           // Sticky header for long tables
           "sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40"
         )}
-        {...rest}
+        {...(rest as any)}
       >
         {clean}
       </thead>

@@ -10,12 +10,30 @@ export function useAuth() {
   >(null);
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    
+    async function hydrate() {
+      const [{ data: sessionData }, { data: userData }] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.auth.getUser()
+      ]);
+
       if (!active) return;
-      setSession(data.session);
-      setStatus(data.session ? "authenticated" : "unauthenticated");
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+
+      if (sessionData.session) {
+         if (userData.user) {
+            sessionData.session.user = userData.user;
+         }
+         setSession(sessionData.session);
+         setStatus("authenticated");
+      } else {
+         setSession(null);
+         setStatus("unauthenticated");
+      }
+    }
+
+    hydrate();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event: any, next: any) => {
       if (!active) return;
       setSession(next);
       setStatus(next ? "authenticated" : "unauthenticated");

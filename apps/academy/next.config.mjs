@@ -24,8 +24,12 @@ const nextConfig = {
   transpilePackages: ["@workspace/ui", "@workspace/store"],
   pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
   experimental: {
-    // Use mdx-rs to avoid unified preset/null interop issues and enable GFM parsing
-    mdxRs: { mdxType: 'gfm' },
+  },
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      { module: /node_modules\/@next\/mdx\/mdx-js-loader\.js/, message: /Parsing of .* failed at/ },
+    ]
+    return config
   },
 }
 

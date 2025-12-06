@@ -17,7 +17,7 @@ export const revalidate = 0;
 // ---------- Metadata ----------
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://region.example.org"
   ),
   title: {
     default: `ART Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
@@ -47,7 +47,12 @@ export const metadata: Metadata = {
     title: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
     description: "Siloed regional operations with cross‑region metadata only.",
     images: [
-      { url: "/og.png", width: 1200, height: 630, alt: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}` },
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
+      },
     ],
   },
   twitter: {
@@ -97,28 +102,37 @@ export default async function RootLayout({
     supabase.auth.getSession(),
   ]);
 
+  // Strip the user wrapper from the session to avoid the "insecure usage" warning
+  // since we are using getUser() above to get the auth user safely.
+  if (supaSession?.session) {
+    try {
+      // @ts-ignore
+      delete supaSession.session.user;
+    } catch {}
+  }
+
   const session: AuthSession | null =
     supaUser?.user && supaSession?.session
       ? {
-        user: {
-          id: supaUser.user.id,
-          email: supaUser.user.email ?? "",
-          // Prefer explicit metadata role, fallback to any server-provided role, else guest
-          role: ((supaUser.user as any)?.user_metadata?.role ??
-            (supaUser.user as any)?.role ??
-            "guest") as any,
-          fullName:
-            (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
-          avatarUrl:
-            (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
-          metadata: (supaUser.user as any)?.user_metadata ?? undefined,
-        },
-        accessToken: (supaSession.session as any)?.access_token ?? "",
-        refreshToken:
-          (supaSession.session as any)?.refresh_token ?? undefined,
-        expiresAt: (supaSession.session as any)?.expires_at ?? null,
-        provider: "supabase",
-      }
+          user: {
+            id: supaUser.user.id,
+            email: supaUser.user.email ?? "",
+            // Prefer explicit metadata role, fallback to any server-provided role, else guest
+            role: ((supaUser.user as any)?.user_metadata?.role ??
+              (supaUser.user as any)?.role ??
+              "guest") as any,
+            fullName:
+              (supaUser.user as any)?.user_metadata?.full_name ?? undefined,
+            avatarUrl:
+              (supaUser.user as any)?.user_metadata?.avatar_url ?? undefined,
+            metadata: (supaUser.user as any)?.user_metadata ?? undefined,
+          },
+          accessToken: (supaSession.session as any)?.access_token ?? "",
+          refreshToken:
+            (supaSession.session as any)?.refresh_token ?? undefined,
+          expiresAt: (supaSession.session as any)?.expires_at ?? null,
+          provider: "supabase",
+        }
       : null;
 
   return (

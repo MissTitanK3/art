@@ -39,7 +39,7 @@ export default function LinkButton({
   return (
     <Link
       href={href}
-      {...rest}
+      {...(rest as any)}
       className={`${base} ${sizeVariants[size]} ${colorVariants[variant]} ${rest.className ?? ""}`}
     >
       {label}

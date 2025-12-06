@@ -50,7 +50,7 @@ export function FrostedButton({
 
   return (
     <button
-      {...rest}
+      {...(rest as any)}
       className={`${base} ${sizeVariants[size]} ${colorVariants[variant]}  ${rest.className ?? ""}`}
     >
       {children}

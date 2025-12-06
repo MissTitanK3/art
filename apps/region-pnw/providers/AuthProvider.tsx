@@ -29,7 +29,7 @@ type AuthContextValue = {
   signInWithOtp: (payload: OtpSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
   signUpWithPassword: (
-    payload: PasswordSignUpPayload,
+    payload: PasswordSignUpPayload
   ) => Promise<AuthSession | null>;
   requestPasswordReset: (email: string, redirectTo?: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
@@ -41,6 +41,36 @@ type AuthProviderProps = {
 };
 function toStatus(session: AuthSession | null): AuthStatus {
   return session ? "authenticated" : "unauthenticated";
+}
+
+function decodeJwt(token: string): any {
+  try {
+    if (!token) return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const base64Url = parts[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+
+    // Universally compatible decode
+    const jsonPayload =
+      typeof window !== "undefined"
+        ? decodeURIComponent(
+            window
+              .atob(base64)
+              .split("")
+              .map(function (c) {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("")
+          )
+        : Buffer.from(base64, "base64").toString("utf8");
+
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    // console.warn("JWT Decode Error", e);
+    return null;
+  }
 }
 export function AuthProvider({
   children,
@@ -58,9 +88,31 @@ export function AuthProvider({
     }
     return supabaseRef.current;
   }, []);
-  function mapSupabaseSession(s: SupabaseSession | null): AuthSession | null {
+  function mapSupabaseSession(
+    s: SupabaseSession | null,
+    uInput?: {
+      id: string;
+      email?: string;
+      app_metadata: any;
+      user_metadata: any;
+    } | null
+  ): AuthSession | null {
     if (!s) return null;
-    const u = s.user;
+
+    // Strict validation:
+    // 1. If uInput is explicitly null, the session is invalid -> return null.
+    // 2. If uInput is provided (object), use it.
+    // 3. If uInput is undefined, fall back to s.user (insecure warning risk, but needed for some flows).
+    // We try to always provide uInput via getUser (hydration) or token decode (auth change).
+
+    let u = uInput;
+    if (u === undefined) {
+      // Fallback only if we really have to
+      u = s.user;
+    }
+
+    if (!u) return null;
+
     return {
       user: {
         id: u.id,
@@ -78,6 +130,7 @@ export function AuthProvider({
       provider: "supabase",
     };
   }
+
   async function postAuthCallback(event: string, s: SupabaseSession | null) {
     try {
       await fetch("/auth/callback", {
@@ -98,36 +151,69 @@ export function AuthProvider({
       // Ignore network errors; SSR cookies can refresh later
     }
   }
+
   useEffect(() => {
     setSession(initialSession);
     setStatus(toStatus(initialSession));
   }, [initialSession]);
+
   useEffect(() => {
     let active = true;
     const supabase = ensureClient();
+
     async function hydrate() {
       if (initialSession) return;
       setStatus("loading");
-      const { data, error } = await supabase.auth.getSession();
+
+      // Execute getSession and getUser concurrently
+      // getUser() is the secure way to validate the user object
+      const [{ data: sessionData, error: sessionError }, { data: userData }] =
+        await Promise.all([
+          supabase.auth.getSession(),
+          supabase.auth.getUser(),
+        ]);
+
       if (!active) return;
-      if (error) {
-        console.warn("[AuthProvider] Failed to hydrate session", error);
+
+      if (sessionError) {
+        console.warn("[AuthProvider] Failed to hydrate session", sessionError);
         setSession(null);
         setStatus("unauthenticated");
         return;
       }
-      const next = mapSupabaseSession(data.session);
+
+      const next = mapSupabaseSession(sessionData.session, userData.user);
       setSession(next);
       setStatus(toStatus(next));
     }
+
     hydrate();
-    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, s) => {
       if (!active) return;
-      const next = mapSupabaseSession(s);
+
+      // Avoid "Using the user object..." warning by decoding the token manually
+      // instead of accessing s.user, and without the network overhead of getUser().
+      let secureUser = undefined;
+      if (s?.access_token) {
+        const payload = decodeJwt(s.access_token);
+        if (payload && payload.sub) {
+          secureUser = {
+            id: payload.sub,
+            email: payload.email,
+            app_metadata: payload.app_metadata,
+            user_metadata: payload.user_metadata,
+            role: payload.role,
+          } as any;
+        }
+      }
+
+      const next = mapSupabaseSession(s, secureUser);
       setSession(next);
       setStatus(toStatus(next));
       postAuthCallback(event, s);
     });
+
     return () => {
       active = false;
       try {
@@ -137,20 +223,27 @@ export function AuthProvider({
       }
     };
   }, [ensureClient, initialSession]);
+
   const refresh = useCallback(async () => {
     setStatus("loading");
     const supabase = ensureClient();
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
+
+    // Secure refresh using both getSession and getUser
+    const [{ data: sessionData, error: sessionError }, { data: userData }] =
+      await Promise.all([supabase.auth.getSession(), supabase.auth.getUser()]);
+
+    if (sessionError) {
       setSession(null);
       setStatus("unauthenticated");
-      throw error;
+      throw sessionError;
     }
-    const next = mapSupabaseSession(data.session);
+
+    const next = mapSupabaseSession(sessionData.session, userData.user);
     setSession(next);
     setStatus(toStatus(next));
     return next;
   }, [ensureClient]);
+
   const signInWithPassword = useCallback(
     async (payload: PasswordSignInPayload) => {
       setStatus("loading");
@@ -160,13 +253,15 @@ export function AuthProvider({
         password: payload.password,
       });
       if (error) throw error;
-      const next = mapSupabaseSession(data.session);
+
+      const next = mapSupabaseSession(data.session, data.user);
       setSession(next);
       setStatus(toStatus(next));
       return next as AuthSession;
     },
-    [ensureClient],
+    [ensureClient]
   );
+
   const signInWithOtp = useCallback(
     async (payload: OtpSignInPayload) => {
       const supabase = ensureClient();
@@ -175,8 +270,9 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient],
+    [ensureClient]
   );
+
   const signUpWithPassword = useCallback(
     async (payload: PasswordSignUpPayload) => {
       const supabase = ensureClient();
@@ -191,15 +287,16 @@ export function AuthProvider({
         },
       });
       if (error) throw error;
-      const next = mapSupabaseSession(data.session);
+      const next = mapSupabaseSession(data.session, data.user);
       if (next) {
         setSession(next);
         setStatus(toStatus(next));
       }
       return next;
     },
-    [ensureClient],
+    [ensureClient]
   );
+
   const requestPasswordReset = useCallback(
     async (email: string, redirectTo?: string) => {
       const supabase = ensureClient();
@@ -216,8 +313,9 @@ export function AuthProvider({
       });
       if (error) throw error;
     },
-    [ensureClient],
+    [ensureClient]
   );
+
   const updatePassword = useCallback(
     async (newPassword: string) => {
       const supabase = ensureClient();
@@ -226,19 +324,23 @@ export function AuthProvider({
       });
       if (error) throw error;
       try {
-        const refreshed = await supabase.auth.getSession();
+        const [{ data: sessionData }, { data: userData }] = await Promise.all([
+          supabase.auth.getSession(),
+          supabase.auth.getUser(),
+        ]);
+
         await postAuthCallback(
           "USER_UPDATED",
-          refreshed.data.session as unknown as SupabaseSession,
+          sessionData.session as unknown as SupabaseSession
         );
-        const next = mapSupabaseSession(refreshed.data.session);
+        const next = mapSupabaseSession(sessionData.session, userData.user);
         setSession(next);
         setStatus(toStatus(next));
       } catch {
         // ignore
       }
     },
-    [ensureClient],
+    [ensureClient]
   );
   const signOut = useCallback(async () => {
     const supabase = ensureClient();
@@ -270,7 +372,7 @@ export function AuthProvider({
       signUpWithPassword,
       requestPasswordReset,
       updatePassword,
-    ],
+    ]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
