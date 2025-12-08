@@ -42,11 +42,19 @@ export async function PATCH(
     const { id } = await params;
     const body = await _req.json().catch(() => ({}));
     const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+    const normalizeContacts = (values: unknown) =>
+      Array.isArray(values)
+        ? (values as unknown[])
+            .map((v) => (typeof v === "string" ? v.trim() : ""))
+            .filter(Boolean)
+        : null;
     for (const key of [
       "name",
       "type",
       "jurisdiction",
       "contact_emails",
+      "contact_phones",
+      "contact_faxes",
       "contact_signal",
       "preferred_format",
       "active_status",
@@ -54,6 +62,12 @@ export async function PATCH(
     ]) {
       if (key in body) patch[key] = body[key];
     }
+    if ("contact_emails" in patch)
+      patch.contact_emails = normalizeContacts(patch.contact_emails);
+    if ("contact_phones" in patch)
+      patch.contact_phones = normalizeContacts(patch.contact_phones);
+    if ("contact_faxes" in patch)
+      patch.contact_faxes = normalizeContacts(patch.contact_faxes);
 
     const client = adminClient();
     const { data, error } = await client

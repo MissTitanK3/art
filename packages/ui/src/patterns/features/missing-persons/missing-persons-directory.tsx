@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Search } from "lucide-react";
+import { AlertTriangle, Plus, Search } from "lucide-react";
 import type { DetaineeIntake } from "@workspace/ui/types/missing-person-intake";
 import { getMissingPersonSlug } from "@workspace/ui/lib/missing-persons";
 import { Badge } from "@workspace/ui/primitives/badge";
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/primitives/select";
+import Link from "next/link";
 type UrgencyFilter = "all" | "urgent" | "none";
 export interface MissingPersonsDirectoryProps {
   records?: DetaineeIntake[];
@@ -35,7 +36,7 @@ export interface MissingPersonsDirectoryProps {
   renderRecordLink?: (
     href: string,
     record: DetaineeIntake,
-    label: string,
+    label: string
   ) => React.ReactNode;
 }
 function formatDate(value?: string): string {
@@ -74,11 +75,11 @@ const defaultRecordHref = (record: DetaineeIntake) =>
 const defaultRenderRecordLink = (
   href: string,
   _record: DetaineeIntake,
-  label: string,
+  label: string
 ) => <a href={href}>{label}</a>;
 function mergeRecords(
   remote: DetaineeIntake[],
-  local: DetaineeIntake[],
+  local: DetaineeIntake[]
 ): DetaineeIntake[] {
   const merged = new Map<string, DetaineeIntake>();
   const addRecord = (record: DetaineeIntake, index: number, origin: string) => {
@@ -169,7 +170,7 @@ export function MissingPersonsDirectory({
       ]
         .filter(
           (value): value is string =>
-            typeof value === "string" && value.length > 0,
+            typeof value === "string" && value.length > 0
         )
         .join(" ")
         .toLowerCase();
@@ -185,6 +186,17 @@ export function MissingPersonsDirectory({
       ) : null}
       {error ? <p className="text-sm text-amber-600">{error}</p> : null}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex justify-center">
+          <Button variant="outline">
+            <Link
+              className="flex items-center gap-2"
+              href="/missing-persons/intake"
+            >
+              <Plus className="h-4 w-4" />
+              Add missing person
+            </Link>
+          </Button>
+        </div>
         <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <div className="relative flex-1">
             <Search className="text-muted-foreground absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2" />
@@ -281,7 +293,7 @@ export function MissingPersonsDirectory({
                         {formatDate(
                           record.knownTransfers[
                             record.knownTransfers.length - 1
-                          ]?.transferDate,
+                          ]?.transferDate
                         )}
                       </div>
                     ) : null}

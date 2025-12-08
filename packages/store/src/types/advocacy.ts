@@ -14,6 +14,8 @@ export type AdvocacyGroup = {
   type: AdvocacyGroupType | null;
   jurisdiction: string | null;
   contact_emails: string[] | null;
+  contact_phones: string[] | null;
+  contact_faxes: string[] | null;
   contact_signal: string | null;
   preferred_format: AdvocacyPreferredFormat | null;
   active_status: boolean;

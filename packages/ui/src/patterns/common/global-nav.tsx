@@ -58,7 +58,7 @@ const MOBILE_TOP_BAR_HEIGHT = 56;
 function filterNavTree(
   items: NavItem[],
   role?: NavRole,
-  isAuthenticated = false,
+  isAuthenticated = false
 ): NavItem[] {
   return items
     .map((item) => {
@@ -100,7 +100,7 @@ export function GlobalNavCore({
     const t = setTimeout(() => {
       setPrimaryItems(filterNavTree(config.primary, role, isAuthenticated));
       setSecondaryItems(
-        filterNavTree(config.secondary ?? [], role, isAuthenticated),
+        filterNavTree(config.secondary ?? [], role, isAuthenticated)
       );
     }, 50);
     return () => clearTimeout(t);
@@ -110,7 +110,7 @@ export function GlobalNavCore({
     const applyOffsets = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (isDesktop) {
-        document.body.style.paddingLeft = desktopCollapsed ? "7rem" : "18rem";
+        document.body.style.paddingLeft = desktopCollapsed ? "5rem" : "18rem";
         document.body.style.paddingTop = "0px";
       } else {
         document.body.style.paddingLeft = "0px";
@@ -199,8 +199,6 @@ function MobileTopBar({
       ) : null}
       <div className="flex items-center gap-1">
         <Bell popoverSide="bottom" popoverAlign="end" />
-        {/* <ThemeToggle /> */}
-        {/* <DistanceUnitToggle /> */}
       </div>
     </div>
   );
@@ -230,7 +228,7 @@ function DesktopSideNav({
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-[1100] hidden border-r border-sidebar-border bg-sidebar/90 text-sidebar-foreground backdrop-blur supports-[backdrop-filter]:bg-sidebar/70 transition-[width] duration-200 lg:flex lg:flex-col",
-        collapsed ? "w-28" : "w-72",
+        collapsed ? "w-20" : "w-72"
       )}
     >
       <div className="flex h-10 items-center gap-2 border-b border-sidebar-border px-2">
@@ -238,7 +236,7 @@ function DesktopSideNav({
           href={config.brand.href ?? "/"}
           className={cn(
             "flex flex-1 items-center gap-2 rounded-md py-1 transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            collapsed ? "justify-center" : "justify-start",
+            collapsed ? "justify-center" : "justify-start"
           )}
         >
           <BrandSymbol brand={config.brand} />
@@ -267,7 +265,7 @@ function DesktopSideNav({
         <div
           className={cn(
             "mt-3 flex items-center gap-2",
-            collapsed ? "justify-center flex-col" : "justify-evenly",
+            collapsed ? "justify-center flex-col" : "justify-evenly"
           )}
         >
           <ThemeToggle />
@@ -285,7 +283,7 @@ function DesktopSideNav({
         <div
           className={cn(
             "flex flex-col space-y-1 py-3",
-            collapsed ? "items-center px-0" : "px-2",
+            collapsed ? "items-center px-0" : "px-2"
           )}
         >
           {primaryItems.map((item) => (
@@ -369,7 +367,7 @@ function DesktopNavItem({
                     "relative mx-auto flex h-14 w-14 items-center justify-center rounded-md transition-colors",
                     active
                       ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                   aria-label={item.label}
                 >
@@ -413,7 +411,7 @@ function DesktopNavItem({
                       "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       childActive
                         ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                        : "text-sidebar-foreground/70",
+                        : "text-sidebar-foreground/70"
                     )}
                   >
                     <NavItemIcon item={child} className="h-5 w-5" />
@@ -442,7 +440,7 @@ function DesktopNavItem({
               "relative mx-auto flex h-14 w-14 items-center justify-center rounded-md transition-colors",
               active
                 ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             )}
           >
             <NavItemIcon item={item} className="h-8 w-8" />
@@ -479,7 +477,7 @@ function DesktopNavItem({
               "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             )}
           >
             <span
@@ -487,7 +485,7 @@ function DesktopNavItem({
                 "flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-transparent",
                 active
                   ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                  : "bg-sidebar-accent text-sidebar-accent-foreground",
+                  : "bg-sidebar-accent text-sidebar-accent-foreground"
               )}
             >
               <NavItemIcon item={item} className="h-7 w-7" />
@@ -501,7 +499,7 @@ function DesktopNavItem({
             <ChevronDown
               className={cn(
                 "ml-1 h-4 w-4 shrink-0 transition-transform",
-                open ? "rotate-180" : "rotate-0",
+                open ? "rotate-180" : "rotate-0"
               )}
             />
           </button>
@@ -519,7 +517,7 @@ function DesktopNavItem({
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   childActive
                     ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground/70",
+                    : "text-sidebar-foreground/70"
                 )}
               >
                 <NavItemIcon item={child} className="h-5 w-5" />
@@ -545,7 +543,7 @@ function DesktopNavItem({
         "flex w-full items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors",
         active
           ? "bg-sidebar-primary text-sidebar-primary-foreground"
-          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
       <span
@@ -553,7 +551,7 @@ function DesktopNavItem({
           "flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-transparent",
           active
             ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-            : "bg-sidebar-accent text-sidebar-accent-foreground",
+            : "bg-sidebar-accent text-sidebar-accent-foreground"
         )}
       >
         <NavItemIcon item={item} className="h-7 w-7" />
@@ -670,7 +668,7 @@ function MobileNavItem({
         "flex items-center justify-between rounded-md px-2 py-2 text-sm transition-colors",
         active
           ? "bg-sidebar-primary text-sidebar-primary-foreground"
-          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
       <div className="flex items-center gap-2">
@@ -711,7 +709,7 @@ function MobileNavItem({
                     "flex items-center gap-2",
                     childActive
                       ? "text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground/70",
+                      : "text-sidebar-foreground/70"
                   )}
                 >
                   <NavItemIcon item={child} className="h-5 w-5" />
@@ -767,7 +765,7 @@ function BrandSymbol({
     <span
       className={cn(
         "flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground",
-        className,
+        className
       )}
     >
       {initials || "•"}
@@ -789,7 +787,7 @@ function navItemIsActive(item: NavItem, pathname: string): boolean {
     return true;
   }
   return (item.children ?? []).some((child) =>
-    navItemIsActive(child, pathname),
+    navItemIsActive(child, pathname)
   );
 }
 /**

@@ -24,7 +24,7 @@ export function DispatchUpcomingList({
 }: DispatchUpcomingListProps) {
   const pageSet = useMemo(
     () => new Set(pageItems.map((s) => s.id)),
-    [pageItems],
+    [pageItems]
   );
   return (
     <div className="space-y-8">
@@ -33,7 +33,7 @@ export function DispatchUpcomingList({
         if (bucketItems.length === 0) return null;
         return (
           <section key={label} className="space-y-3">
-            <div className="sticky top-20 z-10 flex items-center gap-2 bg-background/90 py-2 backdrop-blur">
+            <div className="sticky top-14 lg:top-0 z-10 flex items-center gap-2 bg-background/90 py-2 backdrop-blur">
               <span>{bucketEmoji(label)}</span>
               <h2 className="text-lg font-semibold">{label}</h2>
               {bucketItems.length > 0 ? (

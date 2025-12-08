@@ -62,14 +62,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const payload = await req.json();
+    const normalizeContacts = (values: unknown) =>
+      Array.isArray(values)
+        ? (values as unknown[])
+            .map((v) => (typeof v === "string" ? v.trim() : ""))
+            .filter(Boolean)
+        : null;
     const row = {
       id: payload?.id ?? undefined,
       name: String(payload?.name ?? "").trim() || undefined,
       type: payload?.type ?? null,
       jurisdiction: payload?.jurisdiction ?? null,
-      contact_emails: Array.isArray(payload?.contact_emails)
-        ? payload.contact_emails
-        : null,
+      contact_emails: normalizeContacts(payload?.contact_emails),
+      contact_phones: normalizeContacts(payload?.contact_phones),
+      contact_faxes: normalizeContacts(payload?.contact_faxes),
       contact_signal: payload?.contact_signal ?? null,
       preferred_format: payload?.preferred_format ?? null,
       active_status:
