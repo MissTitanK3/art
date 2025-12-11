@@ -5,6 +5,7 @@ import { toast } from "@workspace/ui/primitives/sonner";
 import NotificationPrefsForm from "@workspace/ui/patterns/features/settings/notification-prefs-form";
 import PreferencesSection from "@workspace/ui/patterns/features/settings/preferences-section";
 import { NOTIFICATION_CHANNELS } from "@workspace/store/types/notifications";
+import EnablePush from "@/components/pwa/EnablePush";
 type PrefsRow = {
   user_id: string;
   global_opt_out: boolean;
@@ -87,6 +88,7 @@ export default function SettingsPage() {
     <section className="max-w-3xl space-y-6">
       <h1 className="text-2xl font-bold">Settings</h1>
       <PreferencesSection />
+      <EnablePush />
       <NotificationPrefsForm
         loading={loading}
         saving={saving}

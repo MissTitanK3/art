@@ -360,8 +360,8 @@ export function MyStatusCard() {
                 <span className="text-xs text-muted-foreground">
                   {lastCheckIn
                     ? formatDistanceToNow(new Date(lastCheckIn), {
-                        addSuffix: true,
-                      })
+                      addSuffix: true,
+                    })
                     : "Not yet recorded"}
                 </span>
               </div>

@@ -23,12 +23,13 @@ self.addEventListener('push', (event) => {
   const title = payload.title ?? 'Dispatch Update';
   const body = payload.body ?? '';
   const url = payload.url ?? '/';
+  const icon = payload.icon ?? '/icon-192.png';
 
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
       badge: '/badge.png',
-      icon: '/icon-192.png',
+      icon,
       data: { url },
     }),
   );

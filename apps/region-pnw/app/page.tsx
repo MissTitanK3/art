@@ -33,6 +33,7 @@ import { mapRowToShift } from "@workspace/ui/hooks/map-row-to-shift";
 import { PublicImpactSummary } from "@workspace/ui/patterns/features/impact/public-impact-summary";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 import { QuickStartDrawerContent } from "@workspace/ui/patterns/features/info/quickstart-drawer-content";
+import EnablePush from "@/components/pwa/EnablePush";
 
 type ViewMode = RegionViewMode;
 
@@ -218,6 +219,7 @@ function DashboardContent() {
       {/* Top Section: Status & Readiness */}
       <div className="grid gap-6">
         <MyStatusCard />
+        <EnablePush />
       </div>
       {/* Middle Section: Operational Insights */}
       <div className="space-y-4">

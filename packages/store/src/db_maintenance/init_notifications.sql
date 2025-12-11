@@ -3,6 +3,8 @@
 
 -- Ensure gen_random_uuid() is available
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pg_net;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- Enum for levels (matches UI: info | success | warning | error)
 DO $$ BEGIN
@@ -20,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   level public.notification_level NOT NULL DEFAULT 'info',
   link TEXT,
   sticky BOOLEAN NOT NULL DEFAULT FALSE,
-  meta JSONB,
+  meta JSONB, -- e.g. { "icon": "/icon-192.png" }
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   expires_at TIMESTAMPTZ,
   created_by UUID REFERENCES auth.users(id)
@@ -214,3 +216,22 @@ USING (user_id = auth.uid())
 WITH CHECK (user_id = auth.uid());
 
 GRANT SELECT, INSERT, UPDATE ON public.notification_prefs TO authenticated;
+
+-- =========================================================
+-- Cron Job for Push Worker (Optional)
+-- Requires pg_cron and pg_net extensions.
+-- Replace [PROJECT_REF] and [SERVICE_ROLE_KEY] with your actual values.
+-- =========================================================
+/*
+SELECT cron.schedule(
+  'push-notifications-schedule',
+  '*/1 * * * *',
+  $$
+  SELECT net.http_post(
+      url := 'https://[PROJECT_REF].supabase.co/functions/v1/bright-processor',
+      body := '{}'::jsonb,
+      headers := '{"Content-Type": "application/json", "Authorization": "Bearer [SERVICE_ROLE_KEY]"}'::jsonb
+  ) as request_id;
+  $$
+);
+*/
