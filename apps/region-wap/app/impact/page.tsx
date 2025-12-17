@@ -18,7 +18,7 @@ export default function ImpactPage() {
         we all shape the outcome.
       </p>
 
-      <PublicImpactSummary regionId="region-pnw" />
+      <PublicImpactSummary regionId="region-stg" />
 
       <Separator />
 

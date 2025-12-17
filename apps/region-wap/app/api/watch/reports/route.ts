@@ -40,7 +40,7 @@ export async function GET(req: Request) {
       }
 
       if (!includeTests) {
-        query = query.eq('test', false);
+        query = query.or('test.eq.false,test.is.null');
       }
 
       // Filter out future reports (allow a small buffer for clock skew if needed, but strict for now)

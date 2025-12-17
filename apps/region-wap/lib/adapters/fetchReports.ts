@@ -1,7 +1,8 @@
 import { WizardReport } from '@workspace/store/types/watch.ts';
 
-// 7 days in ms
-const CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
+// Keep cache extremely short so dispatch can see fresh reports
+// const CACHE_TTL = 1000 * 60 * 2; // 2 minutes
+const CACHE_TTL = 0; // No caching
 const CACHE_KEY = 'wizardReports';
 
 interface CacheEntry {
@@ -38,6 +39,7 @@ export async function fetchReports(options?: {
   const params = new URLSearchParams();
   params.set('includeTests', String(includeTests));
   if (cutoff) params.set('since', cutoff);
+  params.set('_ts', Date.now().toString());
 
   let res: Response;
   try {
@@ -45,6 +47,7 @@ export async function fetchReports(options?: {
       headers: {
         Accept: 'application/json',
       },
+      cache: 'no-store',
     });
   } catch (e: any) {
     const message = e?.message || 'Network error';

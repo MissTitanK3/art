@@ -207,7 +207,6 @@ export function ConfirmedWatchForm({
             method: "POST",
             headers: {
               apikey: supabaseAnonKey,
-              Authorization: `Bearer ${supabaseAnonKey}`,
               "Content-Type": "application/json",
               Prefer: "return=representation",
             },

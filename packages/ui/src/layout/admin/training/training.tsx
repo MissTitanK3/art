@@ -8,14 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/primitives/table";
 import { Badge } from "@workspace/ui/primitives/badge";
 import {
   Select,
@@ -25,6 +17,12 @@ import {
   SelectValue,
 } from "@workspace/ui/primitives/select";
 import { Input } from "@workspace/ui/primitives/input";
+import {
+  SortableTable,
+  useSortableData,
+  type Column,
+} from "@workspace/ui/patterns/common/sortable-table";
+
 type Props = {
   initialSessions: AcademyTrainingSession[];
 };
@@ -43,9 +41,8 @@ export default function TrainingClient({ initialSessions }: Props) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<string>("");
   const [modality, setModality] = useState<string>("");
-  const [rows, setRows] = useState<AcademyTrainingSession[]>(
-    () => initialSessions,
-  );
+  const [rows] = useState<AcademyTrainingSession[]>(() => initialSessions);
+
   const filtered = useMemo(() => {
     return rows.filter((s) => {
       if (status && s.status !== status) return false;
@@ -64,6 +61,84 @@ export default function TrainingClient({ initialSessions }: Props) {
       return true;
     });
   }, [rows, status, modality, query]);
+
+  const columns = useMemo<Column<AcademyTrainingSession>[]>(
+    () => [
+      {
+        header: "Title",
+        accessorKey: "title",
+        sortable: true,
+        className: "font-medium",
+      },
+      {
+        header: "When",
+        id: "when",
+        sortable: true,
+        accessorFn: (s) => s.start,
+        cell: (s) => (
+          <span className="whitespace-nowrap">
+            {new Date(s.start).toLocaleString()} →{" "}
+            {new Date(s.end).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        header: "Modality",
+        accessorKey: "modality",
+        sortable: true,
+      },
+      {
+        header: "Instructor",
+        accessorKey: "instructorName",
+        sortable: true,
+        className: "max-w-[220px] truncate",
+      },
+      {
+        header: "Seats",
+        id: "seats",
+        cell: (s) => (
+          <>
+            <Badge variant="outline">
+              {s.seats.confirmed}/{s.seats.capacity} confirmed
+            </Badge>
+            {s.seats.waitlist ? (
+              <Badge variant="outline" className="ml-2">
+                {s.seats.waitlist} waitlist
+              </Badge>
+            ) : null}
+          </>
+        ),
+      },
+      {
+        header: "Status",
+        accessorKey: "status",
+        sortable: true,
+        cell: (s) =>
+          s.status === "completed" ? (
+            <Badge variant="outline">Completed</Badge>
+          ) : s.status === "in_progress" ? (
+            <Badge variant="outline">In Progress</Badge>
+          ) : s.status === "scheduled" ? (
+            <Badge variant="outline">Scheduled</Badge>
+          ) : (
+            <Badge variant="outline">Archived</Badge>
+          ),
+      },
+    ],
+    [],
+  );
+
+  const {
+    paginatedData,
+    sortConfig,
+    toggleSort,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+  } = useSortableData(filtered, columns);
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -120,56 +195,20 @@ export default function TrainingClient({ initialSessions }: Props) {
             </Select>
           </div>
 
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>When</TableHead>
-                  <TableHead>Modality</TableHead>
-                  <TableHead>Instructor</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.title}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {new Date(s.start).toLocaleString()} →{" "}
-                      {new Date(s.end).toLocaleString()}
-                    </TableCell>
-                    <TableCell>{s.modality}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">
-                      {s.instructorName}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {s.seats.confirmed}/{s.seats.capacity} confirmed
-                      </Badge>
-                      {s.seats.waitlist ? (
-                        <Badge variant="outline" className="ml-2">
-                          {s.seats.waitlist} waitlist
-                        </Badge>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>
-                      {s.status === "completed" ? (
-                        <Badge variant="outline">Completed</Badge>
-                      ) : s.status === "in_progress" ? (
-                        <Badge variant="outline">In Progress</Badge>
-                      ) : s.status === "scheduled" ? (
-                        <Badge variant="outline">Scheduled</Badge>
-                      ) : (
-                        <Badge variant="outline">Archived</Badge>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <SortableTable
+            data={paginatedData}
+            columns={columns}
+            sortConfig={sortConfig}
+            onSort={toggleSort}
+            keyExtractor={(s) => s.id}
+            pagination={{
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage,
+              pageSize,
+              onPageSizeChange: setPageSize,
+            }}
+          />
         </CardContent>
       </Card>
     </section>

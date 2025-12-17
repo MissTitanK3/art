@@ -44,12 +44,12 @@ import { humanize } from "@workspace/ui/lib/utils";
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
   defaultTab?:
-    | "overview"
-    | "roles"
-    | "updates"
-    | "logistics"
-    | "public_engagement"
-    | "comms";
+  | "overview"
+  | "roles"
+  | "updates"
+  | "logistics"
+  | "public_engagement"
+  | "comms";
   loadingMessage?: React.ReactNode;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
   onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
@@ -201,7 +201,8 @@ export function DispatchSubmissionLayout({
     {
       id: "signal-link",
       title: "Signal Links",
-      description: "Set the private and public Signal channels for responders.",
+      description:
+        "Set the Signal channels: public link invites new people that want to be part of the team in the future & private link is for the on-the-ground team.",
       content: (
         <div className="space-y-4">
           <DispatchSignalLinkUpdater

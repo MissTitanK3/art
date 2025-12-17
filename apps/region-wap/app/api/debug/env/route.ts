@@ -4,6 +4,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return new Response(null, { status: 404 });
+  }
   const has = (key: string) =>
     Boolean(process.env[key] && String(process.env[key]).length > 0);
   return NextResponse.json({

@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       }
 
       if (!includeTests) {
-        query = query.eq('test', false);
+        query = query.or('test.eq.false,test.is.null');
       }
 
       query = query.range(offset, offset + PAGE_SIZE - 1);

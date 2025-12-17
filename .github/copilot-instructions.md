@@ -1,72 +1,68 @@
-## Copilot instructions for this repo (ART monorepo)
+# ART Monorepo Copilot Instructions
 
-Use these guardrails to be productive fast and avoid breaking cross-app contracts.
+## Project Context
+- **Architecture**: Monorepo (Turborepo) with decentralized Next.js 15 apps (`apps/region-*`) and shared packages (`packages/*`).
+- **Core Principle**: **Decentralization & Privacy**. Each region runs its own Supabase instance. PII never leaves the region.
+- **Tech Stack**: Next.js 15 (App Router), React 19, TypeScript, Supabase (Auth/DB/Realtime), TailwindCSS, Zustand.
 
-### Big picture
+## Critical Workflows
+- **Dev Server**: `pnpm dev` (starts all apps via Turbo).
+- **Build**: `pnpm build` (requires `.env` files).
+- **Lint/Typecheck**: `pnpm lint` (runs ESLint and `tsc --noEmit`).
+- **Region Alignment**: Run `node scripts/check-align-regions.mjs` to ensure all region apps stay in sync.
+- **Academy Content**: `pnpm run generate:academy-course-details` regenerates course data.
 
-- Monorepo managed by pnpm + Turborepo. Apps live in `apps/*` (Next.js 15), shared libs in `packages/*` (`ui`, `store`, configs).
-- Regions are independent Next.js apps (e.g., `apps/region-pnw`) that talk to their own Supabase/Postgres. No cross-region PII.
-- Data layer lives in SQL under `packages/store/src/db_maintenance/**`. RLS enforces per-user/role access; apps must respect it.
+## Architecture & Patterns
 
-### Build, run, and lint
+### 1. Database & Schema
+- **Source of Truth**: `packages/store/src/db_maintenance/init_region.sql` and `init_rls.sql`.
+- **RLS**: Row Level Security is **mandatory**. Policies rely on `auth.uid()` and `request.jwt.claims`.
+- **Migrations**: Add incremental SQL files to `packages/store/src/db_maintenance/migrations/`.
+- **Types**: DB types are shared in `packages/store/src/types/*`. **Do not** manually redefine DB shapes in apps.
 
-- Node >= 20, pnpm 10.x.
-- Root scripts (run from repo root):
-  - `pnpm dev` → `turbo dev` (starts one or more Next apps)
-  - `pnpm build` → `turbo build` (uses `.env*` and injects NEXT*PUBLIC*\* vars; see `turbo.json` env list)
-  - `pnpm lint` → `turbo lint`; app-level `typecheck` via `tsc --noEmit`
-- Prebuild step auto-generates course details: `scripts/generate-academy-course-details.mjs` writes `packages/ui/src/data/academy/course-details.generated.ts` (do not edit manually).
+### 2. Authentication & Supabase
+- **Environment**: Use `ensureSupabaseEnv(target)` from `@/lib/auth/supabase/utils` to resolve credentials for `server`, `client`, or `admin`.
+- **Server-Side**: Use `createSupabaseServerClient()` in Server Components/Actions/API routes.
+- **Client-Side**: Use `createSupabaseClient()` (or app-specific wrapper).
+- **Service Role**: Use **only** for admin tasks (e.g., system notifications) where RLS must be bypassed. See `apps/region-pnw/app/api/bug-reports/route.ts` for a safe pattern.
 
-### Path aliases and shared code
+### 3. Shared Code & Imports
+- **UI Components**: Import from `@workspace/ui/components/*`.
+- **Store/State**: Import Zustand stores from `@workspace/store/*`.
+- **Utils**: Use `@workspace/ui/lib/utils` for `cn` (Tailwind merge) and formatting helpers.
+- **Path Aliases**:
+  - `@/*` -> App root (e.g., `apps/region-pnw/*`)
+  - `@workspace/ui/*` -> `packages/ui/src/*`
+  - `@workspace/store/*` -> `packages/store/src/*`
 
-- Region apps use TS paths (see `apps/region-*/tsconfig.json`):
-  - `@/*` → app root; `@/types/*`, `@/utils/*`, etc.
-  - `@workspace/ui/*` → `packages/ui/src/*` (design system + feature components)
-  - `@workspace/store/*` → `packages/store/src/*` (Zustand stores, shared types, helpers)
-- Prefer using shared types (e.g., `packages/store/src/types/*`) rather than re-declaring shapes.
+### 4. API Route Pattern
+- **Validation**: Always validate inputs (Zod or manual checks).
+- **Auth Check**: explicitly check `supabase.auth.getUser()` before sensitive operations.
+- **Error Handling**: Return structured JSON errors.
 
-### Supabase auth/data patterns
+```typescript
+// Example: apps/region-pnw/app/api/example/route.ts
+import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/auth/supabase/server";
 
-- Client/SSR helpers live per app. Example (region apps):
-  - `apps/region-pnw/lib/auth/supabase/utils.ts` → `ensureSupabaseEnv(target)` resolves env sets for `server|client|admin`.
-  - `apps/region-pnw/lib/auth/supabase/server.ts` → `createSupabaseServerClient(target)` for SSR/API; `createSupabaseAdminServiceClient()` for service-role ops.
-- Watch app uses `@supabase/ssr` on the server and `@supabase/supabase-js` on the client (see `apps/watch/utils/supabase/*`).
-- When adding API routes, import the server client and call tables through RLS; only use the service client for privileged, server-only tasks.
+export async function POST(req: Request) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  // ... logic ...
+}
+```
 
-### Environment variables (per app)
+### 5. Date & Time
+- Use `luxon` or `date-fns` for manipulation.
+- Use `combineLocalDateTime` and `isoToLocalDateTimeInput` from `@workspace/ui/lib/utils` for form inputs.
 
-- Required at build/runtime (see `turbo.json` env): `NEXT_PUBLIC_AUTH_PROVIDER`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`; optional `SUPABASE_SERVICE_ROLE_KEY` for server actions.
-- Admin-targeted ops may use `NEXT_PUBLIC_SUPABASE_URL_ADMIN`, `NEXT_PUBLIC_SUPABASE_ANON_KEY_ADMIN`, `SUPABASE_SERVICE_ROLE_KEY_ADMIN` (see region `utils.ts`).
-- Do not commit real secrets. Provide `.env.example` updates when adding new required vars.
+## Do Not
+- **Do not** introduce cross-region data fetching in client code.
+- **Do not** commit secrets or `.env` files.
+- **Do not** modify generated files (e.g., `course-details.generated.ts`) manually.
 
-### Database schema and migrations
-
-- Canonical schema: `packages/store/src/db_maintenance/init_region.sql`; RLS: `init_rls.sql`.
-- Incremental changes live in `packages/store/src/db_maintenance/migrations/*.sql`. Use the existing files in `migrations_complete/` as examples.
-- If you add/modify tables used by UI, also update shared types in `packages/store/src/types/*` and ensure RLS rows match the app’s access patterns.
-- Local policy testing: see instructions in `packages/store/src/db_maintenance/README.md` (simulate `request.jwt.claims`).
-
-### Creating a new region app
-
-- Use `scripts/create-region.mjs` to copy `apps/region-template` (or `--supa` to copy from `region-pnw`). It will rename, update package metadata, and replace template references.
-- After creation, wire env vars and branding (nav, layout, `public/site.webmanifest`) as hinted in the script.
-
-### UI and patterns to follow
-
-- Reuse components from `packages/ui/src/components/**` (maps, forms, academy, dispatch, status badges, etc.).
-- For state, prefer existing Zustand stores in `packages/store/src/*` (e.g., `useDispatchStore`, `useProfileStore`) before introducing new ones.
-- HTTP/fetch helpers in `packages/ui/src/lib/http.ts` and feature-specific helpers (e.g., maps and QR code libs) should be reused.
-
-### Coding conventions
-
-- ESLint config from `packages/eslint-config/*`; run `pnpm lint` and `pnpm -w format` before committing.
-- Next.js App Router throughout; server actions and API routes must use the SSR Supabase client and never leak PII across regions.
-- Keep generated files and `.next/**` out of source edits; avoid touching `.turbo/` and app `.next/` folders.
-
-### Concrete examples
-
-- Server route pattern (region): `apps/region-pnw/app/api/bug-reports/route.ts` → uses `createSupabaseServerClient()` and checks `auth.getUser()`.
-- Env health check: `apps/region-pnw/app/api/debug/env/route.ts` shows minimal presence checks for required vars.
-- Map components and data: `packages/ui/src/components/maps/*` consume shared types from `packages/store/src/types/maps.ts`.
-
-If anything here seems ambiguous (e.g., missing test workflow, a new env var, or a pattern you can’t find in `ui`/`store`), flag it and propose a minimal, repo-consistent addition.

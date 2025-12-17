@@ -38,7 +38,7 @@ function mapRow(row: any): DispatchSubmission {
       : undefined,
     required_roles_by_type:
       typeof row?.required_roles_by_type === "object" &&
-      row?.required_roles_by_type
+        row?.required_roles_by_type
         ? row.required_roles_by_type
         : undefined,
     location_label:
@@ -102,7 +102,8 @@ function AdminDispatchBridge() {
     return () => {
       cancelled = true;
     };
-  }, [replaceSubmissions, submissions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replaceSubmissions]);
   return (
     <DispatchClient
       initialItems={initial ?? submissions}

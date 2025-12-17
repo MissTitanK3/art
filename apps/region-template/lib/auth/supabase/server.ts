@@ -1,10 +1,7 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { ensureSupabaseEnv } from "./utils";
-import {
-  createDemoSupabaseClient,
-  isDemoMode,
-} from "@/lib/demo/supabaseStub";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { ensureSupabaseEnv } from './utils';
+import { createDemoSupabaseClient, isDemoMode } from '@/lib/demo/supabaseStub';
 
 type SupabaseTarget = 'region' | 'admin';
 
@@ -62,6 +59,24 @@ export function createSupabaseRegionServiceClient() {
 
   if (!env.serviceRoleKey) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY for region service operations.');
+  }
+
+  return createServerClient(env.url, env.serviceRoleKey, {
+    cookies: {
+      getAll() {
+        return [];
+      },
+      setAll() {},
+    },
+  });
+}
+
+export function createSupabaseWizardServiceClient() {
+  if (isDemoMode()) return createDemoSupabaseClient();
+  const env = ensureSupabaseEnv('wizard');
+
+  if (!env.serviceRoleKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY_WIZZARD for wizard service operations.');
   }
 
   return createServerClient(env.url, env.serviceRoleKey, {

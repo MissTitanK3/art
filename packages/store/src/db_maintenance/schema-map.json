@@ -1,14 +1,14 @@
 {
   "pods": {
-    "children": ["roster_entries", "pod_shifts", "organization_pods", "dispatch_shifts"],
+    "children": ["roster_entries", "calendar_items", "organization_pods", "dispatch_shifts"],
     "delete": "archive"
   },
   "roster_entries": {
     "children": [],
     "delete": "archive"
   },
-  "pod_shifts": {
-    "children": ["pod_shift_signups"],
+  "calendar_items": {
+    "children": ["calendar_signups"],
     "delete": "archive"
   },
   "dispatch_submissions": {

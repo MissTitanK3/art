@@ -39,7 +39,7 @@ export default function WatchPage() {
   const [lightsOnly, setLightsOnly] = useState(false);
   const [sirensOnly, setSirensOnly] = useState(false);
   const [movingOnly, setMovingOnly] = useState(false);
-  const [timeWindow, setTimeWindow] = useState<string>("any"); // hours: 'any' | '2' | '6' | '12' | '24' | '72'
+  const [timeWindow, setTimeWindow] = useState<string>("12"); // hours: 'any' | '2' | '6' | '12' | '24' | '72'
   const [selectedAgencies, setSelectedAgencies] = useState<Set<string>>(
     new Set()
   );

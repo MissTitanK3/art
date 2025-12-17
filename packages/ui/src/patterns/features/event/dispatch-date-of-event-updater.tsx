@@ -14,44 +14,66 @@ export default function DispatchDateOfEventUpdater({
   submission,
   onUpdate,
 }: Props) {
+  const persistedValue = submission.date_of_event ?? null;
   const [value, setValue] = useState<string | undefined>(
-    submission.date_of_event ?? undefined
+    persistedValue ?? undefined
   );
+  const [recentlySaved, setRecentlySaved] = useState(false);
 
   useEffect(() => {
-    setValue(submission.date_of_event ?? undefined);
-  }, [submission.date_of_event]);
+    setValue(persistedValue ?? undefined);
+  }, [persistedValue]);
+
+  useEffect(() => {
+    if (!recentlySaved) return;
+
+    const timer = setTimeout(() => setRecentlySaved(false), 2000);
+    return () => clearTimeout(timer);
+  }, [recentlySaved]);
+
+  const isDirty = (value ?? null) !== persistedValue;
+  const primaryLabel = isDirty
+    ? "Update"
+    : persistedValue
+      ? "Updated"
+      : "Set Date";
 
   const handleSave = () => {
-    if (!value) {
-      onUpdate({ date_of_event: null });
-      return;
-    }
-    onUpdate({ date_of_event: value });
+    if (!isDirty) return;
+
+    onUpdate({ date_of_event: value ?? null });
+    setRecentlySaved(true);
   };
 
   const handleClear = () => {
+    if (!isDirty) return;
+
     setValue(undefined);
     onUpdate({ date_of_event: null });
+    setRecentlySaved(true);
   };
 
   return (
     <div className="space-y-2 items-center h-full w-full">
-      {/* <p className="font-medium">Event Date/Time</p> */}
       <div className="flex h-full flex-col gap-2 md:flex-row md:items-end md:gap-3 w-full">
         <DateTimePicker
           label="Date of Event"
           value={value}
           onChange={setValue}
         />
-        <div className="flex gap-2 w-full md:w-auto mt-auto md:mt-0 justify-end md:self-end">
+        <div className="flex gap-2 w-full md:w-auto mt-auto md:mt-0 justify-end md:self-end items-center">
+          {isDirty || recentlySaved ? (
+            <span className="text-xs text-muted-foreground" aria-live="polite">
+              {isDirty ? "Unsaved changes" : "Updated"}
+            </span>
+          ) : null}
           {value ? (
             <Button size="sm" variant="outline" onClick={handleClear}>
               Clear
             </Button>
           ) : null}
-          <Button size="sm" onClick={handleSave}>
-            Save
+          <Button size="sm" onClick={handleSave} disabled={!isDirty}>
+            {primaryLabel}
           </Button>
         </div>
       </div>

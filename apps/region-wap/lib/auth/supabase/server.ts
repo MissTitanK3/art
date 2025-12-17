@@ -66,3 +66,20 @@ export function createSupabaseRegionServiceClient() {
     },
   });
 }
+
+export function createSupabaseWizardServiceClient() {
+  const env = ensureSupabaseEnv('wizard');
+
+  if (!env.serviceRoleKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY_WIZZARD for wizard service operations.');
+  }
+
+  return createServerClient(env.url, env.serviceRoleKey, {
+    cookies: {
+      getAll() {
+        return [];
+      },
+      setAll() {},
+    },
+  });
+}

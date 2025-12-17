@@ -37,7 +37,7 @@ const ProfileStoreContext = createContext<StoreApi<ProfileStoreState> | null>(
 );
 
 const PROFILE_SYNC_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-const PROFILE_BASE_STORAGE_KEY = "profile-store";
+const PROFILE_BASE_STORAGE_KEY = "profile-store:region-stg";
 
 export function ProfileStoreProvider({
   children,

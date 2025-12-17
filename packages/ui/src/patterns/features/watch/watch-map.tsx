@@ -34,6 +34,7 @@ import {
   DrawerClose,
 } from "@workspace/ui/primitives/drawer";
 import { useLocalStorage } from "@workspace/ui/hooks/use-local-storage";
+import { DateTime } from "luxon"; // Use luxon for date/time filtering
 
 type ActionMode = "create" | "view" | "none";
 
@@ -349,6 +350,80 @@ export default function WatchMap({
       ? "create"
       : "none";
 
+  // --- FILTER LOGIC ---
+  const filteredReports = useMemo(() => {
+    return reports.filter((r) => {
+      // Filter by query (agency, submitter, direction, etc.)
+      if (filterQuery && filterQuery.trim()) {
+        const q = filterQuery.trim().toLowerCase();
+        const agency = Array.isArray(r.agency_type)
+          ? r.agency_type.join(" ").toLowerCase()
+          : (r.agency_type || "").toLowerCase();
+        // const direction = (r.direction || "").toLowerCase();
+        if (
+          !agency.includes(q)
+        ) {
+          return false;
+        }
+      }
+
+      // Filter by time window
+      if (filterTimeWindow && filterTimeWindow !== "any") {
+        const hours = Number(filterTimeWindow);
+        if (Number.isFinite(hours)) {
+          const since = DateTime.now().minus({ hours });
+          if (DateTime.fromISO(r.timestamp) < since) {
+            return false;
+          }
+        }
+      }
+
+      // Filter by agencies
+      if (
+        selectedAgencies &&
+        selectedAgencies.size > 0 &&
+        availableAgencies &&
+        availableAgencies.length > 0
+      ) {
+        const agencyList = Array.isArray(r.agency_type)
+          ? r.agency_type
+          : r.agency_type
+            ? [r.agency_type]
+            : [];
+        const hasAgency = agencyList.some((a) => selectedAgencies.has(a));
+        if (!hasAgency) return false;
+      }
+
+      // Hide test
+      if (hideTest && (r as any)?.is_test) return false;
+
+      // Media only
+      if (withMediaOnly && !r.media_url) return false;
+
+      // Lights only
+      if (lightsOnly && !r.lights_on) return false;
+
+      // Sirens only
+      if (sirensOnly && !r.sirens_on) return false;
+
+      // Moving only
+      if (movingOnly && !(r as any)?.is_moving) return false;
+
+      return true;
+    });
+  }, [
+    reports,
+    filterQuery,
+    filterTimeWindow,
+    selectedAgencies,
+    availableAgencies,
+    hideTest,
+    withMediaOnly,
+    lightsOnly,
+    sirensOnly,
+    movingOnly,
+  ]);
+
   return (
     <div
       className={cn(
@@ -400,7 +475,7 @@ export default function WatchMap({
               </div>
 
               {typeof filterQuery !== "undefined" ||
-              typeof filterTimeWindow !== "undefined" ? (
+                typeof filterTimeWindow !== "undefined" ? (
                 <div className="space-y-4">
                   <div>
                     <label
@@ -557,12 +632,12 @@ export default function WatchMap({
 
         <FocusController focus={focusPoint} fallbackZoom={zoom} />
         <ViewportReporter
-          reports={reports}
+          reports={filteredReports}
           resolveCoords={resolveCoords}
           onVisibleReportsChange={onVisibleReportsChange}
         />
 
-        {reports.map((r) => {
+        {filteredReports.map((r) => {
           const coords = resolveCoords(r);
           if (!coords) return null;
           const [lat, lng] = coords;

@@ -128,8 +128,7 @@ export default async function RootLayout({
             metadata: (supaUser.user as any)?.user_metadata ?? undefined,
           },
           accessToken: (supaSession.session as any)?.access_token ?? "",
-          refreshToken:
-            (supaSession.session as any)?.refresh_token ?? undefined,
+          refreshToken: undefined,
           expiresAt: (supaSession.session as any)?.expires_at ?? null,
           provider: "supabase",
         }

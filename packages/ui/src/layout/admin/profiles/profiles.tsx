@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import type { Profile } from "@workspace/store/types/global.ts";
 import {
   AccessRoles,
@@ -9,20 +9,17 @@ import {
   verifierLabel,
 } from "@workspace/store/types/roles.ts";
 import {
+  SortableTable,
+  useSortableData,
+  type Column,
+} from "@workspace/ui/patterns/common/sortable-table";
+import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/primitives/table";
 import { Button } from "@workspace/ui/primitives/button";
 import { Badge } from "@workspace/ui/primitives/badge";
 import {
@@ -144,8 +141,9 @@ function lastCheckInBadge(lastCheckIn?: string | null) {
 }
 type Props = {
   initialProfiles: Profile[];
+  totalItems?: number;
 };
-export default function ProfilesClient({ initialProfiles }: Props) {
+export default function ProfilesClient({ initialProfiles, totalItems }: Props) {
   const profileFromStore = useProfileStore((s) => s.profile);
   const profileRoles = useMemo(
     () =>
@@ -164,7 +162,10 @@ export default function ProfilesClient({ initialProfiles }: Props) {
   const [verifierFilter, setVerifierFilter] = useState<string>("");
   const [availabilityOnly, setAvailabilityOnly] = useState(false);
   const [rows, setRows] = useState<Profile[]>(() => initialProfiles);
+  const [totalCount, setTotalCount] = useState(totalItems);
+
   const filtered = useMemo(() => {
+    if (typeof totalItems === "number") return rows;
     return rows.filter((p) => {
       if (roleFilter && p.access_role !== roleFilter) return false;
       if (verifierFilter && p.verified_by !== verifierFilter) return false;
@@ -188,41 +189,435 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       return true;
     });
   }, [rows, query, roleFilter, verifierFilter, availabilityOnly]);
-  async function apiUpdate(
-    id: string,
-    patch: Partial<Profile>,
-    successLabel: string,
-  ) {
-    try {
-      const res = await fetch(`/api/admin/profiles/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
-      });
-      if (!res.ok) {
-        const msg = await safeErrorMessage(res);
-        throw new Error(msg);
+
+  const apiUpdate = useCallback(
+    async (id: string, patch: Partial<Profile>, successLabel: string) => {
+      try {
+        const res = await fetch(`/api/admin/profiles/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+        if (!res.ok) {
+          const msg = await safeErrorMessage(res);
+          throw new Error(msg);
+        }
+        const json = (await res.json()) as {
+          profile?: Profile | null;
+        };
+        const updated = json.profile ?? null;
+        if (updated) {
+          setRows((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, ...updated } : r)),
+          );
+        } else {
+          setRows((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+          );
+        }
+        toast.success(successLabel);
+      } catch (e: any) {
+        toast.error(e?.message ?? "Update failed");
       }
-      const json = (await res.json()) as {
-        profile?: Profile | null;
-      };
-      const updated = json.profile ?? null;
-      if (updated) {
-        setRows((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, ...updated } : r)),
-        );
-      } else {
-        setRows((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-        );
-      }
-      toast.success(successLabel);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Update failed");
+    },
+    [],
+  );
+
+  const columns = useMemo<Column<Profile>[]>(
+    () => [
+      {
+        header: "Actions",
+        id: "actions",
+        className: "text-right",
+        cell: (p) => {
+          const isUnregistered = !p.user_id;
+          return (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                sideOffset={8}
+                className="w-[min(20rem,calc(100vw-2rem))] sm:w-80 p-3"
+              >
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <div className="text-xs font-medium text-muted-foreground">
+                      Role
+                    </div>
+                    <Select
+                      value={p.access_role}
+                      onValueChange={(val) => {
+                        if (isUnregistered || !effectiveCanManage) return;
+                        apiUpdate(
+                          p.id,
+                          { access_role: val as any },
+                          "Role updated",
+                        );
+                      }}
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        disabled={isUnregistered || !effectiveCanManage}
+                        aria-disabled={isUnregistered || !effectiveCanManage}
+                        title={
+                          isUnregistered
+                            ? "Register this user to change role"
+                            : !effectiveCanManage
+                              ? "Insufficient permission"
+                              : undefined
+                        }
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        {AccessRoles.map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {roleLabel(r as any)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-muted-foreground">
+                      Coordination zone
+                    </div>
+                    <form
+                      className="grid grid-cols-1 gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (isUnregistered) return;
+                        const fd = new FormData(e.currentTarget);
+                        const value = String(
+                          fd.get("coordination_zone") ?? "",
+                        ).trim();
+                        apiUpdate(
+                          p.id,
+                          { coordination_zone: value } as any,
+                          value ? "Zone updated" : "Zone cleared",
+                        );
+                      }}
+                    >
+                      <Input
+                        name="coordination_zone"
+                        placeholder="e.g. sector-001"
+                        defaultValue={p.coordination_zone ?? ""}
+                        disabled={isUnregistered || !effectiveCanManage}
+                        title={
+                          isUnregistered
+                            ? "Register this user to change zone"
+                            : !effectiveCanManage
+                              ? "Insufficient permission"
+                              : undefined
+                        }
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={isUnregistered || !effectiveCanManage}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isUnregistered || !effectiveCanManage}
+                          title={
+                            isUnregistered
+                              ? "Register this user to change zone"
+                              : !effectiveCanManage
+                                ? "Insufficient permission"
+                                : undefined
+                          }
+                          onClick={() =>
+                            effectiveCanManage &&
+                            apiUpdate(
+                              p.id,
+                              { coordination_zone: "" } as any,
+                              "Zone cleared",
+                            )
+                          }
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={isUnregistered || !effectiveCanManage}
+                      title={
+                        isUnregistered
+                          ? "Register this user to verify"
+                          : !effectiveCanManage
+                            ? "Insufficient permission"
+                            : undefined
+                      }
+                      onClick={() =>
+                        effectiveCanManage &&
+                        apiUpdate(
+                          p.id,
+                          { verified_by: "admin" } as any,
+                          "Verified by admin",
+                        )
+                      }
+                    >
+                      <ShieldCheck className="h-4 w-4 mr-2" /> Admin verify
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={isUnregistered || !effectiveCanManage}
+                      title={
+                        isUnregistered
+                          ? "Register this user to verify"
+                          : !effectiveCanManage
+                            ? "Insufficient permission"
+                            : undefined
+                      }
+                      onClick={() =>
+                        effectiveCanManage &&
+                        apiUpdate(
+                          p.id,
+                          { verified_by: "partner_org" } as any,
+                          "Verified by partner org",
+                        )
+                      }
+                    >
+                      <UserCheck className="h-4 w-4 mr-2" /> Partner verify
+                    </Button>
+
+                    <Button
+                      variant={
+                        p.verified_by === "suspended"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                      size="sm"
+                      title={
+                        isUnregistered
+                          ? "Register this user to change verification"
+                          : !effectiveCanManage
+                            ? "Insufficient permission"
+                            : undefined
+                      }
+                      onClick={() => {
+                        if (isUnregistered || !effectiveCanManage) return;
+                        const next =
+                          p.verified_by === "suspended" ? "self" : "suspended";
+                        apiUpdate(
+                          p.id,
+                          { verified_by: next as any },
+                          next === "suspended" ? "Suspended" : "Reactivated",
+                        );
+                      }}
+                    >
+                      {p.verified_by === "suspended" ? (
+                        <>
+                          <ShieldCheck className="h-4 w-4 mr-2" /> Activate
+                        </>
+                      ) : (
+                        <>
+                          <UserX className="h-4 w-4 mr-2" /> Suspend
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      variant={
+                        p.verified_by === "suspended" ? "secondary" : "outline"
+                      }
+                      size="sm"
+                      disabled={isUnregistered || !effectiveCanManage}
+                      title={
+                        isUnregistered
+                          ? "Register this user to change verification"
+                          : !effectiveCanManage
+                            ? "Insufficient permission"
+                            : undefined
+                      }
+                      onClick={() => {
+                        if (isUnregistered || !effectiveCanManage) return;
+                        const next =
+                          p.verified_by === "suspended" ? "self" : "suspended";
+                        apiUpdate(
+                          p.id,
+                          { verified_by: next as any },
+                          next === "suspended"
+                            ? "Marked suspended"
+                            : "Marked self-verified",
+                        );
+                      }}
+                    >
+                      {p.verified_by === "suspended" ? (
+                        <>
+                          <ShieldCheck className="h-4 w-4 mr-2" /> Unsuspend
+                          (verify self)
+                        </>
+                      ) : (
+                        <>
+                          <UserX className="h-4 w-4 mr-2" /> Mark suspended
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          );
+        },
+      },
+      {
+        header: "Name",
+        accessorKey: "display_name",
+        sortable: true,
+        cell: (p) => (
+          <div className="flex items-center gap-2">
+            <span>{p.display_name}</span>
+            {!p.user_id ? (
+              <Badge
+                variant="outline"
+                className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+              >
+                Unregistered
+              </Badge>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        header: "Role",
+        accessorKey: "access_role",
+        sortable: true,
+        cell: (p) => <AccessRoleBadge role={p.access_role} />,
+      },
+      {
+        header: "Verified",
+        accessorKey: "verified_by",
+        sortable: true,
+        cell: (p) => <VerifiedBadge who={p.verified_by} />,
+      },
+      {
+        header: "Available",
+        id: "available",
+        sortable: true,
+        accessorFn: (p) => p.state,
+        cell: (p) =>
+          p.state === "suspended" ? (
+            <Badge
+              variant="outline"
+              className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+            >
+              Suspended
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+            >
+              Active
+            </Badge>
+          ),
+      },
+      {
+        header: "Last check-in",
+        id: "last_check_in",
+        sortable: true,
+        accessorFn: (p) =>
+          p.last_profile_check_in ?? p.updated_at ?? p.inserted_at ?? "",
+        cell: (p) => {
+          const lastCheckInMeta = lastCheckInBadge(
+            p.last_profile_check_in ?? p.updated_at ?? p.inserted_at,
+          );
+          return (
+            <Badge
+              variant="outline"
+              className={lastCheckInMeta.className}
+              title={p.last_profile_check_in ?? p.updated_at ?? undefined}
+            >
+              {lastCheckInMeta.label}
+            </Badge>
+          );
+        },
+      },
+      {
+        header: "Affiliation",
+        accessorKey: "affiliation",
+        sortable: true,
+        className: "max-w-[220px] truncate",
+      },
+      {
+        header: "Signal",
+        accessorKey: "contact_signal",
+        sortable: true,
+        className: "max-w-[180px] truncate",
+      },
+      {
+        header: "Zone",
+        id: "zone",
+        sortable: true,
+        accessorFn: (p) => p.coordination_zone ?? p.city ?? "",
+        className: "max-w-[160px] truncate",
+      },
+    ],
+    [effectiveCanManage, apiUpdate],
+  );
+
+  const {
+    sortedData: sorted,
+    paginatedData,
+    sortConfig,
+    toggleSort,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+  } = useSortableData(filtered, columns, undefined, undefined, totalCount);
+
+  useEffect(() => {
+    if (typeof totalItems === "number") {
+      const params = new URLSearchParams();
+      params.set("page", currentPage.toString());
+      params.set("pageSize", pageSize.toString());
+      if (query) params.set("query", query);
+      if (roleFilter) params.set("access_role", roleFilter);
+      if (verifierFilter) params.set("verified_by", verifierFilter);
+      if (availabilityOnly) params.set("availability", "true");
+
+      fetch(`/api/admin/profiles?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.profiles) {
+            setRows(data.profiles);
+            setTotalCount(data.count);
+          }
+        })
+        .catch(() => toast.error("Failed to load profiles"));
     }
-  }
+  }, [
+    currentPage,
+    pageSize,
+    query,
+    roleFilter,
+    verifierFilter,
+    availabilityOnly,
+    totalItems,
+  ]);
+
   function exportJSON() {
-    const data = filtered.map(redactSensitive);
+    const data = sorted.map(redactSensitive);
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
@@ -242,7 +637,7 @@ export default function ProfilesClient({ initialProfiles }: Props) {
       "city",
     ] as const;
     const header = fields.join(",");
-    const lines = filtered.map((p) =>
+    const lines = sorted.map((p) =>
       fields.map((f) => csvEscape(String((p as any)[f] ?? ""))).join(","),
     );
     const csv = [header, ...lines].join("\n");
@@ -324,367 +719,20 @@ export default function ProfilesClient({ initialProfiles }: Props) {
             </div>
           </div>
 
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Actions</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Verified</TableHead>
-                  <TableHead>Available</TableHead>
-                  <TableHead>Last check-in</TableHead>
-                  <TableHead>Affiliation</TableHead>
-                  <TableHead>Signal</TableHead>
-                  <TableHead>Zone</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((p) => {
-                  const isUnregistered = !p.user_id;
-                  const lastCheckInMeta = lastCheckInBadge(
-                    p.last_profile_check_in ?? p.updated_at ?? p.inserted_at,
-                  );
-                  return (
-                    <TableRow key={p.id}>
-                      <TableCell className="text-right">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            align="start"
-                            sideOffset={8}
-                            className="w-[min(20rem,calc(100vw-2rem))] sm:w-80 p-3"
-                          >
-                            <div className="space-y-3">
-                              <div className="space-y-1">
-                                <div className="text-xs font-medium text-muted-foreground">
-                                  Role
-                                </div>
-                                <Select
-                                  value={p.access_role}
-                                  onValueChange={(val) => {
-                                    if (isUnregistered || !effectiveCanManage)
-                                      return;
-                                    apiUpdate(
-                                      p.id,
-                                      { access_role: val as any },
-                                      "Role updated",
-                                    );
-                                  }}
-                                >
-                                  <SelectTrigger
-                                    className="w-full"
-                                    disabled={
-                                      isUnregistered || !effectiveCanManage
-                                    }
-                                    aria-disabled={
-                                      isUnregistered || !effectiveCanManage
-                                    }
-                                    title={
-                                      isUnregistered
-                                        ? "Register this user to change role"
-                                        : !effectiveCanManage
-                                          ? "Insufficient permission"
-                                          : undefined
-                                    }
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent align="end">
-                                    {AccessRoles.map((r) => (
-                                      <SelectItem key={r} value={r}>
-                                        {roleLabel(r as any)}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              <div className="space-y-2">
-                                <div className="text-xs font-medium text-muted-foreground">
-                                  Coordination zone
-                                </div>
-                                <form
-                                  className="grid grid-cols-1 gap-2"
-                                  onSubmit={(e) => {
-                                    e.preventDefault();
-                                    if (isUnregistered) return;
-                                    const fd = new FormData(e.currentTarget);
-                                    const value = String(
-                                      fd.get("coordination_zone") ?? "",
-                                    ).trim();
-                                    apiUpdate(
-                                      p.id,
-                                      { coordination_zone: value } as any,
-                                      value ? "Zone updated" : "Zone cleared",
-                                    );
-                                  }}
-                                >
-                                  <Input
-                                    name="coordination_zone"
-                                    placeholder="e.g. sector-001"
-                                    defaultValue={p.coordination_zone ?? ""}
-                                    disabled={
-                                      isUnregistered || !effectiveCanManage
-                                    }
-                                    title={
-                                      isUnregistered
-                                        ? "Register this user to change zone"
-                                        : !effectiveCanManage
-                                          ? "Insufficient permission"
-                                          : undefined
-                                    }
-                                  />
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      type="submit"
-                                      size="sm"
-                                      disabled={
-                                        isUnregistered || !effectiveCanManage
-                                      }
-                                    >
-                                      Save
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      disabled={
-                                        isUnregistered || !effectiveCanManage
-                                      }
-                                      title={
-                                        isUnregistered
-                                          ? "Register this user to change zone"
-                                          : !effectiveCanManage
-                                            ? "Insufficient permission"
-                                            : undefined
-                                      }
-                                      onClick={() =>
-                                        effectiveCanManage &&
-                                        apiUpdate(
-                                          p.id,
-                                          { coordination_zone: "" } as any,
-                                          "Zone cleared",
-                                        )
-                                      }
-                                    >
-                                      Clear
-                                    </Button>
-                                  </div>
-                                </form>
-                              </div>
-
-                              <div className="grid grid-cols-1 gap-2">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  disabled={
-                                    isUnregistered || !effectiveCanManage
-                                  }
-                                  title={
-                                    isUnregistered
-                                      ? "Register this user to verify"
-                                      : !effectiveCanManage
-                                        ? "Insufficient permission"
-                                        : undefined
-                                  }
-                                  onClick={() =>
-                                    effectiveCanManage &&
-                                    apiUpdate(
-                                      p.id,
-                                      { verified_by: "admin" } as any,
-                                      "Verified by admin",
-                                    )
-                                  }
-                                >
-                                  <ShieldCheck className="h-4 w-4 mr-2" /> Admin
-                                  verify
-                                </Button>
-
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  disabled={
-                                    isUnregistered || !effectiveCanManage
-                                  }
-                                  title={
-                                    isUnregistered
-                                      ? "Register this user to verify"
-                                      : !effectiveCanManage
-                                        ? "Insufficient permission"
-                                        : undefined
-                                  }
-                                  onClick={() =>
-                                    effectiveCanManage &&
-                                    apiUpdate(
-                                      p.id,
-                                      { verified_by: "partner_org" } as any,
-                                      "Verified by partner org",
-                                    )
-                                  }
-                                >
-                                  <UserCheck className="h-4 w-4 mr-2" /> Partner
-                                  verify
-                                </Button>
-
-                                <Button
-                                  variant={
-                                    p.verified_by === "suspended"
-                                      ? "secondary"
-                                      : "destructive"
-                                  }
-                                  size="sm"
-                                  title={
-                                    isUnregistered
-                                      ? "Register this user to change verification"
-                                      : !effectiveCanManage
-                                        ? "Insufficient permission"
-                                        : undefined
-                                  }
-                                  onClick={() => {
-                                    if (isUnregistered || !effectiveCanManage)
-                                      return;
-                                    const next =
-                                      p.verified_by === "suspended"
-                                        ? "self"
-                                        : "suspended";
-                                    apiUpdate(
-                                      p.id,
-                                      { verified_by: next as any },
-                                      next === "suspended"
-                                        ? "Suspended"
-                                        : "Reactivated",
-                                    );
-                                  }}
-                                >
-                                  {p.verified_by === "suspended" ? (
-                                    <>
-                                      <ShieldCheck className="h-4 w-4 mr-2" />{" "}
-                                      Activate
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserX className="h-4 w-4 mr-2" /> Suspend
-                                    </>
-                                  )}
-                                </Button>
-
-                                <Button
-                                  variant={
-                                    p.verified_by === "suspended"
-                                      ? "secondary"
-                                      : "outline"
-                                  }
-                                  size="sm"
-                                  disabled={
-                                    isUnregistered || !effectiveCanManage
-                                  }
-                                  title={
-                                    isUnregistered
-                                      ? "Register this user to change verification"
-                                      : !effectiveCanManage
-                                        ? "Insufficient permission"
-                                        : undefined
-                                  }
-                                  onClick={() => {
-                                    if (isUnregistered || !effectiveCanManage)
-                                      return;
-                                    const next =
-                                      p.verified_by === "suspended"
-                                        ? "self"
-                                        : "suspended";
-                                    apiUpdate(
-                                      p.id,
-                                      { verified_by: next as any },
-                                      next === "suspended"
-                                        ? "Marked suspended"
-                                        : "Marked self-verified",
-                                    );
-                                  }}
-                                >
-                                  {p.verified_by === "suspended" ? (
-                                    <>
-                                      <ShieldCheck className="h-4 w-4 mr-2" />{" "}
-                                      Unsuspend (verify self)
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserX className="h-4 w-4 mr-2" /> Mark
-                                      suspended
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <span>{p.display_name}</span>
-                          {!p.user_id ? (
-                            <Badge
-                              variant="outline"
-                              className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                            >
-                              Unregistered
-                            </Badge>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <AccessRoleBadge role={p.access_role} />
-                      </TableCell>
-                      <TableCell>
-                        <VerifiedBadge who={p.verified_by} />
-                      </TableCell>
-                      <TableCell>
-                        {p.state === "suspended" ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                          >
-                            Suspended
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                          >
-                            Active
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={lastCheckInMeta.className}
-                          title={
-                            p.last_profile_check_in ?? p.updated_at ?? undefined
-                          }
-                        >
-                          {lastCheckInMeta.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="max-w-[220px] truncate">
-                        {p.affiliation ?? ""}
-                      </TableCell>
-                      <TableCell className="max-w-[180px] truncate">
-                        {p.contact_signal ?? ""}
-                      </TableCell>
-                      <TableCell className="max-w-[160px] truncate">
-                        {p.coordination_zone ?? p.city ?? ""}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <SortableTable
+            data={paginatedData}
+            columns={columns}
+            sortConfig={sortConfig}
+            onSort={toggleSort}
+            keyExtractor={(p) => p.id}
+            pagination={{
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage,
+              pageSize,
+              onPageSizeChange: setPageSize,
+            }}
+          />
         </CardContent>
       </Card>
     </section>

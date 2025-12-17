@@ -9,7 +9,30 @@ export async function PATCH(
     try {
         const { id } = await params;
         const { supabase } = await getAuthenticatedProfile();
-        const patch: Partial<any> = await req.json();
+        
+        // Validate patch payload to prevent arbitrary column updates
+        const json = await req.json();
+        const allowedFields = [
+            "location_label",
+            "status", 
+            "priority",
+            "visibility_radius_km",
+            "intended_action_preset",
+            "intended_action_notes",
+            "flagged"
+        ];
+        
+        const patch: Record<string, any> = {};
+        for (const key of allowedFields) {
+            if (key in json) {
+                patch[key] = json[key];
+            }
+        }
+
+        if (Object.keys(patch).length === 0) {
+            return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+        }
+
         const { error } = await supabase
             .from("dispatch_submissions")
             .update(patch)

@@ -1,6 +1,11 @@
 "use client";
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState, useCallback } from "react";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import {
+  SortableTable,
+  useSortableData,
+  type Column,
+} from "@workspace/ui/patterns/common/sortable-table";
 import {
   Card,
   CardContent,
@@ -8,14 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/primitives/table";
 import { Button } from "@workspace/ui/primitives/button";
 import { Badge } from "@workspace/ui/primitives/badge";
 import {
@@ -36,6 +33,7 @@ const WatchMap = lazy(
 );
 type Props = {
   initialItems: DispatchSubmission[];
+  totalItems?: number;
   onToggleFlag?: (id: string, flagged: boolean) => void;
 };
 const STATUS_OPTIONS: DispatchSubmission["status"][] = [
@@ -58,8 +56,9 @@ const TYPE_OPTIONS = [
   "technical_aid",
   "other",
 ] as const;
-export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
+export default function DispatchClient({ initialItems, totalItems, onToggleFlag }: Props) {
   const [query, setQuery] = useState("");
+  const [totalCount, setTotalCount] = useState(totalItems);
   const [status, setStatus] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [mapView, setMapView] = useState(false);
@@ -69,6 +68,7 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
     setRows(initialItems);
   }, [initialItems]);
   const filtered = useMemo(() => {
+    if (typeof totalItems === "number") return rows;
     return rows.filter((d) => {
       if (status && d.status !== status) return false;
       if (type && d.type !== type) return false;
@@ -85,38 +85,42 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
       }
       return true;
     });
-  }, [rows, status, type, query]);
-  async function toggleFlag(id: string) {
-    let nextFlag = false;
-    setRows((prev) =>
-      prev.map((d) => {
-        if (d.id === id) {
-          const next = Boolean(!(d as any).flagged);
-          nextFlag = next;
-          return { ...d, flagged: next } as any;
-        }
-        return d;
-      })
-    );
-    onToggleFlag?.(id, nextFlag);
-    try {
-      const res = await fetch(
-        `/api/admin/dispatches/${encodeURIComponent(id)}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ flagged: nextFlag }),
-        }
+  }, [rows, status, type, query, totalItems]);
+  const toggleFlag = useCallback(
+    async (id: string) => {
+      let nextFlag = false;
+      setRows((prev) =>
+        prev.map((d) => {
+          if (d.id === id) {
+            const next = Boolean(!(d as any).flagged);
+            nextFlag = next;
+            return { ...d, flagged: next } as any;
+          }
+          return d;
+        }),
       );
-      if (!res.ok) throw new Error(await safeErrorMessage(res));
-      toast.success(nextFlag ? "Flagged for review" : "Flag removed");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Update failed");
-    }
-  }
-  async function archive(id: string) {
+      onToggleFlag?.(id, nextFlag);
+      try {
+        const res = await fetch(
+          `/api/admin/dispatches/${encodeURIComponent(id)}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ flagged: nextFlag }),
+          },
+        );
+        if (!res.ok) throw new Error(await safeErrorMessage(res));
+        toast.success(nextFlag ? "Flagged for review" : "Flag removed");
+      } catch (e: any) {
+        toast.error(e?.message ?? "Update failed");
+      }
+    },
+    [onToggleFlag],
+  );
+
+  const archive = useCallback(async (id: string) => {
     setRows((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: "archived" } : d))
+      prev.map((d) => (d.id === id ? { ...d, status: "archived" } : d)),
     );
     try {
       const res = await fetch(
@@ -125,14 +129,142 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "archived" }),
-        }
+        },
       );
       if (!res.ok) throw new Error(await safeErrorMessage(res));
       toast.success("Dispatch archived");
     } catch (e: any) {
       toast.error(e?.message ?? "Archive failed");
     }
-  }
+  }, []);
+  const columns = useMemo<Column<DispatchSubmission>[]>(
+    () => [
+      {
+        header: "Time",
+        accessorKey: "timestamp",
+        sortable: true,
+        className: "whitespace-nowrap",
+        cell: (d) => new Date(d.timestamp).toLocaleString(),
+      },
+      {
+        header: "Type",
+        accessorKey: "type",
+        sortable: true,
+        cell: (d) => (
+          <Badge variant="outline">
+            {d.type ? DISPATCH_TYPE_LABELS[d.type] : "Other"}
+          </Badge>
+        ),
+      },
+      {
+        header: "Status",
+        accessorKey: "status",
+        sortable: true,
+        cell: (d) => {
+          const flagged = Boolean((d as any).flagged);
+          return (
+            <div className="flex items-center gap-2">
+              <span>{d.status}</span>
+              {flagged ? <Badge variant="secondary">Flagged</Badge> : null}
+            </div>
+          );
+        },
+      },
+      {
+        header: "Label",
+        accessorKey: "location_label",
+        sortable: true,
+        className: "max-w-[240px] truncate",
+      },
+      {
+        header: "State",
+        accessorKey: "state",
+        sortable: true,
+      },
+      {
+        header: "Training",
+        accessorKey: "training",
+        sortable: true,
+        cell: (d) =>
+          d.training ? <Badge variant="outline">Training</Badge> : "",
+      },
+      {
+        header: "Actions",
+        id: "actions",
+        className: "text-right",
+        cell: (d) => {
+          const flagged = Boolean((d as any).flagged);
+          return (
+            <div className="inline-flex gap-2">
+              <Button asChild variant="outline" size="sm">
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`/dispatches/submission/${d.id}`}
+                >
+                  View
+                </a>
+              </Button>
+              <Button
+                size="sm"
+                variant={flagged ? "outline" : "secondary"}
+                onClick={() => toggleFlag(d.id)}
+              >
+                {flagged ? (
+                  <>
+                    <FlagOff className="h-4 w-4 mr-2" /> Unflag
+                  </>
+                ) : (
+                  <>
+                    <Flag className="h-4 w-4 mr-2" /> Flag
+                  </>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => archive(d.id)}
+              >
+                <Archive className="h-4 w-4 mr-2" /> Archive
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [toggleFlag, archive],
+  );
+
+  const {
+    sortedData: sorted,
+    paginatedData,
+    sortConfig,
+    toggleSort,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+  } = useSortableData(filtered, columns, undefined, undefined, totalCount);
+
+  useEffect(() => {
+    if (typeof totalItems === "number") {
+      const params = new URLSearchParams();
+      params.set("page", currentPage.toString());
+      params.set("pageSize", pageSize.toString());
+
+      fetch(`/api/admin/dispatches?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.submissions) {
+            setRows(data.submissions);
+            setTotalCount(data.count);
+          }
+        })
+        .catch(() => toast.error("Failed to load dispatches"));
+    }
+  }, [currentPage, pageSize, totalItems]);
+
   // AAR export hidden/back-burner
   const { reports, idMap } = useMemo(() => {
     const map: Record<number, string> = {};
@@ -252,92 +384,20 @@ export default function DispatchClient({ initialItems, onToggleFlag }: Props) {
               </Suspense>
             </div>
           ) : (
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Label</TableHead>
-                    <TableHead>State</TableHead>
-                    <TableHead>Training</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((d) => {
-                    const flagged = Boolean((d as any).flagged);
-                    return (
-                      <TableRow key={d.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {new Date(d.timestamp).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {d.type ? DISPATCH_TYPE_LABELS[d.type] : "Other"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span>{d.status}</span>
-                            {flagged ? (
-                              <Badge variant="secondary">Flagged</Badge>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                        <TableCell className="max-w-[240px] truncate">
-                          {d.location_label ?? ""}
-                        </TableCell>
-                        <TableCell>{d.state ?? ""}</TableCell>
-                        <TableCell>
-                          {d.training ? (
-                            <Badge variant="outline">Training</Badge>
-                          ) : (
-                            ""
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="inline-flex gap-2">
-                            <Button asChild variant="outline" size="sm">
-                              <a
-                                target="_blank"
-                                rel="noreferrer"
-                                href={`/dispatches/submission/${d.id}`}
-                              >
-                                View
-                              </a>
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={flagged ? "outline" : "secondary"}
-                              onClick={() => toggleFlag(d.id)}
-                            >
-                              {flagged ? (
-                                <>
-                                  <FlagOff className="h-4 w-4 mr-2" /> Unflag
-                                </>
-                              ) : (
-                                <>
-                                  <Flag className="h-4 w-4 mr-2" /> Flag
-                                </>
-                              )}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => archive(d.id)}
-                            >
-                              <Archive className="h-4 w-4 mr-2" /> Archive
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+            <SortableTable
+              data={paginatedData}
+              columns={columns}
+              sortConfig={sortConfig}
+              onSort={toggleSort}
+              keyExtractor={(d) => d.id}
+              pagination={{
+                currentPage,
+                totalPages,
+                onPageChange: setCurrentPage,
+                pageSize,
+                onPageSizeChange: setPageSize,
+              }}
+            />
           )}
         </CardContent>
       </Card>

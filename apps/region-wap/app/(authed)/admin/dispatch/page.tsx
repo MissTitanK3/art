@@ -38,7 +38,7 @@ function mapRow(row: any): DispatchSubmission {
       : undefined,
     required_roles_by_type:
       typeof row?.required_roles_by_type === "object" &&
-      row?.required_roles_by_type
+        row?.required_roles_by_type
         ? row.required_roles_by_type
         : undefined,
     location_label:
@@ -76,19 +76,22 @@ function AdminDispatchBridge() {
   const replaceSubmissions = useDispatchStore((s) => s.replaceSubmissions);
   const submissions = useDispatchStore((s) => s.submissions);
   const [initial, setInitial] = useState<DispatchSubmission[] | null>(null);
+  const [totalItems, setTotalItems] = useState<number | undefined>(undefined);
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/admin/dispatches", {
+        const res = await fetch("/api/admin/dispatches?page=1&pageSize=50", {
           cache: "no-store",
         });
         if (res.ok) {
           const json = await res.json();
           const rows = Array.isArray(json?.submissions) ? json.submissions : [];
+          const count = json?.count ?? 0;
           const mapped = rows.map(mapRow);
           if (!cancelled) {
             setInitial(mapped);
+            setTotalItems(count);
             // Replace store for consistency across app
             replaceSubmissions(mapped);
           }
@@ -102,10 +105,12 @@ function AdminDispatchBridge() {
     return () => {
       cancelled = true;
     };
-  }, [replaceSubmissions, submissions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replaceSubmissions]);
   return (
     <DispatchClient
       initialItems={initial ?? submissions}
+      totalItems={totalItems}
       onToggleFlag={(id, flagged) => updateSubmission(id, { flagged })}
     />
   );

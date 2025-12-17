@@ -1,6 +1,11 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import type { Pod } from "@workspace/store/types/pod.ts";
+import {
+  SortableTable,
+  useSortableData,
+  type Column,
+} from "@workspace/ui/patterns/common/sortable-table";
 import {
   Card,
   CardContent,
@@ -8,14 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/primitives/table";
 import { Button } from "@workspace/ui/primitives/button";
 import { Badge } from "@workspace/ui/primitives/badge";
 import { Input } from "@workspace/ui/primitives/input";
@@ -33,20 +30,24 @@ import {
 import { Label } from "@workspace/ui/primitives/label";
 type Props = {
   initialPods: Pod[];
+  totalItems?: number;
 };
-export default function PodsClient({ initialPods }: Props) {
+export default function PodsClient({ initialPods, totalItems }: Props) {
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState<Pod[]>(() => initialPods);
+  const [totalCount, setTotalCount] = useState(totalItems);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameId, setRenameId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState<string>("");
+
   const filtered = useMemo(() => {
+    if (typeof totalItems === "number") return rows;
     const q = query.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((p) =>
       [p.name, p.area, p.slug].join("\n").toLowerCase().includes(q),
     );
-  }, [rows, query]);
+  }, [rows, query, totalItems]);
   async function createPod() {
     const name = prompt("Pod name");
     if (!name || !name.trim()) return;
@@ -75,11 +76,12 @@ export default function PodsClient({ initialPods }: Props) {
       toast.error(e?.message ?? "Create failed");
     }
   }
-  function openRename(pod: Pod) {
+  const openRename = useCallback((pod: Pod) => {
     setRenameId(pod.id);
     setRenameValue(pod.name);
     setRenameOpen(true);
-  }
+  }, []);
+
   async function submitRename() {
     const id = renameId;
     const nextName = renameValue.trim();
@@ -115,21 +117,122 @@ export default function PodsClient({ initialPods }: Props) {
       toast.error(e?.message ?? "Rename failed");
     }
   }
-  async function archivePod(id: string) {
-    const p = rows.find((x) => x.id === id);
-    if (!p) return;
-    if (!confirm(`Archive pod “${p.name}”?`)) return;
+
+  const archivePod = useCallback(async (pod: Pod) => {
+    if (!confirm(`Archive pod “${pod.name}”?`)) return;
     try {
-      const res = await fetch(`/api/admin/pods/${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/admin/pods/${encodeURIComponent(pod.id)}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(await safeErrorMessage(res));
-      setRows((prev) => prev.filter((x) => x.id !== id));
+      setRows((prev) => prev.filter((x) => x.id !== pod.id));
       toast.success("Pod archived");
     } catch (e: any) {
       toast.error(e?.message ?? "Archive failed");
     }
-  }
+  }, []);
+
+  const columns = useMemo<Column<Pod>[]>(
+    () => [
+      {
+        header: "Pod",
+        accessorKey: "name",
+        sortable: true,
+        cell: (pod) => (
+          <div className="flex flex-col">
+            <span>{pod.name}</span>
+            <span className="text-xs text-muted-foreground">{pod.slug}</span>
+          </div>
+        ),
+      },
+      {
+        header: "Area",
+        accessorKey: "area",
+        sortable: true,
+      },
+      {
+        header: "Members",
+        accessorKey: "team",
+        cell: (pod) => (
+          <Badge variant="outline">{pod.team.length} members</Badge>
+        ),
+      },
+      {
+        header: "Channels",
+        accessorKey: "channels",
+        cell: (pod) => (
+          <div className="max-w-[280px] truncate">
+            {pod.channels.map((c, i) => (
+              <Badge key={i} variant="outline" className="mr-1">
+                {c.type}
+              </Badge>
+            ))}
+          </div>
+        ),
+      },
+      {
+        header: "Actions",
+        id: "actions",
+        className: "text-right",
+        cell: (pod) => (
+          <div className="inline-flex gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href={`/pods/${pod.id}/roster`}>
+                <Users className="h-4 w-4 mr-2" /> Members
+              </a>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => openRename(pod)}
+            >
+              <Edit className="h-4 w-4 mr-2" /> Rename
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => archivePod(pod)}
+            >
+              <Archive className="h-4 w-4 mr-2" /> Archive
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [openRename, archivePod],
+  );
+
+  const {
+    sortedData: sorted,
+    paginatedData,
+    sortConfig,
+    toggleSort,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+  } = useSortableData(filtered, columns, undefined, undefined, totalCount);
+
+  useEffect(() => {
+    if (typeof totalItems === "number") {
+      const params = new URLSearchParams();
+      params.set("page", currentPage.toString());
+      params.set("pageSize", pageSize.toString());
+      if (query) params.set("query", query);
+
+      fetch(`/api/admin/pods?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.pods) {
+            setRows(data.pods);
+            setTotalCount(data.count);
+          }
+        })
+        .catch(() => toast.error("Failed to load pods"));
+    }
+  }, [currentPage, pageSize, query, totalItems]);
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -159,65 +262,20 @@ export default function PodsClient({ initialPods }: Props) {
           </div>
 
           <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pod</TableHead>
-                  <TableHead>Area</TableHead>
-                  <TableHead>Members</TableHead>
-                  <TableHead>Channels</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((pod) => (
-                  <TableRow key={pod.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex flex-col">
-                        <span>{pod.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {pod.slug}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{pod.area}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{pod.team.length} members</Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[280px] truncate">
-                      {pod.channels.map((c, i) => (
-                        <Badge key={i} variant="outline" className="mr-1">
-                          {c.type}
-                        </Badge>
-                      ))}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex gap-2">
-                        <Button asChild variant="outline" size="sm">
-                          <a href={`/pods/${pod.id}/roster`}>
-                            <Users className="h-4 w-4 mr-2" /> Members
-                          </a>
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => openRename(pod)}
-                        >
-                          <Edit className="h-4 w-4 mr-2" /> Rename
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => archivePod(pod.id)}
-                        >
-                          <Archive className="h-4 w-4 mr-2" /> Archive
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <SortableTable
+              data={paginatedData}
+              columns={columns}
+              sortConfig={sortConfig}
+              onSort={toggleSort}
+              keyExtractor={(d) => d.id}
+              pagination={{
+                currentPage,
+                totalPages,
+                onPageChange: setCurrentPage,
+                pageSize,
+                onPageSizeChange: setPageSize,
+              }}
+            />
           </div>
         </CardContent>
       </Card>

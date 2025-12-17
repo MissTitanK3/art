@@ -12,7 +12,14 @@ export async function getAuthenticatedProfile() {
         .from("profiles")
         .select("*")
         .eq("user_id", userData.user.id)
-        .single();
+        .eq("user_id", userData.user.id)
+        .maybeSingle();
+
+    if (!profile) {
+        // Option: return a dummy profile or throw specific error?
+        // Feedback suggested "throw 403 PROFILE_REQUIRED" logic
+        throw new Error("PROFILE_REQUIRED");
+    }
 
     return { user: userData.user, profile, supabase };
 }

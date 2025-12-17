@@ -49,7 +49,7 @@ if (!args.whitelist) {
 const APPS_DIR = path.join(ROOT, 'apps');
 const DEFAULT_OUT = path.join(ROOT, '.check-unaligned-region');
 const OUT_DIR = args.out ? path.resolve(ROOT, args.out) : DEFAULT_OUT;
-const BASELINE_NAME = args.baseline || (args.demo ? 'region-template' : 'region-pnw');
+const BASELINE_NAME = args.baseline || (args.demo ? 'region-template' : 'region-stg');
 const DEFAULT_IGNORE = [
   'node_modules', '.next', '.turbo', '.git', 'dist', 'build', 'coverage',
   'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock',

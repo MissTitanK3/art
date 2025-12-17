@@ -3,6 +3,6 @@ import { getProfiles } from "@/lib/dal/admin";
 import type { Profile } from "@workspace/store/types/global.ts";
 
 export default async function AdminProfilesPage() {
-  const profilesDb: Profile[] = await getProfiles();
-  return <ProfilesClient initialProfiles={profilesDb} />;
+  const { data: profilesDb, count } = await getProfiles(undefined, 1, 50);
+  return <ProfilesClient initialProfiles={profilesDb} totalItems={count} />;
 }

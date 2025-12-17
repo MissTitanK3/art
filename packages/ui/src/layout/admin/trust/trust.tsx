@@ -8,14 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/primitives/table";
 import { Button } from "@workspace/ui/primitives/button";
 import { Label } from "@workspace/ui/primitives/label";
 import {
@@ -39,9 +31,16 @@ import { Plus, PauseCircle, PlayCircle, Download } from "lucide-react";
 import { humanize } from "@workspace/ui/lib/utils";
 import { safeErrorMessage } from "@workspace/ui/lib/http";
 import { Callout } from "@workspace/ui/patterns/features/academy/callout";
+import {
+  SortableTable,
+  useSortableData,
+  type Column,
+} from "@workspace/ui/patterns/common/sortable-table";
+
 type Props = {
   initialEntries: TrustEntry[];
   nameById: Record<string, string>;
+  totalItems?: number;
 };
 const ROLE_OPTIONS: TrustEntry["signer_role"][] = [
   "regional_admin",
@@ -49,12 +48,13 @@ const ROLE_OPTIONS: TrustEntry["signer_role"][] = [
   "trainer",
 ];
 const STATUS_OPTIONS: TrustEntry["status"][] = ["active", "inactive"];
-export default function TrustClient({ initialEntries, nameById }: Props) {
+export default function TrustClient({ initialEntries, nameById, totalItems }: Props) {
   const CHECKIN_DAYS = 90; // default check-in cadence for ROT
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [rows, setRows] = useState<TrustEntry[]>(() => initialEntries);
+  const [totalCount, setTotalCount] = useState(totalItems);
   // SSR-stable date formatting and time reference
   const dateFmt = useMemo(
     () =>
@@ -80,6 +80,7 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
   const [newRole, setNewRole] =
     useState<TrustEntry["signer_role"]>("pod_leader");
   const filtered = useMemo(() => {
+    if (typeof totalItems === "number") return rows;
     return rows.filter((e) => {
       if (role && e.signer_role !== role) return false;
       if (status && e.status !== status) return false;
@@ -93,7 +94,8 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       }
       return true;
     });
-  }, [rows, role, status, query, nameById]);
+  }, [rows, role, status, query, nameById, totalItems]);
+
   async function addEntry() {
     if (!newSubjectId || !newSignerId) {
       toast.error("Select both Subject and Signer");
@@ -126,23 +128,22 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       toast.error(e?.message ?? "Add failed");
     }
   }
-  async function toggleStatus(idx: number) {
-    const e = rows[idx];
-    if (!e) return;
+
+  async function toggleStatus(e: TrustEntry) {
     const nextStatus: TrustEntry["status"] =
       e.status === "inactive" ? "active" : "inactive";
     // optimistic
     setRows((prev) =>
-      prev.map((row, i) =>
-        i === idx
+      prev.map((row) =>
+        row === e
           ? {
-              ...row,
-              status: nextStatus,
-              signed_at:
-                nextStatus === "active"
-                  ? new Date().toISOString()
-                  : row.signed_at,
-            }
+            ...row,
+            status: nextStatus,
+            signed_at:
+              nextStatus === "active"
+                ? new Date().toISOString()
+                : row.signed_at,
+          }
           : row,
       ),
     );
@@ -167,9 +168,164 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
       );
     } catch (err: any) {
       toast.error(err?.message ?? "Update failed");
+      // Revert on error
+      setRows((prev) =>
+        prev.map((row) => (row.subjectId === e.subjectId && row.signerId === e.signerId ? e : row)),
+      );
     }
   }
-  // re-verify disabled when ROT is not used
+
+  const columns = useMemo<Column<TrustEntry>[]>(
+    () => [
+      {
+        header: "Subject",
+        id: "subject",
+        sortable: true,
+        accessorFn: (e) => nameById[e.subjectId] || e.subjectId,
+        className: "max-w-[220px] truncate",
+      },
+      {
+        header: "Signer",
+        id: "signer",
+        sortable: true,
+        accessorFn: (e) => nameById[e.signerId] || e.signerId,
+        className: "max-w-[220px] truncate",
+      },
+      {
+        header: "Signer Role",
+        accessorKey: "signer_role",
+        sortable: true,
+        cell: (e) => humanize(e.signer_role),
+      },
+      {
+        header: "Signed",
+        id: "signed",
+        sortable: true,
+        accessorFn: (e) => e.signed_at,
+        cell: (e) => (
+          <span className="whitespace-nowrap">
+            {dateFmt.format(new Date(e.signed_at))}
+          </span>
+        ),
+      },
+      {
+        header: "Check-in",
+        id: "checkin",
+        cell: (e) => {
+          if (now == null) return <span className="text-muted-foreground">—</span>;
+          const signedAt = new Date(e.signed_at).getTime();
+          const dueAt = signedAt + CHECKIN_DAYS * 24 * 60 * 60 * 1000;
+          const diffDays = Math.ceil((dueAt - now) / (24 * 60 * 60 * 1000));
+          if (diffDays < 0) {
+            return (
+              <Badge
+                variant="outline"
+                className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+              >
+                Overdue {Math.abs(diffDays)}d
+              </Badge>
+            );
+          }
+          if (diffDays <= 14) {
+            return (
+              <Badge
+                variant="outline"
+                className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30"
+              >
+                Due in {diffDays}d
+              </Badge>
+            );
+          }
+          return (
+            <Badge
+              variant="outline"
+              className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+            >
+              Due in {diffDays}d
+            </Badge>
+          );
+        },
+      },
+      {
+        header: "Status",
+        accessorKey: "status",
+        sortable: true,
+        cell: (e) =>
+          e.status === "active" ? (
+            <Badge
+              variant="outline"
+              className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+            >
+              Active
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+            >
+              Inactive
+            </Badge>
+          ),
+      },
+      {
+        header: "Actions",
+        id: "actions",
+        className: "text-right",
+        cell: (e) => (
+          <div className="inline-flex gap-2">
+            <Button
+              size="sm"
+              variant={e.status === "active" ? "destructive" : "secondary"}
+              onClick={() => toggleStatus(e)}
+            >
+              {e.status === "active" ? (
+                <>
+                  <PauseCircle className="h-4 w-4 mr-2" /> Deactivate
+                </>
+              ) : (
+                <>
+                  <PlayCircle className="h-4 w-4 mr-2" /> Resume
+                </>
+              )}
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [nameById, dateFmt, now],
+  );
+
+  const {
+    paginatedData,
+    sortConfig,
+    toggleSort,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+  } = useSortableData(filtered, columns, undefined, undefined, totalCount);
+
+  useEffect(() => {
+    if (typeof totalItems === "number") {
+      const params = new URLSearchParams();
+      params.set("page", currentPage.toString());
+      params.set("pageSize", pageSize.toString());
+      if (role) params.set("signer_role", role);
+      if (status) params.set("status", status);
+
+      fetch(`/api/admin/trust?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.entries) {
+            setRows(data.entries);
+            setTotalCount(data.count);
+          }
+        })
+        .catch(() => toast.error("Failed to load trust entries"));
+    }
+  }, [currentPage, pageSize, role, status, totalItems]);
+
   function exportJSON() {
     const blob = new Blob([JSON.stringify(filtered, null, 2)], {
       type: "application/json",
@@ -382,121 +538,20 @@ export default function TrustClient({ initialEntries, nameById }: Props) {
             </Select>
           </div>
 
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Signer</TableHead>
-                  <TableHead>Signer Role</TableHead>
-                  <TableHead>Signed</TableHead>
-                  <TableHead>Check-in</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((e, idx) => (
-                  <TableRow
-                    key={`${e.signerId}-${e.subjectId}-${e.signed_entry_hash}`}
-                  >
-                    <TableCell className="max-w-[220px] truncate">
-                      {nameById[e.subjectId] || e.subjectId}
-                    </TableCell>
-                    <TableCell className="max-w-[220px] truncate">
-                      {nameById[e.signerId] || e.signerId}
-                    </TableCell>
-                    <TableCell>{humanize(e.signer_role)}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {dateFmt.format(new Date(e.signed_at))}
-                    </TableCell>
-                    <TableCell suppressHydrationWarning>
-                      {now == null ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        (() => {
-                          const signedAt = new Date(e.signed_at).getTime();
-                          const dueAt =
-                            signedAt + CHECKIN_DAYS * 24 * 60 * 60 * 1000;
-                          const diffDays = Math.ceil(
-                            (dueAt - now) / (24 * 60 * 60 * 1000),
-                          );
-                          if (diffDays < 0) {
-                            return (
-                              <Badge
-                                variant="outline"
-                                className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                              >
-                                Overdue {Math.abs(diffDays)}d
-                              </Badge>
-                            );
-                          }
-                          if (diffDays <= 14) {
-                            return (
-                              <Badge
-                                variant="outline"
-                                className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30"
-                              >
-                                Due in {diffDays}d
-                              </Badge>
-                            );
-                          }
-                          return (
-                            <Badge
-                              variant="outline"
-                              className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                            >
-                              Due in {diffDays}d
-                            </Badge>
-                          );
-                        })()
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {e.status === "active" ? (
-                        <Badge
-                          variant="outline"
-                          className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                        >
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                        >
-                          Inactive
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex gap-2">
-                        <Button
-                          size="sm"
-                          variant={
-                            e.status === "active" ? "destructive" : "secondary"
-                          }
-                          onClick={() => toggleStatus(idx)}
-                        >
-                          {e.status === "active" ? (
-                            <>
-                              <PauseCircle className="h-4 w-4 mr-2" />{" "}
-                              Deactivate
-                            </>
-                          ) : (
-                            <>
-                              <PlayCircle className="h-4 w-4 mr-2" /> Resume
-                            </>
-                          )}
-                        </Button>
-                        {/* Re-verify removed */}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <SortableTable
+            data={paginatedData}
+            columns={columns}
+            sortConfig={sortConfig}
+            onSort={toggleSort}
+            keyExtractor={(e) => `${e.signerId}-${e.subjectId}-${e.signed_entry_hash}`}
+            pagination={{
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage,
+              pageSize,
+              onPageSizeChange: setPageSize,
+            }}
+          />
         </CardContent>
       </Card>
       {/* Verify flow removed */}

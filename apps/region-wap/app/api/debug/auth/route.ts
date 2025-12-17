@@ -6,6 +6,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return new Response(null, { status: 404 });
+  }
   const cookieStore = await nextCookies();
   const cookieNames = cookieStore.getAll().map((c) => c.name);
 

@@ -26,6 +26,7 @@ begin
     create or replace function public.set_updated_at()
     returns trigger
     language plpgsql
+    set search_path = public
     as $func$
     begin
       new.updated_at = now();

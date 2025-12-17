@@ -311,61 +311,6 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
-  apps/region-norcal:
-    dependencies:
-      '@supabase/ssr':
-        specifier: ^0.7.0
-        version: 0.7.0(@supabase/supabase-js@2.57.4)
-      '@supabase/supabase-js':
-        specifier: ^2.57.4
-        version: 2.57.4
-      '@tanstack/react-table':
-        specifier: ^8.21.3
-        version: 8.21.3(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@workspace/store':
-        specifier: workspace:*
-        version: link:../../packages/store
-      '@workspace/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      lucide-react:
-        specifier: ^0.475.0
-        version: 0.475.0(react@19.2.1)
-      next:
-        specifier: 16.0.7
-        version: 16.0.7(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      next-themes:
-        specifier: ^0.4.6
-        version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      pdf-lib:
-        specifier: ^1.17.1
-        version: 1.17.1
-      react:
-        specifier: 19.2.1
-        version: 19.2.1
-      react-dom:
-        specifier: 19.2.1
-        version: 19.2.1(react@19.2.1)
-    devDependencies:
-      '@types/node':
-        specifier: ^20.19.9
-        version: 20.19.9
-      '@types/react':
-        specifier: 19.2.7
-        version: 19.2.7
-      '@types/react-dom':
-        specifier: 19.2.3
-        version: 19.2.3(@types/react@19.2.7)
-      '@workspace/eslint-config':
-        specifier: workspace:^
-        version: link:../../packages/eslint-config
-      '@workspace/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.2
-
   apps/region-pnw:
     dependencies:
       '@hookform/resolvers':
@@ -427,8 +372,11 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
-  apps/region-socal:
+  apps/region-stg:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^5.2.1
+        version: 5.2.1(react-hook-form@7.62.0(react@19.2.1))
       '@supabase/ssr':
         specifier: ^0.7.0
         version: 0.7.0(@supabase/supabase-js@2.57.4)
@@ -462,6 +410,9 @@ importers:
       react-dom:
         specifier: 19.2.1
         version: 19.2.1(react@19.2.1)
+      react-hook-form:
+        specifier: ^7.62.0
+        version: 7.62.0(react@19.2.1)
     devDependencies:
       '@types/node':
         specifier: ^20.19.9
