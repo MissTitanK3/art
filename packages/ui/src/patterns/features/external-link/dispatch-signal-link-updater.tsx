@@ -13,6 +13,8 @@ import { Input } from "@workspace/ui/primitives/input";
 import { useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner"; // ✅ toast import
+import { Alert, AlertDescription } from "@workspace/ui/primitives/alert";
+import { Shield } from "lucide-react";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
 import { useProfileStore } from "@workspace/store/useProfileStore";
@@ -112,6 +114,21 @@ export default function DispatchSignalLinkUpdater({
 
   return (
     <div className="space-y-2">
+      <Alert variant="default" className="bg-amber-900 border-amber-100">
+        <Shield className="h-4 w-4" />
+        <AlertDescription className="text-xs">
+          <strong>Private link security:</strong> Share only with confirmed participants.
+          This link grants operational access to coordination channels.{" "}
+          <a
+            href="/docs/signal-security"
+            className="underline hover:text-amber-900"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Security guidelines →
+          </a>
+        </AlertDescription>
+      </Alert>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
         <p className="font-medium">Private Dispatch Signal Link</p>
         {submission.signal_link ? (

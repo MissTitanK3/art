@@ -5,11 +5,13 @@ import {
   LogisticsItem,
   ImpactRiskLevel,
   VolunteerAttribution,
-} from "./dispatch.ts";
+} from './dispatch.ts';
 import { RosterEntry } from './pod.ts';
 import { WeeklyAvailability } from './profile.ts';
 import { AccessRole, FieldRole, VerifiedBy } from './roles.ts';
 import type { RegionOperationalMinimumOverride } from './academy-readiness.ts';
+
+export type DispatchPermissionLayer = 'awareness' | 'planning' | 'coordination' | 'outcomes';
 
 export type LinkLikeProps = {
   href?: string;
@@ -46,6 +48,8 @@ export type Profile = {
 
 export interface DispatchSubmission {
   id: string;
+  /** Brief summary of the event for situational awareness */
+  summary?: string;
   type?: DispatchType;
   location?: { lat: number; lng: number; [key: string]: any };
   timestamp: string;
@@ -60,6 +64,8 @@ export interface DispatchSubmission {
   submitted_by?: string | null;
   source?: 'dispatch' | 'manual' | 'system';
   visibility_radius_km?: number;
+  /** Controls who can see this dispatch - critical for privacy */
+  visibility_scope?: 'org_only' | 'org_and_region_masked' | 'region' | 'federated' | 'public';
   status: DispatchStatus;
   assigned_volunteers?: Partial<RosterEntry>[];
   required_roles_by_type?: Record<string, number>;
@@ -81,6 +87,8 @@ export interface DispatchSubmission {
   volunteer_attributions?: VolunteerAttribution[];
   updates?: DispatchUpdate[];
   logistics: LogisticsItem[];
+  /** Per-member permission overrides. Key: profile_id, Value: array of permission layers */
+  member_permissions?: Record<string, DispatchPermissionLayer[]>;
 }
 
 export type RegionSettings = {

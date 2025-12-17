@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import {
   Tabs,
   TabsContent,
@@ -11,7 +12,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/primitives/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/primitives/collapsible";
 import { Badge } from "@workspace/ui/primitives/badge";
+import { SituationalAwarenessCard } from "@workspace/ui/patterns/features/dispatch/situational-awareness-card";
 import DispatchStatusUpdater from "@workspace/ui/patterns/features/status/dispatch-status-updater";
 import DispatchIntendedActionsUpdater from "@workspace/ui/patterns/features/actions/dispatch-intended-actions-updater";
 import DispatchSignalLinkUpdater from "@workspace/ui/patterns/features/external-link/dispatch-signal-link-updater";
@@ -28,11 +35,13 @@ import { VolunteerAttributionPanel } from "@workspace/ui/patterns/features/impac
 import { ImpactMetricsPanel } from "@workspace/ui/patterns/features/impact/impact-metrics-panel";
 import { Button } from "@workspace/ui/primitives/button";
 import AfterActionReportGuide from "@workspace/ui/patterns/features/dispatch/after-action-report-guide";
-import { Share2, Flag } from "lucide-react";
+import { MemberPermissionsManager } from "@workspace/ui/patterns/features/permissions/member-permissions-manager";
+import { Share2, Flag, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import type { DispatchSubmission } from "@workspace/store/types/global.ts";
+import type { DispatchSubmission, DispatchPermissionLayer } from "@workspace/store/types/global.ts";
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
+import type { AccessRole } from "@workspace/store/types/roles.ts";
 import {
   Alert,
   AlertDescription,
@@ -40,14 +49,33 @@ import {
 } from "@workspace/ui/primitives/alert";
 import { bucketFor, bucketEmoji } from "./dispatch-buckets";
 import { humanize } from "@workspace/ui/lib/utils";
+import { RISK_EXPLANATIONS, VISIBILITY_EXPLANATIONS } from "@workspace/ui/lib/constants/dispatch";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/primitives/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@workspace/ui/primitives/sheet";
+import { Textarea } from "@workspace/ui/primitives/textarea";
 
 export type DispatchSubmissionLayoutProps = {
   submission: DispatchSubmission;
   defaultTab?:
   | "overview"
+  | "planning"
   | "roles"
   | "updates"
-  | "logistics"
   | "public_engagement"
   | "comms";
   loadingMessage?: React.ReactNode;
@@ -58,14 +86,9 @@ export type DispatchSubmissionLayoutProps = {
   roster?: RosterEntry[];
   commsTabContent?: React.ReactNode;
   commsTabLabel?: string;
-};
-
-const RISK_LEVEL_COLORS: Record<string, string> = {
-  unknown: "bg-gray-100 text-gray-800 border-gray-200",
-  low: "bg-green-100 text-green-800 border-green-200",
-  medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  high: "bg-orange-100 text-orange-800 border-orange-200",
-  critical: "bg-red-100 text-red-800 border-red-200",
+  viewerRole?: AccessRole | null;
+  viewerUserId?: string | null;
+  viewerProfileId?: string | null;
 };
 
 export function DispatchSubmissionLayout({
@@ -79,6 +102,9 @@ export function DispatchSubmissionLayout({
   roster = [],
   commsTabContent,
   commsTabLabel = "Comms",
+  viewerRole = null,
+  viewerUserId = null,
+  viewerProfileId = null,
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
@@ -86,9 +112,184 @@ export function DispatchSubmissionLayout({
     ? new Date(submission.date_of_event).toLocaleString()
     : undefined;
 
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    () => new Set<string>(["location", "intended-action", "notes"]),
+  );
+  const [isSummarySheetOpen, setIsSummarySheetOpen] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState(submission.summary ?? "");
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
+
   const urgency = bucketFor(submission);
   const urgencyIcon = bucketEmoji(urgency);
   const riskLevel = submission.risk_level ?? "unknown";
+  const riskColor =
+    RISK_EXPLANATIONS[riskLevel as keyof typeof RISK_EXPLANATIONS]?.color ?? "";
+  const visibilityScope = (
+    submission.visibility_scope ?? "org_and_region_masked"
+  ) as keyof typeof VISIBILITY_EXPLANATIONS;
+  const visibilityAudience =
+    VISIBILITY_EXPLANATIONS[visibilityScope]?.whoCanSee ?? "";
+  const submittedBy = submission.submitted_by?.toLowerCase?.();
+  const viewerUser = viewerUserId?.toLowerCase?.();
+  const viewerProfile = viewerProfileId?.toLowerCase?.();
+  const isCreator = Boolean(
+    (submittedBy && viewerUser && submittedBy === viewerUser) ||
+    (submittedBy && viewerProfile && submittedBy === viewerProfile),
+  );
+
+  const totalRoster = roster?.length ?? 0;
+  const activeRoster = (roster ?? []).filter(
+    (r) => (r.status ?? "") === "active",
+  ).length;
+
+  const resolveVisibility = () => {
+    if (isCreator) {
+      return {
+        showActionability: true,
+        showCoordination: true,
+        showSensitive: true,
+        showLifecycle: true,
+        showOutcomes: true,
+      };
+    }
+
+    // Check for per-dispatch member permission overrides
+    const memberPermissions = submission.member_permissions ?? {};
+    const viewerPermissions = viewerProfileId ? memberPermissions[viewerProfileId] : undefined;
+
+    if (viewerPermissions && viewerPermissions.length > 0) {
+      // Member has custom permissions for this dispatch
+      return {
+        showActionability: viewerPermissions.includes('planning' as DispatchPermissionLayer),
+        showCoordination: viewerPermissions.includes('coordination' as DispatchPermissionLayer),
+        showSensitive: viewerPermissions.includes('coordination' as DispatchPermissionLayer),
+        showLifecycle: viewerPermissions.includes('coordination' as DispatchPermissionLayer),
+        showOutcomes: viewerPermissions.includes('outcomes' as DispatchPermissionLayer),
+      };
+    }
+
+    if (!viewerRole) {
+      return {
+        showActionability: true,
+        showCoordination: true,
+        showSensitive: true,
+        showLifecycle: true,
+        showOutcomes: true,
+      };
+    }
+
+    const privilegedRoles: AccessRole[] = [
+      "dispatcher_basic",
+      "dispatcher_verified",
+      "dispatcher_admin",
+      "pod_leader",
+      "admin",
+      "regional_admin",
+      "national_admin",
+    ];
+    const coordinationRoles: AccessRole[] = privilegedRoles;
+    const sensitiveRoles: AccessRole[] = [
+      "dispatcher_verified",
+      "dispatcher_admin",
+      "admin",
+      "regional_admin",
+      "national_admin",
+    ];
+    const lifecycleRoles: AccessRole[] = sensitiveRoles;
+
+    // team_member can view basic dispatch details but not manage
+    const canViewBasicRoles: AccessRole[] = [
+      "team_member",
+      ...privilegedRoles,
+    ];
+
+    const showOutcomesStatuses: string[] = [
+      "verified_complete",
+      "debriefing",
+      "completed",
+      "archived",
+      "cancelled",
+      "expired",
+    ];
+
+    // All authenticated team members can see at least basic info (planning and coordination tabs not visible to basic members)
+    // This allows team members to see their dispatch assignments
+    return {
+      showActionability: privilegedRoles.includes(viewerRole),
+      showCoordination: privilegedRoles.includes(viewerRole),
+      showSensitive: sensitiveRoles.includes(viewerRole),
+      showLifecycle: lifecycleRoles.includes(viewerRole),
+      showOutcomes:
+        showOutcomesStatuses.includes(submission.status) ||
+        privilegedRoles.includes(viewerRole),
+    };
+  };
+
+  const visibility = resolveVisibility();
+  const canManageVisibility =
+    isCreator ||
+    (viewerRole
+      ? [
+        "dispatcher_verified",
+        "dispatcher_admin",
+        "admin",
+        "regional_admin",
+        "national_admin",
+      ].includes(viewerRole)
+      : false);
+  const canEditSummary = canManageVisibility;
+
+  const openSummarySheet = () => {
+    setSummaryDraft(submission.summary ?? "");
+    setIsSummarySheetOpen(true);
+  };
+
+  const handleSummarySheetChange = (open: boolean) => {
+    setIsSummarySheetOpen(open);
+    if (open) {
+      setSummaryDraft(submission.summary ?? "");
+    } else {
+      setSummaryDraft(submission.summary ?? "");
+    }
+  };
+
+  const handleSummarySave = () => {
+    onUpdateSubmission({ summary: summaryDraft.trim() });
+    setIsSummarySheetOpen(false);
+  };
+
+  const handleSummaryCancel = () => {
+    setSummaryDraft(submission.summary ?? "");
+    setIsSummarySheetOpen(false);
+  };
+
+  const audienceLabel = (
+    layer: "awareness" | "planning" | "coordination" | "outcomes",
+  ) => {
+    switch (layer) {
+      case "awareness":
+        return visibilityAudience || "Your org and region coordinators";
+      case "planning":
+        return "Creator + coordinators (dispatcher/pod leader/admin)";
+      case "coordination":
+        return "Creator + coordinators (roles tab)";
+      case "outcomes":
+        return "Creator + coordinators after completion";
+      default:
+        return "";
+    }
+  };
 
   const handleShare = () => {
     if (
@@ -110,58 +311,46 @@ export function DispatchSubmissionLayout({
       });
   };
 
-  const handleCopySummary = () => {
-    const summary = [
-      `📍 Location: ${submission.location_label ?? "Unknown"}${submission.state ? `, ${submission.state}` : ""}`,
-      `📅 Time: ${submission.date_of_event ? new Date(submission.date_of_event).toLocaleString() : new Date(submission.timestamp).toLocaleString()}`,
-      `⚡ Status: ${submission.status}`,
-      `🚨 Urgency: ${urgency}`,
-      `🛡️ Risk: ${humanize(riskLevel)}`,
-      submission.intended_action_preset
-        ? `🎯 Action: ${submission.intended_action_preset}`
-        : null,
-      submission.intended_action_notes
-        ? `📝 Notes: ${submission.intended_action_notes}`
-        : null,
-      submission.public_signal_link
-        ? `🔗 Public Link: ${submission.public_signal_link}`
-        : null,
-      submission.signal_link
-        ? `🔒 Private Dispatch Link: ${submission.signal_link}`
-        : null,
-    ]
-      .filter(Boolean)
-      .join("\n");
-    if (typeof navigator === "undefined" || !navigator.clipboard) {
-      toast.error("Clipboard access unavailable");
-      return;
-    }
-    navigator.clipboard
-      .writeText(summary)
-      .then(() => {
-        toast.success("Summary copied to clipboard");
-      })
-      .catch(() => {
-        toast.error("Failed to copy summary");
-      });
-  };
-
   const overviewSections = [
     {
       id: "location",
       title: "Location & Coverage",
       description: "Update dispatch location, map pin, and schedule details.",
+      visibilityHint: audienceLabel("awareness"),
       content: (
         <div className="space-y-4">
           <DispatchLocationUpdater
             submission={submission}
             onUpdate={onUpdateSubmission}
           />
-          <DispatchDateOfEventUpdater
-            submission={submission}
-            onUpdate={onUpdateSubmission}
-          />
-          <DispatchLocationPinSelector
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DispatchDateOfEventUpdater
+              submission={submission}
+              onUpdate={onUpdateSubmission}
+            />
+            <DispatchLocationPinSelector
+              submission={submission}
+              onUpdate={onUpdateSubmission}
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "notes",
+      title: "Notes & Context",
+      description: "Keep field updates and sensitive info in one place.",
+      visibilityHint: audienceLabel("coordination"),
+      content: (
+        <div className="space-y-3">
+          {canEditSummary ? (
+            <div className="flex w-full">
+              <Button size="sm" className="w-full" variant="outline" onClick={openSummarySheet}>
+                Edit Public Summary
+              </Button>
+            </div>
+          ) : null}
+          <DispatchNotesUpdater
             submission={submission}
             onUpdate={onUpdateSubmission}
           />
@@ -169,40 +358,11 @@ export function DispatchSubmissionLayout({
       ),
     },
     {
-      id: "logistics",
-      title: "Logistics",
-      description: "Manage transport, supplies, and other resources.",
-      content: (
-        <LogisticsPanel submission={submission} onUpdate={onUpdateSubmission} />
-      ),
-    },
-    {
-      id: "intended-action",
-      title: "Intended Action",
-      description: "Clarify goals, note changes, and coordinate next steps.",
-      content: (
-        <DispatchIntendedActionsUpdater
-          submission={submission}
-          onUpdate={onUpdateSubmission}
-        />
-      ),
-    },
-    {
-      id: "notes",
-      title: "Notes & Context",
-      description: "Keep field updates and sensitive info in one place.",
-      content: (
-        <DispatchNotesUpdater
-          submission={submission}
-          onUpdate={onUpdateSubmission}
-        />
-      ),
-    },
-    {
       id: "signal-link",
       title: "Signal Links",
       description:
-        "Set the Signal channels: public link invites new people that want to be part of the team in the future & private link is for the on-the-ground team.",
+        "Set the Signal channels: public link invites future responders & private link is for the on-the-ground team.",
+      visibilityHint: audienceLabel("coordination"),
       content: (
         <div className="space-y-4">
           <DispatchSignalLinkUpdater
@@ -220,6 +380,7 @@ export function DispatchSubmissionLayout({
       id: "volunteer-impact",
       title: "Volunteer Attribution",
       description: "Track hours, unlock Undo, and keep daily lifts realistic.",
+      visibilityHint: audienceLabel("coordination"),
       content: (
         <VolunteerAttributionPanel dispatchId={submission.id} roster={roster} />
       ),
@@ -228,6 +389,7 @@ export function DispatchSubmissionLayout({
       id: "impact-metrics",
       title: "Impact Metrics",
       description: "Log people served, resources moved, and risk level.",
+      visibilityHint: audienceLabel("outcomes"),
       content: (
         <ImpactMetricsPanel
           dispatchId={submission.id}
@@ -239,35 +401,123 @@ export function DispatchSubmissionLayout({
             updated_at: submission.updated_at,
             updated_by: submission.updated_by ?? null,
           }}
+          onChange={(metrics) =>
+            onUpdateSubmission({
+              risk_level: metrics.risk_level,
+              people_served: metrics.people_served,
+              resources_distributed: metrics.resources_distributed,
+              updated_at: metrics.updated_at ?? submission.updated_at,
+              updated_by: metrics.updated_by ?? submission.updated_by,
+            })
+          }
         />
       ),
     },
   ];
 
+  const planningSections = [
+    {
+      id: "intended-action",
+      title: "Intended Action",
+      description:
+        "Clarify goals, note changes, and coordinate next steps before mobilizing.",
+      visibilityHint: audienceLabel("planning"),
+      content: (
+        <DispatchIntendedActionsUpdater
+          submission={submission}
+          onUpdate={onUpdateSubmission}
+        />
+      ),
+    },
+    {
+      id: "updates",
+      title: "Updates",
+      description: "Running notes, incident log, and updates.",
+      visibilityHint: audienceLabel("planning"),
+      content: (
+        <DispatchUpdates
+          updates={submission.updates}
+          onAddUpdate={onAddUpdate}
+          onEditUpdate={onEditUpdate}
+          onRemoveUpdate={onRemoveUpdate}
+          afterComposer={<AfterActionReportGuide onAddUpdate={onAddUpdate} />}
+        />
+      ),
+    },
+    {
+      id: "logistics",
+      title: "Logistics",
+      description: "Manage transport, supplies, and other resources.",
+      visibilityHint: audienceLabel("planning"),
+      content: (
+        <LogisticsPanel submission={submission} onUpdate={onUpdateSubmission} />
+      ),
+    },
+  ];
+
+  const visibleOverviewSections = overviewSections.filter((section) => {
+    if (section.id === "impact-metrics" && !visibility.showOutcomes) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <div className="flex h-full flex-col">
+      <Sheet open={isSummarySheetOpen} onOpenChange={handleSummarySheetChange}>
+        <SheetContent side="right" className="p-0 bg-card text-card-foreground max-w-2xl z-[1200]">
+          <SheetHeader className="border-b px-6 py-4">
+            <SheetTitle>Edit Public Summary</SheetTitle>
+            <SheetDescription>
+              This summary is used in Public Engagement messaging and materials.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex h-full flex-col">
+            <div className="flex-1 space-y-3 px-6 py-4">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Public Summary</p>
+                <p className="text-xs text-muted-foreground">
+                  A concise, public-facing description used for posts, images, and flyers.
+                </p>
+              </div>
+              <Textarea
+                value={summaryDraft}
+                onChange={(e) => setSummaryDraft(e.target.value)}
+                className="min-h-[160px]"
+                placeholder="Summarize what’s happening for the public (what, where, urgency)"
+              />
+            </div>
+            <SheetFooter className="border-t px-6 py-4">
+              <div className="flex w-full gap-2">
+                <Button variant="outline" className="flex-1" onClick={handleSummaryCancel}>
+                  Cancel
+                </Button>
+                <Button className="flex-1" onClick={handleSummarySave}>
+                  Save Public Summary
+                </Button>
+              </div>
+            </SheetFooter>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       <div className="mb-3 flex flex-col justify-between border-b bg-background py-3 md:flex-row">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col items-center md:items-start gap-2">
-            {locationLabel ? (
-              <h2 className="text-lg font-bold">{locationLabel}</h2>
-            ) : null}
+            {locationLabel ? <h2 className="text-lg font-bold">{locationLabel}</h2> : null}
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs font-normal">
                 {urgencyIcon} {urgency}
               </Badge>
               <Badge
                 variant="outline"
-                className={`text-xs font-normal capitalize ${RISK_LEVEL_COLORS[riskLevel] ?? ""}`}
+                className={`text-xs font-normal capitalize ${riskColor}`}
               >
                 Risk: {humanize(riskLevel)}
               </Badge>
             </div>
             {timestamp ? (
-              <p
-                className="text-xs text-muted-foreground"
-                suppressHydrationWarning
-              >
+              <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                 {eventDate ? `Event: ${eventDate}` : timestamp}
               </p>
             ) : null}
@@ -284,7 +534,7 @@ export function DispatchSubmissionLayout({
             submission={submission}
             onUpdate={onUpdateSubmission}
           />
-          <Button size="sm" variant="default" onClick={handleShare}>
+          <Button size="sm" variant="default" className="w-full sm:w-auto" onClick={handleShare}>
             Share <Share2 className="ml-1 h-4 w-4" />
           </Button>
         </div>
@@ -308,9 +558,7 @@ export function DispatchSubmissionLayout({
                 identifiers and facility details so advocates can act fast.
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button size="sm" asChild>
-                    <a href="/missing-persons/intake">
-                      Open Missing Persons Intake
-                    </a>
+                    <a href="/missing-persons/intake">Open Missing Persons Intake</a>
                   </Button>
                   <Button size="sm" variant="outline" asChild>
                     <a href="/missing-persons">View Directory</a>
@@ -322,84 +570,297 @@ export function DispatchSubmissionLayout({
         ) : null;
       })()}
 
-      {loadingMessage ? (
-        <p className="px-4 text-sm text-muted-foreground">{loadingMessage}</p>
-      ) : null}
-
-      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
-        <TabsList className="mb-3 flex h-full w-full flex-wrap md:flex-nowrap">
-          <TabsTrigger value="overview" className="flex-1 basis-1/2">
+      <Tabs defaultValue={defaultTab} className="flex md:w-full">
+        <TabsList className="mb-3 flex h-full w-full flex-wrap gap-2 px-1 md:px-0">
+          <TabsTrigger
+            value="overview"
+            className="flex-1 min-w-[25%] px-2 py-2 text-sm sm:flex-none sm:min-w-[110px] sm:px-3 sm:text-base"
+          >
             Details
           </TabsTrigger>
-          <TabsTrigger value="roles" className="flex-1 basis-1/2">
-            Roles
-          </TabsTrigger>
-          <TabsTrigger value="updates" className="flex-1 basis-1/2">
-            Updates
-          </TabsTrigger>
-          <TabsTrigger value="public_engagement" className="flex-1 basis-1/2">
+          {visibility.showActionability ? (
+            <TabsTrigger
+              value="planning"
+              className="flex-1 min-w-[25%] px-2 py-2 text-sm sm:flex-none sm:min-w-[110px] sm:px-3 sm:text-base"
+            >
+              Planning
+            </TabsTrigger>
+          ) : null}
+          {visibility.showCoordination ? (
+            <TabsTrigger
+              value="roles"
+              className="flex-1 min-w-[25%] px-2 py-2 text-sm sm:flex-none sm:min-w-[110px] sm:px-3 sm:text-base"
+            >
+              Roles
+            </TabsTrigger>
+          ) : null}
+          <TabsTrigger
+            value="public_engagement"
+            className="flex-1 min-w-[25%] px-2 py-2 text-sm sm:flex-none sm:min-w-[110px] sm:px-3 sm:text-base"
+          >
             Public Engagement
           </TabsTrigger>
           {commsTabContent ? (
-            <TabsTrigger value="comms" className="flex-1 basis-1/2">
+            <TabsTrigger
+              value="comms"
+              className="flex-1 min-w-[25%] px-2 py-2 text-sm sm:flex-none sm:min-w-[110px] sm:px-3 sm:text-base"
+            >
               {commsTabLabel}
             </TabsTrigger>
           ) : null}
         </TabsList>
 
-        <TabsContent value="overview" className="flex-1 overflow-y-auto">
-          <div className="grid gap-4">
-            {overviewSections.map((section) => (
-              <Card key={section.id}>
-                <CardHeader className="space-y-1">
+        <TabsContent value="overview" className="w-full max-w-full">
+          <div className="flex gap-2 flex-col w-full max-w-full">
+            {/* Layer A: Always-visible Situational Awareness */}
+            <SituationalAwarenessCard submission={submission} />
+
+            {/* Visibility controls for creator / privileged roles */}
+            <Card className="border border-primary/20 w-full">
+              <CardHeader className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base font-semibold">
-                    {section.title}
+                    Visibility & Sharing
                   </CardTitle>
-                  {section.description ? (
-                    <p className="text-xs text-muted-foreground">
-                      {section.description}
-                    </p>
+                  {isCreator ? (
+                    <Badge variant="outline" className="text-xs">
+                      You are the creator
+                    </Badge>
                   ) : null}
-                </CardHeader>
-                <CardContent suppressHydrationWarning>
-                  {section.content}
-                </CardContent>
-              </Card>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Control who can see this dispatch. Sensitive details stay private by default.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Who can see this?</p>
+                  {canManageVisibility ? (
+                    <Select
+                      value={visibilityScope}
+                      onValueChange={(value) =>
+                        onUpdateSubmission({ visibility_scope: value as any })
+                      }
+                    >
+                      <SelectTrigger className="w-full h-auto min-h-[4.5rem] items-start text-left">
+                        <SelectValue className="py-4 whitespace-normal break-words leading-snug text-left" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[1300] max-w-[18rem]">
+                        <SelectGroup>
+                          <SelectLabel>Visibility scope</SelectLabel>
+                          {Object.entries(VISIBILITY_EXPLANATIONS).map(([key, info]) => (
+                            <SelectItem key={key} value={key}>
+                              <div className="flex flex-col gap-0.5 text-left">
+                                <span className="text-sm font-medium capitalize">{humanize(key)}</span>
+                                <span className="text-[11px] text-muted-foreground whitespace-normal break-words leading-snug text-left">
+                                  {info.definition}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{visibilityAudience}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3 pt-2 border-t">
+                  <p className="text-sm font-medium">Dispatch Member Permissions</p>
+                  <p className="text-xs text-muted-foreground">
+                    Assigned members see different levels of detail based on their role and the visibility layers below.
+                  </p>
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs w-full max-w-full">
+                    <div className="flex flex-col gap-1 rounded-lg border p-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[11px]">
+                          Awareness
+                        </Badge>
+                        <span className="font-medium">Basic Details</span>
+                      </div>
+                      <span className="text-muted-foreground">
+                        Visible to: Your org + region coordinators (others see masked version)
+                      </span>
+                      <span className="text-[11px] text-muted-foreground mt-1">
+                        Includes: Location, event date, urgency, status
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1 rounded-lg border p-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[11px]">
+                          Planning
+                        </Badge>
+                        <span className="font-medium">Operational Details</span>
+                      </div>
+                      <span className="text-muted-foreground">
+                        Visible to: Creator + coordinators (dispatcher/pod leader/admin)
+                      </span>
+                      <span className="text-[11px] text-muted-foreground mt-1">
+                        Includes: Intended actions, logistics, updates
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1 rounded-lg border p-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[11px]">
+                          Coordination
+                        </Badge>
+                        <span className="font-medium">Sensitive Info</span>
+                      </div>
+                      <span className="text-muted-foreground">
+                        Visible to: Creator + coordinators (roles tab)
+                      </span>
+                      <span className="text-[11px] text-muted-foreground mt-1">
+                        Includes: Notes, Signal links, roster management, volunteer attribution
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1 rounded-lg border p-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[11px]">
+                          Outcomes
+                        </Badge>
+                        <span className="font-medium">Impact & Results</span>
+                      </div>
+                      <span className="text-muted-foreground">
+                        Visible to: Creator + coordinators after completion
+                      </span>
+                      <span className="text-[11px] text-muted-foreground mt-1">
+                        Includes: Impact metrics, people served, resources distributed
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {canManageVisibility ? (
+                  <div className="pt-3 border-t">
+                    <MemberPermissionsManager
+                      submission={submission}
+                      roster={roster}
+                      onUpdate={onUpdateSubmission}
+                      canManage={canManageVisibility}
+                    />
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+
+            {/* Collapsible operational sections */}
+            {visibleOverviewSections.map((section) => (
+              <Collapsible
+                key={section.id}
+                open={expandedSections.has(section.id)}
+                onOpenChange={() => toggleSection(section.id)}
+              >
+                <Card className="w-full">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="space-y-1 cursor-pointer hover:bg-muted/50 transition-colors py-3 w-full">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-base font-semibold">
+                            {section.title}
+                          </CardTitle>
+                          {section.description ? (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {section.description}
+                            </p>
+                          ) : null}
+                          {section.visibilityHint ? (
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              Who can see: {section.visibilityHint}
+                            </p>
+                          ) : null}
+                        </div>
+                        {expandedSections.has(section.id) ? (
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent suppressHydrationWarning>
+                      {section.content}
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             ))}
           </div>
         </TabsContent>
 
-        <TabsContent value="roles" className="flex-1" suppressHydrationWarning>
-          <DispatchRolesManager
-            submission={submission}
-            onUpdate={onUpdateSubmission}
-            roster={roster}
-          />
-        </TabsContent>
+        {visibility.showActionability ? (
+          <TabsContent value="planning" className="flex-1" suppressHydrationWarning>
+            <div className="grid gap-3">
+              {planningSections.map((section) => (
+                <Card key={section.id}>
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-base font-semibold">
+                      {section.title}
+                    </CardTitle>
+                    {section.description ? (
+                      <p className="text-xs text-muted-foreground">
+                        {section.description}
+                      </p>
+                    ) : null}
+                    {section.visibilityHint ? (
+                      <p className="text-[11px] text-muted-foreground">
+                        Who can see: {section.visibilityHint}
+                      </p>
+                    ) : null}
+                  </CardHeader>
+                  <CardContent suppressHydrationWarning>
+                    {section.content}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        ) : null}
 
-        <TabsContent value="updates" className="flex-1">
-          <Card className="flex h-full flex-col">
-            <CardHeader>
-              <CardTitle>Updates</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Running notes, incident log, and updates.
-              </p>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col text-sm">
-              <DispatchUpdates
-                updates={submission.updates}
-                onAddUpdate={onAddUpdate}
-                onEditUpdate={onEditUpdate}
-                onRemoveUpdate={onRemoveUpdate}
-                afterComposer={
-                  <AfterActionReportGuide onAddUpdate={onAddUpdate} />
-                }
+        {visibility.showCoordination ? (
+          <TabsContent value="roles" className="flex-1" suppressHydrationWarning>
+            <div className="grid gap-3">
+              <Card>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-sm font-semibold">
+                    Availability Snapshot
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Check who is present and available before assigning roles.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Who can see: {audienceLabel("coordination")}
+                  </p>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <Badge variant="outline">Available now: {activeRoster}</Badge>
+                    <Badge variant="outline">Total roster: {totalRoster}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+              <DispatchRolesManager
+                submission={submission}
+                onUpdate={onUpdateSubmission}
+                roster={roster}
               />
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </TabsContent>
+        ) : null}
 
         <TabsContent value="public_engagement" className="flex-1">
+          {canEditSummary ? (
+            <div className="mb-3">
+              <Button size="sm" className="w-full sm:w-auto" variant="outline" onClick={openSummarySheet}>
+                Edit Public Summary
+              </Button>
+            </div>
+          ) : null}
           <PublicEngagementPanel submission={submission} />
         </TabsContent>
 

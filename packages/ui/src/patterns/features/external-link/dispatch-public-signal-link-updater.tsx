@@ -13,6 +13,8 @@ import { Input } from "@workspace/ui/primitives/input";
 import { useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@workspace/ui/primitives/alert";
+import { Users } from "lucide-react";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 type Props = {
@@ -48,6 +50,14 @@ export default function DispatchPublicSignalLinkUpdater({
 
   return (
     <div className="space-y-2">
+      <Alert variant="default" className="bg-blue-900 border-blue-100">
+        <Users className="h-4 w-4" />
+        <AlertDescription className="text-xs">
+          <strong>Why two links?</strong> This public link builds future capacity
+          by inviting community members who want to stay connected. It's safe to share
+          widely since it's separate from operational coordination.
+        </AlertDescription>
+      </Alert>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
         <p className="font-medium">Public Engagement Signal Link</p>
         {publicLink ? (

@@ -88,15 +88,19 @@ export default function DispatchRolesManager({
           const profiles = Array.isArray(json?.profiles) ? json.profiles : [];
           const synthetic = profiles.map(profileToRosterEntry);
 
-          // Map by profile.id, prefer providedRoster entries
+          // Map by both profile.id AND roster entry id, prefer providedRoster entries
           const mapByProfile = new Map<string, RosterEntry>();
           for (const r of providedRoster) {
             const pid = r.profile?.id ? String(r.profile.id) : undefined;
             if (pid) mapByProfile.set(pid, r);
+            if (r.id && r.id !== pid) mapByProfile.set(String(r.id), r);
           }
           for (const s of synthetic) {
             const pid = s.profile?.id ? String(s.profile.id) : undefined;
             if (pid && !mapByProfile.has(pid)) mapByProfile.set(pid, s);
+            if (s.id && s.id !== pid && !mapByProfile.has(String(s.id))) {
+              mapByProfile.set(String(s.id), s);
+            }
           }
           const merged = Array.from(mapByProfile.values()).sort((a, b) =>
             (a.profile?.display_name ?? "").localeCompare(
@@ -121,10 +125,62 @@ export default function DispatchRolesManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(providedRoster.map((r) => r.profile?.id))]);
 
-  const allRoster = useMemo(
-    () => rosterOptions ?? providedRoster,
-    [rosterOptions, providedRoster]
-  );
+  const allRoster = useMemo(() => {
+    const base = rosterOptions ?? providedRoster;
+    const map = new Map<string, RosterEntry>();
+
+    for (const r of base) {
+      if (r.id) map.set(String(r.id), r);
+    }
+
+    // Ensure assigned volunteers always have a resolvable entry to avoid "Unknown Volunteer"
+    for (const v of assignedVolunteers) {
+      const vid = v.id ? String(v.id) : undefined;
+      if (!vid) continue;
+      if (!map.has(vid)) {
+        const displayName = v.volunteer?.display_name ?? v.profile?.display_name ?? `User ${vid.slice(0, 8)}`;
+        const contactSignal = (v.profile as any)?.contact_signal ?? (v.volunteer as any)?.contact_signal;
+
+        map.set(vid, {
+          id: vid,
+          role: v.role as PodRole,
+          status: (v.status as PodMemberStatus) ?? "active",
+          profile: {
+            id: vid,
+            user_id: vid,
+            display_name: displayName,
+            access_role: "team_member" as const,
+            field_roles: [],
+            verified_by: "self" as const,
+            affiliation: undefined,
+            availability: false,
+            contact_signal: contactSignal,
+            coordination_zone: undefined,
+            last_profile_check_in: undefined,
+            inserted_at: new Date().toISOString(),
+            coverage_zones: [],
+            state: "",
+            weekly_availability: undefined,
+            self_risk_acknowledged: false,
+            city: undefined,
+            operating_counties: [],
+            self_status_flags: [],
+            ...(v.profile ?? {}),
+          },
+          langs: [],
+          skills: [],
+          certs: [],
+          notes: undefined,
+          handle: displayName,
+          joinedAt: new Date().toISOString(),
+          lastShiftAt: undefined,
+          signal_handle: contactSignal,
+        });
+      }
+    }
+
+    return Array.from(map.values());
+  }, [assignedVolunteers, rosterOptions, providedRoster]);
 
   // When managing a specific role, fetch only profiles eligible for that role (based on public.profile.field_roles)
   useEffect(() => {
@@ -189,48 +245,45 @@ export default function DispatchRolesManager({
 
   const handleSaveAssignments = (
     role: string,
-    selected: string[],
+    selectedRoster: RosterEntry[],
     manualVolunteers: { id: string; name: string }[]
   ) => {
-    const updatedAssignments: Partial<RosterEntry>[] = [
+    const updatedAssignments: any[] = [
       ...(assignedVolunteers.filter((v) => v.role !== role) ?? []),
-      ...selected
-        .filter((id) => !id.startsWith("manual-"))
-        .map((rosterId) => {
-          const rosterEntry = allRoster.find((r) => r.id === rosterId);
-          const existing = assignedVolunteers.find(
-            (v) => v.id === rosterId && v.role === role
-          );
-          const status = (existing?.status as PodMemberStatus) ?? "active";
+      ...selectedRoster.map((rosterEntry) => {
+        const existing = assignedVolunteers.find(
+          (v) => v.id === rosterEntry.id && v.role === role
+        );
+        const status = (existing?.status as PodMemberStatus) ?? "active";
 
-          return rosterEntry
-            ? {
-                id: rosterEntry.id,
-                profile: rosterEntry.profile,
-                role: role as PodRole,
-                status,
-              }
-            : {
-                id: rosterId,
-                role: role as PodRole,
-                status,
-              };
-        }),
-      ...manualVolunteers
-        .filter((m) => selected.includes(m.id))
-        .map((m) => {
-          const existing = assignedVolunteers.find(
-            (v) => v.id === m.id && v.role === role
-          );
-          const status = (existing?.status as PodMemberStatus) ?? "active";
+        return {
+          id: rosterEntry.id,
+          profile: {
+            id: rosterEntry.profile.id,
+            display_name: rosterEntry.profile.display_name,
+            contact_signal: rosterEntry.profile.contact_signal,
+          },
+          role: role as PodRole,
+          status,
+        };
+      }),
+      ...manualVolunteers.map((m) => {
+        const existing = assignedVolunteers.find(
+          (v) => v.id === m.id && v.role === role
+        );
+        const status = (existing?.status as PodMemberStatus) ?? "active";
 
-          return {
+        return {
+          id: m.id,
+          profile: {
             id: m.id,
-            profile: { display_name: m.name } as any,
-            role: role as PodRole,
-            status,
-          };
-        }),
+            display_name: m.name,
+            contact_signal: undefined,
+          },
+          role: role as PodRole,
+          status,
+        };
+      }),
     ];
 
     onUpdate({ assigned_volunteers: updatedAssignments });
@@ -305,67 +358,55 @@ export default function DispatchRolesManager({
                 </div>
 
                 {assigned.length > 0 ? (
-                  <ul className="space-y-2">
+                  <div className="flex flex-wrap gap-3">
                     {assigned.map((v) => {
                       const rosterEntry = allRoster.find((r) => r.id === v.id);
 
                       return (
-                        <li key={v.id} className="text-muted-foreground">
-                          <div
-                            className="
-      flex flex-col items-center gap-4 w-full
-      md:flex-row md:justify-between md:items-center md:gap-6
-    "
-                          >
-                            <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] capitalize"
-                              >
-                                {rosterEntry?.role ??
-                                  (v.id?.startsWith("manual-")
-                                    ? "manual"
-                                    : "unknown")}
-                              </Badge>
-
-                              <span className="font-medium text-foreground text-center md:text-left">
-                                {rosterEntry?.profile.display_name ??
-                                  v.profile?.display_name ??
-                                  v.volunteer?.display_name ??
+                        <div
+                          key={v.id}
+                          className="flex flex-col gap-3 p-3 rounded-lg border bg-card text-card-foreground shadow-sm flex-shrink-0 w-full sm:w-[280px]"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex gap-4 flex-1 min-w-0">
+                              <span className="font-semibold text-sm text-foreground truncate">
+                                {v.profile?.display_name ??
+                                  v?.profile?.display_name ??
+                                  rosterEntry?.profile.display_name ??
                                   "Unknown Volunteer"}
                               </span>
-
-                              {(rosterEntry?.profile.contact_signal ??
-                                v.profile?.contact_signal ??
-                                v.volunteer?.contact_signal) && (
-                                <CopySignalHandleButton
-                                  handle={
-                                    (rosterEntry?.profile.contact_signal ??
-                                      v.profile?.contact_signal ??
-                                      v.volunteer?.contact_signal)!
-                                  }
-                                />
-                              )}
-                            </div>
-
-                            <div className="flex flex-col items-center gap-2 md:flex-row md:gap-3">
                               <VolunteerStatusBadge
                                 status={v.status as DispatchPersonnelStatus}
                               />
-                              <VolunteerStatusUpdater
-                                current={v.status as DispatchPersonnelStatus}
-                                onChange={(newStatus) =>
-                                  handleStatusChange(v.id, newStatus)
-                                }
-                              />
                             </div>
                           </div>
-                        </li>
+
+                          {(v.profile?.contact_signal ??
+                            rosterEntry?.profile.contact_signal ??
+                            v.volunteer?.contact_signal) && (
+                              <CopySignalHandleButton
+                                handle={
+                                  (v.profile?.contact_signal ??
+                                    rosterEntry?.profile.contact_signal ??
+                                    v.volunteer?.contact_signal)!
+                                }
+                              />
+                            )}
+
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                            <VolunteerStatusUpdater
+                              current={v.status as DispatchPersonnelStatus}
+                              onChange={(newStatus) =>
+                                handleStatusChange(v.id, newStatus)
+                              }
+                            />
+                          </div>
+                        </div>
                       );
                     })}
-                  </ul>
+                  </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground py-8 text-center">
                     No volunteers assigned yet.
                   </p>
                 )}

@@ -20,12 +20,14 @@ import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
 type DispatchStatusUpdaterProps = {
   submission: DispatchSubmission;
-  onUpdate: (patch: Partial<DispatchSubmission>) => void;
+  onUpdate?: (patch: Partial<DispatchSubmission>) => void;
+  readOnly?: boolean;
 };
 
 export default function DispatchStatusUpdater({
   submission,
   onUpdate,
+  readOnly = false,
 }: DispatchStatusUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [locationLabel, setLocationLabel] = useState(
@@ -42,12 +44,14 @@ export default function DispatchStatusUpdater({
   };
 
   const handleStatusChange = (status: DispatchStatus) => {
+    if (!onUpdate) return;
     onUpdate({ status, location_label: locationLabel });
     toast.success("Status updated");
     setOpen(false);
   };
 
   const handleSaveLocation = () => {
+    if (!onUpdate) return;
     onUpdate({ location_label: locationLabel });
     toast.success("Location updated");
     setOpen(false);
@@ -59,65 +63,68 @@ export default function DispatchStatusUpdater({
         <Badge className={cn("!text-white", currentMeta.color, "shadow-sm")}>
           {currentMeta.label}
         </Badge>
-
-        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          Update
-        </Button>
+        {readOnly ? null : (
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+            Update
+          </Button>
+        )}
       </div>
 
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
-          <DrawerHeader>
-            <DrawerTitle>Update Dispatch Status</DrawerTitle>
-            <DrawerDescription>
-              Choose a new status for this dispatch and update the location
-              label.
-            </DrawerDescription>
-          </DrawerHeader>
+      {readOnly ? null : (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground">
+            <DrawerHeader>
+              <DrawerTitle>Update Dispatch Status</DrawerTitle>
+              <DrawerDescription>
+                Choose a new status for this dispatch and update the location
+                label.
+              </DrawerDescription>
+            </DrawerHeader>
 
-          <div>
-            <Input
-              value={locationLabel}
-              className="mb-4"
-              onChange={(e) => setLocationLabel(e.target.value)}
-              placeholder="Mission District, SF"
-            />
-          </div>
+            <div>
+              <Input
+                value={locationLabel}
+                className="mb-4"
+                onChange={(e) => setLocationLabel(e.target.value)}
+                placeholder="Mission District, SF"
+              />
+            </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {(
-              Object.entries(STATUS_META) as [
-                DispatchStatus,
-                { label: string; color: string },
-              ][]
-            ).map(([value, meta]) => {
-              const isCurrent = value === submission.status;
-              return (
-                <Button
-                  key={value}
-                  variant={isCurrent ? "default" : "outline"}
-                  className={cn(
-                    "justify-start",
-                    isCurrent
-                      ? `${meta.color} !text-white`
-                      : "text-foreground hover:bg-muted"
-                  )}
-                  onClick={() => handleStatusChange(value)}
-                >
-                  {meta.label}
-                </Button>
-              );
-            })}
-          </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              {(
+                Object.entries(STATUS_META) as [
+                  DispatchStatus,
+                  { label: string; color: string },
+                ][]
+              ).map(([value, meta]) => {
+                const isCurrent = value === submission.status;
+                return (
+                  <Button
+                    key={value}
+                    variant={isCurrent ? "default" : "outline"}
+                    className={cn(
+                      "justify-start",
+                      isCurrent
+                        ? `${meta.color} !text-white`
+                        : "text-foreground hover:bg-muted"
+                    )}
+                    onClick={() => handleStatusChange(value)}
+                  >
+                    {meta.label}
+                  </Button>
+                );
+              })}
+            </div>
 
-          <DrawerFooter>
-            <Button variant="secondary" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveLocation}>Save location</Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+            <DrawerFooter>
+              <Button variant="secondary" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveLocation}>Save location</Button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
     </>
   );
 }

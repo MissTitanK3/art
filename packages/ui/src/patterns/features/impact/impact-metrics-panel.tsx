@@ -27,66 +27,88 @@ type Props = {
   dispatchId: string;
   status: DispatchStatus;
   initialMetrics?: Partial<DispatchImpactMetrics>;
+  onChange?: (metrics: DispatchImpactMetrics) => void;
 };
-const RISK_LEVEL_DETAILS: {
+export const RISK_LEVEL_DETAILS: {
   value: ImpactRiskLevel;
   label: string;
   description: string;
   tone: string;
 }[] = [
-  {
-    value: "unknown",
-    label: "Unknown",
-    description: "Risk not yet assessed.",
-    tone: "bg-muted text-foreground",
-  },
-  {
-    value: "low",
-    label: "Low",
-    description: "Routine follow-up, minimal escalation expected.",
-    tone: "bg-emerald-100 text-emerald-900",
-  },
-  {
-    value: "medium",
-    label: "Medium",
-    description:
-      "Heightened monitoring. Field team should check-in frequently.",
-    tone: "bg-amber-100 text-amber-900",
-  },
-  {
-    value: "high",
-    label: "High",
-    description:
-      "Elevated threat to neighbors or volunteers. Dispatchers actively coordinating response.",
-    tone: "bg-orange-100 text-orange-900",
-  },
-  {
-    value: "critical",
-    label: "Critical",
-    description:
-      "Life safety, deportation risk, or severe state violence confirmed.",
-    tone: "bg-red-100 text-red-900",
-  },
-];
+    {
+      value: "unknown",
+      label: "Unknown",
+      description: "Risk not yet assessed.",
+      tone: "bg-muted text-foreground",
+    },
+    {
+      value: "low",
+      label: "Low",
+      description: "Routine follow-up, minimal escalation expected.",
+      tone: "bg-emerald-100 text-emerald-900",
+    },
+    {
+      value: "medium",
+      label: "Medium",
+      description:
+        "Heightened monitoring. Field team should check-in frequently.",
+      tone: "bg-amber-100 text-amber-900",
+    },
+    {
+      value: "high",
+      label: "High",
+      description:
+        "Elevated threat to neighbors or volunteers. Dispatchers actively coordinating response.",
+      tone: "bg-orange-100 text-orange-900",
+    },
+    {
+      value: "critical",
+      label: "Critical",
+      description:
+        "Life safety, deportation risk, or severe state violence confirmed.",
+      tone: "bg-red-100 text-red-900",
+    },
+  ];
 type DraftMetrics = {
-  people_served: number;
-  resources_distributed: number;
+  people_served_raw: string;
+  resources_distributed_raw: string;
   risk_level: ImpactRiskLevel;
 };
 export function ImpactMetricsPanel({
   dispatchId,
   status,
   initialMetrics,
+  onChange,
 }: Props) {
   const [metrics, setMetrics] = useState<DispatchImpactMetrics | null>(null);
   const [draft, setDraft] = useState<DraftMetrics>({
-    people_served: 0,
-    resources_distributed: 0,
+    people_served_raw: "",
+    resources_distributed_raw: "",
     risk_level: "unknown",
   });
   const [loading, setLoading] = useState(!initialMetrics);
   const [error, setError] = useState<string | null>(null);
   const [savingField, setSavingField] = useState<string | null>(null);
+  const normalizedDraft = {
+    people_served: Math.max(
+      0,
+      Number.isNaN(Number(draft.people_served_raw))
+        ? 0
+        : Number(draft.people_served_raw || 0),
+    ),
+    resources_distributed: Math.max(
+      0,
+      Number.isNaN(Number(draft.resources_distributed_raw))
+        ? 0
+        : Number(draft.resources_distributed_raw || 0),
+    ),
+    risk_level: draft.risk_level,
+  };
+  const isDirty =
+    !!metrics &&
+    (metrics.people_served !== normalizedDraft.people_served ||
+      metrics.resources_distributed !== normalizedDraft.resources_distributed ||
+      metrics.risk_level !== normalizedDraft.risk_level);
   const disabled = status === "verified_complete";
   const peopleInputId = useId();
   const resourcesInputId = useId();
@@ -100,8 +122,8 @@ export function ImpactMetricsPanel({
       const json = (await res.json()) as DispatchImpactMetrics;
       setMetrics(json);
       setDraft({
-        people_served: json.people_served,
-        resources_distributed: json.resources_distributed,
+        people_served_raw: String(json.people_served ?? 0),
+        resources_distributed_raw: String(json.resources_distributed ?? 0),
         risk_level: json.risk_level,
       });
     } catch (err) {
@@ -124,8 +146,8 @@ export function ImpactMetricsPanel({
     };
     setMetrics(next);
     setDraft({
-      people_served: next.people_served,
-      resources_distributed: next.resources_distributed,
+      people_served_raw: String(next.people_served ?? 0),
+      resources_distributed_raw: String(next.resources_distributed ?? 0),
       risk_level: next.risk_level,
     });
     setLoading(false);
@@ -136,8 +158,8 @@ export function ImpactMetricsPanel({
   useEffect(() => {
     if (!metrics) return;
     setDraft({
-      people_served: metrics.people_served,
-      resources_distributed: metrics.resources_distributed,
+      people_served_raw: String(metrics.people_served ?? 0),
+      resources_distributed_raw: String(metrics.resources_distributed ?? 0),
       risk_level: metrics.risk_level,
     });
   }, [metrics]);
@@ -158,6 +180,14 @@ export function ImpactMetricsPanel({
       }
       const json = (await res.json()) as DispatchImpactMetrics;
       setMetrics(json);
+      // Update local draft to reflect server truth
+      setDraft({
+        people_served_raw: String(json.people_served ?? 0),
+        resources_distributed_raw: String(json.resources_distributed ?? 0),
+        risk_level: json.risk_level,
+      });
+      // Notify parent only on explicit save
+      onChange?.(json);
       toast.success("Impact metrics saved");
     } catch (err) {
       toast.error(
@@ -236,27 +266,52 @@ export function ImpactMetricsPanel({
                 </TooltipContent>
               </Tooltip>
             </label>
-            <Input
-              id={peopleInputId}
-              type="number"
-              min={0}
-              value={draft.people_served}
-              disabled={disabled || loading}
-              onChange={(event) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  people_served: Number(event.target.value || 0),
-                }))
-              }
-              onBlur={() => {
-                if (disabled) return;
-                if (metrics?.people_served === draft.people_served) return;
-                saveMetrics(
-                  { people_served: Math.max(0, draft.people_served) },
-                  "people_served",
-                );
-              }}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={disabled || loading}
+                onClick={() =>
+                  setDraft((prev) => {
+                    const curr = Number(prev.people_served_raw || 0);
+                    const next = Math.max(0, Number.isNaN(curr) ? 0 : curr - 1);
+                    return { ...prev, people_served_raw: String(next) };
+                  })
+                }
+              >
+                -
+              </Button>
+              <Input
+                id={peopleInputId}
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={draft.people_served_raw}
+                disabled={disabled || loading}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    people_served_raw: event.target.value,
+                  }))
+                }
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={disabled || loading}
+                onClick={() =>
+                  setDraft((prev) => {
+                    const curr = Number(prev.people_served_raw || 0);
+                    const next = Math.max(0, Number.isNaN(curr) ? 1 : curr + 1);
+                    return { ...prev, people_served_raw: String(next) };
+                  })
+                }
+              >
+                +
+              </Button>
+            </div>
           </div>
           <div>
             <label
@@ -281,35 +336,52 @@ export function ImpactMetricsPanel({
                 </TooltipContent>
               </Tooltip>
             </label>
-            <Input
-              id={resourcesInputId}
-              type="number"
-              min={0}
-              value={draft.resources_distributed}
-              disabled={disabled || loading}
-              onChange={(event) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  resources_distributed: Number(event.target.value || 0),
-                }))
-              }
-              onBlur={() => {
-                if (disabled) return;
-                if (
-                  metrics?.resources_distributed === draft.resources_distributed
-                )
-                  return;
-                saveMetrics(
-                  {
-                    resources_distributed: Math.max(
-                      0,
-                      draft.resources_distributed,
-                    ),
-                  },
-                  "resources_distributed",
-                );
-              }}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={disabled || loading}
+                onClick={() =>
+                  setDraft((prev) => {
+                    const curr = Number(prev.resources_distributed_raw || 0);
+                    const next = Math.max(0, Number.isNaN(curr) ? 0 : curr - 1);
+                    return { ...prev, resources_distributed_raw: String(next) };
+                  })
+                }
+              >
+                -
+              </Button>
+              <Input
+                id={resourcesInputId}
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={draft.resources_distributed_raw}
+                disabled={disabled || loading}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    resources_distributed_raw: event.target.value,
+                  }))
+                }
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={disabled || loading}
+                onClick={() =>
+                  setDraft((prev) => {
+                    const curr = Number(prev.resources_distributed_raw || 0);
+                    const next = Math.max(0, Number.isNaN(curr) ? 1 : curr + 1);
+                    return { ...prev, resources_distributed_raw: String(next) };
+                  })
+                }
+              >
+                +
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -338,17 +410,12 @@ export function ImpactMetricsPanel({
           </label>
           <Select
             value={draft.risk_level as ImpactRiskLevel}
-            onValueChange={(value) => {
+            onValueChange={(value) =>
               setDraft((prev) => ({
                 ...prev,
                 risk_level: value as ImpactRiskLevel,
-              }));
-              if (!disabled)
-                saveMetrics(
-                  { risk_level: value as ImpactRiskLevel },
-                  "risk_level",
-                );
-            }}
+              }))
+            }
             disabled={disabled || loading}
           >
             <SelectTrigger id={riskSelectId}>
@@ -369,12 +436,34 @@ export function ImpactMetricsPanel({
           ) : null}
         </div>
 
-        {savingField ? (
-          <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Saving changes…
-          </p>
-        ) : null}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Button
+            disabled={disabled || loading || savingField !== null || !isDirty}
+            onClick={() => {
+              if (!metrics) return;
+              saveMetrics(
+                {
+                  people_served: normalizedDraft.people_served,
+                  resources_distributed: normalizedDraft.resources_distributed,
+                  risk_level: normalizedDraft.risk_level,
+                },
+                "all",
+              );
+            }}
+          >
+            {savingField ? (
+              <span className="inline-flex items-center gap-2 text-xs">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Saving…
+              </span>
+            ) : (
+              "Save metrics"
+            )}
+          </Button>
+          {!isDirty && !savingField ? (
+            <p className="text-xs text-muted-foreground">No changes</p>
+          ) : null}
+        </div>
       </section>
     </TooltipProvider>
   );

@@ -12,6 +12,13 @@ import {
 } from "@workspace/ui/primitives/drawer";
 import { Button } from "@workspace/ui/primitives/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/primitives/card";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -146,59 +153,62 @@ export default function DispatchLocationPinSelector({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-2">
-        <div className="flex gap-1 w-full md:w-auto items-center justify-between">
-          <div className="flex flex-col w-full">
-            <p className="font-medium">Pin Location</p>
-            {typeof currentLat === "number" &&
-            typeof currentLng === "number" ? (
-              <>
-                <p className="text-xs text-muted-foreground">
-                  LAT:{currentLat.toFixed(4)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  LNG:{currentLng.toFixed(4)}
-                </p>
-              </>
-            ) : (
-              "No pin set"
-            )}
-          </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Pin Location</CardTitle>
+        <CardDescription>
+          Set the geographic location for this dispatch
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4 flex flex-col">
+        <div className="space-y-2">
+          <div className="text-sm font-medium">Current Location</div>
+          {typeof currentLat === "number" && typeof currentLng === "number" ? (
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>LAT: {currentLat.toFixed(4)}</p>
+              <p>LNG: {currentLng.toFixed(4)}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No pin set</p>
+          )}
         </div>
-        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          Set Pin
-        </Button>
-        <div className="flex flex-col md:flex-row items-center gap-2">
-          <div className="flex items-center gap-2">
-            <Select value={mapProvider} onValueChange={setMapProvider}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Choose map" />
-              </SelectTrigger>
-              <SelectContent align="end">
-                <SelectItem value="google">Google Maps</SelectItem>
-                <SelectItem value="apple">Apple Maps</SelectItem>
-                <SelectItem value="osm">OpenStreetMap</SelectItem>
-                <SelectItem value="waze">Waze</SelectItem>
-                <SelectItem value="bing">Bing Maps</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => handleOpenInMaps()}
-              disabled={
-                !(
-                  typeof currentLat === "number" &&
-                  typeof currentLng === "number"
-                )
-              }
-            >
-              Open Maps
-            </Button>
-          </div>
+
+        <div className="flex flex-col gap-4">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setOpen(true)}
+            className="sm:flex-1"
+          >
+            Set Pin
+          </Button>
+          <Select value={mapProvider} onValueChange={setMapProvider}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder="Choose map" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="google">Google Maps</SelectItem>
+              <SelectItem value="apple">Apple Maps</SelectItem>
+              <SelectItem value="osm">OpenStreetMap</SelectItem>
+              <SelectItem value="waze">Waze</SelectItem>
+              <SelectItem value="bing">Bing Maps</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleOpenInMaps()}
+            disabled={
+              !(
+                typeof currentLat === "number" &&
+                typeof currentLng === "number"
+              )
+            }
+          >
+            Open Maps
+          </Button>
         </div>
-      </div>
+      </CardContent>
 
       <Drawer
         open={open}
@@ -253,6 +263,6 @@ export default function DispatchLocationPinSelector({
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-    </div>
+    </Card>
   );
 }

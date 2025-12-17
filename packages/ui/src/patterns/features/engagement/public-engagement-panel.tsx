@@ -236,20 +236,20 @@ export default function PublicEngagementPanel({
               selectedTier === "volunteerCallout" ||
               selectedTier === "detailed" ||
               selectedTier === "medium") && (
-              <Button
-                onClick={async () => {
-                  const nodes = document.querySelectorAll(".share-card");
-                  nodes.forEach((node, idx) => {
-                    downloadCardAsPng(
-                      node as HTMLElement,
-                      `${selectedTier}-card-${idx + 1}.png`
-                    );
-                  });
-                }}
-              >
-                📥 Download All Cards
-              </Button>
-            )}
+                <Button
+                  onClick={async () => {
+                    const nodes = document.querySelectorAll(".share-card");
+                    nodes.forEach((node, idx) => {
+                      downloadCardAsPng(
+                        node as HTMLElement,
+                        `${selectedTier}-card-${idx + 1}.png`
+                      );
+                    });
+                  }}
+                >
+                  📥 Download All Cards
+                </Button>
+              )}
 
             {/* Multi-card for callout, volunteerCallout & detailed */}
             {(selectedTier === "callout" ||
@@ -301,7 +301,7 @@ export default function PublicEngagementPanel({
                         onClick={() =>
                           downloadCardAsPng(
                             document.querySelectorAll(".share-card")[
-                              idx
+                            idx
                             ] as HTMLElement,
                             `${selectedTier}-card-${idx + 1}.png`
                           )
@@ -316,7 +316,7 @@ export default function PublicEngagementPanel({
                         onClick={() =>
                           shareCard(
                             document.querySelectorAll(".share-card")[
-                              idx
+                            idx
                             ] as HTMLElement,
                             `${selectedTier}-card-${idx + 1}.png`
                           )
@@ -373,7 +373,7 @@ export default function PublicEngagementPanel({
                         onClick={() =>
                           downloadCardAsPng(
                             document.querySelectorAll(".share-card")[
-                              idx
+                            idx
                             ] as HTMLElement,
                             `medium-card-${idx + 1}.png`
                           )
@@ -388,7 +388,7 @@ export default function PublicEngagementPanel({
                         onClick={() =>
                           shareCard(
                             document.querySelectorAll(".share-card")[
-                              idx
+                            idx
                             ] as HTMLElement,
                             `medium-card-${idx + 1}.png`
                           )
@@ -407,7 +407,7 @@ export default function PublicEngagementPanel({
               <div
                 className="
                   share-card
-                  w-full max-w-[500px]
+                  w-full max-w-[500px] h-[400px]
                   aspect-square
                   flex flex-col justify-between
                   bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
@@ -416,17 +416,17 @@ export default function PublicEngagementPanel({
                 "
               >
                 <div className="flex-1 flex flex-col justify-center items-center gap-6">
-                  <h2 className="text-3xl font-extrabold drop-shadow-md uppercase tracking-wide leading-tight">
+                  <h2 className="text-md font-extrabold drop-shadow-md uppercase tracking-wide leading-tight">
                     {msgs.tldrSection.title}
                   </h2>
-                  <p className="text-xl leading-relaxed font-bold whitespace-pre-wrap">
+                  <p className="text-sm leading-relaxed font-bold whitespace-pre-wrap">
                     {msgs.tldrSection.body}
                   </p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <QRCode
                     value={publicChatUrl}
-                    size={100}
+                    size={50}
                     bgColor="transparent"
                     fgColor="#ffffff"
                   />

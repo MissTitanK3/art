@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
+import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/dispatch-submission-layout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
@@ -165,6 +166,9 @@ export default function DispatchSubmissionPage() {
   );
   const updateSubmission = useDispatchStore((s) => s.updateSubmission);
   const addSubmission = useDispatchStore((s) => s.addSubmission);
+  const viewerRole = useProfileStore((s) => s.profile?.access_role ?? null);
+  const viewerUserId = useProfileStore((s) => s.profile?.user_id ?? null);
+  const viewerProfileId = useProfileStore((s) => s.profile?.id ?? null);
   const fetchedRef = useRef<string | null>(null);
   const roster = usePodStore((s) => s.activeRoster);
   const [loading, setLoading] = useState(false);
@@ -320,6 +324,9 @@ export default function DispatchSubmissionPage() {
           />
         }
         commsTabLabel="Radio Comms"
+        viewerRole={viewerRole}
+        viewerUserId={viewerUserId}
+        viewerProfileId={viewerProfileId}
       />
     </div>
   );

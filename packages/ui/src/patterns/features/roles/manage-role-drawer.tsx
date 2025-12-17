@@ -30,7 +30,7 @@ export default function ManageRoleDrawer({
   onClose: () => void;
   onSave: (
     role: string,
-    selected: string[],
+    selected: RosterEntry[],
     manualVolunteers: { id: string; name: string }[]
   ) => void;
   allRoster: RosterEntry[];
@@ -142,7 +142,10 @@ export default function ManageRoleDrawer({
 
         <DrawerFooter>
           <Button
-            onClick={() => onSave(role, selected, manualVolunteers)}
+            onClick={() => {
+              const selectedRoster = allRoster.filter((r) => selected.includes(r.id));
+              onSave(role, selectedRoster, manualVolunteers);
+            }}
             disabled={!!loading}
           >
             Save

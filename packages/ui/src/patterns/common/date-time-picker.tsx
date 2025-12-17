@@ -15,8 +15,9 @@ type Props = {
   label: string;
   value?: string; // ISO string
   onChange: (value: string) => void;
+  layout?: "row" | "col"; // "row" (default) or "col" for vertical layout
 };
-export function DateTimePicker({ label, value, onChange }: Props) {
+export function DateTimePicker({ label, value, onChange, layout = "row" }: Props) {
   const [open, setOpen] = useState(false);
   const date = value ? new Date(value) : undefined;
   const handleDateChange = (selected?: Date) => {
@@ -28,7 +29,7 @@ export function DateTimePicker({ label, value, onChange }: Props) {
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium">{label}</label>
-      <div className="flex gap-2 flex-col sm:flex-row">
+      <div className={cn("flex gap-2", layout === "col" ? "flex-col" : "flex-col sm:flex-row")}>
         {/* Calendar popover */}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

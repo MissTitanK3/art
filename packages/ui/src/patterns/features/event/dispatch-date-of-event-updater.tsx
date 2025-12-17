@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@workspace/ui/primitives/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/primitives/card";
 import { DateTimePicker } from "@workspace/ui/patterns/common/date-time-picker";
 import type { DispatchSubmission } from "@workspace/store/types/global.ts";
 
@@ -54,33 +61,41 @@ export default function DispatchDateOfEventUpdater({
   };
 
   return (
-    <div className="space-y-2 items-center h-full w-full">
-      <div className="flex h-full flex-col gap-2 md:flex-row md:items-end md:gap-3 w-full">
+    <Card>
+      <CardHeader>
+        <CardTitle>Date of Event</CardTitle>
+        <CardDescription>
+          Use this to schedule or record the event time. Defaults to now for new
+          dispatches; set a future time for Planned Events.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <DateTimePicker
+          layout="col"
           label="Date of Event"
           value={value}
           onChange={setValue}
         />
-        <div className="flex gap-2 w-full md:w-auto mt-auto md:mt-0 justify-end md:self-end items-center">
-          {isDirty || recentlySaved ? (
-            <span className="text-xs text-muted-foreground" aria-live="polite">
-              {isDirty ? "Unsaved changes" : "Updated"}
-            </span>
-          ) : null}
-          {value ? (
-            <Button size="sm" variant="outline" onClick={handleClear}>
-              Clear
+        <div className="flex gap-2 items-center justify-between">
+          <div className="flex-1">
+            {isDirty || recentlySaved ? (
+              <span className="text-xs text-muted-foreground" aria-live="polite">
+                {isDirty ? "Unsaved changes" : "Updated"}
+              </span>
+            ) : null}
+          </div>
+          <div className="flex gap-2">
+            {value ? (
+              <Button size="sm" variant="outline" onClick={handleClear}>
+                Clear
+              </Button>
+            ) : null}
+            <Button size="sm" onClick={handleSave} disabled={!isDirty}>
+              {primaryLabel}
             </Button>
-          ) : null}
-          <Button size="sm" onClick={handleSave} disabled={!isDirty}>
-            {primaryLabel}
-          </Button>
+          </div>
         </div>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Use this to schedule or record the event time. Defaults to now for new
-        dispatches; set a future time for Planned Events.
-      </p>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
