@@ -8,7 +8,7 @@ export default function RegisterServiceWorker() {
       process.env.NEXT_PUBLIC_ENABLE_SW_DEV === "1";
 
     if (shouldEnableSW && typeof window !== "undefined" && "serviceWorker" in navigator) {
-      const scope = process.env.NEXT_PUBLIC_SW_SCOPE ?? "/region-responder/";
+      const scope = process.env.NEXT_PUBLIC_SW_SCOPE ?? "/";
       const swUrl = `${scope.replace(/\/$/, "")}/sw.js`;
       const expectedScope = new URL(scope, window.location.origin).href;
 
@@ -26,6 +26,13 @@ export default function RegisterServiceWorker() {
           if (scopeMismatch) {
             registration.unregister().catch(() => undefined);
           }
+        });
+      });
+    } else if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      // In dev, clear any registered SWs so HMR stays reliable.
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister().catch(() => undefined);
         });
       });
     }

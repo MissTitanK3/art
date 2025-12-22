@@ -7,12 +7,14 @@ const PRECACHE_URLS = [
   '/region-response',
   '/region-response/',
   '/offline.html',
+  '/manifest.json',
+  '/favicon.ico',
   '/icon-192.png',
   '/icon-512.png',
   '/maskable-icon-192.png',
   '/maskable-icon-512.png',
-  '/manifest.json',
 ];
+const STATIC_ASSETS = PRECACHE_URLS;
 
 const cacheResponse = async (request, response) => {
   if (!response || !(response.ok || response.type === 'opaque')) return;

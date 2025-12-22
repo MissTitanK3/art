@@ -63,12 +63,18 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico" },
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+      { url: "/maskable-icon-192.png", type: "image/png", sizes: "192x192", rel: "mask-icon" },
+      { url: "/maskable-icon-512.png", type: "image/png", sizes: "512x512", rel: "mask-icon" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" },
+      { url: "/icon-192.png", sizes: "192x192" },
+    ],
     shortcut: ["/favicon.ico"],
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black",
