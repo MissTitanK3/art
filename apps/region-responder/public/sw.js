@@ -16,6 +16,31 @@ const PRECACHE_URLS = [
 ];
 const STATIC_ASSETS = PRECACHE_URLS;
 
+// Allow the app to request caching of dynamic routes and their data payloads.
+self.addEventListener('message', (event) => {
+  const data = event.data;
+  if (!data || data.type !== 'CACHE_ROUTE') return;
+
+  const targets = [data.path, data.dataPath].filter(Boolean);
+  if (!targets.length) return;
+
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      for (const target of targets) {
+        try {
+          const res = await fetch(target, { cache: 'no-store' });
+          if (res && res.ok) {
+            await cache.put(target, res.clone());
+          }
+        } catch (err) {
+          console.log('CACHE_ROUTE fetch failed', target, err);
+        }
+      }
+    })()
+  );
+});
+
 const cacheResponse = async (request, response) => {
   if (!response || !(response.ok || response.type === 'opaque')) return;
   const cache = await caches.open(CACHE_NAME);
