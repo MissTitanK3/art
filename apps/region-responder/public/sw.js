@@ -2,6 +2,10 @@ const CACHE_VERSION = 'v2';
 const CACHE_NAME = `art-region-responder-cache-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
+  '/intake',
+  '/intake/',
+  '/region-response',
+  '/region-response/',
   '/offline.html',
   '/favicon.ico',
   '/icon-192.png',
@@ -44,17 +48,53 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const { request } = event;
 
-  // Navigation: prefer network, fall back to cache, then offline page.
+  // Serve favicon from cache (aliased to icon-192) to avoid network errors offline.
+  if (url.pathname === '/favicon.ico') {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match('/favicon.ico');
+        if (cached) return cached;
+
+        try {
+          const res = await fetch('/icon-192.png');
+          if (res && res.ok) {
+            cache.put('/favicon.ico', res.clone());
+            return res;
+          }
+        } catch (err) {
+          console.log('Fetch failed for favicon; returning empty response instead.', err);
+          // Ignore fetch errors; fall through to empty response.
+        }
+
+        return new Response('', { status: 204, headers: { 'Content-Type': 'image/x-icon' } });
+      })()
+    );
+    return;
+  }
+
+  // Offline-first for navigations: serve cached page if offline, update cache when online.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          cacheResponse(request, response);
-          return response.clone();
-        })
-        .catch(async () =>
-          (await caches.match(request)) || (await caches.match('/offline.html')),
-        ),
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match(request);
+
+        try {
+          const fresh = await fetch(request, { cache: 'no-store' });
+          cache.put(request, fresh.clone());
+          return fresh;
+        } catch (err) {
+          if (cached) return cached;
+          console.log('Fetch failed; returning offline page instead.', err);
+
+          // Fallback to app shell so client-side routing can handle navigation offline.
+          const shell = await cache.match('/');
+          if (shell) return shell;
+
+          return cache.match('/offline.html');
+        }
+      })()
     );
     return;
   }
