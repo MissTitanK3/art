@@ -1,9 +1,9 @@
 {
   "name": "ART Region RESPONDER",
-  "short_name": "ART RESPONDER Dispatch",
-  "id": "/region-responder/",
-  "scope": "/region-responder/",
-  "start_url": "/region-responder/",
+  "short_name": "RESPONDER",
+  "description": "A tool to help emergency responders manage and coordinate status during regional emergencies.",
+  "scope": "/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1115",
   "theme_color": "#0f1115",
@@ -32,5 +32,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "categories": ["utilities", "emergency"]
 }

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = '2025-12-22.1';
 const CACHE_NAME = `art-region-responder-cache-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
@@ -7,12 +7,11 @@ const PRECACHE_URLS = [
   '/region-response',
   '/region-response/',
   '/offline.html',
-  '/favicon.ico',
   '/icon-192.png',
   '/icon-512.png',
   '/maskable-icon-192.png',
   '/maskable-icon-512.png',
-  '/site.webmanifest',
+  '/manifest.json',
 ];
 
 const cacheResponse = async (request, response) => {
@@ -23,30 +22,35 @@ const cacheResponse = async (request, response) => {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)),
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(PRECACHE_URLS);
+
+      // Alias favicon to an existing icon so offline browsers don't error on /favicon.ico.
+      const icon = await cache.match('/icon-192.png');
+      if (icon) {
+        await cache.put('/favicon.ico', icon.clone());
+      }
+    })()
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    (async () => {
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map((name) =>
-          name.startsWith('art-region-responder-cache-') && name !== CACHE_NAME
-            ? caches.delete(name)
-            : Promise.resolve(),
-        ),
-      );
-      await self.clients.claim();
-    })(),
+    caches.keys().then((names) =>
+      Promise.all(
+        names.map((name) => (name === CACHE_NAME ? null : caches.delete(name)))
+      )
+    )
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const { request } = event;
+  const url = new URL(request.url);
 
   // Serve favicon from cache (aliased to icon-192) to avoid network errors offline.
   if (url.pathname === '/favicon.ico') {
@@ -99,63 +103,39 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  const url = new URL(request.url);
-  // Same-origin GET: cache-first with network fill.
-  if (url.origin === self.location.origin) {
+  // Cache-first for static assets and build outputs.
+  const isStaticAsset =
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith('/_next/static/') ||
+      url.pathname.startsWith('/icon-') ||
+      url.pathname.startsWith('/maskable-icon-') ||
+      STATIC_ASSETS.includes(url.pathname));
+
+  if (isStaticAsset) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match(request);
         if (cached) return cached;
-        return fetch(request)
-          .then((response) => {
-            cacheResponse(request, response);
-            return response.clone();
-          })
-          .catch(() => caches.match('/offline.html'));
-      }),
-    );
-  }
-});
 
-self.addEventListener('push', (event) => {
-  let payload = {};
-  try {
-    payload = event.data?.json?.() ?? {};
-  } catch {
-    payload = {};
-  }
-  const title = payload.title ?? 'Dispatch Update';
-  const body = payload.body ?? '';
-  const url = payload.url ?? '/';
-  const icon = payload.icon ?? '/icon-192.png';
-
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      badge: '/badge.png',
-      icon,
-      data: { url },
-    }),
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const url = event.notification?.data?.url;
-  if (!url) return;
-
-  event.waitUntil(
-    self.clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if ('focus' in client && client.url === url) {
-            return client.focus();
+        try {
+          const fresh = await fetch(request);
+          if (fresh && fresh.status === 200) {
+            cache.put(request, fresh.clone());
           }
+          return fresh;
+        } catch (err) {
+          // Avoid returning HTML for JS/CSS; give an empty 503 so the failure is explicit.
+          return new Response('', { status: 503 });
+          console.log('Fetch failed for static asset; returning empty response instead.', err);
         }
-        if (self.clients.openWindow) {
-          return self.clients.openWindow(url);
-        }
-        return undefined;
-      }),
+      })()
+    );
+    return;
+  }
+
+  // Default: network-first with offline fallback.
+  event.respondWith(
+    fetch(request).catch(() => caches.match(request).then((res) => res || caches.match('/offline.html')))
   );
 });
