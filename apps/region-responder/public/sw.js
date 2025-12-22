@@ -109,6 +109,7 @@ self.addEventListener('fetch', (event) => {
   const isStaticAsset =
     url.origin === self.location.origin &&
     (url.pathname.startsWith('/_next/static/') ||
+      url.pathname.startsWith('/_next/data/') ||
       url.pathname.startsWith('/icon-') ||
       url.pathname.startsWith('/maskable-icon-') ||
       STATIC_ASSETS.includes(url.pathname));
