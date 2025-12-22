@@ -1,64 +1,46 @@
 "use client";
-import { useState } from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
-import { Button } from "@workspace/ui/primitives/button";
-import { Calendar } from "@workspace/ui/primitives/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/primitives/popover";
+import { DatePicker } from "./date-picker";
 import { TimePickerSelect } from "./time-picker-select";
 type Props = {
   label: string;
   value?: string; // ISO string
   onChange: (value: string) => void;
   layout?: "row" | "col"; // "row" (default) or "col" for vertical layout
+  className?: string;
+  fullWidth?: boolean;
 };
-export function DateTimePicker({ label, value, onChange, layout = "row" }: Props) {
-  const [open, setOpen] = useState(false);
+export function DateTimePicker({
+  label,
+  value,
+  onChange,
+  layout = "row",
+  className,
+  fullWidth = false,
+}: Props) {
   const date = value ? new Date(value) : undefined;
-  const handleDateChange = (selected?: Date) => {
-    if (!selected) return;
+  const handleDateChange = (nextDate: string) => {
+    const selected = new Date(nextDate);
     const current = date ?? new Date();
-    selected.setHours(current.getHours(), current.getMinutes());
+    selected.setHours(current.getHours(), current.getMinutes(), current.getSeconds(), current.getMilliseconds());
     onChange(selected.toISOString());
   };
   return (
-    <div className="space-y-1">
+    <div className={cn("space-y-1", className)}>
       <label className="text-sm font-medium">{label}</label>
       <div className={cn("flex gap-2", layout === "col" ? "flex-col" : "flex-col sm:flex-row")}>
-        {/* Calendar popover */}
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "justify-start text-left font-normal w-[200px]",
-                !date && "text-muted-foreground",
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : "Pick a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-[80]" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={handleDateChange}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-
-        {/* Native time input */}
+        <DatePicker
+          label={label}
+          value={value}
+          onChange={handleDateChange}
+          fullWidth={fullWidth}
+          hideLabel
+        />
         <div className="flex items-center gap-2">
           <TimePickerSelect
             value={date}
             onChange={(newDate) => onChange(newDate.toISOString())}
+            fullWidth={fullWidth}
           />
         </div>
       </div>

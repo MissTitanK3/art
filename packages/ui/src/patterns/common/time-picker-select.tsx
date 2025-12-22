@@ -18,8 +18,9 @@ import { cn } from "@workspace/ui/lib/utils";
 type Props = {
   value?: Date;
   onChange: (date: Date) => void;
+  fullWidth?: boolean;
 };
-export function TimePickerSelect({ value, onChange }: Props) {
+export function TimePickerSelect({ value, onChange, fullWidth = false }: Props) {
   const [open, setOpen] = useState(false);
   const date = value ? new Date(value) : new Date();
   const h24 = date.getHours();
@@ -57,7 +58,8 @@ export function TimePickerSelect({ value, onChange }: Props) {
         <Button
           variant="outline"
           className={cn(
-            "justify-start text-left font-normal w-[160px]",
+            "justify-start text-left font-normal",
+            fullWidth ? "w-full" : "w-[160px]",
             !value && "text-muted-foreground",
           )}
         >

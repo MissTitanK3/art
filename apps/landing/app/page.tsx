@@ -200,6 +200,57 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* The Toolset (Airplane Mode) */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-3xl font-semibold tracking-tight text-center mb-12">
+          The Toolset (Offline First)
+        </h2>
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="rounded-2xl border border-input bg-card p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <Eye className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+              <h3 className="text-xl font-semibold">Region Responder</h3>
+            </div>
+            <p className="text-base font-medium">
+              Offline-first field intake and situation tracking
+            </p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>• Installable PWA with local-only drafts</li>
+              <li>• Intake + situation history (edit/delete)</li>
+              <li>• Export, print, and share summaries</li>
+            </ul>
+            <Link
+              href="https://responder.alwaysreadytools.org"
+              target="_blank"
+              className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm shadow hover:opacity-90"
+            >
+              Open Region Responder
+            </Link>
+          </div>
+          <div className="rounded-2xl border border-input bg-card p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <Eye className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+              <h3 className="text-xl font-semibold">The Commons Game</h3>
+            </div>
+            <p className="text-base font-medium">
+              Offline-first self-care game where you grow your Commons by completing real-life actions.
+            </p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>• Works fully offline with background sync when you’re back online.</li>
+              <li>• Track needs, self-care actions, and progress toward new stars.</li>
+              <li>• Built-in daily/weekly check-ins to keep you on pace.</li>
+            </ul>
+            <Link
+              href="https://love.alwaysreadytools.org"
+              target="_blank"
+              className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm shadow hover:opacity-90"
+            >
+              Open The Commons
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Trust & Autonomy */}
       <section className="mx-auto max-w-4xl px-4 py-16">
         <div className="rounded-2xl border border-input bg-card p-8 space-y-6">

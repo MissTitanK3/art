@@ -1,0 +1,52 @@
+import { cn } from "@workspace/ui/lib/utils";
+import { Button } from "@workspace/ui/primitives/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@workspace/ui/primitives/drawer";
+
+type RegionResponderHeroProps = {
+  brandHeadline: string;
+  descriptionLines?: string[];
+  quickStartContent?: React.ReactNode;
+  quickStartLabel?: string;
+  className?: string;
+};
+
+export function RegionResponderHero({
+  brandHeadline,
+  descriptionLines = [
+    "An OTG region responder is a dedicated instance designed to manage and coordinate emergency response efforts within a specific geographical area.",
+    "It runs while on airplane mode, ensuring continuous operation even when offline.",
+  ],
+  quickStartContent,
+  quickStartLabel = "Quick Start Understanding",
+  className,
+}: RegionResponderHeroProps) {
+  return (
+    <header className={cn("text-center", className)}>
+      <h1 className="text-4xl font-bold tracking-tight">{brandHeadline}</h1>
+      {descriptionLines.map((line, idx) => (
+        <p
+          key={idx}
+          className="mt-2 max-w-2xl text-balance text-muted-foreground"
+        >
+          {line}
+        </p>
+      ))}
+      {quickStartContent ? (
+        <div className="mt-4 flex justify-center">
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant="outline">{quickStartLabel}</Button>
+            </DrawerTrigger>
+            <DrawerContent className="bg-card text-card-foreground max-w-xl m-auto">
+              {quickStartContent}
+            </DrawerContent>
+          </Drawer>
+        </div>
+      ) : null}
+    </header>
+  );
+}

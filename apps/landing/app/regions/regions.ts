@@ -369,6 +369,16 @@ export const REGIONS: Region[] = [
     ],
   },
 
+  {
+    name: 'TODO: Region Name',
+    subdomain: 'responder',
+    coverage: 'TODO',
+    notes: 'TODO',
+    signals: [
+      { name: 'TODO: Region Signal Group', url: 'https://signal.group/#CjQKIADTv-8bQiCFQ9uNpqdZVe8ngPlj8O4XSd1hnMBhdg-lEhAKlOr9EvjsnlQh9RXActF-' },
+    ],
+  },
+
 ];
 
 export function regionUrl(subdomain: string, base = 'alwaysreadytools.org') {
