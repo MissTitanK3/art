@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@workspace/ui/primitives";
@@ -29,6 +28,27 @@ export default function Page() {
   const upsertDraft = useIntakeDraftIndexStore((state) => state.upsertDraft);
   const clearDraftIndex = useIntakeDraftIndexStore((state) => state.clearAll);
 
+  const clearServiceWorkerState = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(
+          regs
+            .filter((reg) => reg.scope && reg.scope.startsWith(window.location.origin + "/"))
+            .map((reg) => reg.unregister().catch(() => undefined)),
+        );
+      }
+      if (typeof caches !== "undefined") {
+        const keys = await caches.keys();
+        const ours = keys.filter((key) => key.startsWith("region-responder"));
+        await Promise.all(ours.map((key) => caches.delete(key).catch(() => false)));
+      }
+    } catch (err) {
+      console.warn("Failed to clear service worker state", err);
+    }
+  };
+
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -53,6 +73,7 @@ export default function Page() {
       await clearResponses();
       clearDraftIndex();
       await clearIntakeDraftPersistence();
+      await clearServiceWorkerState();
       toast.success("All local data cleared");
       setShowResetDialog(false);
     } catch (error) {
@@ -162,4 +183,3 @@ export default function Page() {
     </main>
   );
 }
-

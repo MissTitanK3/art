@@ -11,7 +11,6 @@ const withSerwist = withSerwistInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@workspace/ui", "@workspace/store"],
-  typescript: { ignoreBuildErrors: true },
 };
 
 export default withSerwist(nextConfig);

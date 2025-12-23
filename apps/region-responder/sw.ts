@@ -13,7 +13,7 @@ const serwist = new Serwist({
   runtimeCaching: defaultCache,
   skipWaiting: true,
   clientsClaim: true,
-  cacheId: 'region-responder-v1.0.001',
+  cacheId: 'region-responder-v1.0.002',
   fallbacks: {
     entries: [
       {
@@ -24,11 +24,8 @@ const serwist = new Serwist({
   },
 });
 
+cleanupOutdatedCaches();
 serwist.addEventListeners();
-
-self.addEventListener('activate', () => {
-  cleanupOutdatedCaches();
-});
 
 const cacheTarget = async (target: string) => {
   const url = new URL(target, self.location.origin);
