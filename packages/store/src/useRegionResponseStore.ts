@@ -1,10 +1,13 @@
 import { useStore } from 'zustand';
 import { createStore, type StateCreator, type StoreApi } from 'zustand/vanilla';
-import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { cleanupLegacyStorageKeys, legacyStorageKeyCandidates, resolveScopedStorageKey } from './utils/storage';
-
-const STORAGE_BASE_KEY = 'region-response-session-v1';
+import { createRouteId } from './persistence/ids';
+import {
+  loadRegionResponseSession,
+  removeRegionResponseSession,
+  saveRegionResponseSession,
+} from './persistence/regionResponsePersistence';
+import { listRouteIndexEntries } from './persistence/routeIndex';
 
 export type SafetyStatus = 'en-route' | 'on-site' | 'leaving' | 'safe' | 'unable';
 
@@ -59,7 +62,8 @@ export type RegionResponseHistoryItem =
 export interface RegionResponseStoreState {
   sessions: Record<string, RegionResponseSession>;
   activeId: string | null;
-  startSession: (seedDate?: Date) => RegionResponseSession;
+  startSession: (seedDate?: Date) => Promise<RegionResponseSession>;
+  hydrateSession: (id: string) => Promise<RegionResponseSession | null>;
   setActive: (id: string | null) => void;
   clearSession: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
@@ -88,9 +92,11 @@ export function generateResponseRef(seed = new Date()) {
 
 function createEmptySession(seed = new Date()): RegionResponseSession {
   const responseRef = generateResponseRef(seed);
+  const nonce = createRouteId('region-response').split('-').pop() ?? 'local';
+  const id = `${responseRef}-${nonce}`;
   const startedAt = seed.toISOString();
   return {
-    id: responseRef,
+    id,
     responseRef,
     startedAt,
     lastUpdatedAt: startedAt,
@@ -262,16 +268,39 @@ export function buildResponseSummary(session: RegionResponseSession) {
   }\n\nSITUATION UPDATES\n${updates || ''}\n\nEND OF SUMMARY`;
 }
 
+async function persistSessionSnapshot(session: RegionResponseSession) {
+  await saveRegionResponseSession(session);
+}
+
+async function persistSessionById(get: () => RegionResponseStoreState, sessionId: string) {
+  const current = get().sessions[sessionId];
+  if (current) {
+    await persistSessionSnapshot(current);
+  }
+}
+
 const createRegionResponseInitializer: StateCreator<RegionResponseStoreState> = (set, get) => ({
   sessions: {},
   activeId: null,
-  startSession: (seedDate) => {
+  startSession: async (seedDate) => {
     const session = createEmptySession(seedDate ?? new Date());
     set((state) => ({
       sessions: { ...state.sessions, [session.id]: session },
       activeId: session.id,
     }));
+    await persistSessionSnapshot(session);
     return session;
+  },
+  hydrateSession: async (id) => {
+    const cached = get().sessions[id];
+    if (cached) return cached;
+    const record = await loadRegionResponseSession(id);
+    if (!record) return null;
+    set((state) => ({
+      sessions: { ...state.sessions, [record.id]: record },
+      activeId: state.activeId ?? record.id,
+    }));
+    return record;
   },
   setActive: (id) => set({ activeId: id }),
   clearSession: async (id) => {
@@ -282,18 +311,14 @@ const createRegionResponseInitializer: StateCreator<RegionResponseStoreState> = 
       const nextActive = state.activeId === id ? null : state.activeId;
       return { sessions: nextSessions, activeId: nextActive };
     });
+    await removeRegionResponseSession(id);
   },
   clearAll: async () => {
+    const ids = new Set<string>(Object.keys(get().sessions));
+    const indexed = await listRouteIndexEntries('region-response');
+    for (const entry of indexed) ids.add(entry.id);
     set({ sessions: {}, activeId: null });
-    const persistApi = (regionResponseStore as any).persist;
-    if (persistApi?.clearStorage) {
-      try {
-        await persistApi.clearStorage();
-      } catch {
-        // Ignore storage clearance failures.
-      }
-    }
-    persistApi?.rehydrate?.();
+    await Promise.all(Array.from(ids).map((id) => removeRegionResponseSession(id)));
   },
   recordCheckIn: (sessionId, status, recordedAt) => {
     if (!status) return null;
@@ -313,6 +338,7 @@ const createRegionResponseInitializer: StateCreator<RegionResponseStoreState> = 
         sessions: { ...state.sessions, [sessionId]: updated },
       };
     });
+    void persistSessionById(get, sessionId);
     return recorded;
   },
   addSituationUpdate: (sessionId, input) => {
@@ -352,6 +378,7 @@ const createRegionResponseInitializer: StateCreator<RegionResponseStoreState> = 
         sessions: { ...state.sessions, [sessionId]: updated },
       };
     });
+    void persistSessionById(get, sessionId);
     return recorded;
   },
   updateSituationUpdate: (sessionId, updateId, input) => {
@@ -394,6 +421,7 @@ const createRegionResponseInitializer: StateCreator<RegionResponseStoreState> = 
       };
       return { sessions: { ...state.sessions, [sessionId]: updatedSession } };
     });
+    void persistSessionById(get, sessionId);
     return updatedEntry;
   },
   deleteHistoryItem: (sessionId, item) => {
@@ -422,23 +450,12 @@ const createRegionResponseInitializer: StateCreator<RegionResponseStoreState> = 
       };
       return { sessions: { ...state.sessions, [sessionId]: updatedSession } };
     });
+    if (deleted) void persistSessionById(get, sessionId);
     return deleted;
   },
 });
 
-function withPersistence(initializer: StateCreator<RegionResponseStoreState>) {
-  return persist(initializer, {
-    name: resolveScopedStorageKey(STORAGE_BASE_KEY),
-    version: 1,
-    storage: createJSONStorage(() => localStorage),
-  });
-}
-
-const regionResponseStore: StoreApi<RegionResponseStoreState> = createStore(
-  withPersistence(createRegionResponseInitializer),
-);
-
-cleanupLegacyStorageKeys(resolveScopedStorageKey(STORAGE_BASE_KEY), legacyStorageKeyCandidates(STORAGE_BASE_KEY));
+const regionResponseStore: StoreApi<RegionResponseStoreState> = createStore(createRegionResponseInitializer);
 
 export function useRegionResponseStore<T>(selector: (state: RegionResponseStoreState) => T) {
   return useStore(regionResponseStore, selector);
@@ -446,6 +463,10 @@ export function useRegionResponseStore<T>(selector: (state: RegionResponseStoreS
 
 export function getRegionResponseStore() {
   return regionResponseStore;
+}
+
+export async function hydrateRegionResponseSession(id: string) {
+  return regionResponseStore.getState().hydrateSession(id);
 }
 
 export function getRegionResponseHistory(session: RegionResponseSession | null) {

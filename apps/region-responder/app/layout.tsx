@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "@workspace/ui/globals.css";
 import { AppProviders } from "@/providers/AppProviders";
@@ -92,8 +91,11 @@ export const viewport: Viewport = {
 };
 
 // ---------- Fonts ----------
-const fontSans = Geist({ subsets: ["latin"], variable: "--font-sans" });
-const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const fontVars = {
+  ["--font-sans" as const]: "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  ["--font-mono" as const]:
+    "'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+} as React.CSSProperties;
 
 // ---------- Layout ----------
 export default async function RootLayout({
@@ -105,7 +107,8 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
+        style={fontVars}
+        className="font-sans antialiased"
       >
         <AppProviders>
           <RegisterServiceWorker />

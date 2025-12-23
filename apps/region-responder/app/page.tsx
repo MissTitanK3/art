@@ -18,11 +18,7 @@ import { toast } from "@workspace/ui/primitives/sonner";
 import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 import { useRegionResponseStore } from "@workspace/store/useRegionResponseStore";
 import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
-import { clearIntakeDraftPersistence } from "@workspace/store/useIntakeDraftStore";
-
-function generateWipId() {
-  return `wip-${Date.now()}`;
-}
+import { clearIntakeDraftPersistence, generateIntakeDraftId, initializeIntakeDraft } from "@workspace/store/useIntakeDraftStore";
 
 export default function Page() {
   const router = useRouter();
@@ -36,15 +32,16 @@ export default function Page() {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetting, setResetting] = useState(false);
 
-  const handleStartResponse = () => {
-    const session = startSession();
+  const handleStartResponse = async () => {
+    const session = await startSession();
     setActive(session.id);
     router.push(`/region-response/${session.id}`);
   };
 
-  const handleStartIntake = () => {
-    const id = generateWipId();
+  const handleStartIntake = async () => {
+    const id = generateIntakeDraftId();
     const now = new Date().toISOString();
+    await initializeIntakeDraft(id, { lastUpdatedAt: now });
     upsertDraft({ id, caseRef: "Pending", lastUpdatedAt: now, createdAt: now, status: "wip" });
     router.push(`/intake/${id}`);
   };

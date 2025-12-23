@@ -1,7 +1,9 @@
 import { useStore } from 'zustand';
 import { createStore, type StateCreator, type StoreApi } from 'zustand/vanilla';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import { cleanupLegacyStorageKeys, legacyStorageKeyCandidates, resolveScopedStorageKey } from './utils/storage';
+
+import { createRouteId } from './persistence/ids';
+import { loadIntakeDraft, removeIntakeDraft, saveIntakeDraft } from './persistence/intakeDraftPersistence';
+import { listRouteIndexEntries } from './persistence/routeIndex';
 
 const STORAGE_BASE_KEY = 'intake-draft-v1';
 const scopedStores = new Map<string, StoreApi<IntakeDraftStoreState>>();
@@ -87,6 +89,10 @@ function normalizeContacts(value?: ContactEntry[] | string): ContactEntry[] {
   return [];
 }
 
+export function generateIntakeDraftId() {
+  return createRouteId('intake');
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -139,13 +145,6 @@ function createEmptyDraft(): IntakeDraft {
 }
 
 type IntakeDraftInitializer = StateCreator<IntakeDraftStoreState, [], [], IntakeDraftStoreState>;
-
-type IntakeDraftPersistedInitializer = StateCreator<
-  IntakeDraftStoreState,
-  [],
-  [['zustand/persist', unknown]],
-  IntakeDraftStoreState
->;
 
 const createIntakeDraftInitializer =
   (seedDraft?: Partial<IntakeDraft>): IntakeDraftInitializer =>
@@ -200,42 +199,67 @@ const createIntakeDraftInitializer =
       }),
     reset: () => set({ draft: createEmptyDraft() }),
   });
-
-function withPersistence(initializer: IntakeDraftInitializer, storageKey: string): IntakeDraftPersistedInitializer {
-  return persist(initializer, {
-    name: storageKey,
-    version: 1,
-    storage: createJSONStorage(() => localStorage),
-  });
-}
-
 export function createIntakeDraftStore(options?: CreateIntakeDraftStoreOptions): StoreApi<IntakeDraftStoreState> {
-  const { initialDraft, storageKey, persist: shouldPersist = true } = options ?? {};
+  const { initialDraft } = options ?? {};
   const initializer = createIntakeDraftInitializer(initialDraft);
-  const resolvedKey = resolveScopedStorageKey(STORAGE_BASE_KEY, storageKey);
-  cleanupLegacyStorageKeys(resolvedKey, legacyStorageKeyCandidates(STORAGE_BASE_KEY, storageKey));
-  const creator = shouldPersist ? withPersistence(initializer, resolvedKey) : initializer;
-  return createStore<IntakeDraftStoreState>(creator as any);
+  return createStore<IntakeDraftStoreState>(initializer as any);
 }
 
 const singletonStore = createIntakeDraftStore();
 
+type HydrationResult = { draft: IntakeDraft; restored: boolean };
+
+const hydrationPromises = new Map<string, Promise<HydrationResult>>();
+const attachedStores = new WeakSet<StoreApi<IntakeDraftStoreState>>();
+
+function attachPersistence(id: string, store: StoreApi<IntakeDraftStoreState>) {
+  if (attachedStores.has(store)) return;
+  attachedStores.add(store);
+  let lastDraft = store.getState().draft;
+  void saveIntakeDraft(id, lastDraft);
+  store.subscribe((state) => {
+    if (state.draft === lastDraft) return;
+    lastDraft = state.draft;
+    void saveIntakeDraft(id, state.draft);
+  });
+}
+
+async function hydrateDraft(id: string, store: StoreApi<IntakeDraftStoreState>): Promise<HydrationResult> {
+  const record = await loadIntakeDraft(id);
+  if (record?.draft) {
+    store.setState({ draft: record.draft });
+    return { draft: record.draft, restored: true };
+  }
+  return { draft: store.getState().draft, restored: false };
+}
+
+export function ensureIntakeDraftHydrated(id: string) {
+  const store = getIntakeDraftStoreFor(id);
+  if (!hydrationPromises.has(id)) {
+    const promise = hydrateDraft(id, store).then((draft) => {
+      attachPersistence(id, store);
+      return draft;
+    });
+    hydrationPromises.set(id, promise);
+  }
+  return hydrationPromises.get(id)!;
+}
+
+export async function initializeIntakeDraft(id: string, seed?: Partial<IntakeDraft>) {
+  const store = getIntakeDraftStoreFor(id, { initialDraft: seed });
+  const current = store.getState().draft;
+  await saveIntakeDraft(id, current);
+  attachPersistence(id, store);
+  hydrationPromises.set(id, Promise.resolve({ draft: current, restored: true }));
+  return current;
+}
+
 export async function clearIntakeDraftPersistence() {
   const store = getIntakeDraftStore();
   const nextDraft = createEmptyDraft();
-  const persistApi = (store as any).persist;
-
   store.setState({ draft: nextDraft });
-
-  if (persistApi?.clearStorage) {
-    try {
-      await persistApi.clearStorage();
-    } catch {
-      // Ignore storage clearance failures (private mode, etc.)
-    }
-  }
-  persistApi?.rehydrate?.();
-
+  const indexed = await listRouteIndexEntries('intake');
+  await Promise.all(indexed.map((entry) => removeIntakeDraft(entry.id)));
   return nextDraft;
 }
 
@@ -250,14 +274,14 @@ export function getIntakeDraftStore() {
   return singletonStore;
 }
 
-function resolveScopedKey(id: string, override?: string) {
-  return resolveScopedStorageKey(`${STORAGE_BASE_KEY}:${id}`, override);
+function resolveScopedKey(id: string) {
+  return `${STORAGE_BASE_KEY}:${id}`;
 }
 
 export function getIntakeDraftStoreFor(id: string, options?: Omit<CreateIntakeDraftStoreOptions, 'storageKey'>) {
   const resolvedKey = resolveScopedKey(id);
   if (scopedStores.has(resolvedKey)) return scopedStores.get(resolvedKey)!;
-  const store = createIntakeDraftStore({ ...options, storageKey: resolvedKey });
+  const store = createIntakeDraftStore({ ...options });
   scopedStores.set(resolvedKey, store);
   return store;
 }
@@ -274,18 +298,7 @@ export function useIntakeDraftStoreFor<T>(
 export async function clearIntakeDraftPersistenceById(id: string) {
   const store = getIntakeDraftStoreFor(id);
   const nextDraft = createEmptyDraft();
-  const persistApi = (store as any).persist;
-
   store.setState({ draft: nextDraft });
-
-  if (persistApi?.clearStorage) {
-    try {
-      await persistApi.clearStorage();
-    } catch {
-      // Ignore storage clearance failures (private mode, etc.)
-    }
-  }
-  persistApi?.rehydrate?.();
-
+  await removeIntakeDraft(id);
   return nextDraft;
 }

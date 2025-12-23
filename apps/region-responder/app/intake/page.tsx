@@ -5,13 +5,9 @@ import { useRouter } from "next/navigation";
 import { Badge, Button } from "@workspace/ui/primitives";
 import { toast } from "@workspace/ui/primitives/sonner";
 import { formatLocalDateTime } from "@workspace/store/useRegionResponseStore";
-import { clearIntakeDraftPersistenceById } from "@workspace/store/useIntakeDraftStore";
+import { clearIntakeDraftPersistenceById, generateIntakeDraftId, initializeIntakeDraft } from "@workspace/store/useIntakeDraftStore";
 import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
 import { ArrowLeft } from "lucide-react";
-
-function generateWipId() {
-  return `wip-${Date.now()}`;
-}
 
 export default function IntakeIndexPage() {
   const router = useRouter();
@@ -19,9 +15,10 @@ export default function IntakeIndexPage() {
   const upsertDraft = useIntakeDraftIndexStore((state) => state.upsertDraft);
   const removeDraft = useIntakeDraftIndexStore((state) => state.removeDraft);
 
-  const handleStart = () => {
-    const id = generateWipId();
+  const handleStart = async () => {
+    const id = generateIntakeDraftId();
     const now = new Date().toISOString();
+    await initializeIntakeDraft(id, { lastUpdatedAt: now });
     upsertDraft({ id, caseRef: "Pending", lastUpdatedAt: now, createdAt: now, status: "wip" });
     router.push(`/intake/${id}`);
   };

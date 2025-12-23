@@ -29,6 +29,7 @@ import { DateTimePicker, FormSectionCard, PageHeader } from "@workspace/ui/patte
 import { toast } from "@workspace/ui/primitives/sonner";
 import {
   clearIntakeDraftPersistenceById,
+  ensureIntakeDraftHydrated,
   type ContactEntry,
   type IntakeDraft,
   type IntakeStatus,
@@ -37,6 +38,7 @@ import {
   useIntakeDraftStoreFor,
 } from "@workspace/store/useIntakeDraftStore";
 import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
+import { getRouteIndexEntry, type RouteIndexEntry } from "@workspace/store/persistence/routeIndex";
 import { DatePicker } from "@workspace/ui/patterns/common/date-picker";
 import { ArrowLeft } from "lucide-react";
 
@@ -235,10 +237,36 @@ export default function IntakeDetailPage() {
   const [isClearing, setIsClearing] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-
-  const isSubmitted = draft.isSubmitted;
-
-  useEffect(() => setHydrated(true), []);
+  const [hydrationState, setHydrationState] = useState<'pending' | 'ready' | 'missing-route' | 'missing-payload'>('pending');
+  const [routeEntry, setRouteEntry] = useState<RouteIndexEntry | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    async function hydrate() {
+      if (!draftId) return;
+      setHydrationState('pending');
+      const entry = await getRouteIndexEntry(draftId);
+      if (cancelled) return;
+      setRouteEntry(entry);
+      if (!entry || entry.tombstone) {
+        setHydrated(false);
+        setHydrationState('missing-route');
+        return;
+      }
+      if (entry.version !== 1) {
+        setHydrated(false);
+        setHydrationState('missing-payload');
+        return;
+      }
+      const result = await ensureIntakeDraftHydrated(draftId);
+      if (cancelled) return;
+      setHydrated(result.restored);
+      setHydrationState(result.restored ? 'ready' : 'missing-payload');
+    }
+    hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, [draftId]);
 
   useEffect(() => {
     if (!hydrated || !draftId) return;
@@ -252,6 +280,7 @@ export default function IntakeDetailPage() {
     });
   }, [draftId, draft.caseRef, draft.isSubmitted, draft.lastUpdatedAt, draft.submittedAt, hydrated, upsertDraft]);
 
+  const isSubmitted = draft.isSubmitted;
   const collectedAtDisplay = hydrated && draft.lastUpdatedAt
     ? formatLocalTimestamp(draft.lastUpdatedAt)
     : "";
@@ -274,6 +303,53 @@ export default function IntakeDetailPage() {
     : hydrated && draft.lastUpdatedAt
       ? `Saved locally · ${formatLocalTimestamp(draft.lastUpdatedAt)}`
       : "Saved locally";
+
+  if (hydrationState === 'pending') {
+    return (
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Intake</p>
+          <h1 className="text-2xl font-semibold leading-tight text-foreground">Loading intake</h1>
+          <p className="text-sm text-muted-foreground">Preparing offline data…</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (hydrationState === 'missing-route') {
+    return (
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Intake</p>
+          <h1 className="text-2xl font-semibold leading-tight text-foreground">WIP not indexed</h1>
+          <p className="text-sm text-muted-foreground">This route is not in the local index. Start a new intake or open another saved WIP.</p>
+          <div className="flex gap-3">
+            <Button asChild size="lg" className="h-12">
+              <Link href="/intake">Back to WIPs</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (hydrationState === 'missing-payload') {
+    return (
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Intake</p>
+          <h1 className="text-2xl font-semibold leading-tight text-foreground">Offline copy missing</h1>
+          <p className="text-sm text-muted-foreground">The intake id is known, but no saved draft was found on this device. Try again when online or start a new WIP.</p>
+          <Badge variant="outline" className="h-7 w-fit rounded-full px-3">WIP: {routeEntry?.id ?? draftId}</Badge>
+          <div className="flex gap-3">
+            <Button asChild size="lg" className="h-12">
+              <Link href="/intake">Back to WIPs</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const handleCopy = async () => {
     try {

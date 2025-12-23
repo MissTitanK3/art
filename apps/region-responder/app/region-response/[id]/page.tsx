@@ -45,6 +45,7 @@ import {
   formatSafetyStatus,
   formatTernary,
   getRegionResponseHistory,
+  hydrateRegionResponseSession,
   useRegionResponseStore,
   type SituationUpdate,
   type LocationCondition,
@@ -54,6 +55,7 @@ import {
   type SituationGeneralStatus,
   type TernaryChoice,
 } from "@workspace/store/useRegionResponseStore";
+import { getRouteIndexEntry, type RouteIndexEntry } from "@workspace/store/persistence/routeIndex";
 import { DateTimePicker } from "@workspace/ui/patterns/common";
 
 const SAFETY_OPTIONS: { label: string; value: SafetyStatus }[] = [
@@ -266,6 +268,37 @@ export default function RegionResponseDetailPage() {
   const deleteHistoryItem = useRegionResponseStore((state) => state.deleteHistoryItem);
   const clearSession = useRegionResponseStore((state) => state.clearSession);
 
+  const [hydrationState, setHydrationState] = useState<
+    'pending' | 'ready' | 'missing-route' | 'missing-payload'
+  >('pending');
+  const [routeEntry, setRouteEntry] = useState<RouteIndexEntry | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function hydrate() {
+      if (!sessionId) return;
+      setHydrationState('pending');
+      const entry = await getRouteIndexEntry(sessionId);
+      if (cancelled) return;
+      setRouteEntry(entry);
+      if (!entry || entry.tombstone) {
+        setHydrationState('missing-route');
+        return;
+      }
+      if (entry.version !== 1) {
+        setHydrationState('missing-payload');
+        return;
+      }
+      const hydrated = await hydrateRegionResponseSession(sessionId);
+      if (cancelled) return;
+      setHydrationState(hydrated ? 'ready' : 'missing-payload');
+    }
+    hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
+
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [observedAt, setObservedAt] = useState(nowLocalInputValue());
   const [generalStatus, setGeneralStatus] = useState<SituationGeneralStatus>("calm");
@@ -346,13 +379,60 @@ export default function RegionResponseDetailPage() {
     if (checkInCooldownRef.current) clearTimeout(checkInCooldownRef.current);
   }, []);
 
-  if (!session) {
+  if (hydrationState === 'pending') {
+    return (
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Region Response</p>
+          <h1 className="text-2xl font-semibold leading-tight text-foreground">Loading response</h1>
+          <p className="text-sm text-muted-foreground">Preparing offline data…</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (hydrationState === 'missing-route') {
     return (
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Region Response</p>
           <h1 className="text-2xl font-semibold leading-tight text-foreground">Response not found</h1>
-          <p className="text-sm text-muted-foreground">The response may have been cleared. Start a new one or open another saved response.</p>
+          <p className="text-sm text-muted-foreground">This route is not in the local index. Start a new response or pick another saved id.</p>
+          <div className="flex gap-3">
+            <Button asChild size="lg" className="h-12">
+              <Link href="/region-response">Back to responses</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (hydrationState === 'missing-payload') {
+    return (
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Region Response</p>
+          <h1 className="text-2xl font-semibold leading-tight text-foreground">Offline copy not found</h1>
+          <p className="text-sm text-muted-foreground">The route exists locally, but the payload was not saved on this device. Try reopening when back online or start a new response.</p>
+          <Badge variant="outline" className="h-7 w-fit rounded-full px-3">Route: {routeEntry?.id ?? sessionId}</Badge>
+          <div className="flex gap-3">
+            <Button asChild size="lg" className="h-12">
+              <Link href="/region-response">Back to responses</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Region Response</p>
+          <h1 className="text-2xl font-semibold leading-tight text-foreground">Response not available</h1>
+          <p className="text-sm text-muted-foreground">Reload failed to recover this response. Start a new one or open another saved response.</p>
           <div className="flex gap-3">
             <Button asChild size="lg" className="h-12">
               <Link href="/region-response">Back to responses</Link>
