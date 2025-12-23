@@ -13,7 +13,7 @@ const serwist = new Serwist({
   runtimeCaching: defaultCache,
   skipWaiting: true,
   clientsClaim: true,
-  cacheId: 'region-responder-v1.0.005',
+  cacheId: 'region-responder-v1.0.006',
   fallbacks: {
     entries: [
       {

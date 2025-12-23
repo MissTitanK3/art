@@ -7,6 +7,7 @@ import InstallPrompt from "@/components/pwa/InstallPrompt";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { PrefetchRoutes } from "./components/prefetch-routes";
 import { CacheDynamicRoutes } from "./components/cache-dynamic-routes";
+import { OfflineBanner } from "./components/offline-banner";
 
 // Ensure layout and session are always computed per-request in production
 export const dynamic = "force-dynamic";
@@ -114,6 +115,7 @@ export default async function RootLayout({
           <RegisterServiceWorker />
           <PrefetchRoutes />
           <CacheDynamicRoutes />
+          <OfflineBanner />
           <InstallPrompt />
           <div className="px-3 pt-3 pb-24 space-y-4 mx-auto">{children}</div>
           <BottomNav />

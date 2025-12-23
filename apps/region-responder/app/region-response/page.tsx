@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge, Button } from "@workspace/ui/primitives";
 import { toast } from "@workspace/ui/primitives/sonner";
@@ -10,7 +9,6 @@ import {
   useRegionResponseStore,
 } from "@workspace/store/useRegionResponseStore";
 import { listRouteIndexEntries, type RouteIndexEntry } from "@workspace/store/persistence/routeIndex";
-import { ArrowLeft } from "lucide-react";
 import { RegionResponseDetail } from "./region-response-detail";
 
 function buildDataPath(buildId: string | undefined, path: string) {

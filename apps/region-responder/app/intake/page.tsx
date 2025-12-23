@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge, Button } from "@workspace/ui/primitives";
 import { toast } from "@workspace/ui/primitives/sonner";
 import { formatLocalDateTime } from "@workspace/store/useRegionResponseStore";
 import { clearIntakeDraftPersistenceById, generateIntakeDraftId, initializeIntakeDraft } from "@workspace/store/useIntakeDraftStore";
 import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
-import { ArrowLeft } from "lucide-react";
 import { IntakeDetail } from "./intake-detail";
 
 export default function IntakeIndexPage() {

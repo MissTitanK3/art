@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Copy, Sparkles, Trash } from "lucide-react";
 
-import { Badge, Button, Input, Label, Textarea } from "@workspace/ui/primitives";
+import { Badge, Button, Label, Textarea } from "@workspace/ui/primitives";
 import {
   AlertDialog,
   AlertDialogAction,
