@@ -13,7 +13,7 @@ const serwist = new Serwist({
   runtimeCaching: defaultCache,
   skipWaiting: true,
   clientsClaim: true,
-  cacheId: 'region-responder-v1.0.002',
+  cacheId: 'region-responder-v1.0.003',
   fallbacks: {
     entries: [
       {
@@ -26,6 +26,8 @@ const serwist = new Serwist({
 
 cleanupOutdatedCaches();
 serwist.addEventListeners();
+
+const PREWARM_ROUTES = ['/', '/intake', '/region-response'];
 
 const cacheTarget = async (target: string) => {
   const url = new URL(target, self.location.origin);
@@ -44,13 +46,97 @@ const cacheTarget = async (target: string) => {
       await cache.put(request, res.clone());
     }
   } catch {
-    // Ignore caching failures (likely offline).
+    // If offline, seed with app shell so the route can still resolve.
+    try {
+      const shell =
+        (await cache.match('/', { ignoreSearch: true })) || (await caches.match('/'));
+      if (shell) {
+        await cache.put(request, shell.clone());
+      }
+    } catch {
+      // Ignore seeding failures.
+    }
   }
 };
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const htmlCache = await caches.open(PAGES_CACHE_NAME.html);
+      await Promise.all(
+        PREWARM_ROUTES.map(async (path) => {
+          try {
+            const res = await fetch(path, { cache: 'no-store' });
+            if (res && res.ok) {
+              await htmlCache.put(path, res.clone());
+            }
+          } catch {
+            // Ignore failures; best-effort warmup.
+          }
+        }),
+      );
+    })(),
+  );
+});
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  // Navigation/network-first with HTML cache + offline fallback.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        const htmlCache = await caches.open(PAGES_CACHE_NAME.html);
+        try {
+          const fresh = await fetch(request);
+          if (fresh && fresh.ok) {
+            htmlCache.put(request, fresh.clone()).catch(() => undefined);
+          }
+          return fresh;
+        } catch {
+          const cached =
+            (await htmlCache.match(request, { ignoreSearch: true })) ||
+            (await htmlCache.match(url.pathname, { ignoreSearch: true })) ||
+            (await htmlCache.match('/'));
+          if (cached) return cached;
+          const offline = await caches.match('/offline.html');
+          if (offline) return offline;
+          return Response.error();
+        }
+      })(),
+    );
+    return;
+  }
+
+  // Treat HTML document prefetches similarly.
+  const accept = request.headers.get('accept') || '';
+  const isHtmlDoc = accept.includes('text/html') && url.origin === self.location.origin && request.mode === 'cors';
+  if (isHtmlDoc) {
+    event.respondWith(
+      (async () => {
+        const htmlCache = await caches.open(PAGES_CACHE_NAME.html);
+        try {
+          const fresh = await fetch(request);
+          if (fresh && fresh.ok) {
+            htmlCache.put(request, fresh.clone()).catch(() => undefined);
+          }
+          return fresh;
+        } catch {
+          const cached =
+            (await htmlCache.match(request, { ignoreSearch: true })) ||
+            (await htmlCache.match(url.pathname, { ignoreSearch: true })) ||
+            (await htmlCache.match('/'));
+          if (cached) return cached;
+          const offline = await caches.match('/offline.html');
+          if (offline) return offline;
+          return Response.error();
+        }
+      })(),
+    );
+    return;
+  }
+
   const isRsc =
     request.headers.get('RSC') === '1' && url.origin === self.location.origin && !url.pathname.startsWith('/api/');
 

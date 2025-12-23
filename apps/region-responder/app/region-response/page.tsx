@@ -49,6 +49,14 @@ export default function RegionResponseIndexPage() {
   }, [router, routes]);
 
   const handleStart = async () => {
+    const buildDataPath = (buildId: string | undefined, path: string) => {
+      if (!buildId) return undefined;
+      const trimmed = path === '/' ? '' : path.replace(/^\//, '');
+      const normalized = trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
+      const slug = normalized || 'index';
+      return `/_next/data/${buildId}/${slug}.json`;
+    };
+
     const session = await startSession();
     toast.success(`Response started (${session.responseRef})`);
     const createdAt = new Date(session.startedAt).getTime();
@@ -64,6 +72,27 @@ export default function RegionResponseIndexPage() {
       },
       ...current.filter((entry) => entry.id !== session.id),
     ]);
+
+    // Warm caches for the new route where possible.
+    const path = `/region-response/${session.id}`;
+    try {
+      router.prefetch(path);
+    } catch {
+      // Ignore prefetch failures.
+    }
+
+    try {
+      const buildId = (window as any).__NEXT_DATA__?.buildId as string | undefined;
+      const dataPath = buildDataPath(buildId, path);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.active?.postMessage({ type: 'CACHE_ROUTE', path, dataPath });
+        });
+      }
+    } catch {
+      // Ignore SW warmup failures.
+    }
+
     router.push(`/region-response/${session.id}`);
   };
 

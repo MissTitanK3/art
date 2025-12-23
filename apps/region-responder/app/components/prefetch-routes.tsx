@@ -9,6 +9,7 @@ export function PrefetchRoutes() {
 
   useEffect(() => {
     // Prefetch top-level routes and representative dynamic paths to warm caches.
+    router.prefetch("/");
     router.prefetch("/intake");
     router.prefetch("/region-response");
     router.prefetch("/intake/example");

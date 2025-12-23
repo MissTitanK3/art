@@ -135,7 +135,7 @@ export async function listRouteIndexEntries(kind?: RouteKind) {
     await Promise.all(prunedIds.map((id) => deleteRecord('route-index', id)));
   }
 
-  const list = Object.values(kept);
+  const list = Object.values(kept).filter((entry) => !entry.tombstone);
   const filtered = kind ? list.filter((entry) => entry.kind === kind) : list;
   return filtered.sort((a, b) => b.updatedAt - a.updatedAt);
 }

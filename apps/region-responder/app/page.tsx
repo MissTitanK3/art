@@ -53,9 +53,37 @@ export default function Page() {
   const [resetting, setResetting] = useState(false);
 
   const handleStartResponse = async () => {
+    const buildDataPath = (buildId: string | undefined, path: string) => {
+      if (!buildId) return undefined;
+      const trimmed = path === "/" ? "" : path.replace(/^\//, "");
+      const normalized = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+      const slug = normalized || "index";
+      return `/_next/data/${buildId}/${slug}.json`;
+    };
+
     const session = await startSession();
     setActive(session.id);
-    router.push(`/region-response/${session.id}`);
+    const path = `/region-response/${session.id}`;
+
+    try {
+      router.prefetch(path);
+    } catch {
+      // Ignore prefetch failures.
+    }
+
+    try {
+      const buildId = (window as any).__NEXT_DATA__?.buildId as string | undefined;
+      const dataPath = buildDataPath(buildId, path);
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.active?.postMessage({ type: "CACHE_ROUTE", path, dataPath });
+        });
+      }
+    } catch {
+      // Ignore SW warmup failures.
+    }
+
+    router.push(path);
   };
 
   const handleStartIntake = async () => {
