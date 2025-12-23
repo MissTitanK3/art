@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@workspace/ui/primitives";
 import {
   AlertDialog,
@@ -18,15 +18,106 @@ import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 import { useRegionResponseStore } from "@workspace/store/useRegionResponseStore";
 import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
 import { clearIntakeDraftPersistence, generateIntakeDraftId, initializeIntakeDraft } from "@workspace/store/useIntakeDraftStore";
+import { listRouteIndexEntries } from "@workspace/store/persistence/routeIndex";
+import { Info } from "lucide-react";
 
 export default function Page() {
   const router = useRouter();
   const startSession = useRegionResponseStore((state) => state.startSession);
   const setActive = useRegionResponseStore((state) => state.setActive);
   const clearResponses = useRegionResponseStore((state) => state.clearAll);
+  const responseSessions = useRegionResponseStore((state) => state.sessions);
 
   const upsertDraft = useIntakeDraftIndexStore((state) => state.upsertDraft);
   const clearDraftIndex = useIntakeDraftIndexStore((state) => state.clearAll);
+  const intakeDrafts = useIntakeDraftIndexStore((state) => state.drafts);
+
+  const [swDetails, setSwDetails] = useState<{ scriptUrl?: string; state?: string; caches: string[] }>({
+    caches: [],
+  });
+  const [exportingLogs, setExportingLogs] = useState(false);
+
+  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION ?? "local-dev";
+  const swCacheId = "region-responder-v1.0.003";
+  const cacheNamespace = "region-responder";
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        if ("serviceWorker" in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          const active = reg?.active;
+          const swState = active?.state;
+          const swUrl = active?.scriptURL;
+          const cacheKeys = (await caches.keys())?.filter((key) => key.includes(cacheNamespace)) ?? [];
+          if (!cancelled) {
+            setSwDetails({ scriptUrl: swUrl, state: swState, caches: cacheKeys });
+          }
+        }
+      } catch {
+        // ignore diagnostics failures
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [cacheNamespace]);
+
+  const intakeCount = intakeDrafts?.length ?? 0;
+  const responseCount = useMemo(() => Object.keys(responseSessions ?? {}).length, [responseSessions]);
+
+  const handleExportLogs = async () => {
+    const code = typeof window !== "undefined" ? window.prompt("Enter diagnostics code") : null;
+    if (code !== "4444") {
+      toast.error("Incorrect code");
+      return;
+    }
+    if (exportingLogs) return;
+    setExportingLogs(true);
+    try {
+      const swReg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null;
+      const active = swReg?.active;
+      const cacheKeys = typeof caches !== "undefined" ? await caches.keys() : [];
+      const filteredCaches = cacheKeys.filter((key) => key.includes(cacheNamespace));
+      const routeIndex = await listRouteIndexEntries().catch(() => []);
+
+      const payload = {
+        generatedAt: new Date().toISOString(),
+        appVersion,
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+        sw: {
+          scriptUrl: active?.scriptURL,
+          state: active?.state,
+          scope: swReg?.scope,
+          cacheId: swCacheId,
+        },
+        caches: filteredCaches,
+        intakeDraftsCount: intakeCount,
+        responseSessionsCount: responseCount,
+        routeIndex,
+        localStorageKeys:
+          typeof localStorage !== "undefined"
+            ? Object.keys(localStorage).filter((k) => k.toLowerCase().includes("region"))
+            : [],
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `region-responder-diagnostics-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Diagnostics downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to export diagnostics");
+    } finally {
+      setExportingLogs(false);
+    }
+  };
 
   const clearServiceWorkerState = async () => {
     if (typeof window === "undefined") return;
@@ -185,6 +276,26 @@ export default function Page() {
           >
             Open Ko-fi (external)
           </a>
+        </div>
+
+        <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground space-y-2">
+          <div className="flex items-center gap-2 font-semibold text-foreground">
+            <Info className="h-4 w-4" aria-hidden />
+            <span>Build diagnostics</span>
+          </div>
+          <div className="grid grid-cols-1 gap-1">
+            <div>SW script: {swDetails.scriptUrl ?? "not registered"}</div>
+            <div>SW state: {swDetails.state ?? "unknown"}</div>
+            <div>SW cache id: {swCacheId}</div>
+            <div>App caches: {swDetails.caches.length ? swDetails.caches.join(", ") : "none"}</div>
+            <div>Intake drafts: {intakeCount}</div>
+            <div>Response sessions: {responseCount}</div>
+          </div>
+          <div className="pt-2">
+            <Button size="sm" variant="outline" disabled={exportingLogs} onClick={handleExportLogs}>
+              {exportingLogs ? "Preparing…" : "Export diagnostics (code)"}
+            </Button>
+          </div>
         </div>
       </div>
 
