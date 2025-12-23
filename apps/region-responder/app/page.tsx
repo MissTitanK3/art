@@ -127,7 +127,7 @@ export default function Page() {
         </div>
 
         <div className="space-y-3">
-          <Button size="lg" className="w-full h-14 text-lg font-semibold" onClick={handleStartResponse}>
+          <Button size="lg" className="w-full h-14 text-lg" onClick={handleStartResponse}>
             Start Region Response
           </Button>
           <p className="text-sm text-muted-foreground">
@@ -139,7 +139,7 @@ export default function Page() {
           <Button
             size="lg"
             variant="outline"
-            className="w-full h-14 text-lg font-semibold"
+            className="w-full h-14 text-lg"
             onClick={handleStartIntake}
           >
             Start Missing Person Intake

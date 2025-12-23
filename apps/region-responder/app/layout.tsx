@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s · ART Region ${process.env.NEXT_PUBLIC_BRAND_NAME}",
   },
   description:
-    "Regional dispatch operations template: pods, shifts, onboarding, and trust list—siloed per-region with metadata-only uplinks.",
+    "It’s a simple, offline-friendly app to log and understand emergency responses that you perform in your area. It’s designed to lessen decision fatigue: clear buttons and repeatable forms guide you through what to capture next, so you don’t have to think about the order or wording. You can start a new “region response,” add quick updates, mark safety checks, and everything saves locally so it keeps working without internet. It also allows you to fill out intake forms for missing persons that you can forward to advocacy groups or your regional dispatch. You can share or export the summary when you’re back online to your Signal group.",
   applicationName: `ART Dispatch — ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
   keywords: [
     "dispatch",
@@ -45,7 +45,8 @@ export const metadata: Metadata = {
     url: "/",
     siteName: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
     title: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
-    description: "Siloed regional operations with cross‑region metadata only.",
+    description:
+      "It’s a simple, offline-friendly app to log and understand emergency responses that you perform in your area. It’s designed to lessen decision fatigue: clear buttons and repeatable forms guide you through what to capture next, so you don’t have to think about the order or wording. You can start a new “region response,” add quick updates, mark safety checks, and everything saves locally so it keeps working without internet. It also allows you to fill out intake forms for missing persons that you can forward to advocacy groups or your regional dispatch. You can share or export the summary when you’re back online to your Signal group.",
     images: [
       {
         url: "/og.png",
@@ -58,7 +59,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: `ART. Region ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
-    description: "Siloed regional operations with cross‑region metadata only.",
+    description:
+      "It’s a simple, offline-friendly app to log and understand emergency responses that you perform in your area. It’s designed to lessen decision fatigue: clear buttons and repeatable forms guide you through what to capture next, so you don’t have to think about the order or wording. You can start a new “region response,” add quick updates, mark safety checks, and everything saves locally so it keeps working without internet. It also allows you to fill out intake forms for missing persons that you can forward to advocacy groups or your regional dispatch. You can share or export the summary when you’re back online to your Signal group.",
     images: ["/og.png"],
     creator: "@alwaysreadytools",
   },
