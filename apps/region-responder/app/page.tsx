@@ -288,7 +288,7 @@ export default function Page() {
             <div>SW state: {swDetails.state ?? "unknown"}</div>
             <div>SW cache id: {swCacheId}</div>
             <div>App caches: {swDetails.caches.length ? swDetails.caches.join(", ") : "none"}</div>
-            <div>Intake drafts: {intakeCount}</div>
+            <div>Intakes: {intakeCount}</div>
             <div>Response sessions: {responseCount}</div>
           </div>
           <div className="pt-2">

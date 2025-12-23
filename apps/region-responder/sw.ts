@@ -13,7 +13,7 @@ const serwist = new Serwist({
   runtimeCaching: defaultCache,
   skipWaiting: true,
   clientsClaim: true,
-  cacheId: 'region-responder-v1.0.003',
+  cacheId: 'region-responder-v1.0.004',
   fallbacks: {
     entries: [
       {
@@ -27,7 +27,7 @@ const serwist = new Serwist({
 cleanupOutdatedCaches();
 serwist.addEventListeners();
 
-const PREWARM_ROUTES = ['/', '/intake', '/region-response'];
+const PREWARM_ROUTES = ['/', '/intake', '/region-response', '/offline.html'];
 
 const cacheTarget = async (target: string) => {
   const url = new URL(target, self.location.origin);
@@ -48,8 +48,7 @@ const cacheTarget = async (target: string) => {
   } catch {
     // If offline, seed with app shell so the route can still resolve.
     try {
-      const shell =
-        (await cache.match('/', { ignoreSearch: true })) || (await caches.match('/'));
+      const shell = (await cache.match('/', { ignoreSearch: true })) || (await caches.match('/'));
       if (shell) {
         await cache.put(request, shell.clone());
       }
@@ -164,7 +163,7 @@ self.addEventListener('fetch', (event) => {
 
       const offline = await caches.match('/offline.html');
       if (offline) return offline;
-      return Response.error();
+      return new Response('Offline', { status: 503 });
     })(),
   );
 });
