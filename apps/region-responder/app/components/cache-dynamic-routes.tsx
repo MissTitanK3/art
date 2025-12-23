@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
-import { useRegionResponseStore } from "@workspace/store/useRegionResponseStore";
 
 const STATIC_PATHS = ["/", "/intake", "/region-response"];
 
@@ -16,14 +14,6 @@ function buildDataPath(buildId: string, path: string) {
 
 export function CacheDynamicRoutes() {
   const router = useRouter();
-  const intakeDrafts = useIntakeDraftIndexStore((state) => state.drafts);
-  const responseSessions = useRegionResponseStore((state) => state.sessions);
-
-  const intakeIds = useMemo(() => intakeDrafts.map((draft) => draft.id).filter(Boolean), [intakeDrafts]);
-  const responseIds = useMemo(
-    () => Object.keys(responseSessions ?? {}).filter(Boolean),
-    [responseSessions],
-  );
 
   const sent = useRef<Set<string>>(new Set());
 
@@ -32,8 +22,6 @@ export function CacheDynamicRoutes() {
 
     const buildId = (window as any).__NEXT_DATA__?.buildId ?? "";
     const paths = new Set<string>(STATIC_PATHS);
-    intakeIds.forEach((id) => paths.add(`/intake/${encodeURIComponent(id)}`));
-    responseIds.forEach((id) => paths.add(`/region-response/${encodeURIComponent(id)}`));
 
     paths.forEach((path) => {
       if (sent.current.has(path)) return;
@@ -57,7 +45,7 @@ export function CacheDynamicRoutes() {
         })
         .catch(() => undefined);
     });
-  }, [router, intakeIds.join(","), responseIds.join(",")]);
+  }, [router]);
 
   return null;
 }

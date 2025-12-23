@@ -12,8 +12,6 @@ export function PrefetchRoutes() {
     router.prefetch("/");
     router.prefetch("/intake");
     router.prefetch("/region-response");
-    router.prefetch("/intake/example");
-    router.prefetch("/region-response/example");
   }, [router]);
 
   return null;

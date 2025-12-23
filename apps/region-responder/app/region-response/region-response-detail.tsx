@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Sparkles, Trash } from "lucide-react";
 
 import { Badge, Button, Input, Label, Textarea } from "@workspace/ui/primitives";
@@ -254,11 +252,13 @@ function OptionGroup<T extends string>({
   );
 }
 
-export default function RegionResponseDetailPage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const sessionId = params?.id ? decodeURIComponent(params.id) : "";
-
+export function RegionResponseDetail({
+  sessionId,
+  onBack,
+}: {
+  sessionId: string;
+  onBack: () => void;
+}) {
   const session = useRegionResponseStore((state) => (sessionId ? state.sessions[sessionId] : undefined));
   const activeId = useRegionResponseStore((state) => state.activeId);
   const setActive = useRegionResponseStore((state) => state.setActive);
@@ -399,8 +399,8 @@ export default function RegionResponseDetailPage() {
           <h1 className="text-2xl font-semibold leading-tight text-foreground">Response not found</h1>
           <p className="text-sm text-muted-foreground">This route is not in the local index. Start a new response or pick another saved id.</p>
           <div className="flex gap-3">
-            <Button asChild size="lg" className="h-12">
-              <Link href="/region-response">Back to responses</Link>
+            <Button size="lg" className="h-12" onClick={onBack}>
+              Back to responses
             </Button>
           </div>
         </div>
@@ -417,8 +417,8 @@ export default function RegionResponseDetailPage() {
           <p className="text-sm text-muted-foreground">The route exists locally, but the payload was not saved on this device. Try reopening when back online or start a new response.</p>
           <Badge variant="outline" className="h-7 w-fit rounded-full px-3">Route: {routeEntry?.id ?? sessionId}</Badge>
           <div className="flex gap-3">
-            <Button asChild size="lg" className="h-12">
-              <Link href="/region-response">Back to responses</Link>
+            <Button size="lg" className="h-12" onClick={onBack}>
+              Back to responses
             </Button>
           </div>
         </div>
@@ -434,8 +434,8 @@ export default function RegionResponseDetailPage() {
           <h1 className="text-2xl font-semibold leading-tight text-foreground">Response not available</h1>
           <p className="text-sm text-muted-foreground">Reload failed to recover this response. Start a new one or open another saved response.</p>
           <div className="flex gap-3">
-            <Button asChild size="lg" className="h-12">
-              <Link href="/region-response">Back to responses</Link>
+            <Button size="lg" className="h-12" onClick={onBack}>
+              Back to responses
             </Button>
           </div>
         </div>
@@ -450,7 +450,7 @@ export default function RegionResponseDetailPage() {
     resetDetailedUpdateForm();
     setShowUpdateForm(false);
     setShowDetailedUpdate(false);
-    router.push("/region-response");
+    onBack();
   };
 
   const handleCheckIn = (status: SafetyStatus) => {
@@ -608,10 +608,8 @@ export default function RegionResponseDetailPage() {
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-12">
       <div className="space-y-3">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="sm" className="px-2">
-            <Link href="/region-response" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" aria-hidden /> Back
-            </Link>
+          <Button variant="ghost" size="sm" className="px-2" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" aria-hidden /> Back
           </Button>
           {!isActive ? (
             <Button size="sm" variant="outline" onClick={() => setActive(sessionId)}>

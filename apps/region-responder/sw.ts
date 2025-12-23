@@ -13,7 +13,7 @@ const serwist = new Serwist({
   runtimeCaching: defaultCache,
   skipWaiting: true,
   clientsClaim: true,
-  cacheId: 'region-responder-v1.0.004',
+  cacheId: 'region-responder-v1.0.005',
   fallbacks: {
     entries: [
       {
@@ -145,12 +145,18 @@ self.addEventListener('fetch', (event) => {
     (async () => {
       const rscCache = await caches.open(PAGES_CACHE_NAME.rsc);
       const htmlCache = await caches.open(PAGES_CACHE_NAME.html);
+      // Cache key must be GET or the cache API will reject; RSC requests can be POST.
+      const cacheKey = new Request(url.pathname, { method: 'GET' });
 
-      const cached = await rscCache.match(request, { ignoreSearch: true });
+      const cached = await rscCache.match(cacheKey, { ignoreSearch: true });
       try {
         const fresh = await fetch(request);
         if (fresh && fresh.ok) {
-          await rscCache.put(request, fresh.clone());
+          try {
+            await rscCache.put(cacheKey, fresh.clone());
+          } catch {
+            // Ignore cache write failures (e.g., opaque or quota).
+          }
           return fresh;
         }
       } catch {

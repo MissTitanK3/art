@@ -146,7 +146,9 @@ export default function Page() {
   const handleStartResponse = async () => {
     const buildDataPath = (buildId: string | undefined, path: string) => {
       if (!buildId) return undefined;
-      const trimmed = path === "/" ? "" : path.replace(/^\//, "");
+      const [pathname] = path.split("?");
+      const normalizedPath = pathname || "/";
+      const trimmed = normalizedPath === "/" ? "" : normalizedPath.replace(/^\//, "");
       const normalized = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
       const slug = normalized || "index";
       return `/_next/data/${buildId}/${slug}.json`;
@@ -154,20 +156,14 @@ export default function Page() {
 
     const session = await startSession();
     setActive(session.id);
-    const path = `/region-response/${session.id}`;
-
-    try {
-      router.prefetch(path);
-    } catch {
-      // Ignore prefetch failures.
-    }
+    const path = `/region-response`;
 
     try {
       const buildId = (window as any).__NEXT_DATA__?.buildId as string | undefined;
-      const dataPath = buildDataPath(buildId, path);
+      const dataPath = buildDataPath(buildId, "/region-response");
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.ready.then((registration) => {
-          registration.active?.postMessage({ type: "CACHE_ROUTE", path, dataPath });
+          registration.active?.postMessage({ type: "CACHE_ROUTE", path: "/region-response", dataPath });
         });
       }
     } catch {
@@ -182,7 +178,8 @@ export default function Page() {
     const now = new Date().toISOString();
     await initializeIntakeDraft(id, { lastUpdatedAt: now });
     upsertDraft({ id, caseRef: "Pending", lastUpdatedAt: now, createdAt: now, status: "wip" });
-    router.push(`/intake/${id}`);
+    const path = `/intake`;
+    router.push(path);
   };
 
   const handleResetAll = async () => {

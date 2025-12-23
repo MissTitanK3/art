@@ -1,8 +1,6 @@
 "use client";
 
 import { type ChangeEvent, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import {
   Badge,
   Button,
@@ -221,11 +219,13 @@ function exportPdf(reportText: string) {
   win.print();
 }
 
-export default function IntakeDetailPage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const draftId = params?.id ? decodeURIComponent(params.id) : "";
-
+export function IntakeDetail({
+  draftId,
+  onBack,
+}: {
+  draftId: string;
+  onBack: () => void;
+}) {
   const draft = useIntakeDraftStoreFor(draftId, (state) => state.draft);
   const updateField = useIntakeDraftStoreFor(draftId, (state) => state.updateField);
   const overwriteDraft = useIntakeDraftStoreFor(draftId, (state) => state.overwriteDraft);
@@ -324,8 +324,8 @@ export default function IntakeDetailPage() {
           <h1 className="text-2xl font-semibold leading-tight text-foreground">WIP not indexed</h1>
           <p className="text-sm text-muted-foreground">This route is not in the local index. Start a new intake or open another saved WIP.</p>
           <div className="flex gap-3">
-            <Button asChild size="lg" className="h-12">
-              <Link href="/intake">Back to WIPs</Link>
+            <Button size="lg" className="h-12" onClick={onBack}>
+              Back to WIPs
             </Button>
           </div>
         </div>
@@ -342,8 +342,8 @@ export default function IntakeDetailPage() {
           <p className="text-sm text-muted-foreground">The intake id is known, but no saved draft was found on this device. Try again when online or start a new WIP.</p>
           <Badge variant="outline" className="h-7 w-fit rounded-full px-3">WIP: {routeEntry?.id ?? draftId}</Badge>
           <div className="flex gap-3">
-            <Button asChild size="lg" className="h-12">
-              <Link href="/intake">Back to WIPs</Link>
+            <Button size="lg" className="h-12" onClick={onBack}>
+              Back to WIPs
             </Button>
           </div>
         </div>
@@ -397,7 +397,7 @@ export default function IntakeDetailPage() {
       overwriteDraft(fresh);
       removeDraft(draftId);
       toast.success("WIP cleared");
-      router.push("/intake");
+      onBack();
     } finally {
       setIsClearing(false);
       setShowClearDialog(false);
@@ -444,10 +444,8 @@ export default function IntakeDetailPage() {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-3xl flex-col gap-6 pb-12">
       <div>
-        <Button asChild variant="ghost" size="sm" className="px-2">
-          <Link href="/intake" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" aria-hidden /> Back
-          </Link>
+        <Button variant="ghost" size="sm" className="px-2" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4" aria-hidden /> Back
         </Button>
       </div>
       <PageHeader
