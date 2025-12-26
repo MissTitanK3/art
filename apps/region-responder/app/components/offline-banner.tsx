@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { WifiOff } from "lucide-react";
 
 export function OfflineBanner() {
-  const [offline, setOffline] = useState(() =>
-    typeof navigator !== "undefined" ? !navigator.onLine : false,
-  );
+  // Start with a stable server/client render; update the real status after mount.
+  const [offline, setOffline] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

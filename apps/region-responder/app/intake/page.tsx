@@ -7,6 +7,16 @@ import { formatLocalDateTime } from "@workspace/store/useRegionResponseStore";
 import { clearIntakeDraftPersistenceById, generateIntakeDraftId, initializeIntakeDraft } from "@workspace/store/useIntakeDraftStore";
 import { useIntakeDraftIndexStore } from "@workspace/store/useIntakeDraftIndexStore";
 import { IntakeDetail } from "./intake-detail";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/primitives/alert-dialog";
 
 export default function IntakeIndexPage() {
   const drafts = useIntakeDraftIndexStore((state) => state.drafts);
@@ -15,6 +25,8 @@ export default function IntakeIndexPage() {
 
   const [selectedId, setSelectedId] = useState<string>("");
   const [showListView, setShowListView] = useState(true);
+  const [pendingClearId, setPendingClearId] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     if (!selectedId && drafts.length) {
@@ -30,22 +42,36 @@ export default function IntakeIndexPage() {
     const id = generateIntakeDraftId();
     const now = new Date().toISOString();
     await initializeIntakeDraft(id, { lastUpdatedAt: now });
-    upsertDraft({ id, caseRef: "Pending", lastUpdatedAt: now, createdAt: now, status: "wip" });
+    upsertDraft({ id, caseRef: "Pending", lastUpdatedAt: now, createdAt: now, status: "wip", fullName: "" });
     setSelectedId(id);
     setShowListView(false);
   };
 
-  const handleClear = async (id: string) => {
-    await clearIntakeDraftPersistenceById(id);
-    removeDraft(id);
-    toast.success("WIP cleared");
-    setSelectedId((current) => {
-      if (current === id) {
-        setShowListView(true);
-        return "";
-      }
-      return current;
-    });
+  const handleRequestClear = (id: string) => {
+    setPendingClearId(id);
+  };
+
+  const handleConfirmClear = async () => {
+    if (!pendingClearId || clearing) return;
+    setClearing(true);
+    try {
+      await clearIntakeDraftPersistenceById(pendingClearId);
+      removeDraft(pendingClearId);
+      toast.success("WIP cleared");
+      setSelectedId((current) => {
+        if (current === pendingClearId) {
+          setShowListView(true);
+          return "";
+        }
+        return current;
+      });
+      setPendingClearId(null);
+    } catch (error) {
+      console.error("Failed to clear intake WIP", error);
+      toast.error("Unable to clear this WIP. Try again.");
+    } finally {
+      setClearing(false);
+    }
   };
 
   const handleSelect = (id: string) => {
@@ -88,6 +114,7 @@ export default function IntakeIndexPage() {
               <div className="space-y-3">
                 {drafts.map((draft) => {
                   const isSelected = selectedId === draft.id;
+                  const displayName = draft.fullName?.trim() || "Name unknown";
                   return (
                     <div
                       key={draft.id}
@@ -103,6 +130,7 @@ export default function IntakeIndexPage() {
                               {draft.status === "submitted" ? "Submitted" : "WIP"}
                             </Badge>
                           </div>
+                          <p className="text-sm font-semibold text-foreground">Name: {displayName}</p>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <p>Created: {formatLocalDateTime(draft.createdAt)}</p>
                             <p>Last updated: {formatLocalDateTime(draft.lastUpdatedAt)}</p>
@@ -117,7 +145,7 @@ export default function IntakeIndexPage() {
                             size="sm"
                             variant="outline"
                             className="h-9"
-                            onClick={() => handleClear(draft.id)}
+                            onClick={() => handleRequestClear(draft.id)}
                           >
                             Clear WIP
                           </Button>
@@ -131,6 +159,30 @@ export default function IntakeIndexPage() {
           </section>
         </div>
       )}
+
+      <AlertDialog open={Boolean(pendingClearId)} onOpenChange={(open) => setPendingClearId(open ? pendingClearId : null)}>
+        <AlertDialogContent className="bg-card text-card-foreground">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear this WIP?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This deletes the local copy of Case Ref {drafts.find((d) => d.id === pendingClearId)?.caseRef || pendingClearId} (Name:{" "}
+              {drafts.find((d) => d.id === pendingClearId)?.fullName?.trim() || "Name unknown"}). You cannot undo this action.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel autoFocus disabled={clearing} onClick={() => setPendingClearId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white"
+              disabled={clearing}
+              onClick={handleConfirmClear}
+            >
+              {clearing ? "Clearing..." : "Yes, delete WIP"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

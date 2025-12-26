@@ -273,12 +273,13 @@ export function IntakeDetail({
     upsertDraft({
       id: draftId,
       caseRef: draft.caseRef,
+      fullName: draft.fullName || '',
       lastUpdatedAt: draft.lastUpdatedAt,
       createdAt: draft.lastUpdatedAt || new Date().toISOString(),
       status: draft.isSubmitted ? "submitted" : "wip",
       submittedAt: draft.submittedAt,
     });
-  }, [draftId, draft.caseRef, draft.isSubmitted, draft.lastUpdatedAt, draft.submittedAt, hydrated, upsertDraft]);
+  }, [draftId, draft.caseRef, draft.fullName, draft.isSubmitted, draft.lastUpdatedAt, draft.submittedAt, hydrated, upsertDraft]);
 
   const isSubmitted = draft.isSubmitted;
   const collectedAtDisplay = hydrated && draft.lastUpdatedAt
@@ -303,6 +304,8 @@ export function IntakeDetail({
     : hydrated && draft.lastUpdatedAt
       ? `Saved locally · ${formatLocalTimestamp(draft.lastUpdatedAt)}`
       : "Saved locally";
+
+  const displayName = normalizeText(draft.fullName) || 'Name unknown';
 
   if (hydrationState === 'pending') {
     return (
@@ -453,9 +456,10 @@ export function IntakeDetail({
         description="Capture missing or detained person info. WIPs stay on this device until you share."
         actions={(
           <div className="flex flex-col items-end gap-1 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant={isSubmitted ? "success" : "secondary"}>{isSubmitted ? "Submitted" : "WIP"}</Badge>
               <span className="font-semibold text-foreground">Case Ref: {draft.caseRef}</span>
+              <span className="text-muted-foreground">Name: {displayName}</span>
             </div>
             <Badge variant="outline">{savedLabel}</Badge>
           </div>

@@ -13,6 +13,7 @@ export type IntakeDraftIndexItem = {
   createdAt: string;
   status: 'wip' | 'submitted';
   submittedAt?: string;
+  fullName?: string;
 };
 
 export interface IntakeDraftIndexStoreState {
@@ -33,8 +34,9 @@ const initializer: StateCreator<IntakeDraftIndexStoreState> = (set) => ({
             ...item,
             status: item.status ?? existing.status,
             submittedAt: item.submittedAt ?? existing.submittedAt,
+            fullName: item.fullName ?? existing.fullName ?? '',
           }
-        : { ...item, status: item.status ?? 'wip' };
+        : { ...item, status: item.status ?? 'wip', fullName: item.fullName ?? '' };
       const others = state.drafts.filter((draft) => draft.id !== item.id);
       return {
         drafts: [next, ...others].sort(
@@ -49,7 +51,21 @@ const initializer: StateCreator<IntakeDraftIndexStoreState> = (set) => ({
 function withPersistence(base: StateCreator<IntakeDraftIndexStoreState>) {
   return persist(base, {
     name: resolveScopedStorageKey(STORAGE_BASE_KEY),
-    version: 1,
+    version: 2,
+    migrate: (persistedState: any, version) => {
+      if (!persistedState) return persistedState;
+      const drafts = Array.isArray(persistedState.drafts) ? persistedState.drafts : [];
+      if (version < 2) {
+        return {
+          ...persistedState,
+          drafts: drafts.map((draft) => ({
+            ...draft,
+            fullName: draft?.fullName ?? '',
+          })),
+        };
+      }
+      return persistedState;
+    },
   });
 }
 
