@@ -54,11 +54,13 @@ function withPersistence(base: StateCreator<IntakeDraftIndexStoreState>) {
     version: 2,
     migrate: (persistedState: any, version) => {
       if (!persistedState) return persistedState;
-      const drafts = Array.isArray(persistedState.drafts) ? persistedState.drafts : [];
+      const drafts = Array.isArray(persistedState.drafts)
+        ? (persistedState.drafts as IntakeDraftIndexItem[])
+        : [];
       if (version < 2) {
         return {
           ...persistedState,
-          drafts: drafts.map((draft) => ({
+          drafts: drafts.map((draft: IntakeDraftIndexItem) => ({
             ...draft,
             fullName: draft?.fullName ?? '',
           })),
