@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { FC } from "react";
-import { ngcData } from "../lib/ngc";
 import { Separator } from "@workspace/ui/primitives/separator";
 import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 import BackToTopButton from "../components/BackToTopButton";
@@ -15,9 +13,18 @@ import {
   TrendingUp,
   Flame,
 } from "lucide-react";
+import { NGC_V15, type NGCBlock } from "@/lib/ngc_v_15";
 
 export default function LandingPage() {
-  const { preamble } = ngcData;
+  const preambleNode = NGC_V15.root.children.find(
+    (child) => child.kind === "preamble"
+  );
+  const preambleParagraphs = (preambleNode?.blocks ?? []).filter(
+    (b): b is Extract<NGCBlock, { type: "p" }> => b.type === "p"
+  );
+  const preambleList = (preambleNode?.blocks ?? []).find(
+    (b): b is Extract<NGCBlock, { type: "list" }> => b.type === "list"
+  );
 
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -574,16 +581,21 @@ export default function LandingPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="leading-relaxed">{preamble.forward}</p>
-            <p className="text-sm text-muted-foreground">{preamble.subTitle}</p>
+            {preambleParagraphs.map((p, idx) => (
+              <p key={idx} className="leading-relaxed">
+                {p.text}
+              </p>
+            ))}
 
-            <ol className="mt-2 list-decimal space-y-2 pl-6 text-sm">
-              {preamble.points.map((p) => (
-                <li key={p.id} className="leading-relaxed">
-                  {p.content}
-                </li>
-              ))}
-            </ol>
+            {preambleList && (
+              <ul className="mt-2 list-disc space-y-2 pl-5 text-sm">
+                {preambleList.items.map((item, idx) => (
+                  <li key={idx} className="leading-relaxed">
+                    {item.text}
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <div className="pt-2">
               <Link

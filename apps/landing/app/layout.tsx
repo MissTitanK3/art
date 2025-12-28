@@ -26,10 +26,10 @@ export default function RootLayout({
       className="scroll-smooth overflow-x-hidden"
     >
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased px-3 snap-y snap-mandatory overflow-x-hidden`}
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased snap-y snap-mandatory overflow-x-hidden`}
       >
         <Providers>
-          <div className="px-3 pt-2">
+          <div className="pt-2">
             {children}
             <Toaster />
           </div>
