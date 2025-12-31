@@ -227,7 +227,7 @@ export default function LandingPage() {
               <li>• Export, print, and share summaries</li>
             </ul>
             <Link
-              href="https://responder.alwaysreadytools.org"
+              href="https://responders.alwaysreadytools.org"
               target="_blank"
               className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm shadow hover:opacity-90"
             >
