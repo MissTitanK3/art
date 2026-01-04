@@ -22,6 +22,7 @@ export type DispatchUpdateDraft = Omit<DispatchUpdate, "id" | "createdAt"> & {
 
 type DispatchUpdatesProps = {
   updates?: DispatchUpdate[];
+  loading?: boolean;
   onAddUpdate: (update: DispatchUpdateDraft) => void;
   onEditUpdate: (updateId: string, text: string) => void;
   onRemoveUpdate: (updateId: string) => void;
@@ -30,6 +31,7 @@ type DispatchUpdatesProps = {
 
 export default function DispatchUpdates({
   updates,
+  loading = false,
   onAddUpdate,
   onEditUpdate,
   onRemoveUpdate,
@@ -74,6 +76,14 @@ export default function DispatchUpdates({
   const sortedUpdates = [...(updates ?? [])].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center rounded-md border border-dashed bg-muted/40 p-6 text-sm text-muted-foreground">
+        Loading updates...
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full space-y-4">

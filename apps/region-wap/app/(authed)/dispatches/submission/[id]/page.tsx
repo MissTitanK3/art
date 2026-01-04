@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDispatchStore } from "@/providers/DispatchStoreProvider";
 import { usePodStore } from "@/providers/PodStoreProvider";
@@ -20,7 +20,7 @@ async function fetchDispatchSubmissionFromDatabase(
   id: string,
 ): Promise<DispatchSubmission | null> {
   try {
-    const res = await fetch(`/api/dispatches/${id}`);
+    const res = await fetch(`/api/dispatches/${id}`, { cache: "no-store" });
     if (!res.ok) {
       console.warn("[DispatchSubmissionDataLayer] fetch error", res.status);
       return null;
@@ -34,7 +34,9 @@ async function fetchDispatchSubmissionFromDatabase(
 }
 async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
   try {
-    const res = await fetch(`/api/dispatches/${id}/updates`);
+    const res = await fetch(`/api/dispatches/${id}/updates`, {
+      cache: "no-store",
+    });
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] fetch updates error",
@@ -51,7 +53,9 @@ async function fetchSubmissionUpdates(id: string): Promise<DispatchUpdate[]> {
 }
 async function fetchSubmissionLogistics(id: string): Promise<LogisticsItem[]> {
   try {
-    const res = await fetch(`/api/dispatches/${id}/logistics`);
+    const res = await fetch(`/api/dispatches/${id}/logistics`, {
+      cache: "no-store",
+    });
     if (!res.ok) {
       console.warn(
         "[DispatchSubmissionDataLayer] fetch logistics error",
@@ -71,11 +75,12 @@ async function persistSubmissionPatchToDatabase(
   patch: Partial<DispatchSubmission>,
 ): Promise<void> {
   // Send patch to API
+  const { logistics: _logistics, ...payload } = patch;
   try {
     const res = await fetch(`/api/dispatches/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       console.warn("[DispatchSubmissionDataLayer] PATCH error", res.status);
@@ -211,58 +216,79 @@ export default function DispatchSubmissionPage() {
   const viewerUserId = useProfileStore((s) => s.profile?.user_id ?? null);
   const viewerProfileId = useProfileStore((s) => s.profile?.id ?? null);
   const fetchedRef = useRef<string | null>(null);
+  const isHydratingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const roster = usePodStore((s) => s.activeRoster);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    let cancelled = false;
-    async function hydrate() {
-      // Prevent refetch loops when the local store updates
-      if (fetchedRef.current === id) return;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const hydrate = useCallback(
+    async (force = false) => {
+      // Prevent refetch loops when the local store updates.
+      if (!force && fetchedRef.current === id) return;
+      if (!id || isHydratingRef.current) return;
       fetchedRef.current = id;
-      if (!id) {
-        return;
-      }
-      setLoading(true);
+      isHydratingRef.current = true;
+      if (isMountedRef.current) setLoading(true);
       try {
         const result = await fetchDispatchSubmissionFromDatabase(id);
-        if (!cancelled && result) {
-          // hydrate related updates + logistics
+        if (!isMountedRef.current) return;
+        if (result) {
           const [updates, logistics] = await Promise.all([
             fetchSubmissionUpdates(id),
             fetchSubmissionLogistics(id),
           ]);
+          if (!isMountedRef.current) return;
           const hydrated: DispatchSubmission = {
             ...result,
             updates,
             logistics,
           } as DispatchSubmission;
-          // If the submission is not yet in the local store, add it; otherwise update it.
           if (!storeSubmission) {
             addSubmission(hydrated);
           } else {
             updateSubmission(hydrated.id, hydrated);
           }
-          setLoading(false);
         }
       } catch (error) {
-        if (!cancelled) {
+        if (isMountedRef.current) {
           console.warn(
             "DispatchSubmissionDataLayer: failed to fetch submission",
             error,
           );
         }
       } finally {
-        if (!cancelled) {
+        isHydratingRef.current = false;
+        if (isMountedRef.current) {
           setLoading(false);
         }
       }
-      setLoading(false);
-    }
+    },
+    [id, updateSubmission, addSubmission, storeSubmission],
+  );
+
+  useEffect(() => {
     hydrate();
-    return () => {
-      cancelled = true;
+  }, [hydrate]);
+
+  useEffect(() => {
+    const handleFocus = () => hydrate(true);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        hydrate(true);
+      }
     };
-  }, [id, updateSubmission, addSubmission, storeSubmission]);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [hydrate]);
   const submission = storeSubmission;
   if (!submission) {
     return (
@@ -342,15 +368,16 @@ export default function DispatchSubmissionPage() {
   };
   return (
     <div suppressHydrationWarning>
-      <DispatchSubmissionLayout
-        submission={submission}
-        loadingMessage={
-          loading ? "Loading latest dispatch details..." : undefined
-        }
-        onUpdateSubmission={handleUpdateSubmission}
-        onAddUpdate={handleAddUpdate}
-        onEditUpdate={handleEditUpdate}
-        onRemoveUpdate={handleRemoveUpdate}
+        <DispatchSubmissionLayout
+          submission={submission}
+          loadingMessage={
+            loading ? "Loading latest dispatch details..." : undefined
+          }
+          updatesLoading={loading}
+          onUpdateSubmission={handleUpdateSubmission}
+          onAddUpdate={handleAddUpdate}
+          onEditUpdate={handleEditUpdate}
+          onRemoveUpdate={handleRemoveUpdate}
         roster={roster}
         commsTabContent={
           <CommsDashboardView

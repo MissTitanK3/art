@@ -80,6 +80,7 @@ export type DispatchSubmissionLayoutProps = {
   | "public_engagement"
   | "comms";
   loadingMessage?: React.ReactNode;
+  updatesLoading?: boolean;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
   onAddUpdate: (update: DispatchUpdateDraft) => void;
   onEditUpdate: (updateId: string, text: string) => void;
@@ -106,6 +107,7 @@ export function DispatchSubmissionLayout({
   viewerRole = null,
   viewerUserId = null,
   viewerProfileId = null,
+  updatesLoading = false,
 }: DispatchSubmissionLayoutProps) {
   const locationLabel = submission.location_label ?? "Unknown Location";
   const timestamp = new Date(submission.timestamp).toLocaleString();
@@ -438,6 +440,7 @@ export function DispatchSubmissionLayout({
       content: (
         <DispatchUpdates
           updates={submission.updates}
+          loading={updatesLoading}
           onAddUpdate={onAddUpdate}
           onEditUpdate={onEditUpdate}
           onRemoveUpdate={onRemoveUpdate}
