@@ -1508,6 +1508,17 @@ FOR DELETE
 TO authenticated
 USING (FALSE);
 
+-- allow authenticated users to upload to media bucket
+create policy "media uploads"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'media'
+  and (storage.foldername(name))[1] = 'dispatches'
+);
+
+
 -- Volunteer impact: dispatchers-only access
 CREATE POLICY volunteer_attributions_dispatchers_select
 ON volunteer_attributions

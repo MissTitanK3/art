@@ -16,9 +16,13 @@ import {
 import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 import { useProfileStore } from "@workspace/store/useProfileStore";
 
+export type DispatchUpdateDraft = Omit<DispatchUpdate, "id" | "createdAt"> & {
+  files?: File[];
+};
+
 type DispatchUpdatesProps = {
   updates?: DispatchUpdate[];
-  onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
+  onAddUpdate: (update: DispatchUpdateDraft) => void;
   onEditUpdate: (updateId: string, text: string) => void;
   onRemoveUpdate: (updateId: string) => void;
   afterComposer?: ReactNode;
@@ -53,15 +57,11 @@ export default function DispatchUpdates({
     const files = e.target.files;
     if (!files) return;
 
-    const attachments = Array.from(files).map((f) => ({
-      id: crypto.randomUUID(),
-      name: f.name,
-      type: f.type,
-      size: f.size,
-      url: URL.createObjectURL(f),
-    }));
-
-    onAddUpdate({ author: resolvedAuthor, text: "", attachments });
+    onAddUpdate({
+      author: resolvedAuthor,
+      text: "",
+      files: Array.from(files),
+    });
     e.target.value = "";
   };
 

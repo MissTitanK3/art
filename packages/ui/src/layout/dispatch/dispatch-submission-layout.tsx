@@ -28,7 +28,9 @@ import DispatchLocationUpdater from "@workspace/ui/patterns/features/location/di
 import DispatchLocationPinSelector from "@workspace/ui/patterns/features/location/dispatch-location-pin-selector";
 import DispatchDateOfEventUpdater from "@workspace/ui/patterns/features/event/dispatch-date-of-event-updater";
 import DispatchRolesManager from "@workspace/ui/patterns/features/roles/dispatch-roles-manager";
-import DispatchUpdates from "@workspace/ui/patterns/features/updates/dispatch-updates";
+import DispatchUpdates, {
+  type DispatchUpdateDraft,
+} from "@workspace/ui/patterns/features/updates/dispatch-updates";
 import LogisticsPanel from "@workspace/ui/patterns/features/logistics/logistics-panel";
 import PublicEngagementPanel from "@workspace/ui/patterns/features/engagement/public-engagement-panel";
 import { VolunteerAttributionPanel } from "@workspace/ui/patterns/features/impact/volunteer-attribution-panel";
@@ -39,7 +41,6 @@ import { MemberPermissionsManager } from "@workspace/ui/patterns/features/permis
 import { Share2, Flag, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import type { DispatchSubmission, DispatchPermissionLayer } from "@workspace/store/types/global.ts";
-import type { DispatchUpdate } from "@workspace/store/types/dispatch";
 import type { RosterEntry } from "@workspace/store/types/pod.ts";
 import type { AccessRole } from "@workspace/store/types/roles.ts";
 import {
@@ -80,7 +81,7 @@ export type DispatchSubmissionLayoutProps = {
   | "comms";
   loadingMessage?: React.ReactNode;
   onUpdateSubmission: (patch: Partial<DispatchSubmission>) => void;
-  onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
+  onAddUpdate: (update: DispatchUpdateDraft) => void;
   onEditUpdate: (updateId: string, text: string) => void;
   onRemoveUpdate: (updateId: string) => void;
   roster?: RosterEntry[];

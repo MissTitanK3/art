@@ -15,7 +15,14 @@ export async function GET(
             .eq('dispatch_id', id)
             .order('created_at', { ascending: true });
         if (error) throw error;
-        return NextResponse.json({ updates: data || [] });
+        const updates = (data ?? []).map((row) => ({
+            id: row.id,
+            author: row.author,
+            text: row.text ?? "",
+            createdAt: row.created_at ?? row.createdAt,
+            attachments: row.attachments ?? [],
+        }));
+        return NextResponse.json({ updates });
     } catch (error) {
         return jsonError(error);
     }
@@ -29,7 +36,12 @@ export async function POST(
         const { id } = await params;
         const { supabase } = await getAuthenticatedProfile();
         const update = await req.json();
-        const payload = { ...update, dispatch_id: id };
+        const { createdAt, ...rest } = update ?? {};
+        const payload = {
+            ...rest,
+            dispatch_id: id,
+            ...(createdAt ? { created_at: createdAt } : {}),
+        };
         const { error } = await supabase.from('dispatch_updates').insert(payload);
         if (error) throw error;
         return NextResponse.json({ success: true });

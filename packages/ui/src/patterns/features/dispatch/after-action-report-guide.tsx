@@ -10,12 +10,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/primitives/collapsible";
-import type { DispatchUpdate } from "@workspace/store/types/dispatch";
+import type { DispatchUpdateDraft } from "@workspace/ui/patterns/features/updates/dispatch-updates";
 import { toast } from "sonner";
 import { ChevronDown } from "lucide-react";
 
 type AfterActionReportGuideProps = {
-  onAddUpdate: (update: Omit<DispatchUpdate, "id" | "createdAt">) => void;
+  onAddUpdate: (update: DispatchUpdateDraft) => void;
 };
 
 export default function AfterActionReportGuide({

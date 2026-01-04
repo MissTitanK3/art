@@ -7,10 +7,13 @@ import { useProfileStore } from "@/providers/ProfileStoreProvider";
 import { DispatchSubmissionLayout } from "@workspace/ui/layout/dispatch/dispatch-submission-layout";
 import { DispatchSubmission } from "@workspace/store/types/global.ts";
 import { mapRowToSubmission } from "@workspace/ui/hooks/map-row-to-submission";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase/client";
 import type {
+  DispatchAttachment,
   DispatchUpdate,
   LogisticsItem,
 } from "@workspace/store/types/dispatch";
+import type { DispatchUpdateDraft } from "@workspace/ui/patterns/features/updates/dispatch-updates";
 import { useCommsData } from "@/hooks/useCommsData";
 import { CommsDashboardView } from "@workspace/ui/patterns/features/dispatch/comms-dashboard-view";
 async function fetchDispatchSubmissionFromDatabase(
@@ -100,6 +103,44 @@ async function insertUpdateRow(
   } catch (e) {
     console.warn("[DispatchSubmissionDataLayer] insert update error", e);
   }
+}
+
+async function uploadUpdateAttachments(
+  dispatchId: string,
+  updateId: string,
+  files: File[],
+): Promise<DispatchAttachment[]> {
+  const client = getSupabaseBrowserClient();
+  const bucket = client.storage.from("media");
+  const uploads = await Promise.all(
+    files.map(async (file) => {
+      try {
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const attachmentId = crypto.randomUUID();
+        const filename = `${attachmentId}.${ext}`;
+        const path = `dispatches/${dispatchId}/updates/${updateId}/${filename}`;
+        const { error } = await bucket.upload(path, file, {
+          upsert: false,
+          cacheControl: "3600",
+        });
+        if (error) return null;
+        const { data } = bucket.getPublicUrl(path);
+        if (!data?.publicUrl) return null;
+        return {
+          id: attachmentId,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: data.publicUrl,
+        };
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return uploads.filter(
+    (u): u is DispatchAttachment => u !== null,
+  );
 }
 async function updateUpdateRow(updateId: string, text: string): Promise<void> {
   try {
@@ -250,13 +291,21 @@ export default function DispatchSubmissionPage() {
     }
     updateSubmission(submission.id, patch);
   };
-  const handleAddUpdate = async (
-    u: Omit<DispatchUpdate, "id" | "createdAt">,
-  ) => {
+  const handleAddUpdate = async (u: DispatchUpdateDraft) => {
+    const updateId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    let attachments = u.attachments ?? [];
+    if (u.files?.length) {
+      attachments = await uploadUpdateAttachments(
+        submission.id,
+        updateId,
+        u.files,
+      );
+    }
     const newUpdate: DispatchUpdate = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      attachments: u.attachments ?? [],
+      id: updateId,
+      createdAt,
+      attachments,
       author: u.author,
       text: u.text,
     };
