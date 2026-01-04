@@ -274,6 +274,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
       defensive: 2,
       environmental_hazard_spotter: 1,
+      otg_support: 1,
     },
     actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement presence'],
   },
@@ -284,6 +285,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       rights_observer: 1,
       dispatch_aide: 1,
       environmental_hazard_spotter: 1,
+      otg_support: 1,
     },
     actions: [
       'Witnessing / observation only',
@@ -311,6 +313,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       sign_direction_helper: 1,
       qr_code_placement_helper: 1,
       charging_station_helper: 1,
+      otg_support: 1,
     },
     actions: [
       'Support community visibility and morale',
@@ -340,6 +343,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       soft_perimeter_helper: 2,
       flashlight_lantern_holder: 1,
       rain_cover_helper: 1,
+      otg_support: 1,
     },
     actions: [
       'Provide trauma-informed de-escalation',
@@ -393,6 +397,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       dispatch_aide: 1,
       tech_jammer: 1,
       night_logistics: 1,
+      otg_support: 1,
     },
     actions: [
       'Coordinate direct intervention or obstruction',
@@ -416,6 +421,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       heat_cold_monitor: 1,
       comfort_station_helper: 1,
       sign_direction_helper: 1,
+      otg_support: 1,
     },
     actions: [
       'Rights observation and legal witnessing',
@@ -436,6 +442,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       heat_cold_monitor: 1,
       environmental_hazard_spotter: 1,
       flashlight_lantern_holder: 1,
+      otg_support: 1,
     },
     actions: [
       'Witnessing / observation only',
@@ -464,6 +471,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       calm_down_buddy: 1,
       sign_direction_helper: 1,
       comfort_station_helper: 1,
+      otg_support: 1,
     },
     actions: [
       'Court accompaniment or support presence',
@@ -480,6 +488,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       faith_leader: 1,
       medic: 1,
       tech_support: 1,
+      otg_support: 1,
     },
     actions: [
       'Provide cultural or spiritual grounding',
@@ -507,6 +516,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       calm_down_buddy: 2,
       clothing_weather_gear_sorter: 1,
       phone_number_writer: 1,
+      otg_support: 1,
     },
     actions: [
       'Coordinate check-ins and mutual aid relay',
@@ -528,6 +538,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       heat_cold_monitor: 1,
       environmental_hazard_spotter: 1,
       supplies_labeling_helper: 1,
+      otg_support: 1,
     },
     actions: [
       'Coordinate direct intervention or obstruction',
@@ -543,6 +554,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       media_observer: 1,
       arrest_tracker: 1,
       dispatch_aide: 1,
+      otg_support: 1,
     },
     actions: [
       'Document and report ICE/law enforcement presence',
@@ -573,6 +585,7 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       comfort_station_helper: 2,
       kid_zone_monitor: 2,
       pet_support_helper: 1,
+      otg_support: 1,
     },
     actions: [
       'Document and report ICE/law enforcement presence',

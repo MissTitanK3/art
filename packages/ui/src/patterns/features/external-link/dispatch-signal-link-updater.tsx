@@ -114,19 +114,11 @@ export default function DispatchSignalLinkUpdater({
 
   return (
     <div className="space-y-2">
-      <Alert variant="default" className="bg-amber-900 border-amber-100">
+      <Alert variant="default" className="bg-amber-900 border-amber-100 text-white">
         <Shield className="h-4 w-4" />
         <AlertDescription className="text-xs">
           <strong>Private link security:</strong> Share only with confirmed participants.
           This link grants operational access to coordination channels.{" "}
-          <a
-            href="/docs/signal-security"
-            className="underline hover:text-amber-900"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Security guidelines →
-          </a>
         </AlertDescription>
       </Alert>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">

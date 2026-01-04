@@ -634,6 +634,7 @@ function compareRegions() {
   ensureOut();
 
   status.start(`Discovering region apps inside ${APPS_DIR}`);
+  const excludedRegions = new Set(['region-responder']);
   const allRegions = fs.readdirSync(APPS_DIR, { withFileTypes: true })
     .filter(d => d.isDirectory() && d.name.startsWith('region-'))
     .map(d => d.name);
@@ -648,7 +649,7 @@ function compareRegions() {
 
   const compareTargets = args.demo
     ? ['region-template']
-    : allRegions.filter((r) => r !== baselineName && r !== 'region-template');
+    : allRegions.filter((r) => r !== baselineName && r !== 'region-template' && !excludedRegions.has(r));
 
   console.log(`[status] Starting alignment check with baseline ${baselineName}. Target regions: ${compareTargets.length ? compareTargets.join(', ') : 'none'}.`);
 

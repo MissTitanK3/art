@@ -50,7 +50,7 @@ export default function DispatchPublicSignalLinkUpdater({
 
   return (
     <div className="space-y-2">
-      <Alert variant="default" className="bg-blue-900 border-blue-100">
+      <Alert variant="default" className="bg-blue-900 border-blue-100 text-white">
         <Users className="h-4 w-4" />
         <AlertDescription className="text-xs">
           <strong>Why two links?</strong> This public link builds future capacity

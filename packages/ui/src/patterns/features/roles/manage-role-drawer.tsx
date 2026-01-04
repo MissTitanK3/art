@@ -13,6 +13,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@workspace/ui/primitives/drawer";
+import { humanize } from "@workspace/ui/lib";
+
+const GENERAL_ROLES = new Set(["otg_general_support", "otg_support"]);
 
 export default function ManageRoleDrawer({
   role,
@@ -46,6 +49,7 @@ export default function ManageRoleDrawer({
       name: m.name ?? m.volunteer_id,
     }))
   );
+  const isGeneralRole = GENERAL_ROLES.has(role);
 
   const toggle = (id: string) => {
     setSelected((prev) =>
@@ -66,9 +70,17 @@ export default function ManageRoleDrawer({
     <Drawer open onOpenChange={onClose}>
       <DrawerContent className="p-4 max-w-3xl m-auto bg-card text-card-foreground h-9/12">
         <DrawerHeader>
-          <DrawerTitle>Manage Role: {role}</DrawerTitle>
+          <DrawerTitle className="flex flex-wrap items-center gap-2">
+            <span>Manage Role: {humanize(role)}</span>
+            {isGeneralRole ? (
+              <Badge variant="secondary" className="text-[10px] uppercase">
+                General role
+              </Badge>
+            ) : null}
+          </DrawerTitle>
           <DrawerDescription>
             Assign or unassign volunteers for this role.
+            {isGeneralRole ? " No training required; all volunteers are eligible." : null}
             {loading ? " Loading eligible users…" : null}
           </DrawerDescription>
         </DrawerHeader>
