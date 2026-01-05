@@ -82,12 +82,17 @@ export function CommsLogView({ logs, onAddLog }: Props) {
         ) : (
           logs
             .slice()
-            .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+            .sort((a, b) =>
+              (b.timestamp ?? "").localeCompare(a.timestamp ?? "")
+            )
             .map((l) => (
               <div key={l.id} className="border-b py-2 last:border-b-0">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>
-                    {new Date(l.timestamp).toLocaleTimeString()} ·{" "}
+                    {l.timestamp
+                      ? new Date(l.timestamp).toLocaleTimeString()
+                      : "Unknown time"}{" "}
+                    ·{" "}
                     {l.message_type} · {l.importance}
                   </span>
                 </div>

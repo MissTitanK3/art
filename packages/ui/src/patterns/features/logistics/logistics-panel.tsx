@@ -97,7 +97,7 @@ export default function LogisticsPanel({
   };
 
   const sortedLogistics = [...logistics].sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt)
+    (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
   );
 
   return (
