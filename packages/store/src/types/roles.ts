@@ -178,70 +178,92 @@ export const ROLE_OPTIONS: RoleOption[] = [
 
 export const ROLE_BY_VALUE = Object.fromEntries(ROLE_OPTIONS.map((o) => [o.value, o] as const));
 
+export const FIELD_ROLE_LABELS_GENERIC: Record<any, string> = {
+  event_lead: 'Event Lead',
+  team_lead: 'Team Lead',
+  event_colead: 'Event Co-Lead',
+  team_colead: 'Team Co-Lead',
+  general_team_lead: 'General Team Lead',
+  community_liaison: 'Community Liaison',
+  planning_team: 'Planning Team',
+  media_team: 'Media Team',
+  setup_team: 'Setup Team',
+  cleanup_team: 'Cleanup Team',
+  medic_team: 'Medic Team',
+  supply_restocker: 'Supply Restocker',
+  resource_distributer: 'Resource Distributer',
+  supply_organizer: 'Supply Organizer',
+  scanner_monitor: 'Scanner Monitor',
+  foot_patrol: 'Foot Patrol',
+  car_patrol: 'Car Patrol',
+  bicycle_patrol: 'Bicycle Patrol',
+  interpreter: 'Interpreter',
+};
+
 export const FIELD_ROLE_LABELS: Record<FieldRole, string> = {
-  legal: 'Legal Support',
+  legal: 'Legal Support', // Fine
   arrest_tracker: 'Arrest Tracker',
-  rights_observer: 'Know Your Rights Observer',
+  rights_observer: 'Know Your Rights Observer', // Fine
   media_observer: 'Media/Press Monitor',
-  deescalation: 'De-escalation',
+  deescalation: 'De-escalation', // Fine
   safety_marshall: 'Safety Marshal',
   defensive: 'Defensive Presence',
-  medic: 'Street Medic',
+  medic: 'Street Medic', // Fine
   mental_health: 'Mental Health',
   disability_aid: 'Disability Aid',
-  translator: 'Translator',
-  asl_interpreter: 'ASL Interpreter',
-  dispatch_aide: 'Dispatch Assistant',
-  tech_support: 'Tech Support',
-  logistics: 'Logistics Support',
+  translator: 'Interpreter',
+  asl_interpreter: 'ASL Interpreter', // Remove
+  dispatch_aide: 'Dispatch Assistant', // Fine
+  tech_support: 'Tech Support', // Fine
+  logistics: 'Logistics Support', // Fine
   child_specialist: 'Child Specialist',
-  immigration_specialist: 'Immigration Specialist',
+  immigration_specialist: 'Immigration Specialist', // Fine
   faith_leader: 'Faith Leader',
   bondsman: 'Bondsman',
-  social_worker: 'Social Worker',
+  social_worker: 'Social Worker', // Fine
   community_organizer: 'Community Organizer',
-  tech_jammer: 'Tech Jammer',
-  vehicle_support: 'Vehicle Support',
+  tech_jammer: 'Tech Jammer', // Fine
+  vehicle_support: 'Vehicle Support', // Fine
   care_station: 'Care Station Coordinator',
   night_logistics: 'Night Logistics',
-  resource_drop: 'Resource Drop Coordinator',
-  grounding_support: 'Grounding Support',
+  resource_drop: 'Resource Drop Coordinator', // Fine
+  grounding_support: 'Grounding Support', // Fine
   wellness_float: 'Wellness Float',
   courthouse_marshal: 'Courthouse Marshal',
-  legal_liaison: 'Legal Liaison',
+  legal_liaison: 'Legal Liaison', // Fine
   security_witness: 'Security Witness',
   docket_tracker: 'Docket Tracker',
   court_float_support: 'Court Float Support',
-  press_coordination: 'Press Coordination',
-  survivor_escort: 'Survivor Escort',
+  press_coordination: 'Press Coordination', // Fine
+  survivor_escort: 'Survivor Escort', // Fine
   line_scheduler: 'Line Scheduler',
-  otg_general_support: 'OTG - General Support',
+  otg_general_support: 'OTG - General Support', // Fine
   intake_greeter: 'Intake Greeter',
   supplies_labeling_helper: 'Supplies Labeling Helper',
-  inventory_counter_basic: 'Inventory Counter (Basic)',
-  charging_station_helper: 'Charging Station Helper',
-  kid_zone_monitor: 'Kid Zone Monitor (Non-Safety)',
-  clothing_weather_gear_sorter: 'Clothing + Weather Gear Sorter',
+  inventory_counter_basic: 'Inventory Counter (Basic)', // Fine
+  charging_station_helper: 'Charging Station Helper', // Fine
+  kid_zone_monitor: 'Kid Zone Monitor (Non-Safety)', // Fine
+  clothing_weather_gear_sorter: 'Clothing + Weather Gear Sorter', // Fine
   comfort_station_helper: 'Comfort Station Helper',
-  pet_support_helper: 'Pet Support Helper',
+  pet_support_helper: 'Pet Support Helper', // Fine
   chant_coordination_assist: 'Chant Coordination Assist',
-  route_echoer: 'Route Echoer',
-  buddy_finder: 'Buddy Finder',
-  heat_cold_monitor: 'Heat/Cold Monitor',
-  space_maker: 'Space Maker (Non-Enforcement)',
-  earplug_mask_distributor: 'Earplug & Mask Distributor',
+  route_echoer: 'Route Echoer', // Fine
+  buddy_finder: 'Buddy Finder', // Fine
+  heat_cold_monitor: 'Heat/Cold Monitor', // Fine
+  space_maker: 'Space Maker (Non-Enforcement)', // Fine
+  earplug_mask_distributor: 'Earplug & Mask Distributor', // Fine
   sign_direction_helper: 'Sign Direction Helper',
   qr_code_placement_helper: 'QR Code Placement Helper',
   social_photo_assist: 'Social Photo Assist',
   tabling_queue_helper: 'Tabling Queue Helper',
   sticker_button_giver: 'Sticker + Button Giver',
-  environmental_hazard_spotter: 'Environmental Hazard Spotter',
-  soft_perimeter_helper: 'Soft Perimeter Helper',
-  calm_down_buddy: 'Calm-Down Buddy',
-  flashlight_lantern_holder: 'Flashlight / Lantern Holder',
+  environmental_hazard_spotter: 'Environmental Hazard Lookout', // Fine
+  soft_perimeter_helper: 'Soft Perimeter Helper', // Fine
+  calm_down_buddy: 'Calm-Down Buddy', // Fine
+  flashlight_lantern_holder: 'Flashlight / Lantern Holder', // Fine
   rain_cover_helper: 'Rain Cover Helper',
   phone_number_writer: 'Phone Number Writer',
-  otg_support: 'OTG Support',
+  otg_support: 'OTG Support', // Fine
 };
 
 export type EventType =
@@ -263,56 +285,56 @@ export type EventType =
 export type ActionPreset = (typeof ACTION_PRESETS)[number];
 
 type TeamConfigPreset = {
-  roles: Partial<Record<FieldRole, number>>;
+  roles: Partial<Record<FieldRole | string, number>>;
   actions: ActionPreset[];
 };
 
 export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
-  scout_check: {
+  community_defense_center: {
     roles: {
-      media_observer: 1,
-      dispatch_aide: 1,
-      defensive: 2,
-      environmental_hazard_spotter: 1,
-      otg_support: 1,
-    },
-    actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement presence'],
-  },
-  routine_check: {
-    roles: {
-      legal: 1,
-      arrest_tracker: 1,
-      rights_observer: 1,
-      dispatch_aide: 1,
-      environmental_hazard_spotter: 1,
-      otg_support: 1,
+      event_lead: 1,
+      event_colead: 1,
+      general_team_lead: 1,
+      community_liaison: 1,
+      planning_team: 3,
+      media_team: 1,
+      setup_team: 5,
+      cleanup_team: 5,
+      medic_team: 1,
+      supply_restocker: 1,
+      resource_distributer: 1,
+      supply_organizer: 1,
+      scanner_monitor: 1,
+      foot_patrol: 2,
+      car_patrol: 2,
+      bicycle_patrol: 2,
+      interpreter: 1,
     },
     actions: [
-      'Witnessing / observation only',
       'Document and report ICE/law enforcement presence',
       'Rights observation and legal witnessing',
+      'Coordinate direct intervention or obstruction',
+      'Support community visibility and morale',
+      'Maintain Signal/radio/tech comms relay',
+      'Assist individuals with legal navigation',
     ],
   },
   community_event: {
     roles: {
-      rights_observer: 1,
-      media_observer: 1,
-      medic: 1,
-      translator: 1,
-      dispatch_aide: 1,
-      logistics: 1,
-      care_station: 1,
-      wellness_float: 1,
-      intake_greeter: 2,
-      kid_zone_monitor: 2,
-      comfort_station_helper: 2,
-      pet_support_helper: 1,
-      tabling_queue_helper: 1,
-      sticker_button_giver: 1,
-      social_photo_assist: 1,
-      sign_direction_helper: 1,
-      qr_code_placement_helper: 1,
-      charging_station_helper: 1,
+      event_lead: 1,
+      event_colead: 1,
+      general_team_lead: 1,
+      community_liaison: 1,
+      planning_team: 3,
+      media_team: 1,
+      setup_team: 5,
+      cleanup_team: 5,
+      medic_team: 1,
+      supply_restocker: 1,
+      resource_distributer: 1,
+      supply_organizer: 1,
+      scanner_monitor: 1,
+      interpreter: 1,
       otg_support: 1,
     },
     actions: [
@@ -323,6 +345,83 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       'Childcare or eldercare support on site',
     ],
   },
+  court_support: {
+    roles: {
+      team_lead: 1,
+      team_colead: 1,
+      community_liaison: 1,
+      planning_team: 3,
+      media_team: 1,
+      medic_team: 1,
+      supply_restocker: 1,
+      resource_distributer: 1,
+      supply_organizer: 1,
+      scanner_monitor: 1,
+      foot_patrol: 2,
+      car_patrol: 2,
+      bicycle_patrol: 2,
+      interpreter: 1,
+      otg_support: 5,
+    },
+    actions: [
+      'Court accompaniment or support presence',
+      'Assist individuals with legal navigation',
+      'Provide immigration-specific legal triage',
+      'Childcare or eldercare support on site',
+    ],
+  },
+  detention_center_action: {
+    roles: {
+      legal: 2,
+      rights_observer: 2,
+      media_observer: 2,
+      deescalation: 2,
+      safety_marshall: 2,
+      translator: 1,
+      asl_interpreter: 1,
+      logistics: 2,
+      dispatch_aide: 1,
+      chant_coordination_assist: 1,
+      heat_cold_monitor: 1,
+      comfort_station_helper: 1,
+      sign_direction_helper: 1,
+      otg_support: 1,
+    },
+    actions: [
+      'Rights observation and legal witnessing',
+      'Media or livestream monitoring and amplification',
+      'On-site emotional or mental health support',
+      'Support community visibility and morale',
+    ],
+  },
+  home_visitation: {
+    roles: {
+      legal: 1,
+      rights_observer: 1,
+      translator: 1,
+      faith_leader: 1,
+      medic: 1,
+      tech_support: 1,
+      otg_support: 1,
+    },
+    actions: [
+      'Provide cultural or spiritual grounding',
+      'Assist individuals with legal navigation',
+      'Document and report ICE/law enforcement presence',
+      'Childcare or eldercare support on site',
+    ],
+  },
+  scout_check: {
+    roles: {
+      media_observer: 1,
+      dispatch_aide: 1,
+      defensive: 2,
+      environmental_hazard_spotter: 1,
+      otg_support: 1,
+    },
+    actions: ['Witnessing / observation only', 'Document and report ICE/law enforcement presence'],
+  },
+
   protest_low: {
     roles: {
       legal: 1,
@@ -406,97 +505,6 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       'Assist disabled individuals with access or evacuation',
     ],
   },
-  detention_center_action: {
-    roles: {
-      legal: 2,
-      rights_observer: 2,
-      media_observer: 2,
-      deescalation: 2,
-      safety_marshall: 2,
-      translator: 1,
-      asl_interpreter: 1,
-      logistics: 2,
-      dispatch_aide: 1,
-      chant_coordination_assist: 1,
-      heat_cold_monitor: 1,
-      comfort_station_helper: 1,
-      sign_direction_helper: 1,
-      otg_support: 1,
-    },
-    actions: [
-      'Rights observation and legal witnessing',
-      'Media or livestream monitoring and amplification',
-      'On-site emotional or mental health support',
-      'Support community visibility and morale',
-    ],
-  },
-  checkpoint_monitoring: {
-    roles: {
-      legal: 2,
-      rights_observer: 2,
-      translator: 2,
-      media_observer: 1,
-      tech_support: 1,
-      vehicle_support: 1,
-      dispatch_aide: 1,
-      heat_cold_monitor: 1,
-      environmental_hazard_spotter: 1,
-      flashlight_lantern_holder: 1,
-      otg_support: 1,
-    },
-    actions: [
-      'Witnessing / observation only',
-      'Map and monitor enforcement movement live',
-      'Provide immigration-specific legal triage',
-    ],
-  },
-  court_support: {
-    roles: {
-      legal: 2,
-      immigration_specialist: 1,
-      translator: 1,
-      child_specialist: 1,
-      community_organizer: 1,
-      dispatch_aide: 1,
-      bondsman: 1,
-      courthouse_marshal: 1,
-      legal_liaison: 1,
-      security_witness: 1,
-      docket_tracker: 1,
-      court_float_support: 1,
-      press_coordination: 1,
-      survivor_escort: 1,
-      line_scheduler: 1,
-      intake_greeter: 1,
-      calm_down_buddy: 1,
-      sign_direction_helper: 1,
-      comfort_station_helper: 1,
-      otg_support: 1,
-    },
-    actions: [
-      'Court accompaniment or support presence',
-      'Assist individuals with legal navigation',
-      'Provide immigration-specific legal triage',
-      'Childcare or eldercare support on site',
-    ],
-  },
-  home_visitation: {
-    roles: {
-      legal: 1,
-      rights_observer: 1,
-      translator: 1,
-      faith_leader: 1,
-      medic: 1,
-      tech_support: 1,
-      otg_support: 1,
-    },
-    actions: [
-      'Provide cultural or spiritual grounding',
-      'Assist individuals with legal navigation',
-      'Document and report ICE/law enforcement presence',
-      'Childcare or eldercare support on site',
-    ],
-  },
   post_raid_support: {
     roles: {
       social_worker: 2,
@@ -523,6 +531,41 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       'On-site emotional or mental health support',
       'Support community visibility and morale',
       'Childcare or eldercare support on site',
+    ],
+  },
+  routine_check: {
+    roles: {
+      legal: 1,
+      arrest_tracker: 1,
+      rights_observer: 1,
+      dispatch_aide: 1,
+      environmental_hazard_spotter: 1,
+      otg_support: 1,
+    },
+    actions: [
+      'Witnessing / observation only',
+      'Document and report ICE/law enforcement presence',
+      'Rights observation and legal witnessing',
+    ],
+  },
+  checkpoint_monitoring: {
+    roles: {
+      legal: 2,
+      rights_observer: 2,
+      translator: 2,
+      media_observer: 1,
+      tech_support: 1,
+      vehicle_support: 1,
+      dispatch_aide: 1,
+      heat_cold_monitor: 1,
+      environmental_hazard_spotter: 1,
+      flashlight_lantern_holder: 1,
+      otg_support: 1,
+    },
+    actions: [
+      'Witnessing / observation only',
+      'Map and monitor enforcement movement live',
+      'Provide immigration-specific legal triage',
     ],
   },
   border_encounter: {
@@ -560,40 +603,6 @@ export const TEAM_CONFIG_PRESETS: Record<EventType, TeamConfigPreset> = {
       'Document and report ICE/law enforcement presence',
       'Rights observation and legal witnessing',
       'Track arrests or detentions for legal follow-up',
-    ],
-  },
-  community_defense_center: {
-    roles: {
-      rights_observer: 2,
-      legal: 2,
-      immigration_specialist: 1,
-      defensive: 2,
-      safety_marshall: 2,
-      deescalation: 2,
-      media_observer: 1,
-      translator: 1,
-      dispatch_aide: 1,
-      tech_support: 1,
-      grounding_support: 1,
-      medic: 1,
-      vehicle_support: 1,
-      intake_greeter: 2,
-      supplies_labeling_helper: 2,
-      inventory_counter_basic: 2,
-      charging_station_helper: 1,
-      clothing_weather_gear_sorter: 2,
-      comfort_station_helper: 2,
-      kid_zone_monitor: 2,
-      pet_support_helper: 1,
-      otg_support: 1,
-    },
-    actions: [
-      'Document and report ICE/law enforcement presence',
-      'Rights observation and legal witnessing',
-      'Coordinate direct intervention or obstruction',
-      'Support community visibility and morale',
-      'Maintain Signal/radio/tech comms relay',
-      'Assist individuals with legal navigation',
     ],
   },
 };
@@ -1113,7 +1122,7 @@ export const FIELD_ROLE_DETAILS: FieldRoleDetail[] = [
   },
   {
     role: 'otg_general_support',
-    description: 'Provides general on-the-ground support where needed, filling gaps and assisting other roles.',
+    description: 'Provides multi-task on-the-ground support where needed, filling gaps and assisting other roles.',
     requiredSkills: [
       'Flexibility and adaptability',
       'General situational awareness',
@@ -1325,7 +1334,7 @@ export const FIELD_ROLE_DETAILS: FieldRoleDetail[] = [
   },
   {
     role: 'otg_support',
-    description: 'General on-the-ground support.',
+    description: 'General on-the-ground support for specific task.',
     requiredSkills: ['Versatility', 'Willingness', 'Adaptability'],
     riskLevel: 'low',
     bestSuitedFor: 'Filling gaps.',

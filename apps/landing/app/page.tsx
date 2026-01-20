@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Separator } from "@workspace/ui/primitives/separator";
 import ThemeToggle from "@workspace/ui/patterns/common/theme-toggle";
 import BackToTopButton from "../components/BackToTopButton";
 import {
@@ -13,19 +12,8 @@ import {
   TrendingUp,
   Flame,
 } from "lucide-react";
-import { NGC_V15, type NGCBlock } from "@/lib/ngc_v_15";
 
 export default function LandingPage() {
-  const preambleNode = NGC_V15.root.children.find(
-    (child) => child.kind === "preamble"
-  );
-  const preambleParagraphs = (preambleNode?.blocks ?? []).filter(
-    (b): b is Extract<NGCBlock, { type: "p" }> => b.type === "p"
-  );
-  const preambleList = (preambleNode?.blocks ?? []).find(
-    (b): b is Extract<NGCBlock, { type: "list" }> => b.type === "list"
-  );
-
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <div className="mx-auto max-w-6xl px-4 pt-4 flex justify-end">
@@ -508,101 +496,6 @@ export default function LandingPage() {
                 className="px-4 py-2 rounded-lg border border-input bg-background text-sm shadow hover:bg-accent hover:text-accent-foreground"
               >
                 Report an Issue
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* NGC Origins */}
-      <section
-        id="origins"
-        className="py-16 px-4 sm:px-6 lg:px-8 bg-background text-muted-foreground"
-      >
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold tracking-tight mb-4 text-foreground text-center">
-            Origins of the Next Generation Constitution
-          </h2>
-
-          <Separator className="mx-auto mb-8 w-24" />
-
-          <div className="rounded-2xl border border-input bg-card p-8 space-y-4 leading-relaxed">
-            <p>
-              In February 2025, while fleeing the South and pausing in
-              Colorado, I (T) witnessed what felt like the disintegration of
-              the United States Constitution. As a military member, I was
-              torn between my oath to protect citizens from all enemies,
-              foreign and domestic, and my inability to act within that
-              moment's limits.
-            </p>
-
-            <p>
-              I turned to writing as a means of grounding myself. From that
-              struggle came the idea of the{" "}
-              <span className="font-semibold">
-                Next Generation Constitution (NGC)
-              </span>
-              . A document outlining what I would fight for in 2025 and
-              beyond.
-            </p>
-
-            <p>
-              The NGC became a tool for mental stability and purpose. If I
-              can envision a future where it exists, then working toward
-              that future makes the fight worthwhile.
-            </p>
-
-            <p>
-              The NGC is what motivates the work I'm doing here, but
-              adopting it is not required to participate in or use these
-              tools. I include it for transparency, so you understand why I
-              build the way I do and the future I hope we can reach.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* NGC Intro Section */}
-      <section
-        aria-labelledby="ngc-intro"
-        className="mx-auto mt-14 max-w-5xl px-4 pb-20"
-      >
-        <div className="rounded-2xl border border-input bg-card p-8 space-y-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <h2 id="ngc-intro" className="text-2xl font-semibold">
-              Next-Generation Constitution (NGC)
-            </h2>
-            <Link
-              href="/ngc"
-              className="inline-flex items-center gap-1 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium shadow hover:bg-accent hover:text-accent-foreground"
-            >
-              Read the full NGC
-            </Link>
-          </div>
-
-          <div className="space-y-4">
-            {preambleParagraphs.map((p, idx) => (
-              <p key={idx} className="leading-relaxed">
-                {p.text}
-              </p>
-            ))}
-
-            {preambleList && (
-              <ul className="mt-2 list-disc space-y-2 pl-5 text-sm">
-                {preambleList.items.map((item, idx) => (
-                  <li key={idx} className="leading-relaxed">
-                    {item.text}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="pt-2">
-              <Link
-                href="/ngc"
-                className="text-sm font-medium underline underline-offset-4"
-              >
-                Continue to the complete text →
               </Link>
             </div>
           </div>
