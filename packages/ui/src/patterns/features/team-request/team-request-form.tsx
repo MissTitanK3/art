@@ -61,7 +61,7 @@ type StepData = {
   };
   rolesNeeded?: {
     required_roles?: string[];
-    required_roles_by_type?: Record<string, number>;
+    required_roles_by_type?: Partial<Record<string, number>>;
   };
   training?: boolean;
 };
@@ -139,7 +139,7 @@ export default function TeamRequestForm({
   );
   const [roles, setRoles] = useState<{
     required_roles: string[];
-    required_roles_by_type: Record<string, number>;
+    required_roles_by_type: Partial<Record<string, number>>;
   }>({
     required_roles: initialData?.rolesNeeded?.required_roles ?? [],
     required_roles_by_type:
@@ -225,11 +225,26 @@ export default function TeamRequestForm({
     return Object.keys(next).length === 0;
   };
 
+  const normalizeRoleCounts = (
+    counts?: Partial<Record<string, number>>
+  ): Record<string, number> | undefined => {
+    if (!counts) return undefined;
+    const entries = Object.entries(counts).filter(
+      ([, value]) => typeof value === "number"
+    );
+    if (entries.length === 0) return undefined;
+    return Object.fromEntries(entries) as Record<string, number>;
+  };
+
   const handleSubmit = async () => {
     if (!validate()) return;
     setSubmitting(true);
     const preset = eventType ? TEAM_CONFIG_PRESETS[eventType] : undefined;
     const radiusKm = unit === "mi" ? miToKm(radiusInput) : radiusInput;
+    const normalizedRoleCounts = normalizeRoleCounts(
+      roles.required_roles_by_type
+    );
+    const presetRoleCounts = normalizeRoleCounts(preset?.roles);
 
     const submission = makeDispatchSubmission({
       type: responseType,
@@ -256,9 +271,7 @@ export default function TeamRequestForm({
             ? Object.keys(preset.roles)
             : undefined,
       required_roles_by_type:
-        Object.keys(roles.required_roles_by_type).length > 0
-          ? roles.required_roles_by_type
-          : preset?.roles,
+        normalizedRoleCounts ?? presetRoleCounts,
       training,
     });
 
